@@ -3523,7 +3523,7 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 		GLScene* scene = doc->GetScene();
 		if (scene)
 		{
-			scene->ZoomTo(imgModel->GetBoundingBox());
+			scene->GetCamera().ZoomToBox(imgModel->GetBoundingBox());
 			RedrawGL();
 		}
 		return true;

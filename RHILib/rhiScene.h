@@ -45,9 +45,6 @@ public:
 	// get the bounding box of the entire scene
 	BOX GetBoundingBox() override { return m_box; }
 
-	// get the bounding box of the current selection
-	BOX GetSelectionBox() override { return m_box; }
-
 public:
 	GLColor bgcol = GLColor(200, 200, 255);
 	vec3f light = vec3f(1, 1, 1);

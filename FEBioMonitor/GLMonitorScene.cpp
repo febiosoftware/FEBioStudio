@@ -878,18 +878,6 @@ BOX CGLMonitorScene::GetBoundingBox()
 	return m_postModel->GetBoundingBox();
 }
 
-
-BOX CGLMonitorScene::GetSelectionBox()
-{
-	Post::CGLModel* mdl = GetGLModel();
-	if (mdl == nullptr) return BOX(-1, -1, -1, 1, 1, 1);
-
-	FESelection* sel = m_fmdoc->GetCurrentSelection();
-	if (sel) return sel->GetBoundingBox();
-
-	return BOX();
-}
-
 LegendData CGLMonitorScene::GetLegendData(int n)
 {
 	LegendData l;

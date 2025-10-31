@@ -54,12 +54,8 @@ void CMainWindow::on_actionZoomSelect_triggered()
 	CGLDocument* doc = GetGLDocument();
 	if (doc)
 	{
-		GLScene* scene = doc->GetScene();
-		if (scene)
-		{
-			scene->ZoomSelection();
-			RedrawGL();
-		}
+		doc->ZoomSelection();
+		RedrawGL();
 	}
 }
 
@@ -68,10 +64,11 @@ void CMainWindow::on_actionZoomExtents_triggered()
 	CGLDocument* doc = GetGLDocument();
 	if (doc)
 	{
+		BOX box = doc->GetBoundingBox();
 		GLScene* scene = doc->GetScene();
 		if (scene)
 		{
-			scene->ZoomExtents();
+			scene->GetCamera().ZoomToBox(box);
 			RedrawGL();
 		}
 	}

@@ -135,6 +135,8 @@ public:
 	int GetItemMode() { return m_vs.nitem; }
 	void SetItemMode(int mode) { m_vs.nitem = mode; UpdateSelection(); }
 
+	void ZoomSelection(bool forceZoom = true);
+
 	static std::string GetTypeString(FSObject* po);
 
 	UI_VIEW_MODE GetUIViewMode() { return m_uiMode; }
@@ -145,6 +147,9 @@ public:
 	// return the current selection
 	FESelection* GetCurrentSelection();
 	void SetCurrentSelection(FESelection* psel);
+
+	// get the bounding box
+	virtual BOX GetBoundingBox() { return BOX(); }
 
 	// get the selection bounding box
 	BOX GetSelectionBox();

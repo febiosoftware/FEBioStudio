@@ -171,6 +171,16 @@ void CGLDocument::Update()
 	CGLSceneDocument::Update();
 }
 
+void CGLDocument::ZoomSelection(bool forceZoom)
+{
+	BOX box = GetSelectionBox();
+	GLScene* scene = GetScene();
+	if (box.IsValid() && scene)
+	{
+		scene->GetCamera().ZoomToBox(box, forceZoom);
+	}
+}
+
 std::string CGLDocument::GetTypeString(FSObject* po)
 {
 	if (po == 0) return "(null)";

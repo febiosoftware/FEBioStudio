@@ -85,11 +85,7 @@ public:
 	// Render on the 2D canvas
 	virtual void RenderCanvas(QPainter& painter, GLContext& rc) {}
 
-	// get the bounding box of the entire scene
-	virtual BOX GetBoundingBox() = 0;
-
-	// get the bounding box of the current selection
-	virtual BOX GetSelectionBox() = 0;
+	virtual BOX GetBoundingBox() { return BOX(); }
 
 	GLCamera& GetCamera() { return m_cam; }
 
@@ -104,13 +100,6 @@ public:
 	void ActivateEnvironmentMap(GLRenderEngine& re);
 	void DeactivateEnvironmentMap(GLRenderEngine& re);
 	void LoadEnvironmentMap(GLRenderEngine& re);
-
-public:
-	void ZoomSelection(bool forceZoom = true);
-
-	void ZoomExtents(bool banimate = true);
-
-	void ZoomTo(const BOX& box);
 
 public:
 	void AddTag(const GLTAG& tag) { m_tags.push_back(tag); }
@@ -136,6 +125,7 @@ public:
 protected:
 	GLCamera m_cam;	//!< camera
 	GLGrid	m_grid;	//!< the grid object
+	BOX m_box;
 
 	unsigned int	m_envtex;	// enironment texture ID
 	std::string		m_envMap; // file name used for environment mapping 

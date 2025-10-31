@@ -1285,6 +1285,13 @@ void CModelDocument::ToggleActiveParts()
 	}
 }
 
+BOX CModelDocument::GetBoundingBox()
+{
+	BOX box;
+	if (GetGModel()) box = GetGModel()->GetBoundingBox();
+	return box;
+}
+
 CModelDocument* CreateNewModelDocument(CMainWindow* wnd, int moduleID, std::string name, int units)
 {
 	CModelDocument* doc = new CModelDocument(wnd);

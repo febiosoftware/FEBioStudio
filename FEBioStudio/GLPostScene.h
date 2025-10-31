@@ -140,8 +140,6 @@ public:
 
 	BOX GetBoundingBox() override;
 
-	BOX GetSelectionBox() override;
-
 	void ToggleTrackSelection();
 
 	Post::CGLModel* GetGLModel();

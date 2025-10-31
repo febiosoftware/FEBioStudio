@@ -150,9 +150,6 @@ public:
 		return b;
 	}
 
-	// get the bounding box of the current selection
-	BOX GetSelectionBox() override { return BOX(-1, -1, -1, 1, 1, 1); }
-
 	GLMesh& GetSphere() { return m_sphere; }
 	GLMesh& GetRenderSphere() { return m_renderSphere; }
 
@@ -426,7 +423,8 @@ void CDlgDistributionVisualizer::onUpdateVisual()
 		}
 
 		scene->Update();
-		scene->ZoomExtents(false);
+
+		scene->GetCamera().ZoomToBox(scene->GetBoundingBox());
 		ui->glw->requestUpdate();
 	}
 }

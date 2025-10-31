@@ -126,7 +126,7 @@ void rhiScene::AddMesh(GLMesh* pm)
 	BOX box = pm->GetBoundingBox();
 	m_box += box;
 	addItem(new rhiMeshItem(pm));
-	ZoomExtents(false);
+	GetCamera().ZoomToBox(m_box, true, false);
 }
 
 void rhiScene::Render(GLRenderEngine& re, GLContext& rc)

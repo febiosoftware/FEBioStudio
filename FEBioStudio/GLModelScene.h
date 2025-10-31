@@ -233,8 +233,6 @@ public:
 
 	BOX GetBoundingBox() override;
 
-	BOX GetSelectionBox() override;
-
 	void SetObjectColorMode(OBJECT_COLOR_MODE colorMode);
 
 	OBJECT_COLOR_MODE ObjectColorMode() const;

@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/math3d.h>
+#include <FSCore/box.h>
 #include "Interpolator.h"
 
 class GLCameraTransform
@@ -99,6 +100,9 @@ public:
 
 	// zoom in or out
 	void Zoom(double f);
+
+	// zoom to a bounding box
+	void ZoomToBox(const BOX& box, bool forceZoom = true, bool animate = true);
 
 public:
 	// sets the distance to the target

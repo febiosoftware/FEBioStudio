@@ -50,8 +50,6 @@ public:
 
 	BOX GetBoundingBox() override;
 
-	BOX GetSelectionBox() override;
-
 	void setAnalysis(CFiberODFAnalysis* a) { m_analysis = a; }
 	void setODF(CODF* odf) { m_ODF = odf; }
 

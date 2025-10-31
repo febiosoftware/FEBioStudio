@@ -102,6 +102,8 @@ public:
 	// toggle selected parts to (in)active
 	void ToggleActiveParts();
 
+	BOX GetBoundingBox() override;
+
 public:
 	void AddImageModel(CImageModel* imgModel) override;
 

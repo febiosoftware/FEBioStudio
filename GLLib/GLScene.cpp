@@ -97,56 +97,6 @@ void GLScene::LoadEnvironmentMap(GLRenderEngine& re)
 	m_envtex = re.LoadEnvironmentMap(m_envMap);
 }
 
-// this function will only adjust the camera if the currently
-// selected object is too close.
-void GLScene::ZoomSelection(bool forceZoom)
-{
-	// get the selection's bounding box
-	BOX box = GetSelectionBox();
-	if (box.IsValid())
-	{
-		double f = box.GetMaxExtent();
-		if (f < 1.0e-8) f = 1.0;
-
-		GLCamera& cam = GetCamera();
-
-		double g = cam.GetFinalTargetDistance();
-		if ((forceZoom == true) || (g < 2.0 * f))
-		{
-			cam.SetTarget(box.Center());
-			cam.SetTargetDistance(2.0 * f);
-		}
-	}
-	else ZoomExtents();
-}
-
-void GLScene::ZoomExtents(bool banimate)
-{
-	BOX box = GetBoundingBox();
-
-	double f = box.GetMaxExtent();
-	if (f == 0) f = 1;
-
-	GLCamera& cam = GetCamera();
-
-	cam.SetTarget(box.Center());
-	cam.SetTargetDistance(2.0 * f);
-
-	if (banimate == false) cam.Update(true);
-}
-
-//! zoom in on a box
-void GLScene::ZoomTo(const BOX& box)
-{
-	double f = box.GetMaxExtent();
-	if (f == 0) f = 1;
-
-	GLCamera& cam = GetCamera();
-
-	cam.SetTarget(box.Center());
-	cam.SetTargetDistance(2.0 * f);
-}
-
 void GLScene::clear()
 {
 	for (GLSceneItem* item : m_Items) delete item;

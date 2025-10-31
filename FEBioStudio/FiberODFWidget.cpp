@@ -124,11 +124,6 @@ BOX CODFScene::GetBoundingBox()
 	return BOX(-2, -2, -2, 2, 2, 2);
 }
 
-BOX CODFScene::GetSelectionBox()
-{
-	return BOX();
-}
-
 class CODFPropertyList1 : public CPropertyList
 {
 public:
