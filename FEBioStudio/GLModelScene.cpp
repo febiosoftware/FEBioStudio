@@ -2317,10 +2317,8 @@ GLDiscreteItem::GLDiscreteItem(CGLModelScene* scene) : GLModelSceneItem(scene)
 		if (po->IsVisible())
 		{
 			GLColor c = po->GetColor();
-
-			if (bsel && po->IsSelected()) glColor3ub(255, 255, 0);
-			else if (!po->IsActive()) glColor3ub(128, 128, 128);
-			else glColor3ub(c.r, c.g, c.b);
+			if (bsel && po->IsSelected()) c = GLColor(255, 255, 0);
+			else if (!po->IsActive()) c = GLColor(128, 128, 128);
 
 			GLinearSpring* ps = dynamic_cast<GLinearSpring*>(po);
 			if (ps)
@@ -2358,9 +2356,9 @@ GLDiscreteItem::GLDiscreteItem(CGLModelScene* scene) : GLModelSceneItem(scene)
 				{
 					GDiscreteElement& el = pd->element(n);
 
-					if (bsel && el.IsSelected()) glColor3ub(255, 255, 0);
-					else if (!po->IsActive()) glColor3ub(128, 128, 128);
-					else glColor3ub(c.r, c.g, c.b);
+					if (bsel && el.IsSelected()) c = GLColor(255, 255, 0);
+					else if (!po->IsActive()) c = GLColor(128, 128, 128);
+					else c = GLColor(c.r, c.g, c.b);
 
 					int n0 = el.Node(0) - minId;
 					int n1 = el.Node(1) - minId;
@@ -2408,7 +2406,7 @@ void GLDiscreteItem::render(GLRenderEngine& re, GLContext& rc)
 	for (const Line& line : m_lines)
 	{
 		GLColor c = line.col;
-		glColor3ub(c.r, c.g, c.b);
+		re.setColor(c);
 
 		re.renderPoint(line.a);
 		re.renderPoint(line.b);
@@ -2431,8 +2429,8 @@ void GLSelectionBox::render(GLRenderEngine& re, GLContext& rc)
 
 	GObject* poa = m_scene->GetActiveObject();
 
-	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_POLYGON_STIPPLE);
+	re.enable(GLRenderEngine::DEPTHTEST);
+//	glDisable(GL_POLYGON_STIPPLE);
 
 	if (item == ITEM_MESH)
 	{
@@ -2601,7 +2599,7 @@ void GLPhysicsItem::RenderRigidBodies(GLRenderEngine& re, GLContext& rc) const
 			else r = pgm->GetPosition();
 
 			re.pushTransform();
-			glTranslatef((float)r.x, (float)r.y, (float)r.z);
+			re.translate(r);
 
 			glx::renderGlyph(re, glx::RIGID_BODY, R, c);
 
@@ -2663,7 +2661,7 @@ void GLPhysicsItem::RenderRigidJoints(GLRenderEngine& re, double scale) const
 			{
 				vec3d r = pj->GetVecValue(FSRigidJoint::RJ);
 				re.pushTransform();
-				glTranslated(r.x, r.y, r.z);
+				re.translate(r);
 				glx::renderGlyph(re, glx::RIGID_JOINT, R, GLColor::Red());
 				re.popTransform();
 			}
@@ -2694,7 +2692,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, double scale) cons
 					c = GLColor(64, 64, 64);
 
 				re.pushTransform();
-				glTranslated(r.x, r.y, r.z);
+				re.translate(r);
 				glx::renderGlyph(re, glx::RIGID_JOINT, R, c);
 				re.popTransform();
 			}
@@ -2705,15 +2703,15 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, double scale) cons
 				vec3d a = rci->GetParamVec3d("transverse_axis"); a.Normalize();
 				vec3d b = c ^ a; b.Normalize();
 				a = b ^ c; a.Normalize();
-				GLfloat Q4[16] = {
-					(GLfloat)a.x, (GLfloat)a.y, (GLfloat)a.z, 0.f,
-					(GLfloat)b.x, (GLfloat)b.y, (GLfloat)b.z, 0.f,
-					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
+				double Q4[16] = {
+					a.x, a.y, a.z, 0.f,
+					b.x, b.y, b.z, 0.f,
+					c.x, c.y, c.z, 0.f,
 					0.f, 0.f, 0.f, 1.f };
 
 				re.pushTransform();
-				glTranslatef((float)r.x, (float)r.y, (float)r.z);
-				glMultMatrixf(Q4);
+				re.translate(r);
+				re.multTransform(Q4);
 
 				GLColor col;
 				if (rci->IsActive())
@@ -2731,15 +2729,15 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, double scale) cons
 				vec3d b = rci->GetParamVec3d("transverse_axis"); b.Normalize();
 				vec3d c = a ^ b; c.Normalize();
 				b = c ^ a; b.Normalize();
-				GLfloat Q4[16] = {
-					(GLfloat)a.x, (GLfloat)a.y, (GLfloat)a.z, 0.f,
-					(GLfloat)b.x, (GLfloat)b.y, (GLfloat)b.z, 0.f,
-					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
+				double Q4[16] = {
+					a.x, a.y, a.z, 0.f,
+					b.x, b.y, b.z, 0.f,
+					c.x, c.y, c.z, 0.f,
 					0.f, 0.f, 0.f, 1.f };
 
 				re.pushTransform();
-				glTranslatef((float)r.x, (float)r.y, (float)r.z);
-				glMultMatrixf(Q4);
+				re.translate(r);
+				re.multTransform(Q4);
 
 				GLColor col;
 				if (rci->IsActive())
@@ -2757,15 +2755,15 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, double scale) cons
 				vec3d a = rci->GetParamVec3d("transverse_axis"); a.Normalize();
 				vec3d b = c ^ a; b.Normalize();
 				a = b ^ c; a.Normalize();
-				GLfloat Q4[16] = {
-					(GLfloat)a.x, (GLfloat)a.y, (GLfloat)a.z, 0.f,
-					(GLfloat)b.x, (GLfloat)b.y, (GLfloat)b.z, 0.f,
-					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
+				double Q4[16] = {
+					a.x, a.y, a.z, 0.f,
+					b.x, b.y, b.z, 0.f,
+					c.x, c.y, c.z, 0.f,
 					0.f, 0.f, 0.f, 1.f };
 
 				re.pushTransform();
-				glTranslatef((float)r.x, (float)r.y, (float)r.z);
-				glMultMatrixf(Q4);
+				re.translate(r);
+				re.multTransform(Q4);
 
 				GLColor col;
 				if (rci->IsActive())
@@ -2784,15 +2782,15 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, double scale) cons
 				vec3d a = rci->GetParamVec3d("translation_axis_1"); a.Normalize();
 				vec3d b = c ^ a; b.Normalize();
 				a = b ^ c; a.Normalize();
-				GLfloat Q4[16] = {
-					(GLfloat)a.x, (GLfloat)a.y, (GLfloat)a.z, 0.f,
-					(GLfloat)b.x, (GLfloat)b.y, (GLfloat)b.z, 0.f,
-					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
+				double Q4[16] = {
+					a.x, a.y, a.z, 0.f,
+					b.x, b.y, b.z, 0.f,
+					c.x, c.y, c.z, 0.f,
 					0.f, 0.f, 0.f, 1.f };
 
 				re.pushTransform();
-				glTranslatef((float)r.x, (float)r.y, (float)r.z);
-				glMultMatrixf(Q4);
+				re.translate(r);
+				re.multTransform(Q4);
 
 				GLColor col;
 				if (rci->IsActive())
@@ -2811,15 +2809,15 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, double scale) cons
 				vec3d a = rci->GetParamVec3d("second_axis"); a.Normalize();
 				vec3d b = c ^ a; b.Normalize();
 				a = b ^ c; a.Normalize();
-				GLfloat Q4[16] = {
-					(GLfloat)a.x, (GLfloat)a.y, (GLfloat)a.z, 0.f,
-					(GLfloat)b.x, (GLfloat)b.y, (GLfloat)b.z, 0.f,
-					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
+				double Q4[16] = {
+					a.x, a.y, a.z, 0.f,
+					b.x, b.y, b.z, 0.f,
+					c.x, c.y, c.z, 0.f,
 					0.f, 0.f, 0.f, 1.f };
 
 				re.pushTransform();
-				glTranslatef((float)r.x, (float)r.y, (float)r.z);
-				glMultMatrixf(Q4);
+				re.translate(r);
+				re.multTransform(Q4);
 
 				GLColor col = (rci->IsActive() ? GLColor(255, 127, 0) : GLColor(64, 64, 64));
 				glx::renderGlyph(re, glx::RIGID_LOCK, R, col);
@@ -2833,9 +2831,9 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, double scale) cons
 
 				re.pushTransform();
 				if (rci->IsActive())
-					glColor3ub(255, 0, 0);
+					re.setColor(GLColor(255, 0, 0));
 				else
-					glColor3ub(64, 64, 64);
+					re.setColor(GLColor(64, 64, 64));
 
 				glx::renderSpring(re, xa, xb, R);
 				re.popTransform();
@@ -2848,9 +2846,9 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, double scale) cons
 				re.pushTransform();
 
 				if (rci->IsActive())
-					glColor3ub(255, 0, 0);
+					re.setColor(GLColor(255, 0, 0));
 				else
-					glColor3ub(64, 64, 64);
+					re.setColor(GLColor(64, 64, 64));
 
 				glx::renderDamper(re, xa, xb, R);
 
@@ -2864,9 +2862,9 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, double scale) cons
 				re.pushTransform();
 
 				if (rci->IsActive())
-					glColor3ub(255, 0, 0);
+					re.setColor(GLColor(255, 0, 0));
 				else
-					glColor3ub(64, 64, 64);
+					re.setColor(GLColor(64, 64, 64));
 
 				glx::renderContractileForce(re, xa, xb, R);
 
