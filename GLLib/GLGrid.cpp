@@ -104,8 +104,8 @@ void GLGrid::Render(GLRenderEngine& re, const GLCamera& cam)
 
 	// render the major axis
 	re.beginShape();
-	glx::drawLine(re, 0, (-n + ny)*s, 0, (n + ny)*s, 0, 1, m_colx, ndiv);
-	glx::drawLine(re, (-n + nx)*s, 0, (n + nx)*s, 0, 0, 1, m_coly, ndiv);
+	glx::drawLine(re, (-n + nx)*s, 0, (n + nx)*s, 0, 0, 1, m_colx, ndiv);
+	glx::drawLine(re, 0, (-n + ny)*s, 0, (n + ny)*s, 0, 1, m_coly, ndiv);
 
 	// grid lines color
 	GLColor c1(0,0,0);
