@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,31 +23,49 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
 #include "rhiMeshRenderPass.h"
-#include "rhiMesh.h"
-#include <list>
-#include <vector>
-#include <algorithm>
 
-class LineRenderPass : public rhi::MeshRenderPass
+void rhi::MeshRenderPass::reset()
 {
-public:
-	LineRenderPass(QRhi* rhi) : MeshRenderPass(rhi) {}
+	for (auto& it : m_meshList) it.second->setActive(false);
+	renderBatch.clear();
+}
 
-	void create(QRhiSwapChain* sc, rhi::SharedResources* sr);
+void rhi::MeshRenderPass::clearCache()
+{
+	for (auto& it : m_meshList) delete it.second;
+	m_meshList.clear();
+	renderBatch.clear();
+}
 
-	rhi::Mesh* addGLMesh(const GLMesh& mesh, bool cacheMesh) override;
+void rhi::MeshRenderPass::clearUnusedCache()
+{
+	for (auto it = m_meshList.begin(); it != m_meshList.end(); ) {
+		if (it->second->isActive() == false)
+		{
+			delete it->second;
+			it = m_meshList.erase(it);
+		}
+		else
+			++it;
+	}
+	renderBatch.clear();
+}
 
-	void update(QRhiResourceUpdateBatch* u) override;
+void rhi::MeshRenderPass::deleteCachedMesh(const GLMesh* mesh)
+{
+	auto it = m_meshList.find(mesh);
+	if (it != m_meshList.end())
+	{
+		delete it->second;
+		m_meshList.erase(it);
+	}
+	renderBatch.clear();
+}
 
-	void draw(QRhiCommandBuffer* cb) override;
-
-public:
-	QMatrix4x4 m_proj;
-
-private:
-	std::unique_ptr<QRhiGraphicsPipeline> m_pl;
-	std::unique_ptr<rhi::MeshShaderResource> m_sr;
-	rhi::SharedResources* m_sharedResource = nullptr;
-};
+void rhi::MeshRenderPass::addToRenderBatch(rhi::Mesh* mesh, int startVertex, int vertexCount)
+{
+	assert(mesh);
+	if (mesh)
+		renderBatch.push_back({ mesh, startVertex, vertexCount });
+}

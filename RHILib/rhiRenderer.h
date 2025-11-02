@@ -86,6 +86,8 @@ public:
 	// clear cached resources that were not used in the last frame
 	void clearUnusedCache();
 
+	void deleteCachedMesh(GLMesh* gm);
+
 	QSize pixelSize() const;
 
 public:
@@ -112,6 +114,7 @@ public:
 	void setMaterial(const GLMaterial& mat) override;
 
 	void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) override;
+	void renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh = true) override;
 
 	void renderGMeshEdges(const GLMesh& mesh, bool cacheMesh = true) override;
 	void renderGMeshNodes(const GLMesh& mesh, bool cacheMesh = true) override;
@@ -152,10 +155,16 @@ private:
 	// timing info
 	TimingInfo timing;
 
+	// 3D render passes
 	std::unique_ptr<LineRenderPass> m_linePass;
+	std::unique_ptr<LineRenderPass> m_lineOverlayPass;
 	std::unique_ptr<PointRenderPass> m_pointPass;
-	std::unique_ptr<SolidRenderPass> m_solidPass;
-	std::unique_ptr<OverlayRenderPass> m_overlayPass;
+	std::unique_ptr<PointRenderPass> m_pointOverlayPass;
+	std::unique_ptr<TwoPassSolidRenderPass> m_solidPass;
+	std::unique_ptr<SolidRenderPass> m_solidOverlayPass;
+
+	// 2D render passes
+	std::unique_ptr<OverlayRenderPass> m_overlay2DPass;
 	std::unique_ptr<CanvasRenderPass> m_canvasPass;
 
 	// global resources
@@ -179,6 +188,7 @@ private:
 
 private:
 	GLMeshBuilder mb;
+	bool buildingShape = false;
 
 private:
 	// variables used when creating meshes

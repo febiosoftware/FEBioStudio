@@ -24,62 +24,69 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "rhiRenderPass.h"
+#include "rhiMeshRenderPass.h"
 #include "rhiMesh.h"
 
-class FrontFaceRenderPass : public rhi::RenderPass
+class FaceRenderPass : public rhi::RenderPass
 {
 public:
-	FrontFaceRenderPass(QRhi* rhi) : rhi::RenderPass(rhi) {}
+	FaceRenderPass(QRhi* rhi) : rhi::RenderPass(rhi) {}
 
 	void create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::SharedResources* sr);
 
 	QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
 
+	void setCullMode(QRhiGraphicsPipeline::CullMode cm) { cullMode = cm; }
+
 private:
+	QRhiGraphicsPipeline::CullMode cullMode = QRhiGraphicsPipeline::None;
+
 	std::unique_ptr<QRhiGraphicsPipeline> m_pl;
 	std::unique_ptr<rhi::MeshShaderResource> m_sr;
 };
 
-class BackFaceRenderPass : public rhi::RenderPass
+class TwoPassSolidRenderPass : public rhi::MeshRenderPass
 {
 public:
-	BackFaceRenderPass(QRhi* rhi) : rhi::RenderPass(rhi) {}
-
-	void create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::SharedResources* sr);
-
-	QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
-
-private:
-	std::unique_ptr<QRhiGraphicsPipeline> m_pl;
-	std::unique_ptr<rhi::MeshShaderResource> m_sr;
-};
-
-class SolidRenderPass : public rhi::RenderPass
-{
-public:
-	SolidRenderPass(QRhi* rhi) : rhi::RenderPass(rhi) {}
+	TwoPassSolidRenderPass(QRhi* rhi) : rhi::MeshRenderPass(rhi) {}
 
 	void create(QRhiSwapChain* sc, rhi::SharedResources* sr);
 
 	rhi::Mesh* addGLMesh(const GLMesh& mesh, bool cacheMesh);
 
-	void reset();
-
-	void update(QRhiResourceUpdateBatch* u);
+	void update(QRhiResourceUpdateBatch* u) override;
 
 	void draw(QRhiCommandBuffer* cb) override;
-
-	void clearCache();
-
-	void clearUnusedCache();
 
 public:
 	QMatrix4x4 m_proj;
 
 private:
-	std::unique_ptr<BackFaceRenderPass> m_backPass;
-	std::unique_ptr<FrontFaceRenderPass> m_frontPass;
-	std::map<const GLMesh*, rhi::Mesh*> m_meshList;
+	std::unique_ptr<FaceRenderPass> m_backPass;
+	std::unique_ptr<FaceRenderPass> m_frontPass;
+	rhi::SharedResources* sharedResource = nullptr;
+};
+
+class SolidRenderPass : public rhi::MeshRenderPass
+{
+public:
+	SolidRenderPass(QRhi* rhi) : rhi::MeshRenderPass(rhi) {}
+
+	void create(QRhiSwapChain* sc, rhi::SharedResources* sr);
+
+	QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
+
+	void update(QRhiResourceUpdateBatch* u) override;
+
+	rhi::Mesh* addGLMesh(const GLMesh& mesh, bool cacheMesh);
+
+	void draw(QRhiCommandBuffer* cb) override;
+
+public:
+	QMatrix4x4 m_proj;
+
+private:
+	std::unique_ptr<QRhiGraphicsPipeline> m_pl;
+	std::unique_ptr<rhi::MeshShaderResource> m_sr;
 	rhi::SharedResources* sharedResource = nullptr;
 };

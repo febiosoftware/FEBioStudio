@@ -101,17 +101,29 @@ void rhiRenderer::init()
 	m_sharedResources = { m_global.get(), m_texture.texture.get(), m_texture.sampler.get()};
 
 	// create all render passes
-	m_solidPass.reset(new SolidRenderPass(m_rhi));
+	m_solidPass.reset(new TwoPassSolidRenderPass(m_rhi));
 	m_solidPass->create(m_sc, &m_sharedResources);
+
+	m_solidOverlayPass.reset(new SolidRenderPass(m_rhi));
+	m_solidOverlayPass->setDepthTest(false);
+	m_solidOverlayPass->create(m_sc, &m_sharedResources);
 
 	m_linePass.reset(new LineRenderPass(m_rhi));
 	m_linePass->create(m_sc, &m_sharedResources);
 
+	m_lineOverlayPass.reset(new LineRenderPass(m_rhi));
+	m_lineOverlayPass->setDepthTest(false);
+	m_lineOverlayPass->create(m_sc, &m_sharedResources);
+
 	m_pointPass.reset(new PointRenderPass(m_rhi));
 	m_pointPass->create(m_sc, &m_sharedResources);
 
-	m_overlayPass.reset(new OverlayRenderPass(m_rhi));
-	m_overlayPass->create(m_sc, &m_sharedResources);
+	m_pointOverlayPass.reset(new PointRenderPass(m_rhi));
+	m_pointOverlayPass->setDepthTest(false);
+	m_pointOverlayPass->create(m_sc, &m_sharedResources);
+
+	m_overlay2DPass.reset(new OverlayRenderPass(m_rhi));
+	m_overlay2DPass->create(m_sc, &m_sharedResources);
 
 	// create the canvas pass (for rendering fps)
 	m_canvasPass.reset(new CanvasRenderPass(m_rhi));
@@ -124,8 +136,11 @@ void rhiRenderer::init()
 void rhiRenderer::clearCache()
 {
 	if (m_solidPass) m_solidPass->clearCache();
+	if (m_solidOverlayPass) m_solidOverlayPass->clearCache();
 	if (m_linePass ) m_linePass ->clearCache();
+	if (m_lineOverlayPass) m_lineOverlayPass->clearCache();
 	if (m_pointPass) m_pointPass->clearCache();
+	if (m_pointOverlayPass) m_pointOverlayPass->clearCache();
 }
 
 QSize rhiRenderer::pixelSize() const
@@ -136,8 +151,21 @@ QSize rhiRenderer::pixelSize() const
 void rhiRenderer::clearUnusedCache()
 {
 	m_solidPass->clearUnusedCache();
+	m_solidOverlayPass->clearUnusedCache();
 	m_linePass->clearUnusedCache();
+	m_lineOverlayPass->clearUnusedCache();
 	m_pointPass->clearUnusedCache();
+	m_pointOverlayPass->clearUnusedCache();
+}
+
+void rhiRenderer::deleteCachedMesh(GLMesh* gm)
+{
+	m_solidPass->deleteCachedMesh(gm);
+	m_solidOverlayPass->deleteCachedMesh(gm);
+	m_linePass->deleteCachedMesh(gm);
+	m_lineOverlayPass->deleteCachedMesh(gm);
+	m_pointPass->deleteCachedMesh(gm);
+	m_pointOverlayPass->deleteCachedMesh(gm);
 }
 
 void rhiRenderer::setBackgroundColor(const GLColor& c)
@@ -178,10 +206,12 @@ void rhiRenderer::resetTransform()
 void rhiRenderer::pushTransform()
 {
 	m_transformStack.push(m_modelViewMatrix);
+	if (buildingShape) mb.pushTransform();
 }
 
 void rhiRenderer::popTransform()
 {
+	if (buildingShape) mb.popTransform();
 	assert(!m_transformStack.empty());
 	if (m_transformStack.empty()) return;
 	m_modelViewMatrix = m_transformStack.top();
@@ -191,11 +221,13 @@ void rhiRenderer::popTransform()
 void rhiRenderer::translate(const vec3d& r)
 {
 	m_modelViewMatrix.translate(QVector3D(r.x, r.y, r.z));
+	mb.translate(r);
 }
 
 void rhiRenderer::rotate(const quatd& rot)
 {
 	m_modelViewMatrix.rotate(QQuaternion(rot.w, rot.x, rot.y, rot.z));
+	mb.rotate(rot);
 }
 
 void rhiRenderer::rotate(double deg, double x, double y, double z)
@@ -214,6 +246,7 @@ void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::D
 	m_currentMat.diffuse = m_currentMat.ambient = c;
 	m_currentMat.type = matType;
 	m_currentMat.diffuseMap = map;
+	mb.setColor(c);
 }
 
 void rhiRenderer::setColor(GLColor c)
@@ -225,11 +258,23 @@ void rhiRenderer::setColor(GLColor c)
 void rhiRenderer::setMaterial(const GLMaterial& mat)
 {
 	m_currentMat = mat;
+	mb.setColor(mat.diffuse);
 }
 
 void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 {
-	rhi::Mesh* pm = m_solidPass->addGLMesh(mesh, cacheMesh);
+	rhi::Mesh* pm = nullptr;
+	if (m_currentMat.type == GLMaterial::OVERLAY)
+	{
+		pm = m_solidOverlayPass->addGLMesh(mesh, cacheMesh);
+		if (pm) m_solidOverlayPass->addToRenderBatch(pm);
+	}
+	else
+	{
+		pm = m_solidPass->addGLMesh(mesh, cacheMesh);
+		if (pm) m_solidPass->addToRenderBatch(pm);
+	}
+
 	if (pm)
 	{
 		pm->SetMaterial(m_currentMat);
@@ -239,9 +284,39 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 	}
 }
 
+void rhiRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
+{
+	rhi::Mesh* pm = nullptr;
+	if (m_currentMat.type == GLMaterial::OVERLAY)
+	{
+		// TODO: implement this
+	}
+	else
+	{
+		pm = m_solidPass->addGLMesh(mesh, cacheMesh);
+	}
+
+	if (pm)
+	{
+		pm->SetMaterial(m_currentMat);
+		pm->SetModelMatrix(m_modelViewMatrix);
+		pm->doClipping = m_clipEnabled;
+		pm->setActive(true);
+
+		const rhi::Mesh::Partition& p = pm->GetPartition(surfId);
+
+		m_solidPass->addToRenderBatch(pm, p.startVertex, p.vertexCount);
+	}
+}
+
 void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 {
-	rhi::Mesh* lineMesh = m_linePass->addGLMesh(mesh, cacheMesh);
+	rhi::Mesh* lineMesh = nullptr;
+	if (m_currentMat.type == GLMaterial::OVERLAY)
+		lineMesh = m_lineOverlayPass->addGLMesh(mesh, cacheMesh);
+	else
+		lineMesh = m_linePass->addGLMesh(mesh, cacheMesh);
+
 	if (lineMesh)
 	{
 		lineMesh->SetMaterial(m_currentMat);
@@ -253,7 +328,12 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 
 void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 {
-	rhi::Mesh* pointMesh = m_pointPass->addGLMesh(mesh, cacheMesh);
+	rhi::Mesh* pointMesh = nullptr;
+	if (m_currentMat.type == GLMaterial::OVERLAY)
+		m_pointOverlayPass->addGLMesh(mesh, cacheMesh);
+	else
+		m_pointPass->addGLMesh(mesh, cacheMesh);
+
 	if (pointMesh)
 	{
 		pointMesh->SetMaterial(m_currentMat);
@@ -322,15 +402,15 @@ void rhiRenderer::useOverlayImage(bool b)
 void rhiRenderer::setOverlayImage(const QImage& img)
 {
 	if (m_rhi->isYUpInNDC())
-		m_overlayPass->setImage(img.mirrored());
+		m_overlay2DPass->setImage(img.mirrored());
 	else
-		m_overlayPass->setImage(img);
+		m_overlay2DPass->setImage(img);
 }
 
 void rhiRenderer::setTriadInfo(const QMatrix4x4& m, QRhiViewport vp)
 {
-	m_overlayPass->m_overlayVP = vp;
-	m_overlayPass->m_overlayVM = m;
+	m_overlay2DPass->m_overlayVP = vp;
+	m_overlay2DPass->m_overlayVM = m;
 }
 
 void rhiRenderer::start()
@@ -339,8 +419,11 @@ void rhiRenderer::start()
 
 	// start by setting all meshes as inactive
 	m_solidPass->reset();
+	m_solidOverlayPass->reset();
 	m_linePass->reset();
+	m_lineOverlayPass->reset();
 	m_pointPass->reset();
+	m_pointOverlayPass->reset();
 
 	// reset matrices
 	m_modelViewMatrix.setToIdentity();
@@ -407,13 +490,23 @@ void rhiRenderer::finish()
 	m_solidPass->m_proj = m_projMatrix;
 	m_solidPass->update(resourceUpdates);
 
+	m_solidOverlayPass->m_proj = m_projMatrix;
+	m_solidOverlayPass->update(resourceUpdates);
+
 	// update line mesh data
 	m_linePass->m_proj = m_projMatrix;
 	m_linePass->update(resourceUpdates);
 
+	m_lineOverlayPass->m_proj = m_projMatrix;
+	m_lineOverlayPass->update(resourceUpdates);
+
 	// update point mesh data
 	m_pointPass->m_proj = m_projMatrix;
 	m_pointPass->update(resourceUpdates);
+
+	// update overlay point mesh data
+	m_pointOverlayPass->m_proj = m_projMatrix;
+	m_pointOverlayPass->update(resourceUpdates);
 
 	// update fps indicator
 	m_canvasPass->setFPS(timing.m_fps, timing.m_fpsMin, timing.m_fpsMax);
@@ -422,13 +515,13 @@ void rhiRenderer::finish()
 	// overlay stuff
 	if (m_useOverlay)
 	{
-		m_overlayPass->update(resourceUpdates);
+		m_overlay2DPass->update(resourceUpdates);
 
 		// render into overlay
-		cb->beginPass(m_overlayPass->renderTarget(), Qt::red, {1.0f, 0}, resourceUpdates);
+		cb->beginPass(m_overlay2DPass->renderTarget(), Qt::red, {1.0f, 0}, resourceUpdates);
 		{
 			// Draw the triad
-			m_overlayPass->drawTriad(cb);
+			m_overlay2DPass->drawTriad(cb);
 		}
 		cb->endPass();
 
@@ -451,13 +544,22 @@ void rhiRenderer::finish()
 		// render point meshes
 		m_pointPass->draw(cb);
 
+		// render overlay solid meshes
+		m_solidOverlayPass->draw(cb);
+
+		// render overlay line meshes
+		m_lineOverlayPass->draw(cb);
+
+		// render overlay point meshes
+		m_pointOverlayPass->draw(cb);
+
 		// render fps indicator
 		m_canvasPass->draw(cb);
 
 		// render overlay
 		if (m_useOverlay)
 		{
-			m_overlayPass->draw(cb);
+			m_overlay2DPass->draw(cb);
 		}
 	}
 	cb->endPass();
@@ -466,6 +568,7 @@ void rhiRenderer::finish()
 void rhiRenderer::beginShape()
 {
 	mb.beginShape();
+	buildingShape = true;
 }
 
 void rhiRenderer::endShape()
@@ -474,22 +577,31 @@ void rhiRenderer::endShape()
 	GLMesh* pm = mb.takeMesh();
 	if (pm)
 	{
-		if ((pm->Faces() == 0) && (pm->Edges() > 0))
+		m_currentMat.diffuseMap = GLMaterial::VERTEX_COLOR;
+		if (pm->Faces() > 0)
+		{
+			renderGMesh(*pm, false);
+		}
+
+		if (pm->Edges() > 0)
 		{
 			renderGMeshEdges(*pm, false);
 		}
 		delete pm;
 	}
+	buildingShape = false;
 }
 
 void rhiRenderer::begin(PrimitiveType prim)
 {
+	if (!buildingShape) mb.beginShape();
 	mb.begin(prim);
 }
 
 void rhiRenderer::end()
 {
 	mb.end();
+	if (!buildingShape) mb.endShape();
 }
 
 void rhiRenderer::vertex(const vec3d& r)

@@ -43,7 +43,7 @@ void LineRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
 	m_pl->setRenderPassDescriptor(rp);
 	m_pl->setSampleCount(sampleCount);
 
-	m_pl->setDepthTest(true);
+	m_pl->setDepthTest(m_depthTest);
 	m_pl->setDepthWrite(false);
 	m_pl->setTargetBlends({ rhi::defaultBlendState() });
 
@@ -58,11 +58,13 @@ void LineRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
 
 rhi::Mesh* LineRenderPass::addGLMesh(const GLMesh& mesh, bool cacheMesh)
 {
-	auto it = m_lineMeshList.end();
+	if (mesh.Edges() == 0) return nullptr;
+
+	auto it = m_meshList.end();
 	if (cacheMesh)
 	{
-		auto it = m_lineMeshList.find(&mesh);
-		if (it != m_lineMeshList.end())
+		auto it = m_meshList.find(&mesh);
+		if (it != m_meshList.end())
 			return it->second;
 	}
 
@@ -72,23 +74,18 @@ rhi::Mesh* LineRenderPass::addGLMesh(const GLMesh& mesh, bool cacheMesh)
 
 	if (cacheMesh)
 	{
-		m_lineMeshList.push_back(&mesh, rm);
+		m_meshList.push_back(&mesh, rm);
 	}
 	else
 	{
-		m_lineMeshList.push_back(nullptr, rm);
+		m_meshList.push_back(nullptr, rm);
 	}
 	return rm;
 }
 
-void LineRenderPass::reset()
-{
-	for (auto& it : m_lineMeshList) it.second->setActive(false);
-}
-
 void LineRenderPass::update(QRhiResourceUpdateBatch* u)
 {
-	for (auto& it : m_lineMeshList)
+	for (auto& it : m_meshList)
 	{
 		rhi::Mesh& m = *it.second;
 		if (m.isActive())
@@ -98,34 +95,15 @@ void LineRenderPass::update(QRhiResourceUpdateBatch* u)
 
 void LineRenderPass::draw(QRhiCommandBuffer* cb)
 {
-	if (!m_lineMeshList.empty())
+	if (!m_meshList.empty())
 	{
 		cb->setGraphicsPipeline(m_pl.get());
 		cb->setShaderResources();
-		for (auto& it : m_lineMeshList)
+		for (auto& it : m_meshList)
 		{
 			rhi::Mesh& m = *it.second;
 			if (m.isActive())
 				m.Draw(cb);
 		}
-	}
-}
-
-void LineRenderPass::clearCache()
-{
-	for (auto& it : m_lineMeshList) delete it.second;
-	m_lineMeshList.clear();
-}
-
-void LineRenderPass::clearUnusedCache()
-{
-	for (auto it = m_lineMeshList.begin(); it != m_lineMeshList.end(); ) {
-		if (it->second->isActive() == false)
-		{
-			delete it->second;
-			it = m_lineMeshList.erase(it);
-		}
-		else
-			++it;
 	}
 }

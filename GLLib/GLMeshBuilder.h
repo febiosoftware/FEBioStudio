@@ -67,6 +67,8 @@ private:
 	void buildLineStrip();
 	void buildLineLoop();
 	void buildTriangles();
+	void buildTriangleFan();
+	void buildQuads();
 	void buildQuadStrip();
 
 private:

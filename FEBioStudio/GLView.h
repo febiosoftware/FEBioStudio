@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <CUILib/GLSceneView.h>
+#include <rhiLib/rhiSceneView.h>
 #include <QNativeGestureEvent>
 #include <GLLib/GLCamera.h>
 #include <FSCore/ColorMap.h>
@@ -93,7 +93,7 @@ public:
 };
 
 //===================================================================
-class CGLView : public CGLSceneView
+class CGLView : public rhiSceneView
 {
 	Q_OBJECT
 
@@ -105,6 +105,8 @@ public:
 	CGLDocument* GetDocument();
 
 	GLScene* GetActiveScene() override;
+
+	GLCamera* GetCamera();
 
 	void UpdateScene();
 
@@ -195,7 +197,7 @@ public:
 	void ToggleContextMenu();
 
 protected:
-	void initializeGL() override;
+	void customInit() override;
 
 	void SetupProjection(GLRenderEngine& re);
 
@@ -233,10 +235,17 @@ public:
 	void LockSafeFrame();
 	void UnlockSafeFrame();
 
+
 public:
 	void SetColorMap(unsigned int n);
 
 	void AddRegionPoint(int x, int y);
+
+public: // added to support new rhi base class
+	GLViewSettings& GetViewSettings() { return m_view; }
+	void repaint();
+	void update();
+	QRect rect() const;
 
 public slots:
 	void updateView();
@@ -307,6 +316,7 @@ private:
 	GLCamera	m_oldCam;
 
 	std::string		m_oglVersionString;
+	static GLViewSettings	m_view;
 };
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt);

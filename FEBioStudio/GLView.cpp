@@ -60,6 +60,8 @@ SOFTWARE.*/
 
 using namespace std::chrono;
 
+GLViewSettings CGLView::m_view;
+
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt)
 {
 	// see if either point lies inside the rectangle
@@ -326,7 +328,7 @@ void RenderBrush(GLRenderEngine& re, int x, int y, double R)
 }
 
 //-----------------------------------------------------------------------------
-CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this)
+CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : rhiSceneView(pwnd), m_pWnd(pwnd), m_pivot(this), m_select(this)
 {
 	m_bsnap = false;
 
@@ -367,10 +369,25 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 	m_pframe = nullptr;
 	m_legend = nullptr;
 	m_legendPlot = nullptr;
+	m_menu = nullptr;
 }
 
 CGLView::~CGLView()
 {
+}
+
+void CGLView::repaint()
+{
+	requestUpdate();
+}
+void CGLView::update()
+{
+	requestUpdate();
+}
+
+QRect CGLView::rect() const
+{
+	return QRect(0, 0, width(), height());
 }
 
 void CGLView::AllocateDefaultWidgets(bool b)
@@ -1012,9 +1029,10 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 		{
 			if ((m_x0 == m_x1) && (m_y0 == m_y1))
 			{
-				QMenu menu(this);
+/*				QMenu menu(this);
 				m_pWnd->BuildContextMenu(menu);
 				menu.exec(ev->globalPos());
+*/
 			}
 			else
 			{
@@ -1175,7 +1193,7 @@ bool CGLView::event(QEvent* event)
 {
     if (event->type() == QEvent::NativeGesture)
         return gestureEvent(static_cast<QNativeGestureEvent*>(event));
-    return CGLSceneView::event(event);
+    return rhiSceneView::event(event);
 }
 
 void CGLView::keyPressEvent(QKeyEvent* ev)
@@ -1186,7 +1204,8 @@ void CGLView::keyPressEvent(QKeyEvent* ev)
 
 		double s = (ev->modifiers() & Qt::SHIFT ? -1 : 1);
 
-		GLCamera* cam = GetCamera();
+		GLScene* scene = GetActiveScene();
+		GLCamera& cam = scene->GetCamera();
 
 		quatd dq;
 		switch (ev->key())
@@ -1197,10 +1216,10 @@ void CGLView::keyPressEvent(QKeyEvent* ev)
 			break;
 		}
 
-		quatd q0 = cam->GetOrientation();
+		quatd q0 = cam.GetOrientation();
 		quatd q = q0 * dq * q0.Inverse();
 
-		cam->Orbit(q);
+		cam.Orbit(q);
 		update();
 	}
 	else if ((ev->key() == Qt::Key_Return) || (ev->key() == Qt::Key_Enter))
@@ -1216,9 +1235,9 @@ void CGLView::keyPressEvent(QKeyEvent* ev)
 	else ev->ignore();
 }
 
-void CGLView::initializeGL()
+void CGLView::customInit()
 {
-	CGLSceneView::initializeGL();
+	rhiSceneView::customInit();
 
 	if (m_ballocDefaultWidgets)
 	{
@@ -1256,8 +1275,8 @@ void CGLView::initializeGL()
 		m_Widget->AddWidget(m_menu);
 	}
 
-	const char* szv = (const char*) glGetString(GL_VERSION);
-	m_oglVersionString = szv;
+//	const char* szv = (const char*) glGetString(GL_VERSION);
+//	m_oglVersionString = szv;
 
 	// initialize clipping planes
 	Post::CGLPlaneCutPlot::InitClipPlanes();
@@ -1354,7 +1373,9 @@ QImage correct_premultiplied_image(const QImage& image)
 
 QImage CGLView::CaptureScreen()
 {
-	QImage im = grabFramebuffer();
+	QImage im;
+/*
+	im = grabFramebuffer();
 
 	if (m_pframe && m_pframe->visible())
 	{
@@ -1367,6 +1388,7 @@ QImage CGLView::CaptureScreen()
 	// But that does not appear to be correct and as a result an image with transparency will not be
 	// processed correctly. As a workaround, we modify the format by essentially stripping the alpha
 	// channel. This might be a bug in Qt so should revisit when we update to a newer version. 
+*/
 	return correct_premultiplied_image(im);
 }
 
@@ -1415,13 +1437,13 @@ void CGLView::SetupProjection(GLRenderEngine& re)
 	cam.SetFarPlane(ffar);
 
 	double ar = 1;
-	if (height() == 0) ar = 1; ar = (GLfloat)width() / (GLfloat)height();
+	if (height() == 0) ar = 1; ar = (double)width() / (double)height();
 
 	// set up projection matrix
 	if (cam.IsOrtho())
 	{
 		// orthographic projection
-		GLdouble f = 0.35 * cam.GetTargetDistance();
+		double f = 0.35 * cam.GetTargetDistance();
 		double ox = f * ar;
 		double oy = f;
 		re.setOrthoProjection(-ox, ox, -oy, oy, fnear, ffar);
@@ -1438,7 +1460,7 @@ void CGLView::RenderScene(GLRenderEngine& re)
 	if (scene == nullptr) return;
 
 	GLViewSettings& view = GetViewSettings();
-
+	re.setBackgroundColor(view.m_col1);
 	// position the light
 	vec3f lp = m_view.m_light; lp.Normalize();
 	re.setLightPosition(0, lp);
@@ -1453,21 +1475,20 @@ void CGLView::RenderScene(GLRenderEngine& re)
 	rc.m_cam = &cam;
 	rc.m_settings = view;
 
-	if (scene)
-	{
-		time_point<steady_clock> startTime = steady_clock::now();
-		scene->Render(re, rc);
-		time_point<steady_clock> stopTime = steady_clock::now();
-		double sec = duration_cast<duration<double>>(stopTime - startTime).count();
-		double fps = (sec != 0 ? 1.0 / sec : 0);
-
-		if (m_fps.size() >= 50) m_fps.pop_back();
-		m_fps.push_front(fps);
-	}
-
+	// TODO: move to scene's render function?
 	scene->PositionCameraInScene(re);
 
+	time_point<steady_clock> startTime = steady_clock::now();
+	scene->Render(re, rc);
+	time_point<steady_clock> stopTime = steady_clock::now();
+	double sec = duration_cast<duration<double>>(stopTime - startTime).count();
+	double fps = (sec != 0 ? 1.0 / sec : 0);
+
+	if (m_fps.size() >= 50) m_fps.pop_back();
+	m_fps.push_front(fps);
+	
 	RenderPivot(re);
+/*
 
 	RenderDecorations(re);
 
@@ -1485,13 +1506,15 @@ void CGLView::RenderScene(GLRenderEngine& re)
 		if (m_recorder.AddFrame(im) == false)
 		{
 			m_recorder.Stop();
-			QMessageBox::critical(this, "FEBio Studio", "An error occurred while writing frame to video stream.");
+//			QMessageBox::critical(this, "FEBio Studio", "An error occurred while writing frame to video stream.");
 		}
 	}
+*/
 }
 
 void CGLView::RenderCanvas(GLRenderEngine& re, GLContext& rc)
 {
+/*
 	if (rc.m_settings.m_bselbrush) RenderBrush(re, m_x1, m_y1, rc.m_settings.m_brushSize);
 
 	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand(re);
@@ -1673,6 +1696,7 @@ void CGLView::RenderCanvas(GLRenderEngine& re, GLContext& rc)
 	}
 
 	painter.end();
+*/
 }
 
 void CGLView::ShowMeshData(bool b)
@@ -1725,7 +1749,8 @@ void CGLView::RenderPivot(GLRenderEngine& re)
 	// this is where we place the manipulator
 	vec3d rp = GetPivotPosition();
 
-	GLCamera& cam = *GetCamera();
+	GLScene* scene = GetActiveScene();
+	GLCamera& cam = scene->GetCamera();
 
 	// determine the scale of the manipulator
 	// we make it depend on the target distanceso that the 
@@ -2307,6 +2332,13 @@ GLScene* CGLView::GetActiveScene()
 	return nullptr;
 }
 
+GLCamera* CGLView::GetCamera()
+{
+	GLScene* scene = GetActiveScene();
+	if (scene) return &scene->GetCamera();
+	return nullptr;
+}
+
 void CGLView::UpdateScene()
 {
 	GLScene* scene = GetActiveScene();
@@ -2482,7 +2514,7 @@ void CGLView::RenderTags(GLRenderEngine& re)
 		}
 	}
 	re.end();
-
+/*
 	GLViewSettings& vs = GetViewSettings();
 
 	QPainter painter(this);
@@ -2509,7 +2541,8 @@ void CGLView::RenderTags(GLRenderEngine& re)
 	re.popState();
 
 	// QPainter messes this up so reset it
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+*/
 }
 
 QSize CGLView::GetSafeFrameSize() const
@@ -2546,7 +2579,7 @@ void CGLView::ToggleMeshLines(bool b)
 {
 	GLViewSettings& view = GetViewSettings();
 	view.m_bmesh = b;
-	m_menu->toggleMeshLines(b);
+	if (m_menu) m_menu->toggleMeshLines(b);
 	update();
 }
 
@@ -2554,7 +2587,7 @@ void CGLView::ToggleGridLines(bool b)
 {
 	GLViewSettings& view = GetViewSettings();
 	view.m_bgrid = b;
-	m_menu->toggleGridLines(b);
+	if (m_menu) m_menu->toggleGridLines(b);
 	update();
 }
 
@@ -2562,7 +2595,7 @@ void CGLView::ToggleFeatureEdges(bool b)
 {
 	GLViewSettings& view = GetViewSettings();
 	view.m_bfeat = b;
-	m_menu->toggleFeatureEdges(b);
+	if (m_menu) m_menu->toggleFeatureEdges(b);
 	update();
 }
 
@@ -2570,6 +2603,6 @@ void CGLView::ToggleNormals(bool b)
 {
 	GLViewSettings& view = GetViewSettings();
 	view.m_bnorm = b;
-	m_menu->toggleNormals(b);
+	if (m_menu) m_menu->toggleNormals(b);
 	update();
 }

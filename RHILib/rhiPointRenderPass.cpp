@@ -42,7 +42,7 @@ void PointRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
 	m_pl->setRenderPassDescriptor(rp);
 	m_pl->setSampleCount(sampleCount);
 
-	m_pl->setDepthTest(true);
+	m_pl->setDepthTest(m_depthTest);
 	m_pl->setDepthWrite(false);
 	m_pl->setTargetBlends({ rhi::defaultBlendState() });
 
@@ -57,33 +57,36 @@ void PointRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
 
 rhi::Mesh* PointRenderPass::addGLMesh(const GLMesh& mesh, bool cacheMesh)
 {
-	auto it = m_pointMeshList.find(&mesh);
-	if (it != m_pointMeshList.end())
+	if (mesh.Nodes() == 0) return nullptr;
+
+	auto it = m_meshList.end();
+	if (cacheMesh)
 	{
-		if (cacheMesh == false)
-		{
-			it->second->CreateFromGLMesh(&mesh);
-		}
-		return it->second;
+		auto it = m_meshList.find(&mesh);
+		if (it != m_meshList.end())
+			return it->second;
+	}
+
+	rhi::MeshShaderResource* sr = PointShader::createShaderResource(m_rhi, sharedResources);
+	rhi::PointMesh<PointShader::Vertex>* rm = new rhi::PointMesh<PointShader::Vertex>(m_rhi, sr);
+	rm->CreateFromGLMesh(&mesh);
+
+	if (cacheMesh)
+	{
+		m_meshList.push_back(&mesh, rm);
 	}
 	else
 	{
-		rhi::MeshShaderResource* sr = PointShader::createShaderResource(m_rhi, sharedResources);
-		rhi::PointMesh<PointShader::Vertex>* rm = new rhi::PointMesh<PointShader::Vertex>(m_rhi, sr);
-		rm->CreateFromGLMesh(&mesh);
-		m_pointMeshList[&mesh] = rm;
-		return rm;
+		m_meshList.push_back(nullptr, rm);
 	}
+
+	return rm;
 }
 
-void PointRenderPass::reset()
-{
-	for (auto& it : m_pointMeshList) it.second->setActive(false);
-}
 
 void PointRenderPass::update(QRhiResourceUpdateBatch* u)
 {
-	for (auto& it : m_pointMeshList)
+	for (auto& it : m_meshList)
 	{
 		rhi::Mesh& m = *it.second;
 		if (m.isActive())
@@ -93,34 +96,15 @@ void PointRenderPass::update(QRhiResourceUpdateBatch* u)
 
 void PointRenderPass::draw(QRhiCommandBuffer* cb)
 {
-	if (!m_pointMeshList.empty())
+	if (!m_meshList.empty())
 	{
 		cb->setGraphicsPipeline(m_pl.get());
 		cb->setShaderResources();
-		for (auto& it : m_pointMeshList)
+		for (auto& it : m_meshList)
 		{
 			rhi::Mesh& m = *it.second;
 			if (m.isActive())
 				m.Draw(cb);
 		}
-	}
-}
-
-void PointRenderPass::clearCache()
-{
-	for (auto& it : m_pointMeshList) delete it.second;
-	m_pointMeshList.clear();
-}
-
-void PointRenderPass::clearUnusedCache()
-{
-	for (auto it = m_pointMeshList.begin(); it != m_pointMeshList.end(); ) {
-		if (it->second->isActive() == false)
-		{
-			delete it->second;
-			it = m_pointMeshList.erase(it);
-		}
-		else
-			++it;
 	}
 }

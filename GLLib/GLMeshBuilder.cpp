@@ -150,12 +150,14 @@ void GLMeshBuilder::end()
 {
 	switch (currentPrimitive)
 	{
-	case PrimitiveType::POINTS   : buildPoints(); break;
-	case PrimitiveType::LINES    : buildLines(); break;
-	case PrimitiveType::LINESTRIP: buildLineStrip(); break;
-	case PrimitiveType::LINELOOP : buildLineLoop(); break;
-	case PrimitiveType::TRIANGLES: buildTriangles(); break;
-	case PrimitiveType::QUADSTRIP: buildQuadStrip(); break;
+	case PrimitiveType::POINTS     : buildPoints(); break;
+	case PrimitiveType::LINES      : buildLines(); break;
+	case PrimitiveType::LINESTRIP  : buildLineStrip(); break;
+	case PrimitiveType::LINELOOP   : buildLineLoop(); break;
+	case PrimitiveType::TRIANGLES  : buildTriangles(); break;
+	case PrimitiveType::TRIANGLEFAN: buildTriangleFan(); break;
+	case PrimitiveType::QUADS      : buildQuads(); break;
+	case PrimitiveType::QUADSTRIP  : buildQuadStrip(); break;
 	default:
 		assert(false);
 	}
@@ -264,6 +266,57 @@ void GLMeshBuilder::buildTriangles()
 		for (int i = 0; i < N; i += 3)
 		{
 			m_pm->AddFace(NL[i], NL[i+1], NL[i+2]);
+		}
+	}
+}
+
+void GLMeshBuilder::buildTriangleFan()
+{
+	assert(currentPrimitive == PrimitiveType::TRIANGLEFAN);
+	assert(m_pm);
+	if (m_pm == nullptr) return;
+
+	const int N = vertList.size();
+	vector<int> NL(N);
+
+	for (int i = 0; i < N; ++i)
+	{
+		NL[i] = m_pm->AddNode(vertList[i]);
+	}
+
+	if (N > 2)
+	{
+		for (int i = 1; i < N - 1; i++)
+		{
+			m_pm->AddFace(NL[0], NL[i], NL[i + 1]);
+		}
+	}
+}
+
+void GLMeshBuilder::buildQuads()
+{
+	assert(currentPrimitive == PrimitiveType::QUADS);
+	assert(m_pm);
+	if (m_pm == nullptr) return;
+
+	const int N = vertList.size();
+	vector<int> NL(N);
+
+	for (int i = 0; i < N; ++i)
+	{
+		NL[i] = m_pm->AddNode(vertList[i]);
+	}
+
+	if (N > 3)
+	{
+		for (int i = 0; i < N - 3; i += 4)
+		{
+			int n0 = NL[i    ];
+			int n1 = NL[i + 1];
+			int n2 = NL[i + 2];
+			int n3 = NL[i + 3];
+			m_pm->AddFace(n0, n1, n2);
+			m_pm->AddFace(n2, n3, n0);
 		}
 	}
 }

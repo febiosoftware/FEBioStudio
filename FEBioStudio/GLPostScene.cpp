@@ -1257,12 +1257,12 @@ void CGLPostScene::Render(GLRenderEngine& engine, GLContext& rc)
 
 	GLViewSettings& vs = rc.m_settings;
 
-	if (vs.m_use_environment_map) ActivateEnvironmentMap(engine);
+//	if (vs.m_use_environment_map) ActivateEnvironmentMap(engine);
 
 	// now render it
 	GLScene::Render(engine, rc);
 
-	if (vs.m_use_environment_map) DeactivateEnvironmentMap(engine);
+//	if (vs.m_use_environment_map) DeactivateEnvironmentMap(engine);
 
 	// update and render the tracking
 	if (m_btrack)
@@ -1273,8 +1273,8 @@ void CGLPostScene::Render(GLRenderEngine& engine, GLContext& rc)
 		engine.popState();
 	}
 
-	ClearTags();
-	if (rc.m_settings.m_bTags) CreateTags(rc);
+//	ClearTags();
+//	if (rc.m_settings.m_bTags) CreateTags(rc);
 }
 
 void CGLPostScene::BuildScene()
@@ -1294,13 +1294,13 @@ void CGLPostScene::BuildScene()
 	mirror->addItem(new GLPostModelItem(this));
 
 	mirror->addItem(new GLPostObjectItem(this));
-
+/*
 	for (int i = 0; i < m_doc->ImageModels(); ++i)
 	{
 		CImageModel* img = m_doc->GetImageModel(i);
 		root->addItem(new GLPost3DImageItem(img, this));
 	}
-
+*/
 	addItem(root);
 }
 

@@ -6,7 +6,7 @@ class rhiDocView : public rhiSceneView
 public:
 	rhiDocView(CMainWindow* wnd);
 
-	void RenderScene(rhiRenderer& re) override;
+	void RenderScene(GLRenderEngine& re) override;
 
 public:
 	void mousePressEvent(QMouseEvent* event) override;

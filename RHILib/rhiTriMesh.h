@@ -37,25 +37,40 @@ namespace rhi {
 
 		bool CreateFromGLMesh(const GLMesh* gmsh)
 		{
+			m_partitions.clear();
 			if (gmsh == nullptr) return false;
+
+			assert(gmsh->Partitions() > 0);
+			m_partitions.reserve(gmsh->Partitions());
 
 			int NF = gmsh->Faces();
 			int NV = 3 * NF;
 			std::vector<Vertex> vertexData;
 			vertexData.resize(NV);
 			Vertex* v = vertexData.data();
-			for (int i = 0; i < NF; ++i)
+
+			int vertexIndex = 0;
+			for (int n = 0; n < gmsh->Partitions(); ++n)
 			{
-				const GLMesh::FACE& f = gmsh->Face(i);
-				for (int j = 0; j < 3; ++j, ++v)
+				int vertexCount = 0;
+				const GLMesh::PARTITION& part = gmsh->Partition(n);
+				for (int i = 0; i < part.nf; ++i)
 				{
-					GLMesh::NODE nd;
-					nd.r = f.vr[j];
-					nd.n = f.vn[j];
-					nd.c = f.c[j];
-					nd.t = f.t[j];
-					(*v) = nd;
+					const GLMesh::FACE& f = gmsh->Face(i + part.n0);
+					for (int j = 0; j < 3; ++j, ++v)
+					{
+						GLMesh::NODE nd;
+						nd.r = f.vr[j];
+						nd.n = f.vn[j];
+						nd.c = f.c[j];
+						nd.t = f.t[j];
+						(*v) = nd;
+
+						vertexCount++;
+					}
 				}
+				m_partitions.push_back({ vertexIndex, vertexCount });
+				vertexIndex += vertexCount;
 			}
 
 			// create the vertex buffer

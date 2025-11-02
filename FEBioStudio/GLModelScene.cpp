@@ -181,7 +181,6 @@ BOX CGLModelScene::GetBoundingBox()
 void CGLModelScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
-
 	FSModel* ps = m_doc->GetFSModel();
 	if (ps == nullptr) return;
 	GModel& model = ps->GetModel();
@@ -209,11 +208,12 @@ void CGLModelScene::Render(GLRenderEngine& engine, GLContext& rc)
 		m_buildScene = false;
 	}
 
-	if (view.m_use_environment_map) ActivateEnvironmentMap(engine);
+//	if (view.m_use_environment_map) ActivateEnvironmentMap(engine);
 
 	// now render it
 	GLScene::Render(engine, rc);
 
+/*
 	if (view.m_use_environment_map) DeactivateEnvironmentMap(engine);
 
 	// Render 2D stuff
@@ -224,6 +224,7 @@ void CGLModelScene::Render(GLRenderEngine& engine, GLContext& rc)
 
 	// render the tags
 	if (view.m_bTags) RenderTags(rc);
+*/
 
 	// see if we need to draw the legend bar for the mesh inspector
 	m_showLegend = false;
@@ -242,7 +243,6 @@ void CGLModelScene::BuildScene(GLContext& rc)
 	if ((m_doc == nullptr) || !m_doc->IsValid()) return;
 
 	GLViewSettings& vs = rc.m_settings;
-
 	// add plane cut item
 	GLPlaneCutItem* planeCut = new GLPlaneCutItem(this);
 	addItem(planeCut);
@@ -267,7 +267,7 @@ void CGLModelScene::BuildScene(GLContext& rc)
 	planeCut->addItem(new GLFeatureEdgesItem(this));
 
 	planeCut->addItem(new GLMeshLinesItem(this));
-
+/*
 	if (vs.m_bfiber == false)
 	{
 		if (m_fiberViz)
@@ -283,7 +283,7 @@ void CGLModelScene::BuildScene(GLContext& rc)
 			BuildFiberViz(rc);
 		}
 	}
-
+*/
 	planeCut->addItem(new GLPhysicsItem(this));
 
 	planeCut->addItem(new GLSelectionItem(this));
@@ -292,7 +292,7 @@ void CGLModelScene::BuildScene(GLContext& rc)
 
 	addItem(new GLGridItem(this));
 
-	if (m_doc->ImageModels())
+/*	if (m_doc->ImageModels())
 	{
 		for (int i = 0; i < m_doc->ImageModels(); ++i)
 		{
@@ -300,6 +300,7 @@ void CGLModelScene::BuildScene(GLContext& rc)
 			addItem(new GL3DImageItem(this, img));
 		}
 	}
+*/
 }
 
 void CGLModelScene::UpdateRenderTransforms(GLContext& rc)
@@ -2199,7 +2200,7 @@ void GLObjectItem::RenderObject(GLRenderEngine& re, GLContext& rc)
 			re.renderGMesh(*mesh, i);
 		}
 	}
-
+/*
 	if (NF == 0)
 	{
 		// if there are no faces, render edges instead
@@ -2220,6 +2221,7 @@ void GLObjectItem::RenderObject(GLRenderEngine& re, GLContext& rc)
 	{
 		RenderBeamParts(re);
 	}
+*/
 }
 
 void GLObjectItem::RenderSurfaceMeshFaces(GLRenderEngine& re, GLContext& rc)
@@ -2430,7 +2432,6 @@ void GLSelectionBox::render(GLRenderEngine& re, GLContext& rc)
 	GObject* poa = m_scene->GetActiveObject();
 
 	re.enable(GLRenderEngine::DEPTHTEST);
-//	glDisable(GL_POLYGON_STIPPLE);
 
 	if (item == ITEM_MESH)
 	{
@@ -2540,8 +2541,7 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, GLContext& rc)
 					if (m)
 					{
 						re.setColor(GLColor::Black());
-						for (int j=0; j<po->Edges(); ++j)
-							re.renderGMeshEdges(*m, j);
+						re.renderGMeshEdges(*m);
 
 						if (vs.m_nrender == RENDER_WIREFRAME)
 						{

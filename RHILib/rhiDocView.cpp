@@ -23,7 +23,7 @@ rhiDocView::rhiDocView(CMainWindow* wnd) : rhiSceneView(wnd)
 	GLCheckBox* meshLines = new GLCheckBox(0, 0, W, H, "mesh lines");
 	meshLines->add_event_handler([this](GLWidget* w, int nevent) {
 		GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
-		rhiScene* s = dynamic_cast<rhiScene*>(this->GetScene());
+		rhiScene* s = dynamic_cast<rhiScene*>(this->GetActiveScene());
 		if (s) s->renderMesh = b->m_checked;
 		});
 	menu->add_widget(meshLines);
@@ -31,7 +31,7 @@ rhiDocView::rhiDocView(CMainWindow* wnd) : rhiSceneView(wnd)
 	GLCheckBox* meshNodes = new GLCheckBox(0, 0, W, H, "mesh nodes");
 	meshNodes->add_event_handler([this](GLWidget* w, int nevent) {
 		GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
-		rhiScene* s = dynamic_cast<rhiScene*>(this->GetScene());
+		rhiScene* s = dynamic_cast<rhiScene*>(this->GetActiveScene());
 		if (s) s->renderNodes = b->m_checked;
 		});
 	menu->add_widget(meshNodes);
@@ -46,9 +46,9 @@ rhiDocView::rhiDocView(CMainWindow* wnd) : rhiSceneView(wnd)
 	m_Widget.AddWidget(triad);
 }
 
-void rhiDocView::RenderScene(rhiRenderer& re)
+void rhiDocView::RenderScene(GLRenderEngine& re)
 {
-	GLScene* scene = GetScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
 	// render the 3D scene first
@@ -65,33 +65,37 @@ void rhiDocView::RenderScene(rhiRenderer& re)
 	rhiScene* RhiScene = dynamic_cast<rhiScene*>(scene);
 	if (RhiScene) renderOverlay = RhiScene->renderOverlay;
 
-	re.useOverlayImage(renderOverlay);
-	if (renderOverlay)
+	rhiRenderer* rhiRender = dynamic_cast<rhiRenderer*>(&re);
+	if (rhiRender)
 	{
-		QImage img(re.pixelSize(), QImage::Format_RGBA8888_Premultiplied);
-		img.fill(Qt::transparent);
-		QPainter painter(&img);
-		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+		rhiRender->useOverlayImage(renderOverlay);
+		if (renderOverlay)
+		{
+			QImage img(rhiRender->pixelSize(), QImage::Format_RGBA8888_Premultiplied);
+			img.fill(Qt::transparent);
+			QPainter painter(&img);
+			painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
-		GLPainter glpainter(&painter, nullptr);
+			GLPainter glpainter(&painter, nullptr);
 
-		m_Widget.DrawWidgets(&glpainter);
-		painter.end();
+			m_Widget.DrawWidgets(&glpainter);
+			painter.end();
 
-		float H = (float)img.height();
-		float h = (float)triad->h();
-		QRhiViewport vp = { (float)triad->x(), H - (float)triad->y() - h, (float)triad->w(), h };
-		quatd q = cam.GetOrientation();
-		QMatrix4x4 Q; Q.rotate(QQuaternion(q.w, q.x, q.y, q.z));
-		re.setTriadInfo(Q, vp);
+			float H = (float)img.height();
+			float h = (float)triad->h();
+			QRhiViewport vp = { (float)triad->x(), H - (float)triad->y() - h, (float)triad->w(), h };
+			quatd q = cam.GetOrientation();
+			QMatrix4x4 Q; Q.rotate(QQuaternion(q.w, q.x, q.y, q.z));
+			rhiRender->setTriadInfo(Q, vp);
 
-		re.setOverlayImage(img);
+			rhiRender->setOverlayImage(img);
+		}
 	}
 }
 
 void rhiDocView::mousePressEvent(QMouseEvent* ev)
 {
-	rhiScene* RhiScene = dynamic_cast<rhiScene*>(GetScene());
+	rhiScene* RhiScene = dynamic_cast<rhiScene*>(GetActiveScene());
 	bool useOverlay = false;
 	if (RhiScene) useOverlay = RhiScene->renderOverlay;
 
@@ -112,7 +116,7 @@ void rhiDocView::mousePressEvent(QMouseEvent* ev)
 
 void rhiDocView::mouseMoveEvent(QMouseEvent* ev)
 {
-	GLScene* scene = GetScene();
+	GLScene* scene = GetActiveScene();
 
 	if (scene == nullptr) return;
 	rhiScene* RhiScene = dynamic_cast<rhiScene*>(scene);
@@ -137,7 +141,7 @@ void rhiDocView::mouseMoveEvent(QMouseEvent* ev)
 
 void rhiDocView::mouseReleaseEvent(QMouseEvent* event)
 {
-	rhiScene* RhiScene = dynamic_cast<rhiScene*>(GetScene());
+	rhiScene* RhiScene = dynamic_cast<rhiScene*>(GetActiveScene());
 	bool useOverlay = false;
 	if (RhiScene) useOverlay = RhiScene->renderOverlay;
 

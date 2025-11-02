@@ -66,6 +66,13 @@ namespace rhi {
 	class Mesh
 	{
 	public:
+		struct Partition
+		{
+			int startVertex;
+			int vertexCount;
+		};
+
+	public:
 		Mesh(QRhi* rhi, rhi::MeshShaderResource* shaderResource = nullptr) : m_rhi(rhi), sr(shaderResource) {}
 		virtual ~Mesh();
 
@@ -78,9 +85,11 @@ namespace rhi {
 
 		virtual bool CreateFromGLMesh(const GLMesh* gmsh) { return false; }
 
-		virtual void Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj);
+		void Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj);
 
-		virtual void Draw(QRhiCommandBuffer* cb);
+		void Draw(QRhiCommandBuffer* cb, int startIndex = 0, int vertices = -1);
+
+		const Partition& GetPartition(unsigned int n) { return m_partitions[n]; }
 
 	protected:
 		void create(unsigned int vertices, unsigned int sizeOfVertex, const void* data);
@@ -96,6 +105,7 @@ namespace rhi {
 
 		QMatrix4x4 mvMatrix;
 		bool active = false;
+		std::vector<Partition> m_partitions;
 
 	private:
 		std::unique_ptr<QRhiBuffer> vbuf; // vertex buffer

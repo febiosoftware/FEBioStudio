@@ -39,11 +39,11 @@ public:
 	~rhiSceneView();
 
 	void SetScene(GLScene* scene);
-	GLScene* GetScene() { return m_scene; }
+	virtual GLScene* GetActiveScene() { return m_scene; }
 
-	virtual void RenderScene(rhiRenderer& re);
+	virtual void RenderScene(GLRenderEngine& re);
 
-private:
+protected:
 	void customInit() override;
 	void customRender() override;
 	void onFrameFinished() override;

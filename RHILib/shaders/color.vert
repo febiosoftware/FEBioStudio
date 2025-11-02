@@ -31,6 +31,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     float useStipple;
     float useClipping;
     float useVertexColor;
+    float useLighting;
 } mesh;
 
 // texture sampler

@@ -28,6 +28,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     float useStipple;
     float useClipping;
     float useVertexColor;
+    float useLighting;
 } mesh;
 
 // texture sampler
@@ -63,33 +64,40 @@ void main()
     if (mesh.useTexture > 0)
         col *= texture(smp, v_tex.xy).xyz;
 
-    // ambient value
-    f_col += col*0.2;
+    if (mesh.useLighting > 0)
+    {
+        // ambient value
+        f_col += col*0.2;
 
-    if (gl_FrontFacing) {
+        if (gl_FrontFacing) {
 
-        // front-lit
-        float b = max(dot(N, vec3(0,0,1)),0);
-        f_col += col*(b*0.2);
+            // front-lit
+            float b = max(dot(N, vec3(0,0,1)),0);
+            f_col += col*(b*0.2);
 
-        // diffuse component
-        float a = max(dot(N, L),0);
-        f_col += col*a;
+            // diffuse component
+            float a = max(dot(N, L),0);
+            f_col += col*a;
 
-        // specular component
-        if (mesh.specStrength > 1e-4) {
-            vec3 R = normalize(reflect(V, N));
-            float c = clamp(dot(R, L), 1e-4, 0.99999);
-            float se = clamp(64.0 * mesh.specExp, 0.0, 64.0);
-            float s = pow(c, se);
-            s = clamp(s, 0, 1);
-            f_col += glob.specColor.xyz*(s*mesh.specStrength);
+            // specular component
+            if (mesh.specStrength > 1e-4) {
+                vec3 R = normalize(reflect(V, N));
+                float c = clamp(dot(R, L), 1e-4, 0.99999);
+                float se = clamp(64.0 * mesh.specExp, 0.0, 64.0);
+                float s = pow(c, se);
+                s = clamp(s, 0, 1);
+                f_col += glob.specColor.xyz*(s*mesh.specStrength);
+            }
+        }
+        else {
+            // only diffuse for backfacing triangles
+            float a = max(dot(-N, L),0);
+            f_col += vec3(1, 0.7, 0.7)*a;
         }
     }
-    else {
-        // only diffuse for backfacing triangles
-        float a = max(dot(-N, L),0);
-        f_col += vec3(1, 0.7, 0.7)*a;
+    else
+    {
+        f_col = col;
     }
 
     // return final color

@@ -79,27 +79,6 @@ bool rhiSceneView::event(QEvent* event)
 	return RhiWindow::event(event);
 }
 
-void flipX(GLMesh* pm)
-{
-	for (int i = 0; i < pm->Nodes(); ++i)
-	{
-		GLMesh::NODE& nd = pm->Node(i);
-		vec3f r = nd.r;
-		r.x = -r.x;
-		nd.r = r;
-	}
-
-	for (int i = 0; i < pm->Faces(); ++i)
-	{
-		GLMesh::FACE& f = pm->Face(i);
-		int n1 = f.n[1];
-		int n2 = f.n[2];
-		f.n[1] = n2;
-		f.n[2] = n1;
-	}
-	pm->Update();
-}
-
 void rhiSceneView::customInit()
 {
 	QString msg;
@@ -115,8 +94,6 @@ void rhiSceneView::customInit()
 
 void rhiSceneView::customRender()
 {
-	if (m_scene == nullptr) return;
-
 	m_rhiRender->start();
 	m_rhiRender->useOverlayImage(false);
 
@@ -131,23 +108,27 @@ void rhiSceneView::onFrameFinished()
 	m_rhiRender->clearUnusedCache();
 
 	// if the camera is animating, we need to redraw
-	if ((renderMode() == RenderMode::STATIC) && m_scene && m_scene->GetCamera().IsAnimating())
+	GLScene* scene = GetActiveScene();
+	if ((renderMode() == RenderMode::STATIC) && scene && scene->GetCamera().IsAnimating())
 	{
-		m_scene->GetCamera().Update();
+		scene->GetCamera().Update();
 		QTimer::singleShot(50, this, &rhiSceneView::requestUpdate);
 	}
 }
 
-void rhiSceneView::RenderScene(rhiRenderer& re)
+void rhiSceneView::RenderScene(GLRenderEngine& re)
 {
-	GLContext rc;
-	rc.m_cam = &m_scene->GetCamera();
-	m_scene->Render(*m_rhiRender, rc);
+	if (m_scene)
+	{
+		GLContext rc;
+		rc.m_cam = &m_scene->GetCamera();
+		m_scene->Render(*m_rhiRender, rc);
+	}
 }
 
 void rhiSceneView::mousePressEvent(QMouseEvent* ev)
 {
-	rhiScene* RhiScene = dynamic_cast<rhiScene*>(GetScene());
+	rhiScene* RhiScene = dynamic_cast<rhiScene*>(m_scene);
 	bool useOverlay = false;
 	if (RhiScene) useOverlay = RhiScene->renderOverlay;
 
@@ -160,10 +141,9 @@ void rhiSceneView::mousePressEvent(QMouseEvent* ev)
 
 void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 {
-	GLScene* scene = GetScene();
+	if (m_scene == nullptr) return;
 
-	if (scene == nullptr) return;
-	rhiScene* RhiScene = dynamic_cast<rhiScene*>(scene);
+	rhiScene* RhiScene = dynamic_cast<rhiScene*>(m_scene);
 	bool useOverlay = false;
 	if (RhiScene) useOverlay = RhiScene->renderOverlay;
 
@@ -181,7 +161,7 @@ void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 	int x0 = m_prevPos.x();
 	int y0 = m_prevPos.y();
 
-	GLCamera& cam = scene->GetCamera();
+	GLCamera& cam = m_scene->GetCamera();
 
 	if (but1)
 	{
@@ -237,7 +217,7 @@ void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 
 void rhiSceneView::mouseReleaseEvent(QMouseEvent* event)
 {
-	rhiScene* RhiScene = dynamic_cast<rhiScene*>(GetScene());
+	rhiScene* RhiScene = dynamic_cast<rhiScene*>(m_scene);
 	bool useOverlay = false;
 	if (RhiScene) useOverlay = RhiScene->renderOverlay;
 

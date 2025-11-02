@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "rhiShader.h"
 #include "rhiTriMesh.h"
 
-void FrontFaceRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::SharedResources* sr)
+void FaceRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::SharedResources* sr)
 {
 	SolidShader shader(m_rhi);
 
@@ -45,7 +45,7 @@ void FrontFaceRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, 
 	m_pl->setShaderStages(shader.begin(), shader.end());
 	m_pl->setTopology(QRhiGraphicsPipeline::Triangles);
 
-	m_pl->setCullMode(QRhiGraphicsPipeline::Back);
+	m_pl->setCullMode(cullMode);
 	m_pl->setFrontFace(QRhiGraphicsPipeline::CCW);
 
 	m_pl->setVertexInputLayout(shader.meshLayout());
@@ -54,70 +54,48 @@ void FrontFaceRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, 
 	m_pl->create();
 }
 
-void BackFaceRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::SharedResources* sr)
-{
-	SolidShader shader(m_rhi);
-
-	m_sr.reset(shader.createShaderResource(m_rhi, sr));
-
-	m_pl.reset(m_rhi->newGraphicsPipeline());
-	m_pl->setRenderPassDescriptor(rp);
-	m_pl->setSampleCount(sampleCount);
-
-	m_pl->setDepthTest(true);
-	m_pl->setDepthWrite(true);
-	m_pl->setTargetBlends({ rhi::defaultBlendState() });
-
-	m_pl->setShaderStages(shader.begin(), shader.end());
-	m_pl->setTopology(QRhiGraphicsPipeline::Triangles);
-
-	m_pl->setCullMode(QRhiGraphicsPipeline::Front);
-	m_pl->setFrontFace(QRhiGraphicsPipeline::CCW);
-
-	m_pl->setVertexInputLayout(shader.meshLayout());
-	m_pl->setShaderResourceBindings(m_sr->get());
-	m_pl->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
-	m_pl->create();
-}
-
-void SolidRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
+void TwoPassSolidRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
 {
 	sharedResource = sr;
 
-	m_frontPass.reset(new FrontFaceRenderPass(m_rhi));
+	m_frontPass.reset(new FaceRenderPass(m_rhi));
+	m_frontPass->setCullMode(QRhiGraphicsPipeline::Back);
 	m_frontPass->create(sc->renderPassDescriptor(), sc->sampleCount(), sr);
 
-	m_backPass.reset(new BackFaceRenderPass(m_rhi));
+	m_backPass.reset(new FaceRenderPass(m_rhi));
+	m_backPass->setCullMode(QRhiGraphicsPipeline::Front);
 	m_backPass->create(sc->renderPassDescriptor(), sc->sampleCount(), sr);
 }
 
-rhi::Mesh* SolidRenderPass::addGLMesh(const GLMesh& mesh, bool cacheMesh)
+rhi::Mesh* TwoPassSolidRenderPass::addGLMesh(const GLMesh& mesh, bool cacheMesh)
 {
-	auto it = m_meshList.find(&mesh);
-	if (it != m_meshList.end())
+	if (mesh.Faces() == 0) return nullptr;
+
+	auto it = m_meshList.end();
+	if (cacheMesh)
 	{
-		if (cacheMesh == false)
-		{
-			it->second->CreateFromGLMesh(&mesh);
-		}
-		return it->second;
+		auto it = m_meshList.find(&mesh);
+		if (it != m_meshList.end())
+			return it->second;
+	}
+
+	rhi::MeshShaderResource* sr = SolidShader::createShaderResource(m_rhi, sharedResource);
+	rhi::TriMesh<SolidShader::Vertex>* rm = new rhi::TriMesh<SolidShader::Vertex>(m_rhi, sr);
+	rm->CreateFromGLMesh(&mesh);
+
+	if (cacheMesh)
+	{
+		m_meshList.push_back(&mesh, rm);
 	}
 	else
 	{
-		rhi::MeshShaderResource* sr = SolidShader::createShaderResource(m_rhi, sharedResource);
-		rhi::TriMesh<SolidShader::Vertex>* rm = new rhi::TriMesh<SolidShader::Vertex>(m_rhi, sr);
-		rm->CreateFromGLMesh(&mesh);
-		m_meshList[&mesh] = rm;
-		return rm;
+		m_meshList.push_back(nullptr, rm);
 	}
+
+	return rm;
 }
 
-void SolidRenderPass::reset()
-{
-	for (auto& it : m_meshList) it.second->setActive(false);
-}
-
-void SolidRenderPass::update(QRhiResourceUpdateBatch* u)
+void TwoPassSolidRenderPass::update(QRhiResourceUpdateBatch* u)
 {
 	for (auto& it : m_meshList)
 	{
@@ -127,45 +105,101 @@ void SolidRenderPass::update(QRhiResourceUpdateBatch* u)
 	}
 }
 
-void SolidRenderPass::draw(QRhiCommandBuffer* cb)
+void TwoPassSolidRenderPass::draw(QRhiCommandBuffer* cb)
 {
 	cb->setGraphicsPipeline(m_backPass->pipeline());
 	cb->setShaderResources();
 
-	for (auto& it : m_meshList)
+	for (auto& it : renderBatch)
 	{
-		rhi::Mesh& m = *it.second;
-		if (m.isActive())
-			m.Draw(cb);
+		it.mesh->Draw(cb, it.vertexOffset, it.vertexCount);
 	}
 
 	// render front faces next
 	cb->setGraphicsPipeline(m_frontPass->pipeline());
 	cb->setShaderResources();
 
+	for (auto& it : renderBatch)
+	{
+		it.mesh->Draw(cb, it.vertexOffset, it.vertexCount);
+	}
+}
+
+void SolidRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
+{
+	SolidShader shader(m_rhi);
+
+	QRhiRenderPassDescriptor* rp = sc->renderPassDescriptor();
+	int sampleCount = sc->sampleCount();
+
+	sharedResource = sr;
+	m_sr.reset(shader.createShaderResource(m_rhi, sr));
+
+	m_pl.reset(m_rhi->newGraphicsPipeline());
+	m_pl->setRenderPassDescriptor(rp);
+	m_pl->setSampleCount(sampleCount);
+
+	m_pl->setDepthTest(m_depthTest);
+	m_pl->setDepthWrite(m_depthTest);
+	m_pl->setTargetBlends({ rhi::defaultBlendState() });
+
+	m_pl->setShaderStages(shader.begin(), shader.end());
+	m_pl->setTopology(QRhiGraphicsPipeline::Triangles);
+
+	m_pl->setCullMode(QRhiGraphicsPipeline::None);
+	m_pl->setFrontFace(QRhiGraphicsPipeline::CCW);
+
+	m_pl->setVertexInputLayout(shader.meshLayout());
+	m_pl->setShaderResourceBindings(m_sr->get());
+	m_pl->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
+	m_pl->create();
+}
+
+void SolidRenderPass::draw(QRhiCommandBuffer* cb)
+{
+	cb->setGraphicsPipeline(pipeline());
+	cb->setShaderResources();
+
+	for (auto& it : renderBatch)
+	{
+		it.mesh->Draw(cb, it.vertexOffset, it.vertexCount);
+	}
+}
+
+rhi::Mesh* SolidRenderPass::addGLMesh(const GLMesh& mesh, bool cacheMesh)
+{
+	if (mesh.Faces() == 0) return nullptr;
+
+	auto it = m_meshList.end();
+	if (cacheMesh)
+	{
+		auto it = m_meshList.find(&mesh);
+		if (it != m_meshList.end())
+			return it->second;
+	}
+
+	rhi::MeshShaderResource* sr = SolidShader::createShaderResource(m_rhi, sharedResource);
+	rhi::TriMesh<SolidShader::Vertex>* rm = new rhi::TriMesh<SolidShader::Vertex>(m_rhi, sr);
+	rm->CreateFromGLMesh(&mesh);
+
+	if (cacheMesh)
+	{
+		m_meshList.push_back(&mesh, rm);
+	}
+	else
+	{
+		m_meshList.push_back(nullptr, rm);
+	}
+
+	return rm;
+}
+
+void SolidRenderPass::update(QRhiResourceUpdateBatch* u)
+{
 	for (auto& it : m_meshList)
 	{
 		rhi::Mesh& m = *it.second;
 		if (m.isActive())
-			m.Draw(cb);
-	}
-}
-
-void SolidRenderPass::clearCache()
-{
-	for (auto& it : m_meshList) delete it.second;
-	m_meshList.clear();
-}
-
-void SolidRenderPass::clearUnusedCache()
-{
-	for (auto it = m_meshList.begin(); it != m_meshList.end(); ) {
-		if (it->second->isActive() == false)
-		{
-			delete it->second;
-			it = m_meshList.erase(it);
-		}
-		else
-			++it;
+			m.Update(u, m_proj);
 	}
 }

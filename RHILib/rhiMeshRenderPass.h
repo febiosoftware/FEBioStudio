@@ -24,30 +24,70 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <rhi/qrhi.h>
+#include "rhiRenderPass.h"
+#include "rhiMesh.h"
 
 namespace rhi {
 
-	// base class for render pass classes.
-	class RenderPass
+	class MeshList
 	{
 	public:
-		RenderPass(QRhi* rhi) : m_rhi(rhi) {}
-		virtual ~RenderPass() {}
-
-		// overload to upload any resources
-		virtual void update(QRhiResourceUpdateBatch* u) {}
-
-		// overload to issue draw commands
-		virtual void draw(QRhiCommandBuffer* cb) {}
+		using Container = std::list<std::pair<const GLMesh*, rhi::Mesh*>>;
 
 	public:
-		void setDepthTest(bool b) { m_depthTest = b; }
+		MeshList() {}
+
+		Container::iterator begin() { return meshList.begin(); }
+		Container::iterator end() { return meshList.end(); }
+
+		Container::iterator find(const GLMesh* m)
+		{
+			return std::find_if(begin(), end(), [=](const auto& item) { return (item.first == m); });
+		}
+
+		void push_back(const GLMesh* gm, rhi::Mesh* rm)
+		{
+			meshList.push_back({ gm, rm });
+		}
+
+		bool empty() const { return meshList.empty(); }
+
+		void clear() { meshList.clear(); }
+
+		Container::iterator erase(Container::iterator it) { return meshList.erase(it); }
+
+	private:
+		Container meshList;
+	};
+
+	// specialized class for render passes that use meshes
+	class MeshRenderPass : public RenderPass
+	{
+	protected:
+		struct SubMesh
+		{
+			rhi::Mesh* mesh;
+			int vertexOffset;
+			int vertexCount;
+		};
+
+	public:
+		MeshRenderPass(QRhi* rhi) : RenderPass(rhi) {}
+
+		virtual rhi::Mesh* addGLMesh(const GLMesh& mesh, bool cacheMesh) = 0;
+
+		void reset();
+
+		void clearCache();
+
+		void clearUnusedCache();
+
+		void deleteCachedMesh(const GLMesh* mesh);
+
+		void addToRenderBatch(rhi::Mesh* mesh, int startVertex = 0, int vertexCount = -1);
 
 	protected:
-		QRhi* m_rhi;
-
-		bool m_depthTest = true;
+		rhi::MeshList m_meshList;
+		std::vector<SubMesh> renderBatch;
 	};
 }
-

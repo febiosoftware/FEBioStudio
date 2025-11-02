@@ -24,27 +24,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "rhiRenderPass.h"
+#include "rhiMeshRenderPass.h"
 #include "rhiPointMesh.h"
 
-class PointRenderPass : public rhi::RenderPass
+class PointRenderPass : public rhi::MeshRenderPass
 {
 public:
-	PointRenderPass(QRhi* rhi) : rhi::RenderPass(rhi) {}
+	PointRenderPass(QRhi* rhi) : rhi::MeshRenderPass(rhi) {}
 
 	void create(QRhiSwapChain* sc, rhi::SharedResources* sr);
 
 	rhi::Mesh* addGLMesh(const GLMesh& mesh, bool cacheMesh);
 
-	void reset();
-
 	void update(QRhiResourceUpdateBatch* u) override;
 
 	void draw(QRhiCommandBuffer* cb) override;
-
-	void clearCache();
-
-	void clearUnusedCache();
 
 public:
 	QMatrix4x4 m_proj;
@@ -53,6 +47,4 @@ private:
 	std::unique_ptr<QRhiGraphicsPipeline> m_pl;
 	std::unique_ptr<rhi::MeshShaderResource> m_sr;
 	rhi::SharedResources* sharedResources = nullptr;
-
-	std::map<const GLMesh*, rhi::Mesh*> m_pointMeshList;
 };

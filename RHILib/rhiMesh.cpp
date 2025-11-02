@@ -67,13 +67,15 @@ void rhi::Mesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj)
 	}
 }
 
-void rhi::Mesh::Draw(QRhiCommandBuffer* cb)
+void rhi::Mesh::Draw(QRhiCommandBuffer* cb, int startIndex, int vertices)
 {
-	if (nvertexCount > 0)
+	if (vertices < 0) vertices = nvertexCount;
+	if (startIndex + vertices > nvertexCount) vertices = nvertexCount - startIndex;
+	if (vertices > 0)
 	{
 		if (sr) cb->setShaderResources(sr->get());
 		const QRhiCommandBuffer::VertexInput vbufBinding(vbuf.get(), 0);
 		cb->setVertexInput(0, 1, &vbufBinding);
-		cb->draw(nvertexCount);
+		cb->draw(vertices, 1, startIndex);
 	}
 }

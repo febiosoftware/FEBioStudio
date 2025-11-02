@@ -1033,8 +1033,9 @@ void glx::renderHelicalAxis(GLRenderEngine& re, double R)
 void glx::renderGlyph(GLRenderEngine& re, glx::GlyphType glyph, float scale, GLColor c)
 {
 	re.pushState();
-	re.setMaterial(GLMaterial::CONSTANT, c);
 
+	re.setMaterial(GLMaterial::OVERLAY, c);
+	re.beginShape();
 	switch (glyph)
 	{
 	case GlyphType::RIGID_BODY: glx::renderRigidBody(re, scale); break;
@@ -1047,6 +1048,7 @@ void glx::renderGlyph(GLRenderEngine& re, glx::GlyphType glyph, float scale, GLC
 	case GlyphType::RIGID_LOCK: glx::renderRigidLock(re, scale); break;
 	case GlyphType::HELICAL_AXIS: glx::renderHelicalAxis(re, scale); break;
 	}
+	re.endShape();
 
 	// restore attributes
 	re.popState();

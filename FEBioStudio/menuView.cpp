@@ -65,6 +65,7 @@ void CMainWindow::on_actionZoomExtents_triggered()
 	if (doc)
 	{
 		BOX box = doc->GetBoundingBox();
+		if (!box.IsValid()) box = BOX(-1, -1, -1, 1, 1, 1);
 		GLScene* scene = doc->GetScene();
 		if (scene)
 		{

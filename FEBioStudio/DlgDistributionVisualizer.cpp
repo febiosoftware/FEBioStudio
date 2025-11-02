@@ -132,7 +132,15 @@ public:
 
 		engine.setProjection(45, 0.01, 100);
 		engine.setLightPosition(0, vec3f(1, 1, 1));
-		engine.setMaterial(GLMaterial::PLASTIC, GLColor::FromRGBf(0.7f, 0.5f, 0.2f));
+		engine.setLightSpecularColor(0, GLColor(200, 200, 200));
+
+		GLMaterial mat;
+		mat.type = GLMaterial::PLASTIC;
+		mat.diffuse = mat.ambient = GLColor::FromRGBf(0.7f, 0.5f, 0.2f);
+		mat.shininess = 0.8f;
+		mat.reflectivity = 0.8f;
+
+		engine.setMaterial(mat);
 
 		engine.renderGMesh(m_renderSphere, !m_recache);
 		m_recache = false;

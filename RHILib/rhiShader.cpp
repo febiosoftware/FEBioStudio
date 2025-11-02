@@ -189,7 +189,8 @@ public:
 			{rhi::UniformBlock::FLOAT, "useTexture"},
 			{rhi::UniformBlock::FLOAT, "useStipple"},
 			{rhi::UniformBlock::FLOAT, "useClipping"},
-			{rhi::UniformBlock::FLOAT, "useVertexColor"}
+			{rhi::UniformBlock::FLOAT, "useVertexColor"},
+			{rhi::UniformBlock::FLOAT, "useLighting"}
 			});
 
 		// create the buffer
@@ -221,9 +222,10 @@ public:
 		m_data.setFloat(4, m.mat.reflectivity);
 		m_data.setFloat(5, m.mat.opacity);
 		m_data.setFloat(6, (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 1.f : 0.f));
-		m_data.setFloat(7, (m.mat.type == GLMaterial::HIGHLIGHT ? 1.f : 0.f));
+		m_data.setFloat(7, ((m.mat.type == GLMaterial::HIGHLIGHT) ? 1.f : 0.f));
 		m_data.setFloat(8, (m.doClipping ? 1.f : 0.f));
 		m_data.setFloat(9, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1.f : 0.f));
+		m_data.setFloat(10, ((m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0.f : 1.f));
 	}
 };
 
