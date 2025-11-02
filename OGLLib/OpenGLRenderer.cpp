@@ -1031,66 +1031,6 @@ void OpenGLRenderer::setTexture(GLTexture3D& tex)
 			N *= 3;
 		}
 
-		constexpr int max8 = std::numeric_limits<unsigned char>::max();
-		constexpr int max16 = std::numeric_limits<unsigned short>::max();
-		constexpr uint32_t max32 = std::numeric_limits<unsigned int>::max();
-
-		double min, max;
-		im3d.GetMinMax(min, max);
-		switch (pType)
-		{
-		case CImage::INT_8:
-		case CImage::INT_RGB8:
-		{
-			max /= max8 / 2;
-			min /= max8 / 2;
-		}
-		break;
-		case CImage::UINT_8:
-		case CImage::UINT_RGB8:
-		{
-			max /= max8;
-			min /= max8;
-		}
-		break;
-		case CImage::INT_RGB16:
-		{
-			max /= max16 / 2;
-			min /= max16 / 2;
-		}
-		break;
-		case CImage::UINT_16:
-		case CImage::UINT_RGB16:
-		{
-			max /= max16;
-			min /= max16;
-		}
-		break;
-		case CImage::INT_16:
-		case CImage::INT_32:
-		case CImage::UINT_32:
-		{
-			// Don't do anything for these cases since we scale the data
-			// before we send it to OpenGL
-		}
-		break;
-		case CImage::REAL_32:
-		case CImage::REAL_64:
-		{
-			// floating point images are copied and scaled when calling glTexImage3D, so we can just 
-			// set the range to [0,1]
-			max = 1.f;
-			min = 0.f;
-		}
-		break;
-		default:
-			assert(false);
-		}
-
-		if (max == min) max++;
-		tex.Iscale = 1.f / (max - min);
-		tex.IscaleMin = min;
-
 		glBindTexture(GL_TEXTURE_3D, texID);
 
 		//	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);

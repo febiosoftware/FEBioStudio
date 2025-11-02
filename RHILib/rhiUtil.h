@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include <rhi/qrhi.h>
 #include <GLLib/glmath.h>
+#include <FSCore/color.h>
 
 namespace rhi {
 	QShader getShader(const QString& name);
@@ -37,6 +38,7 @@ namespace rhi {
 	public:
 		enum ItemType
 		{
+			INT,
 			FLOAT,
 			VEC2,
 			VEC4,
@@ -60,6 +62,7 @@ namespace rhi {
 			{
 				switch (it.first)
 				{
+				case INT  : addInt  (it.second); break;
 				case FLOAT: addFloat(it.second); break;
 				case VEC2 : addVec2(it.second);  break;
 				case VEC4 : addVec4(it.second);  break;
@@ -67,6 +70,13 @@ namespace rhi {
 				}
 			}
 			create();
+		}
+
+		void setInt(unsigned int index, int v)
+		{
+			auto& it = m_items[index];
+			assert(it.type == INT);
+			memcpy(&m_data[it.offset], &v, sizeof(int));
 		}
 
 		void setFloat(unsigned int index, float v)
@@ -97,7 +107,7 @@ namespace rhi {
 			auto& it = m_items[index];
 			assert(it.type == VEC4);
 			float tmp[4] = { x, y, z, w };
-			memcpy(&m_data[it.offset], &tmp, sizeof(float) * 4);
+			memcpy(&m_data[it.offset], tmp, sizeof(float) * 4);
 		}
 
 		void setVec4(unsigned int index, float v[4])
@@ -105,6 +115,15 @@ namespace rhi {
 			auto& it = m_items[index];
 			assert(it.type == VEC4);
 			memcpy(&m_data[it.offset], v, sizeof(float) * 4);
+		}
+
+		void setVec4(unsigned int index, const GLColor& c)
+		{
+			auto& it = m_items[index];
+			assert(it.type == VEC4);
+			float f[4] = { 0.f };
+			c.toFloat(f);
+			memcpy(&m_data[it.offset], f, sizeof(float) * 4);
 		}
 
 		void setMat4(unsigned int index, const QMatrix4x4& m)
@@ -119,6 +138,7 @@ namespace rhi {
 		const void* data() const { return m_data.data(); }
 
 	private:
+		void addInt  (const char* name = nullptr) { m_items.push_back({ INT  , sizeof(float)     , 0, name }); }
 		void addFloat(const char* name = nullptr) { m_items.push_back({ FLOAT, sizeof(float)     , 0, name }); }
 		void addVec2 (const char* name = nullptr) { m_items.push_back({ VEC2 , sizeof(float) *  2, 0, name }); }
 		void addVec4 (const char* name = nullptr) { m_items.push_back({ VEC4 , sizeof(float) *  4, 0, name }); }

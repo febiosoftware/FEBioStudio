@@ -20,8 +20,8 @@ layout(std140, binding = 1) uniform MeshBlock {
     mat4 mvp;
     mat4 mv;
     vec4 col;
-    float useClipping;
-    float useVertexColor;
+    int useClipping;
+    int useVertexColor;
 } mesh;
 
 void main()

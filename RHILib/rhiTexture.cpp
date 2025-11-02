@@ -48,3 +48,107 @@ void rhi::Texture::upload(QRhiResourceUpdateBatch* u)
 {
 	u->uploadTexture(texture.get(), image);
 }
+
+void rhi::Texture3D::create(const C3DImage& img)
+{
+	int W = img.Width();
+	int H = img.Height();
+	int D = img.Depth();
+	needsUpload = false;
+
+	QRhiTexture::Format fmt = QRhiTexture::UnknownFormat;
+
+	int trgBytesPerVoxel = 0;
+	switch (img.PixelType())
+	{
+	case CImage::UINT_8   : fmt = QRhiTexture::R8   ; trgBytesPerVoxel = 1; break;
+	case CImage::UINT_16  : fmt = QRhiTexture::R16  ; trgBytesPerVoxel = 2; break;
+	case CImage::UINT_RGB8: fmt = QRhiTexture::RGBA8; trgBytesPerVoxel = 4; break;
+	default:
+		assert(false);
+		return;
+	}
+
+	bool b = m_rhi->isTextureFormatSupported(fmt, QRhiTexture::ThreeDimensional);
+	assert(b);
+	if (!b) return;
+
+	// map data
+	if (!mapData(data, img, trgBytesPerVoxel))
+		return;
+
+	slices = D;
+	sliceSize = W * H * trgBytesPerVoxel;
+
+	texture.reset(m_rhi->newTexture(fmt,
+		W, H, D, 1, QRhiTexture::ThreeDimensional));
+	texture->create();
+
+	sampler.reset(m_rhi->newSampler(
+		QRhiSampler::Linear,
+		QRhiSampler::Linear,
+		QRhiSampler::None,
+		QRhiSampler::ClampToEdge,
+		QRhiSampler::ClampToEdge,
+		QRhiSampler::ClampToEdge));
+
+	sampler->create();
+
+	needsUpload = true;
+}
+
+void rhi::Texture3D::upload(QRhiResourceUpdateBatch* u)
+{
+	const uint8_t* base = data.data();
+
+	QRhiTextureUploadDescription desc;
+	std::vector<QRhiTextureUploadEntry> entries(slices);
+	for (int z = 0; z < slices; ++z) {
+
+		const uint8_t* slicePtr = base + qint64(z) * (sliceSize);
+		QRhiTextureSubresourceUploadDescription subRes = { slicePtr, (quint32) sliceSize };
+		entries[z] = { z, 0, subRes };
+	}
+	desc.setEntries(entries.begin(), entries.end());
+
+	u->uploadTexture(texture.get(), desc);
+}
+
+bool rhi::Texture3D::mapData(std::vector<uint8_t>& dst, const C3DImage& img, int trgBytesPerVoxel)
+{
+	int W = img.Width();
+	int H = img.Height();
+	int D = img.Depth();
+	int srcBytesPerVoxel = img.BPS();
+
+	size_t dstSize = W * H * D * trgBytesPerVoxel;
+	dst.resize(dstSize);
+
+	if (srcBytesPerVoxel == trgBytesPerVoxel)
+	{
+		// copy the whole thing
+		memcpy(dst.data(), img.GetBytes(), dstSize);
+	}
+	else if (trgBytesPerVoxel > srcBytesPerVoxel)
+	{
+		// need to add padding
+		const uint8_t* s = img.GetBytes();
+		uint8_t* d = dst.data();
+		size_t sliceSize = W * H;
+		for (int i = 0; i < D; ++i)
+		{
+			for (size_t j = 0; j < sliceSize; ++j)
+			{
+				memcpy(d, s, srcBytesPerVoxel);
+				d += trgBytesPerVoxel;
+				s += srcBytesPerVoxel;
+			}
+		}
+	}
+	else
+	{
+		return false;
+	}
+
+	return true;
+}

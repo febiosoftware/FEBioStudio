@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "rhiPointRenderPass.h"
 #include "rhiLineRenderPass.h"
 #include "rhiSolidRenderPass.h"
+#include "rhiVolumeRenderPass.h"
 #include "rhiOverlay.h"
 #include "rhiCanvas.h"
 #include <GLLib/GLMeshBuilder.h>
@@ -120,6 +121,7 @@ public:
 	void renderGMeshNodes(const GLMesh& mesh, bool cacheMesh = true) override;
 
 	void setTexture(GLTexture1D& tex);
+	void setTexture(GLTexture3D& tex);
 
 	void setClipPlane(unsigned int n, const double* v) override;
 	void enableClipPlane(unsigned int n) override;
@@ -162,6 +164,7 @@ private:
 	std::unique_ptr<PointRenderPass> m_pointOverlayPass;
 	std::unique_ptr<TwoPassSolidRenderPass> m_solidPass;
 	std::unique_ptr<SolidRenderPass> m_solidOverlayPass;
+	std::unique_ptr<VolumeRenderPass> m_volumeRenderPass;
 
 	// 2D render passes
 	std::unique_ptr<OverlayRenderPass> m_overlay2DPass;
@@ -169,7 +172,7 @@ private:
 
 	// global resources
 	GlobalUniformBlock m_global;
-	rhi::Texture m_texture;
+	rhi::Texture m_tex1D;
 	rhi::SharedResources m_sharedResources;
 
 	// used for submitting updates in init.

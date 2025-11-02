@@ -46,7 +46,7 @@ public:
 			{rhi::UniformBlock::MAT4, "mvp"},
 			{rhi::UniformBlock::MAT4, "mv"},
 			{rhi::UniformBlock::VEC4, "col"},
-			{rhi::UniformBlock::FLOAT, "useClipping"}
+			{rhi::UniformBlock::INT , "useClipping"}
 			});
 
 		// create the buffer
@@ -73,7 +73,7 @@ public:
 		m_data.setMat4(MVP, mvp);
 		m_data.setMat4(MV, mv);
 		m_data.setVec4(COL, diffuse);
-		m_data.setFloat(CLIP, m.doClipping);
+		m_data.setInt (CLIP, (m.doClipping? 1 : 0));
 	}
 };
 
@@ -115,8 +115,8 @@ public:
 			{rhi::UniformBlock::MAT4, "mvp"},
 			{rhi::UniformBlock::MAT4, "mv"},
 			{rhi::UniformBlock::VEC4, "col"},
-			{rhi::UniformBlock::FLOAT, "useClipping" },
-			{rhi::UniformBlock::FLOAT, "useVertexColor" }
+			{rhi::UniformBlock::INT , "useClipping" },
+			{rhi::UniformBlock::INT , "useVertexColor" }
 			});
 
 		// create the buffer
@@ -143,8 +143,8 @@ public:
 		m_data.setMat4(MVP, mvp);
 		m_data.setMat4(MV, mv);
 		m_data.setVec4(COL, diffuse);
-		m_data.setFloat(CLIP, (m.doClipping ? 1.f : 0.f));
-		m_data.setFloat(VCOL, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1.f : 0.f));
+		m_data.setInt (CLIP, (m.doClipping ? 1 : 0));
+		m_data.setInt (VCOL, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
 	}
 };
 
@@ -180,17 +180,17 @@ public:
 	ColorShaderResource(QRhi* rhi, rhi::SharedResources* sharedResources) : MeshShaderResource(rhi)
 	{
 		m_data.create({
-			{rhi::UniformBlock::MAT4, "mvp"},
-			{rhi::UniformBlock::MAT4, "mv"},
-			{rhi::UniformBlock::VEC4, "col"},
+			{rhi::UniformBlock::MAT4 , "mvp"},
+			{rhi::UniformBlock::MAT4 , "mv"},
+			{rhi::UniformBlock::VEC4 , "col"},
 			{rhi::UniformBlock::FLOAT, "specExp"},
 			{rhi::UniformBlock::FLOAT, "specStrength"},
 			{rhi::UniformBlock::FLOAT, "opacity"},
-			{rhi::UniformBlock::FLOAT, "useTexture"},
-			{rhi::UniformBlock::FLOAT, "useStipple"},
-			{rhi::UniformBlock::FLOAT, "useClipping"},
-			{rhi::UniformBlock::FLOAT, "useVertexColor"},
-			{rhi::UniformBlock::FLOAT, "useLighting"}
+			{rhi::UniformBlock::INT  , "useTexture"},
+			{rhi::UniformBlock::INT  , "useStipple"},
+			{rhi::UniformBlock::INT  , "useClipping"},
+			{rhi::UniformBlock::INT  , "useVertexColor"},
+			{rhi::UniformBlock::INT  , "useLighting"}
 			});
 
 		// create the buffer
@@ -215,17 +215,17 @@ public:
 		float diffuse[4] = { 0.f };
 		m.mat.diffuse.toFloat(diffuse);
 
-		m_data.setMat4(0, mvp);
-		m_data.setMat4(1, mv);
-		m_data.setVec4(2, diffuse);
-		m_data.setFloat(3, m.mat.shininess);
-		m_data.setFloat(4, m.mat.reflectivity);
-		m_data.setFloat(5, m.mat.opacity);
-		m_data.setFloat(6, (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 1.f : 0.f));
-		m_data.setFloat(7, ((m.mat.type == GLMaterial::HIGHLIGHT) ? 1.f : 0.f));
-		m_data.setFloat(8, (m.doClipping ? 1.f : 0.f));
-		m_data.setFloat(9, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1.f : 0.f));
-		m_data.setFloat(10, ((m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0.f : 1.f));
+		m_data.setMat4 ( 0, mvp);
+		m_data.setMat4 ( 1, mv);
+		m_data.setVec4 ( 2, diffuse);
+		m_data.setFloat( 3, m.mat.shininess);
+		m_data.setFloat( 4, m.mat.reflectivity);
+		m_data.setFloat( 5, m.mat.opacity);
+		m_data.setInt  ( 6, (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 1 : 0));
+		m_data.setInt  ( 7, (m.mat.type == GLMaterial::HIGHLIGHT ? 1 : 0));
+		m_data.setInt  ( 8, (m.doClipping ? 1 : 0));
+		m_data.setInt  ( 9, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
+		m_data.setInt  (10, (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0 : 1);
 	}
 };
 
@@ -370,4 +370,65 @@ QRhiVertexInputLayout TriadShader::meshLayout()
 rhi::MeshShaderResource* TriadShader::createShaderResource(QRhi* rhi, rhi::SharedResources* sharedResource)
 {
 	return new TriadShaderResource(rhi, sharedResource);
+}
+
+//=============================================================================
+class VolumeShaderResource : public rhi::MeshShaderResource
+{
+public:
+	VolumeShaderResource(QRhi* rhi, rhi::Texture3D& tex, QRhiBuffer* sharedBuf) : MeshShaderResource(rhi)
+	{
+		m_data.create({
+			{rhi::UniformBlock::MAT4, "mvp"},
+			{rhi::UniformBlock::VEC4, "col"},
+			});
+
+		// create the buffer
+		ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, m_data.size()));
+		ubuf->create();
+
+		// create resource binding
+		const QRhiShaderResourceBinding::StageFlags visibility =
+			QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage;
+
+		srb.reset(rhi->newShaderResourceBindings());
+		srb->setBindings({
+				QRhiShaderResourceBinding::uniformBuffer(0, visibility, sharedBuf),
+				QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get()),
+				QRhiShaderResourceBinding::sampledTexture(2, visibility, tex.texture.get(), tex.sampler.get())
+			});
+		srb->create();
+	}
+
+	void setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const rhi::Mesh& m) override
+	{
+		m_data.setMat4(0, mvp);
+		m_data.setVec4(1, m.mat.diffuse);
+	}
+};
+
+VolumeShader::VolumeShader(QRhi* rhi) : rhi::Shader(rhi)
+{
+	rhi::Shader::create(
+		QLatin1String(":/RHILib/shaders/volume.vert.qsb"),
+		QLatin1String(":/RHILib/shaders/volume.frag.qsb")
+	);
+}
+
+QRhiVertexInputLayout VolumeShader::meshLayout()
+{
+	QRhiVertexInputLayout meshLayout;
+	meshLayout.setBindings({
+		{ 6 * sizeof(float) }
+		});
+	meshLayout.setAttributes({
+		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
+		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // texCoord
+		});
+	return meshLayout;
+}
+
+rhi::MeshShaderResource* VolumeShader::createShaderResource(QRhi* rhi, rhi::Texture3D& tex, QRhiBuffer* buf)
+{
+	return new VolumeShaderResource(rhi, tex, buf);
 }

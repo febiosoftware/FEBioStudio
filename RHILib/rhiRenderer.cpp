@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "rhiUtil.h"
 #include "rhiTriMesh.h"
 #include "rhiShader.h"
+#include <GLLib/GLTexture3D.h>
 
 
 void GlobalUniformBlock::create(QRhi* rhi)
@@ -75,7 +76,7 @@ void CanvasUniformBlock::update(QRhiResourceUpdateBatch* u)
 	u->updateDynamicBuffer(m_ubuf.get(), 0, m_ub.size(), m_ub.data());
 }
 
-rhiRenderer::rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp) : m_rhi(rhi), m_sc(sc), m_rp(rp), m_texture(rhi)
+rhiRenderer::rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp) : m_rhi(rhi), m_sc(sc), m_rp(rp), m_tex1D(rhi)
 {
 }
 
@@ -94,11 +95,11 @@ void rhiRenderer::init()
 	// prep 1D texture
 	QImage img(QSize(1024, 1), QImage::Format_RGBA8888);
 	img.fill(Qt::white);
-	m_texture.create(img);
-	m_texture.upload(m_initialUpdates);
+	m_tex1D.create(img);
+	m_tex1D.upload(m_initialUpdates);
 
 	// convenience class for passing around all the resources that are shared between shaders
-	m_sharedResources = { m_global.get(), m_texture.texture.get(), m_texture.sampler.get()};
+	m_sharedResources = { m_global.get(), m_tex1D.texture.get(), m_tex1D.sampler.get()};
 
 	// create all render passes
 	m_solidPass.reset(new TwoPassSolidRenderPass(m_rhi));
@@ -107,6 +108,9 @@ void rhiRenderer::init()
 	m_solidOverlayPass.reset(new SolidRenderPass(m_rhi));
 	m_solidOverlayPass->setDepthTest(false);
 	m_solidOverlayPass->create(m_sc, &m_sharedResources);
+
+	m_volumeRenderPass.reset(new VolumeRenderPass(m_rhi));
+	m_volumeRenderPass->create(m_sc);
 
 	m_linePass.reset(new LineRenderPass(m_rhi));
 	m_linePass->create(m_sc, &m_sharedResources);
@@ -137,6 +141,7 @@ void rhiRenderer::clearCache()
 {
 	if (m_solidPass) m_solidPass->clearCache();
 	if (m_solidOverlayPass) m_solidOverlayPass->clearCache();
+	if (m_volumeRenderPass) m_volumeRenderPass->clearCache();
 	if (m_linePass ) m_linePass ->clearCache();
 	if (m_lineOverlayPass) m_lineOverlayPass->clearCache();
 	if (m_pointPass) m_pointPass->clearCache();
@@ -152,6 +157,7 @@ void rhiRenderer::clearUnusedCache()
 {
 	m_solidPass->clearUnusedCache();
 	m_solidOverlayPass->clearUnusedCache();
+	m_volumeRenderPass->clearUnusedCache();
 	m_linePass->clearUnusedCache();
 	m_lineOverlayPass->clearUnusedCache();
 	m_pointPass->clearUnusedCache();
@@ -162,6 +168,7 @@ void rhiRenderer::deleteCachedMesh(GLMesh* gm)
 {
 	m_solidPass->deleteCachedMesh(gm);
 	m_solidOverlayPass->deleteCachedMesh(gm);
+	m_volumeRenderPass->deleteCachedMesh(gm);
 	m_linePass->deleteCachedMesh(gm);
 	m_lineOverlayPass->deleteCachedMesh(gm);
 	m_pointPass->deleteCachedMesh(gm);
@@ -264,7 +271,12 @@ void rhiRenderer::setMaterial(const GLMaterial& mat)
 void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 {
 	rhi::Mesh* pm = nullptr;
-	if (m_currentMat.type == GLMaterial::OVERLAY)
+	if (m_currentMat.diffuseMap == GLMaterial::TEXTURE_3D)
+	{
+		pm = m_volumeRenderPass->addGLMesh(mesh, cacheMesh);
+		if (pm) m_volumeRenderPass->addToRenderBatch(pm);
+	}
+	else if (m_currentMat.type == GLMaterial::OVERLAY)
 	{
 		pm = m_solidOverlayPass->addGLMesh(mesh, cacheMesh);
 		if (pm) m_solidOverlayPass->addToRenderBatch(pm);
@@ -354,10 +366,15 @@ void rhiRenderer::setTexture(GLTexture1D& tex)
 			GLColor c = tex.sample((float)i / (tex.Size() - 1.f));
 			img.setPixelColor(i, 0, QColor(c.r, c.g, c.b, c.a));
 		}
-		m_texture.image = img;
-		m_texture.needsUpload = true;
+		m_tex1D.image = img;
+		m_tex1D.needsUpload = true;
 		tex.Update(false);
 	}
+}
+
+void rhiRenderer::setTexture(GLTexture3D& tex)
+{
+	m_volumeRenderPass->setTexture3D(tex);
 }
 
 void rhiRenderer::setClipPlane(unsigned int n, const double* v)
@@ -420,6 +437,7 @@ void rhiRenderer::start()
 	// start by setting all meshes as inactive
 	m_solidPass->reset();
 	m_solidOverlayPass->reset();
+	m_volumeRenderPass->reset();
 	m_linePass->reset();
 	m_lineOverlayPass->reset();
 	m_pointPass->reset();
@@ -480,10 +498,10 @@ void rhiRenderer::finish()
 	m_global.setClipPlane(clipPlane);
 	m_global.update(resourceUpdates);
 
-	if (m_texture.needsUpload)
+	if (m_tex1D.needsUpload)
 	{
-		m_texture.upload(resourceUpdates);
-		m_texture.needsUpload = false;
+		m_tex1D.upload(resourceUpdates);
+		m_tex1D.needsUpload = false;
 	}
 
 	// update solid mesh data
@@ -492,6 +510,9 @@ void rhiRenderer::finish()
 
 	m_solidOverlayPass->m_proj = m_projMatrix;
 	m_solidOverlayPass->update(resourceUpdates);
+
+	m_volumeRenderPass->m_proj = m_projMatrix;
+	m_volumeRenderPass->update(resourceUpdates);
 
 	// update line mesh data
 	m_linePass->m_proj = m_projMatrix;
@@ -552,6 +573,9 @@ void rhiRenderer::finish()
 
 		// render overlay point meshes
 		m_pointOverlayPass->draw(cb);
+
+		// render volume meshes
+		m_volumeRenderPass->draw(cb);
 
 		// render fps indicator
 		m_canvasPass->draw(cb);

@@ -24,57 +24,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <rhi/qrhi.h>
-#include <GLLib/GLTexture3D.h>
-#include <QImage>
+#include "rhiMeshRenderPass.h"
+#include "rhiTexture.h"
 
-namespace rhi {
+class VolumeRenderPass : public rhi::MeshRenderPass
+{
+public:
+	VolumeRenderPass(QRhi* rhi) : rhi::MeshRenderPass(rhi), m_tex(rhi) {}
 
-	class Texture
-	{
-	public:
-		Texture(QRhi* rhi) : m_rhi(rhi){}
+	void create(QRhiSwapChain* sc);
 
-		void create(const QImage& img);
+	QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
 
-		void upload(QRhiResourceUpdateBatch* u);
+	void update(QRhiResourceUpdateBatch* u) override;
 
-	public:
-		QRhi* m_rhi = nullptr;
-		std::unique_ptr<QRhiTexture> texture;
-		std::unique_ptr<QRhiSampler> sampler;
-		QImage image;
-		bool needsUpload = false;
+	rhi::Mesh* addGLMesh(const GLMesh& mesh, bool cacheMesh);
 
-	private:
-		Texture(const Texture&) = delete;
-		void operator = (const Texture&) = delete;
-	};
+	void draw(QRhiCommandBuffer* cb) override;
 
-	class Texture3D
-	{
-	public:
-		Texture3D(QRhi* rhi) : m_rhi(rhi) {}
+	void setTexture3D(GLTexture3D& tex);
 
-		void create(const C3DImage& img);
+public:
+	QMatrix4x4 m_proj;
 
-		void upload(QRhiResourceUpdateBatch* u);
+private:
+	std::unique_ptr<QRhiGraphicsPipeline> m_pl;
+	std::unique_ptr<rhi::MeshShaderResource> m_sr;
+	rhi::Texture3D m_tex;
 
-	public:
-		QRhi* m_rhi = nullptr;
-		std::unique_ptr<QRhiTexture> texture;
-		std::unique_ptr<QRhiSampler> sampler;
-		bool needsUpload = false;
-		QRhiTexture::Format fmt = QRhiTexture::UnknownFormat;
-
-	private:
-		bool mapData(std::vector<unsigned char>& d, const C3DImage& s, int trgBytesPerVoxel);
-
-	private:
-		Texture3D(const Texture3D&) = delete;
-		void operator = (const Texture3D&) = delete;
-		std::vector<uint8_t> data; // copy of image data (released after update)
-		size_t slices = 0;
-		size_t sliceSize = 0;
-	};
-}
+	rhi::UniformBlock settings; // volume render settings
+	std::unique_ptr<QRhiBuffer> ubuf;
+};

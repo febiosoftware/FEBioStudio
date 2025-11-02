@@ -166,3 +166,25 @@ public:
 
 	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, rhi::SharedResources* sharedResource);
 };
+
+class VolumeShader : public rhi::Shader
+{
+public:
+	struct Vertex {
+		vec3f r; // coordinate
+		vec3f t; // texture coordinate
+
+		void operator = (const GLMesh::NODE& nd)
+		{
+			r = nd.r;
+			t = nd.t;
+		}
+	};
+
+public:
+	VolumeShader(QRhi* rhi);
+
+	QRhiVertexInputLayout meshLayout() override;
+
+	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, rhi::Texture3D& tex, QRhiBuffer* buf);
+};

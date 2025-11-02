@@ -292,7 +292,7 @@ void CGLModelScene::BuildScene(GLContext& rc)
 
 	addItem(new GLGridItem(this));
 
-/*	if (m_doc->ImageModels())
+	if (m_doc->ImageModels())
 	{
 		for (int i = 0; i < m_doc->ImageModels(); ++i)
 		{
@@ -300,7 +300,6 @@ void CGLModelScene::BuildScene(GLContext& rc)
 			addItem(new GL3DImageItem(this, img));
 		}
 	}
-*/
 }
 
 void CGLModelScene::UpdateRenderTransforms(GLContext& rc)

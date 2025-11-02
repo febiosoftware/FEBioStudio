@@ -35,7 +35,7 @@ if(NOT Qt6_DIR OR NOT CMAKE_PREFIX_PATH)
     if(WIN32)
         find_path(Qt_TEMP Qt6Config.cmake
             PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/*
-            PATH_SUFFIXES "lib/cmake/Qt6" "msvc2019_64/lib/cmake/Qt6"
+            PATH_SUFFIXES "lib/cmake/Qt6" "msvc2022_64/lib/cmake/Qt6"
             DOC "Qt CMake Directory"
             NO_DEFAULT_PATH)
     elseif(APPLE)
@@ -650,6 +650,8 @@ set(SHADER_FILES
     RHILib/shaders/canvas.frag
     RHILib/shaders/triad.vert
     RHILib/shaders/triad.frag
+    RHILib/shaders/volume.vert
+    RHILib/shaders/volume.frag
 )
 
 qt_add_shaders(${FBS_BIN_NAME} "rhi_shaders"

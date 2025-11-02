@@ -24,11 +24,11 @@ layout(std140, binding = 1) uniform MeshBlock {
     float specExp;
     float specStrength;
     float opacity;
-    float useTexture;
-    float useStipple;
-    float useClipping;
-    float useVertexColor;
-    float useLighting;
+    int useTexture;
+    int useStipple;
+    int useClipping;
+    int useVertexColor;
+    int useLighting;
 } mesh;
 
 // texture sampler
