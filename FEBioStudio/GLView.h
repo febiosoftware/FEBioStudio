@@ -208,6 +208,7 @@ protected:
 private:
 	void RenderTags(GLRenderEngine& re);
 	void RenderDecorations(GLRenderEngine& re);
+	void DrawWidgets(GLRenderEngine& re, GLContext& rc);
 
 private:
 	void SetSnapMode(Snap_Mode snap) { m_nsnap = snap; }
@@ -223,6 +224,8 @@ public:
 
 	bool isSubtitleVisible() const;
 	void showSubtitle(bool b);
+
+	void setRenderOverlay(bool b) { renderOverlay = b; }
 
 public:
 	void AddDecoration(GDecoration* deco);
@@ -314,6 +317,8 @@ private:
 	GLScreenRecorder	m_recorder;
 
 	GLCamera	m_oldCam;
+
+	bool renderOverlay = false;
 
 	std::string		m_oglVersionString;
 	static GLViewSettings	m_view;

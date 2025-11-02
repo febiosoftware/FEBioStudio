@@ -1488,10 +1488,12 @@ void CGLView::RenderScene(GLRenderEngine& re)
 	m_fps.push_front(fps);
 	
 	RenderPivot(re);
+
+//	RenderDecorations(re);
+
+	DrawWidgets(re, rc);
+
 /*
-
-	RenderDecorations(re);
-
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	// Note that Y is flipped?
 	re.setOrthoProjection(0, width(), height(), 0, -1, 1);
@@ -1510,6 +1512,120 @@ void CGLView::RenderScene(GLRenderEngine& re)
 		}
 	}
 */
+}
+
+void CGLView::DrawWidgets(GLRenderEngine& re, GLContext& rc)
+{
+	rhiRenderer* rhiRender = dynamic_cast<rhiRenderer*>(&re);
+	if (rhiRender && m_Widget)
+	{
+		CGLDocument* doc = m_pWnd->GetGLDocument();
+
+		// draw the GL widgets
+		if (doc)
+		{
+			// Update GLWidget string table for post rendering
+			CGLModelDocument* glDoc = dynamic_cast<CGLModelDocument*>(m_pWnd->GetDocument());
+			if (glDoc)
+			{
+				GLWidget::addToStringTable("$(filename)", glDoc->GetDocFileName());
+				GLWidget::addToStringTable("$(datafield)", glDoc->GetFieldString());
+				GLWidget::addToStringTable("$(units)", glDoc->GetFieldUnits());
+				GLWidget::addToStringTable("$(time)", glDoc->GetCurrentTimeValue());
+			}
+
+			GLViewScene* scene = dynamic_cast<GLViewScene*>(GetActiveScene());
+
+			// update the triad
+			if (m_ptriad) m_ptriad->setOrientation(scene->GetCamera().GetOrientation());
+
+			if (m_ptitle)
+			{
+				if (doc->ShowTitle()) m_ptitle->show(); else m_ptitle->hide();
+			}
+			if (m_psubtitle)
+			{
+				if (doc->ShowSubtitle()) m_psubtitle->show(); else m_psubtitle->hide();
+			}
+			if (m_legend)
+			{
+				bool bshow = false;
+				if (scene)
+				{
+					LegendData l = scene->GetLegendData(0);
+					if (l.isValid())
+					{
+						m_legend->SetColorGradient(l.colormap);
+						m_legend->SetRange(l.vmin, l.vmax);
+						m_legend->SetDivisions(l.ndivs);
+						m_legend->SetSmoothTexture(l.smooth);
+						bshow = true;
+					}
+				}
+
+				if (bshow) m_legend->show();
+				else m_legend->hide();
+			}
+			if (m_legendPlot)
+			{
+				bool bshow = false;
+				if (scene)
+				{
+					LegendData data = scene->GetLegendData(1);
+					if (data.isValid())
+					{
+						m_legendPlot->SetColorGradient(data.colormap);
+						m_legendPlot->SetRange((float)data.vmin, (float)data.vmax);
+						m_legendPlot->SetDivisions(data.ndivs);
+						m_legendPlot->SetSmoothTexture(data.smooth);
+						m_legendPlot->SetType(data.discrete ? GLLegendBar::DISCRETE : GLLegendBar::GRADIENT);
+
+						if (data.title.empty()) {
+							m_legendPlot->set_label(nullptr); m_legendPlot->ShowTitle(false);
+						}
+						else {
+							m_legendPlot->copy_label(data.title.c_str());
+							m_legendPlot->ShowTitle(true);
+						}
+
+						bshow = true;
+					}
+				}
+				if (bshow) m_legendPlot->show();
+				else m_legendPlot->hide();
+			}
+			if (m_menu)
+			{
+				// only show menu on model docs
+				if (dynamic_cast<CModelDocument*>(doc)) m_menu->show();
+				else m_menu->hide();
+			}
+		}
+
+		rhiRender->useOverlayImage(renderOverlay);
+		if (renderOverlay)
+		{
+			QImage img(rhiRender->pixelSize(), QImage::Format_RGBA8888_Premultiplied);
+			img.fill(Qt::transparent);
+			QPainter painter(&img);
+			painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+
+			GLPainter glpainter(&painter, nullptr);
+
+			m_Widget->DrawWidgets(&glpainter);
+			painter.end();
+
+			float H = (float)img.height();
+			float h = (float)m_ptriad->h();
+			QRhiViewport vp = { (float)m_ptriad->x(), H - (float)m_ptriad->y() - h, (float)m_ptriad->w(), h };
+			quatd q = rc.m_cam->GetOrientation();
+			QMatrix4x4 Q; Q.rotate(QQuaternion(q.w, q.x, q.y, q.z));
+			m_ptriad->setOrientation(q);
+			rhiRender->setTriadInfo(Q, vp);
+
+			rhiRender->setOverlayImage(img);
+		}
+	}
 }
 
 void CGLView::RenderCanvas(GLRenderEngine& re, GLContext& rc)

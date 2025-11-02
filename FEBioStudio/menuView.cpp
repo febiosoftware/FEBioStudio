@@ -94,6 +94,13 @@ void CMainWindow::on_actionShowGrid_toggled(bool b)
 	RedrawGL();
 }
 
+void CMainWindow::on_actionToggleOverlay_toggled(bool b)
+{
+	CGLView* glv = GetGLView();
+	if (glv) glv->setRenderOverlay(b);
+	Update(this);
+}
+
 void CMainWindow::on_actionShowMeshLines_toggled(bool b)
 {
 	CDocument* doc = GetGLDocument();

@@ -244,6 +244,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	actionZoomExtents = createAction("Zoom to Selection", "actionZoomExtents");
 	actionViewCapture = createAction("Show Capture Frame", "actionViewCapture"); actionViewCapture->setCheckable(true); actionViewCapture->setShortcut(Qt::Key_0);
 	actionShowGrid = createAction("Show Grid", "actionShowGrid"); actionShowGrid->setCheckable(true); actionShowGrid->setChecked(true); actionShowGrid->setShortcut(Qt::Key_G);
+	actionShowOverlay = createAction("Toggle Overlay", "actionToggleOverlay"); actionShowOverlay->setCheckable(true); actionShowOverlay->setChecked(true); actionShowOverlay->setShortcut(Qt::Key_O);
 	actionShowMeshLines = createAction("Show Mesh Lines", "actionShowMeshLines", "show_mesh"); actionShowMeshLines->setCheckable(true); actionShowMeshLines->setChecked(true); actionShowMeshLines->setShortcut(Qt::Key_M);
 	actionShowEdgeLines = createAction("Show Edge Lines", "actionShowEdgeLines"); actionShowEdgeLines->setCheckable(true); actionShowEdgeLines->setChecked(true); actionShowEdgeLines->setShortcut(Qt::Key_Z);
 	actionBackfaceCulling = createAction("Backface Culling", "actionBackfaceCulling"); actionBackfaceCulling->setCheckable(true);
@@ -607,6 +608,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuView->addAction(actionOrtho);
 	menuView->addAction(actionShowNormals);
 	menuView->addAction(actionViewCapture);
+	menuView->addAction(actionShowOverlay);
 	menuView->addSeparator();
 	menuView->addAction(actionShowGrid);
 	menuView->addAction(actionShowMeshLines);

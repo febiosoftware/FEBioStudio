@@ -612,6 +612,7 @@ public slots:
 	void on_actionOrtho_toggled(bool b);
 	void on_actionShowGrid_toggled(bool b);
 	void on_actionShowMeshLines_toggled(bool b);
+	void on_actionToggleOverlay_toggled(bool b);
 	void on_actionShowEdgeLines_toggled(bool b);
 	void on_actionBackfaceCulling_toggled(bool b);
 	void on_actionViewSmooth_toggled(bool bchecked);

@@ -106,6 +106,7 @@ public:
 	QAction* actionZoomExtents;
 	QAction* actionViewCapture;
 	QAction* actionShowGrid;
+	QAction* actionShowOverlay;
 	QAction* actionShowMeshLines;
 	QAction* actionShowEdgeLines;
 	QAction* actionBackfaceCulling;

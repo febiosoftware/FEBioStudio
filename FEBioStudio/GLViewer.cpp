@@ -36,6 +36,7 @@ CGLViewer::CGLViewer(::CMainWindow* wnd)
 
 	// create the GL view
 	glview = new CGLView(wnd); glview->setObjectName("glview");
+	glview->setRenderOverlay(true);
 
 	// create the GL control bar
 	glc = new CGLControlBar(wnd);
