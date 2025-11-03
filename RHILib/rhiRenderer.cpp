@@ -290,17 +290,17 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 	rhi::Mesh* pm = nullptr;
 	if (m_currentMat.diffuseMap == GLMaterial::TEXTURE_3D)
 	{
-		pm = m_volumeRenderPass->addGLMesh(mesh, cacheMesh);
+		pm = m_volumeRenderPass->addGLMesh(mesh, -1, cacheMesh);
 		if (pm) m_volumeRenderPass->addToRenderBatch(pm);
 	}
 	else if (m_currentMat.type == GLMaterial::OVERLAY)
 	{
-		pm = m_solidOverlayPass->addGLMesh(mesh, cacheMesh);
+		pm = m_solidOverlayPass->addGLMesh(mesh, -1, cacheMesh);
 		if (pm) m_solidOverlayPass->addToRenderBatch(pm);
 	}
 	else
 	{
-		pm = m_solidPass->addGLMesh(mesh, cacheMesh);
+		pm = m_solidPass->addGLMesh(mesh, -1, cacheMesh);
 		if (pm) m_solidPass->addToRenderBatch(pm);
 	}
 
@@ -325,7 +325,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 	}
 	else
 	{
-		pm = m_solidPass->addGLMesh(mesh, cacheMesh);
+		pm = m_solidPass->addGLMesh(mesh, surfId, cacheMesh);
 	}
 
 	if (pm)
@@ -346,9 +346,9 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 {
 	rhi::Mesh* lineMesh = nullptr;
 	if (m_currentMat.type == GLMaterial::OVERLAY)
-		lineMesh = m_lineOverlayPass->addGLMesh(mesh, cacheMesh);
+		lineMesh = m_lineOverlayPass->addGLMesh(mesh, -1, cacheMesh);
 	else
-		lineMesh = m_linePass->addGLMesh(mesh, cacheMesh);
+		lineMesh = m_linePass->addGLMesh(mesh, -1, cacheMesh);
 
 	if (lineMesh)
 	{
@@ -366,9 +366,9 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 {
 	rhi::Mesh* pointMesh = nullptr;
 	if (m_currentMat.type == GLMaterial::OVERLAY)
-		pointMesh = m_pointOverlayPass->addGLMesh(mesh, cacheMesh);
+		pointMesh = m_pointOverlayPass->addGLMesh(mesh, -1, cacheMesh);
 	else
-		pointMesh = m_pointPass->addGLMesh(mesh, cacheMesh);
+		pointMesh = m_pointPass->addGLMesh(mesh, -1, cacheMesh);
 
 	if (pointMesh)
 	{

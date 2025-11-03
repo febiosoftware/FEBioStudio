@@ -37,7 +37,7 @@ public:
 
 	void create(QRhiSwapChain* sc, rhi::SharedResources* sr);
 
-	rhi::Mesh* addGLMesh(const GLMesh& mesh, bool cacheMesh) override;
+	rhi::Mesh* addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh) override;
 
 	void update(QRhiResourceUpdateBatch* u) override;
 

@@ -27,13 +27,13 @@ SOFTWARE.*/
 
 void rhi::MeshRenderPass::reset()
 {
-	for (auto& it : m_meshList) it.second->setActive(false);
+	for (auto& it : m_meshList) it.mesh->setActive(false);
 	renderBatch.clear();
 }
 
 void rhi::MeshRenderPass::clearCache()
 {
-	for (auto& it : m_meshList) delete it.second;
+	for (auto& it : m_meshList) delete it.mesh;
 	m_meshList.clear();
 	renderBatch.clear();
 }
@@ -41,9 +41,9 @@ void rhi::MeshRenderPass::clearCache()
 void rhi::MeshRenderPass::clearUnusedCache()
 {
 	for (auto it = m_meshList.begin(); it != m_meshList.end(); ) {
-		if (it->second->isActive() == false)
+		if (it->mesh->isActive() == false)
 		{
-			delete it->second;
+			delete it->mesh;
 			it = m_meshList.erase(it);
 		}
 		else
@@ -54,10 +54,10 @@ void rhi::MeshRenderPass::clearUnusedCache()
 
 void rhi::MeshRenderPass::removeCachedMesh(const GLMesh* mesh)
 {
-	auto it = m_meshList.find(mesh);
-	if (it != m_meshList.end())
+	for (auto& it : m_meshList)
 	{
-		it->first = nullptr;
+		if (it.glmesh == mesh)
+			it.glmesh = nullptr;
 	}
 }
 

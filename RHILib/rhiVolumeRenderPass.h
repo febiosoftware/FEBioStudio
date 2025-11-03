@@ -38,7 +38,7 @@ public:
 
 	void update(QRhiResourceUpdateBatch* u) override;
 
-	rhi::Mesh* addGLMesh(const GLMesh& mesh, bool cacheMesh);
+	rhi::Mesh* addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh) override;
 
 	void draw(QRhiCommandBuffer* cb) override;
 

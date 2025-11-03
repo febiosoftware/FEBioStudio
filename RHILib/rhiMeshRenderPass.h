@@ -31,8 +31,15 @@ namespace rhi {
 
 	class MeshList
 	{
+		struct Entry
+		{
+			const GLMesh* glmesh = nullptr;
+			rhi::Mesh* mesh = nullptr;
+			int partition = -1;
+		};
+
 	public:
-		using Container = std::list<std::pair<const GLMesh*, rhi::Mesh*>>;
+		using Container = std::list<Entry>;
 
 	public:
 		MeshList() {}
@@ -42,14 +49,14 @@ namespace rhi {
 		Container::iterator begin() { return meshList.begin(); }
 		Container::iterator end() { return meshList.end(); }
 
-		Container::iterator find(const GLMesh* m)
+		Container::iterator find(const GLMesh* m, int partition)
 		{
-			return std::find_if(begin(), end(), [=](const auto& item) { return (item.first == m); });
+			return std::find_if(begin(), end(), [=](const auto& item) { return ((item.glmesh == m) && (item.partition == partition)); });
 		}
 
-		void push_back(const GLMesh* gm, rhi::Mesh* rm)
+		void push_back(const GLMesh* gm, rhi::Mesh* rm, int partition)
 		{
-			meshList.push_back({ gm, rm });
+			meshList.push_back({ gm, rm, partition });
 		}
 
 		bool empty() const { return meshList.empty(); }
@@ -76,7 +83,7 @@ namespace rhi {
 	public:
 		MeshRenderPass(QRhi* rhi) : RenderPass(rhi) {}
 
-		virtual rhi::Mesh* addGLMesh(const GLMesh& mesh, bool cacheMesh) = 0;
+		virtual rhi::Mesh* addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh) = 0;
 
 		void reset();
 

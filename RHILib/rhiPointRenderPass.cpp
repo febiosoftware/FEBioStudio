@@ -55,16 +55,16 @@ void PointRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
 	m_pl->create();
 }
 
-rhi::Mesh* PointRenderPass::addGLMesh(const GLMesh& mesh, bool cacheMesh)
+rhi::Mesh* PointRenderPass::addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh)
 {
 	if (mesh.Nodes() == 0) return nullptr;
 
 	auto it = m_meshList.end();
 	if (cacheMesh)
 	{
-		auto it = m_meshList.find(&mesh);
+		auto it = m_meshList.find(&mesh, partition);
 		if (it != m_meshList.end())
-			return it->second;
+			return it->mesh;
 	}
 
 	rhi::MeshShaderResource* sr = PointShader::createShaderResource(m_rhi, sharedResources);
@@ -73,11 +73,11 @@ rhi::Mesh* PointRenderPass::addGLMesh(const GLMesh& mesh, bool cacheMesh)
 
 	if (cacheMesh)
 	{
-		m_meshList.push_back(&mesh, rm);
+		m_meshList.push_back(&mesh, rm, partition);
 	}
 	else
 	{
-		m_meshList.push_back(nullptr, rm);
+		m_meshList.push_back(nullptr, rm, partition);
 	}
 
 	return rm;
@@ -88,7 +88,7 @@ void PointRenderPass::update(QRhiResourceUpdateBatch* u)
 {
 	for (auto& it : m_meshList)
 	{
-		rhi::Mesh& m = *it.second;
+		rhi::Mesh& m = *it.mesh;
 		if (m.isActive())
 			m.Update(u);
 	}
@@ -102,7 +102,7 @@ void PointRenderPass::draw(QRhiCommandBuffer* cb)
 		cb->setShaderResources();
 		for (auto& it : m_meshList)
 		{
-			rhi::Mesh& m = *it.second;
+			rhi::Mesh& m = *it.mesh;
 			if (m.isActive())
 				m.Draw(cb);
 		}
