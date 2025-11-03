@@ -43,6 +43,8 @@ public:
 
 	virtual void RenderScene(GLRenderEngine& re);
 
+	const GLRenderEngine* GetRenderEngine() { return m_rhiRender; }
+
 protected:
 	void customInit() override;
 	void customRender() override;

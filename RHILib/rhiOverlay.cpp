@@ -219,8 +219,8 @@ void OverlayRenderPass::update(QRhiResourceUpdateBatch* u)
 	float d = 1.2f;
 	proj.ortho(-d * ar, d * ar, -d, d, -1, 1);
 
-	triadMesh->SetModelMatrix(m_overlayVM);
-	triadMesh->Update(u, proj);
+	triadMesh->SetMatrices(m_overlayVM, proj);
+	triadMesh->Update(u);
 }
 
 void OverlayRenderPass::draw(QRhiCommandBuffer* cb)

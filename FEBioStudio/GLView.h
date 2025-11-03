@@ -172,7 +172,6 @@ signals:
 	// render functions
 public:
 	// other rendering functions
-	void RenderRubberBand(GLRenderEngine& re);
 	void RenderPivot(GLRenderEngine& re);
 
 	void ShowSafeFrame(bool b);
@@ -203,12 +202,13 @@ protected:
 
 	void RenderScene(GLRenderEngine& re) override;
 
-	void RenderCanvas(GLRenderEngine& re, GLContext& rc);
-
-private:
-	void RenderTags(GLRenderEngine& re);
+private: // overlay rendering
+	void RenderOverlay(GLRenderEngine& re, GLContext& rc);
+	void RenderOverlayComponents(QPainter& painter);
+	void RenderTags(QPainter& painter);
 	void RenderDecorations(GLRenderEngine& re);
-	void DrawWidgets(GLRenderEngine& re, GLContext& rc);
+	void DrawWidgets(QPainter& painter);
+	void RenderRubberBand(QPainter& painter);
 
 private:
 	void SetSnapMode(Snap_Mode snap) { m_nsnap = snap; }

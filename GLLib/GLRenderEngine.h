@@ -70,7 +70,7 @@ public:
 	virtual ~GLRenderEngine() {}
 
 	void ResetStats();
-	GLRenderStats GetRenderStats();
+	GLRenderStats GetRenderStats() const;
 
 public:
 	virtual void init() {}

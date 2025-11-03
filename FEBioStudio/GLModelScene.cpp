@@ -213,18 +213,17 @@ void CGLModelScene::Render(GLRenderEngine& engine, GLContext& rc)
 	// now render it
 	GLScene::Render(engine, rc);
 
-/*
-	if (view.m_use_environment_map) DeactivateEnvironmentMap(engine);
+//	if (view.m_use_environment_map) DeactivateEnvironmentMap(engine);
 
 	// Render 2D stuff
 	ClearTags();
 
 	// show the labels on rigid bodies
-	if (view.m_showRigidLabels) RenderRigidLabels();
+//	if (view.m_showRigidLabels) RenderRigidLabels();
 
-	// render the tags
+	// render the tags (This doesn't actually render anything. It just
+	// updates the tag list in the scene
 	if (view.m_bTags) RenderTags(rc);
-*/
 
 	// see if we need to draw the legend bar for the mesh inspector
 	m_showLegend = false;

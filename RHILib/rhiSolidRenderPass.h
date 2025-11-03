@@ -58,9 +58,6 @@ public:
 
 	void draw(QRhiCommandBuffer* cb) override;
 
-public:
-	QMatrix4x4 m_proj;
-
 private:
 	std::unique_ptr<FaceRenderPass> m_backPass;
 	std::unique_ptr<FaceRenderPass> m_frontPass;
@@ -81,9 +78,6 @@ public:
 	rhi::Mesh* addGLMesh(const GLMesh& mesh, bool cacheMesh);
 
 	void draw(QRhiCommandBuffer* cb) override;
-
-public:
-	QMatrix4x4 m_proj;
 
 private:
 	std::unique_ptr<QRhiGraphicsPipeline> m_pl;

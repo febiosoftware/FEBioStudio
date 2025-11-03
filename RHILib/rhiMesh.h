@@ -81,11 +81,11 @@ namespace rhi {
 
 		void SetMaterial(const GLMaterial& m) { mat = m; }
 
-		void SetModelMatrix(const QMatrix4x4& Q) { mvMatrix = Q; }
+		void SetMatrices(const QMatrix4x4& mv, const QMatrix4x4& pr) { mvMatrix = mv; prMatrix = pr; }
 
 		virtual bool CreateFromGLMesh(const GLMesh* gmsh) { return false; }
 
-		void Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj);
+		void Update(QRhiResourceUpdateBatch* u);
 
 		void Draw(QRhiCommandBuffer* cb, int startIndex = 0, int vertices = -1);
 
@@ -103,7 +103,8 @@ namespace rhi {
 	protected:
 		QRhi* m_rhi = nullptr;
 
-		QMatrix4x4 mvMatrix;
+		QMatrix4x4 mvMatrix; // model view
+		QMatrix4x4 prMatrix; // projection
 		bool active = false;
 		std::vector<Partition> m_partitions;
 

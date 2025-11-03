@@ -50,7 +50,7 @@ void rhi::Mesh::create(unsigned int vertices, unsigned int sizeOfVertex, const v
 	vbuf->create();
 }
 
-void rhi::Mesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj)
+void rhi::Mesh::Update(QRhiResourceUpdateBatch* u)
 {
 	if (vertexData)
 	{
@@ -61,7 +61,7 @@ void rhi::Mesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj)
 
 	if (sr)
 	{
-		QMatrix4x4 mvp = proj * mvMatrix;
+		QMatrix4x4 mvp = prMatrix * mvMatrix;
 		sr->setData(mvp, mvMatrix, *this);
 		sr->update(u);
 	}

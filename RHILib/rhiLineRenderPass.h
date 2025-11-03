@@ -43,9 +43,6 @@ public:
 
 	void draw(QRhiCommandBuffer* cb) override;
 
-public:
-	QMatrix4x4 m_proj;
-
 private:
 	std::unique_ptr<QRhiGraphicsPipeline> m_pl;
 	std::unique_ptr<rhi::MeshShaderResource> m_sr;

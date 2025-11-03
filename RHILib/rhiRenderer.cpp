@@ -290,7 +290,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 	if (pm)
 	{
 		pm->SetMaterial(m_currentMat);
-		pm->SetModelMatrix(m_modelViewMatrix);
+		pm->SetMatrices(m_modelViewMatrix, m_projMatrix);
 		pm->doClipping = m_clipEnabled;
 		pm->setActive(true);
 	}
@@ -311,7 +311,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 	if (pm)
 	{
 		pm->SetMaterial(m_currentMat);
-		pm->SetModelMatrix(m_modelViewMatrix);
+		pm->SetMatrices(m_modelViewMatrix, m_projMatrix);
 		pm->doClipping = m_clipEnabled;
 		pm->setActive(true);
 
@@ -332,7 +332,7 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 	if (lineMesh)
 	{
 		lineMesh->SetMaterial(m_currentMat);
-		lineMesh->SetModelMatrix(m_modelViewMatrix);
+		lineMesh->SetMatrices(m_modelViewMatrix, m_projMatrix);
 		lineMesh->doClipping = m_clipEnabled;
 		lineMesh->setActive(true);
 	}
@@ -349,7 +349,7 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 	if (pointMesh)
 	{
 		pointMesh->SetMaterial(m_currentMat);
-		pointMesh->SetModelMatrix(m_modelViewMatrix);
+		pointMesh->SetMatrices(m_modelViewMatrix, m_projMatrix);
 		pointMesh->doClipping = m_clipEnabled;
 		pointMesh->setActive(true);
 	}
@@ -505,28 +505,18 @@ void rhiRenderer::finish()
 	}
 
 	// update solid mesh data
-	m_solidPass->m_proj = m_projMatrix;
 	m_solidPass->update(resourceUpdates);
-
-	m_solidOverlayPass->m_proj = m_projMatrix;
 	m_solidOverlayPass->update(resourceUpdates);
-
-	m_volumeRenderPass->m_proj = m_projMatrix;
 	m_volumeRenderPass->update(resourceUpdates);
 
 	// update line mesh data
-	m_linePass->m_proj = m_projMatrix;
 	m_linePass->update(resourceUpdates);
-
-	m_lineOverlayPass->m_proj = m_projMatrix;
 	m_lineOverlayPass->update(resourceUpdates);
 
 	// update point mesh data
-	m_pointPass->m_proj = m_projMatrix;
 	m_pointPass->update(resourceUpdates);
 
 	// update overlay point mesh data
-	m_pointOverlayPass->m_proj = m_projMatrix;
 	m_pointOverlayPass->update(resourceUpdates);
 
 	// update fps indicator
@@ -625,7 +615,7 @@ void rhiRenderer::begin(PrimitiveType prim)
 void rhiRenderer::end()
 {
 	mb.end();
-	if (!buildingShape) mb.endShape();
+	if (!buildingShape) endShape();
 }
 
 void rhiRenderer::vertex(const vec3d& r)

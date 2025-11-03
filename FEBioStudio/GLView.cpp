@@ -57,6 +57,7 @@ SOFTWARE.*/
 #include "GLModelScene.h"
 #include "GLViewScene.h"
 #include <GLLib/glx.h>
+#include <QPainterPath>
 
 using namespace std::chrono;
 
@@ -310,21 +311,11 @@ private:
 	GLCheckBox* m_showNormals;
 };
 
-void RenderBrush(GLRenderEngine& re, int x, int y, double R)
+void RenderBrush(QPainter& painter, int x, int y, double R)
 {
-	re.pushState();
-	re.disable(GLRenderEngine::LIGHTING);
-	re.disable(GLRenderEngine::DEPTHTEST);
-	re.disable(GLRenderEngine::CULLFACE);
-	re.enable(GLRenderEngine::LINESTIPPLE);
-	re.setColor(GLColor::White());
-	re.setLineStipple(1, 0xF0F0);
-
-	int n = (int)(R / 2);
-	if (n < 12) n = 12;
-	glx::drawCircle(re, vec3d(x, y, 0), R, n);
-
-	re.popState();
+	QPen oldPen = painter.pen();
+	painter.setPen(QPen(Qt::white, 1, Qt::DotLine));
+	painter.drawEllipse(QPointF(x, y), R, R);
 }
 
 //-----------------------------------------------------------------------------
@@ -1491,18 +1482,16 @@ void CGLView::RenderScene(GLRenderEngine& re)
 	
 	RenderPivot(re);
 
-//	RenderDecorations(re);
+	RenderDecorations(re);
 
-	DrawWidgets(re, rc);
-
-/*
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
-	// Note that Y is flipped?
+	// Note that Y is flipped! Why?
 	re.setOrthoProjection(0, width(), height(), 0, -1, 1);
 	re.resetTransform();
 
-	RenderCanvas(re, rc);
+	RenderOverlay(re, rc);
 
+/*
 	if (m_recorder.IsRecording())
 	{
 		re.flush();
@@ -1516,223 +1505,47 @@ void CGLView::RenderScene(GLRenderEngine& re)
 */
 }
 
-void CGLView::DrawWidgets(GLRenderEngine& re, GLContext& rc)
+void CGLView::RenderOverlay(GLRenderEngine& re, GLContext& rc)
 {
 	rhiRenderer* rhiRender = dynamic_cast<rhiRenderer*>(&re);
-	if (rhiRender && m_Widget)
-	{
-		CGLDocument* doc = m_pWnd->GetGLDocument();
+	if (rhiRender == nullptr) return;
+	rhiRender->useOverlayImage(renderOverlay);
+	if (!renderOverlay) return;
 
-		// draw the GL widgets
-		if (doc)
-		{
-			// Update GLWidget string table for post rendering
-			CGLModelDocument* glDoc = dynamic_cast<CGLModelDocument*>(m_pWnd->GetDocument());
-			if (glDoc)
-			{
-				GLWidget::addToStringTable("$(filename)", glDoc->GetDocFileName());
-				GLWidget::addToStringTable("$(datafield)", glDoc->GetFieldString());
-				GLWidget::addToStringTable("$(units)", glDoc->GetFieldUnits());
-				GLWidget::addToStringTable("$(time)", glDoc->GetCurrentTimeValue());
-			}
-
-			GLViewScene* scene = dynamic_cast<GLViewScene*>(GetActiveScene());
-
-			// update the triad
-			if (m_ptriad) m_ptriad->setOrientation(scene->GetCamera().GetOrientation());
-
-			if (m_ptitle)
-			{
-				if (doc->ShowTitle()) m_ptitle->show(); else m_ptitle->hide();
-			}
-			if (m_psubtitle)
-			{
-				if (doc->ShowSubtitle()) m_psubtitle->show(); else m_psubtitle->hide();
-			}
-			if (m_legend)
-			{
-				bool bshow = false;
-				if (scene)
-				{
-					LegendData l = scene->GetLegendData(0);
-					if (l.isValid())
-					{
-						m_legend->SetColorGradient(l.colormap);
-						m_legend->SetRange(l.vmin, l.vmax);
-						m_legend->SetDivisions(l.ndivs);
-						m_legend->SetSmoothTexture(l.smooth);
-						bshow = true;
-					}
-				}
-
-				if (bshow) m_legend->show();
-				else m_legend->hide();
-			}
-			if (m_legendPlot)
-			{
-				bool bshow = false;
-				if (scene)
-				{
-					LegendData data = scene->GetLegendData(1);
-					if (data.isValid())
-					{
-						m_legendPlot->SetColorGradient(data.colormap);
-						m_legendPlot->SetRange((float)data.vmin, (float)data.vmax);
-						m_legendPlot->SetDivisions(data.ndivs);
-						m_legendPlot->SetSmoothTexture(data.smooth);
-						m_legendPlot->SetType(data.discrete ? GLLegendBar::DISCRETE : GLLegendBar::GRADIENT);
-
-						if (data.title.empty()) {
-							m_legendPlot->set_label(nullptr); m_legendPlot->ShowTitle(false);
-						}
-						else {
-							m_legendPlot->copy_label(data.title.c_str());
-							m_legendPlot->ShowTitle(true);
-						}
-
-						bshow = true;
-					}
-				}
-				if (bshow) m_legendPlot->show();
-				else m_legendPlot->hide();
-			}
-			if (m_menu)
-			{
-				// only show menu on model docs
-				if (dynamic_cast<CModelDocument*>(doc)) m_menu->show();
-				else m_menu->hide();
-			}
-		}
-
-		rhiRender->useOverlayImage(renderOverlay);
-		if (renderOverlay)
-		{
-			QImage img(rhiRender->pixelSize(), QImage::Format_RGBA8888_Premultiplied);
-			img.fill(Qt::transparent);
-			QPainter painter(&img);
-			painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-
-			GLPainter glpainter(&painter, nullptr);
-
-			m_Widget->DrawWidgets(&glpainter);
-			painter.end();
-
-			float H = (float)img.height();
-			float h = (float)m_ptriad->h();
-			QRhiViewport vp = { (float)m_ptriad->x(), H - (float)m_ptriad->y() - h, (float)m_ptriad->w(), h };
-			quatd q = rc.m_cam->GetOrientation();
-			QMatrix4x4 Q; Q.rotate(QQuaternion(q.w, q.x, q.y, q.z));
-			m_ptriad->setOrientation(q);
-			rhiRender->setTriadInfo(Q, vp);
-
-			rhiRender->setOverlayImage(img);
-		}
-	}
-}
-
-void CGLView::RenderCanvas(GLRenderEngine& re, GLContext& rc)
-{
-/*
-	if (rc.m_settings.m_bselbrush) RenderBrush(re, m_x1, m_y1, rc.m_settings.m_brushSize);
-
-	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand(re);
-
-	RenderTags(re);
-
-	// We must turn off culling before we use the QPainter, otherwise
-	// drawing using QPainter doesn't work correctly.
-	re.disable(GLRenderEngine::CULLFACE);
-
-	// render the GL widgets
-	QPainter painter(this);
+	// Create the overlay image that we'll paint in
+	QImage img(rhiRender->pixelSize(), QImage::Format_RGBA8888_Premultiplied);
+	img.fill(Qt::transparent);
+	QPainter painter(&img);
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
-	CGLDocument* doc = m_pWnd->GetGLDocument();
+	// compose the overlay image
+	RenderOverlayComponents(painter);
 
-	// draw the GL widgets
-	if (m_Widget)
-	{
-		// Update GLWidget string table for post rendering
-		CGLModelDocument* glDoc = dynamic_cast<CGLModelDocument*>(m_pWnd->GetDocument());
-		if (glDoc)
-		{
-			GLWidget::addToStringTable("$(filename)", glDoc->GetDocFileName());
-			GLWidget::addToStringTable("$(datafield)", glDoc->GetFieldString());
-			GLWidget::addToStringTable("$(units)", glDoc->GetFieldUnits());
-			GLWidget::addToStringTable("$(time)", glDoc->GetCurrentTimeValue());
-		}
+	// all done with drawing
+	painter.end();
 
-		GLViewScene* scene = dynamic_cast<GLViewScene*>(GetActiveScene());
+	// the triad requires a bit of special handling
+	float H = (float)img.height();
+	float h = (float)m_ptriad->h();
+	QRhiViewport vp = { (float)m_ptriad->x(), H - (float)m_ptriad->y() - h, (float)m_ptriad->w(), h };
+	quatd q = rc.m_cam->GetOrientation();
+	QMatrix4x4 Q; Q.rotate(QQuaternion(q.w, q.x, q.y, q.z));
+	m_ptriad->setOrientation(q);
+	rhiRender->setTriadInfo(Q, vp);
 
-		// update the triad
-		if (m_ptriad) m_ptriad->setOrientation(scene->GetCamera().GetOrientation());
+	// all done, send it to the renderer
+	rhiRender->setOverlayImage(img);
+}
 
-		if (m_ptitle)
-		{
-			if (doc->ShowTitle()) m_ptitle->show(); else m_ptitle->hide();
-		}
-		if (m_psubtitle)
-		{
-			if (doc->ShowSubtitle()) m_psubtitle->show(); else m_psubtitle->hide();
-		}
-		if (m_legend)
-		{
-			bool bshow = false;
-			if (scene)
-			{
-				LegendData l = scene->GetLegendData(0);
-				if (l.isValid())
-				{
-					m_legend->SetColorGradient(l.colormap);
-					m_legend->SetRange(l.vmin, l.vmax);
-					m_legend->SetDivisions(l.ndivs);
-					m_legend->SetSmoothTexture(l.smooth);
-					bshow = true;
-				}
-			}
+void CGLView::RenderOverlayComponents(QPainter& painter)
+{
+	GLViewSettings& vs = GetViewSettings();
 
-			if (bshow) m_legend->show();
-			else m_legend->hide();
-		}
-		if (m_legendPlot)
-		{
-			bool bshow = false;
-			if (scene)
-			{
-				LegendData data = scene->GetLegendData(1);
-				if (data.isValid())
-				{
-					m_legendPlot->SetColorGradient(data.colormap);
-					m_legendPlot->SetRange((float)data.vmin, (float)data.vmax);
-					m_legendPlot->SetDivisions(data.ndivs);
-					m_legendPlot->SetSmoothTexture(data.smooth);
-					m_legendPlot->SetType(data.discrete ? GLLegendBar::DISCRETE : GLLegendBar::GRADIENT);
-								
-					if (data.title.empty()) {
-						m_legendPlot->set_label(nullptr); m_legendPlot->ShowTitle(false);
-					}
-					else {
-						m_legendPlot->copy_label(data.title.c_str());
-						m_legendPlot->ShowTitle(true);
-					}
-								
-					bshow = true;
-				}
-			}
-			if (bshow) m_legendPlot->show();
-			else m_legendPlot->hide();
-		}
-		if (m_menu)
-		{
-			// only show menu on model docs
-			if (dynamic_cast<CModelDocument*>(doc)) m_menu->show();
-			else m_menu->hide();
-		}
+	DrawWidgets(painter);
+	RenderTags(painter);
+	if (vs.m_bselbrush) RenderBrush(painter, m_x1, m_y1, vs.m_brushSize);
 
-		GLPainter glpainter(&painter, &re);
-
-		m_Widget->DrawWidgets(&glpainter);
-	}
+	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand(painter);
 
 	if (m_recorder.IsPaused())
 	{
@@ -1765,56 +1578,144 @@ void CGLView::RenderCanvas(GLRenderEngine& re, GLContext& rc)
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
 		painter.drawText(rt, QString("FPS: %1").arg(fps, 0, 'f', 2), to);
 
-		GLRenderStats stats = re.GetRenderStats();
-		int Y = rt.y() + fontSize + 5;
-		rt.setY(Y);
-		float tris = (float)stats.triangles;
-		if (tris < 1e3)
+		const GLRenderEngine* re = GetRenderEngine();
+		if (re)
 		{
-			painter.drawText(rt, QString("TRIs: %1").arg(stats.triangles), to);
+			GLRenderStats stats = re->GetRenderStats();
+			int Y = rt.y() + fontSize + 5;
+			rt.setY(Y);
+			float tris = (float)stats.triangles;
+			if (tris < 1e3)
+			{
+				painter.drawText(rt, QString("TRIs: %1").arg(stats.triangles), to);
+			}
+			else
+			{
+				QChar suffix(' ');
+				if (tris > 1e6) { tris /= 1e6; suffix = 'M'; }
+				else if (tris > 1e3) { tris /= 1e3; suffix = 'K'; }
+				painter.drawText(rt, QString("TRIs: %1%2").arg(tris, 0, 'f', 2).arg(suffix), to);
+			}
+			Y += fontSize + 5;
+			rt.setY(Y);
+			float lines = (float)stats.lines;
+			if (lines < 1e3)
+			{
+				painter.drawText(rt, QString("Lines: %1").arg(stats.lines), to);
+			}
+			else
+			{
+				QChar suffix(' ');
+				if (lines > 1e6) { lines /= 1e6; suffix = 'M'; }
+				else if (lines > 1e3) { lines /= 1e3; suffix = 'K'; }
+				painter.drawText(rt, QString("Lines: %1%2").arg(lines, 0, 'f', 2).arg(suffix), to);
+			}
+			Y += fontSize + 5;
+			rt.setY(Y);
+			float points = (float)stats.points;
+			if (points < 1e3)
+			{
+				painter.drawText(rt, QString("Points: %1").arg(stats.points), to);
+			}
+			else
+			{
+				QChar suffix(' ');
+				if (points > 1e6) { points /= 1e6; suffix = 'M'; }
+				else if (points > 1e3) { points /= 1e3; suffix = 'K'; }
+				painter.drawText(rt, QString("Points: %1%2").arg(points, 0, 'f', 2).arg(suffix), to);
+			}
+			Y += fontSize + 5;
+			rt.setY(Y);
+			painter.drawText(rt, QString("Caches: %1").arg(stats.cachedObjects), to);
 		}
-		else
-		{
-			QChar suffix(' ');
-			if (tris > 1e6) { tris /= 1e6; suffix = 'M'; }
-			else if (tris > 1e3) { tris /= 1e3; suffix = 'K'; }
-			painter.drawText(rt, QString("TRIs: %1%2").arg(tris, 0, 'f', 2).arg(suffix), to);
-		}
-		Y += fontSize + 5;
-		rt.setY(Y);
-		float lines = (float)stats.lines;
-		if (lines < 1e3)
-		{
-			painter.drawText(rt, QString("Lines: %1").arg(stats.lines), to);
-		}
-		else
-		{
-			QChar suffix(' ');
-			if (lines > 1e6) { lines /= 1e6; suffix = 'M'; }
-			else if (lines > 1e3) { lines /= 1e3; suffix = 'K'; }
-			painter.drawText(rt, QString("Lines: %1%2").arg(lines, 0, 'f', 2).arg(suffix), to);
-		}
-		Y += fontSize + 5;
-		rt.setY(Y);
-		float points = (float)stats.points;
-		if (points < 1e3)
-		{
-			painter.drawText(rt, QString("Points: %1").arg(stats.points), to);
-		}
-		else
-		{
-			QChar suffix(' ');
-			if (points > 1e6) { points /= 1e6; suffix = 'M'; }
-			else if (points > 1e3) { points /= 1e3; suffix = 'K'; }
-			painter.drawText(rt, QString("Points: %1%2").arg(points, 0, 'f', 2).arg(suffix), to);
-		}
-		Y += fontSize + 5;
-		rt.setY(Y);
-		painter.drawText(rt, QString("Caches: %1").arg(stats.cachedObjects), to);
+	}
+}
+
+void CGLView::DrawWidgets(QPainter& painter)
+{
+	if (m_Widget == nullptr) return;
+	CGLDocument* doc = m_pWnd->GetGLDocument();
+	if (doc == nullptr) return;
+
+	// Update GLWidget string table for post rendering
+	CGLModelDocument* glDoc = dynamic_cast<CGLModelDocument*>(m_pWnd->GetDocument());
+	if (glDoc)
+	{
+		GLWidget::addToStringTable("$(filename)", glDoc->GetDocFileName());
+		GLWidget::addToStringTable("$(datafield)", glDoc->GetFieldString());
+		GLWidget::addToStringTable("$(units)", glDoc->GetFieldUnits());
+		GLWidget::addToStringTable("$(time)", glDoc->GetCurrentTimeValue());
 	}
 
-	painter.end();
-*/
+	GLViewScene* scene = dynamic_cast<GLViewScene*>(GetActiveScene());
+
+	// update the triad
+	if (m_ptriad) m_ptriad->setOrientation(scene->GetCamera().GetOrientation());
+
+	if (m_ptitle)
+	{
+		if (doc->ShowTitle()) m_ptitle->show(); else m_ptitle->hide();
+	}
+	if (m_psubtitle)
+	{
+		if (doc->ShowSubtitle()) m_psubtitle->show(); else m_psubtitle->hide();
+	}
+	if (m_legend)
+	{
+		bool bshow = false;
+		if (scene)
+		{
+			LegendData l = scene->GetLegendData(0);
+			if (l.isValid())
+			{
+				m_legend->SetColorGradient(l.colormap);
+				m_legend->SetRange(l.vmin, l.vmax);
+				m_legend->SetDivisions(l.ndivs);
+				m_legend->SetSmoothTexture(l.smooth);
+				bshow = true;
+			}
+		}
+
+		if (bshow) m_legend->show();
+		else m_legend->hide();
+	}
+	if (m_legendPlot)
+	{
+		bool bshow = false;
+		if (scene)
+		{
+			LegendData data = scene->GetLegendData(1);
+			if (data.isValid())
+			{
+				m_legendPlot->SetColorGradient(data.colormap);
+				m_legendPlot->SetRange((float)data.vmin, (float)data.vmax);
+				m_legendPlot->SetDivisions(data.ndivs);
+				m_legendPlot->SetSmoothTexture(data.smooth);
+				m_legendPlot->SetType(data.discrete ? GLLegendBar::DISCRETE : GLLegendBar::GRADIENT);
+
+				if (data.title.empty()) {
+					m_legendPlot->set_label(nullptr); m_legendPlot->ShowTitle(false);
+				}
+				else {
+					m_legendPlot->copy_label(data.title.c_str());
+					m_legendPlot->ShowTitle(true);
+				}
+
+				bshow = true;
+			}
+		}
+		if (bshow) m_legendPlot->show();
+		else m_legendPlot->hide();
+	}
+	if (m_menu)
+	{
+		// only show menu on model docs
+		if (dynamic_cast<CModelDocument*>(doc)) m_menu->show();
+		else m_menu->hide();
+	}
+
+	GLPainter glpainter(&painter, nullptr);
+	m_Widget->DrawWidgets(&glpainter);
 }
 
 void CGLView::ShowMeshData(bool b)
@@ -1900,7 +1801,7 @@ void CGLView::RenderPivot(GLRenderEngine& re)
 	re.popTransform();
 }
 
-void CGLView::RenderRubberBand(GLRenderEngine& re)
+void CGLView::RenderRubberBand(QPainter& painter)
 {
 	// Get the document
 	CGLDocument* pdoc = GetDocument();
@@ -1908,34 +1809,29 @@ void CGLView::RenderRubberBand(GLRenderEngine& re)
 
 	int nstyle = pdoc->GetSelectionStyle();
 
-	re.pushState();
-	re.disable(GLRenderEngine::LIGHTING);
-	re.disable(GLRenderEngine::DEPTHTEST);
-	re.disable(GLRenderEngine::CULLFACE);
-	
-	re.enable(GLRenderEngine::LINESTIPPLE);
-	re.setLineStipple(1, (unsigned short)0xF0F0);
+	painter.setPen(QPen(Qt::white, 2, Qt::DotLine));
 
-	re.setColor(GLColor::White());
 	switch (nstyle)
 	{
-	case REGION_SELECT_BOX: glx::drawRect(re, m_x0, m_y0, m_x1, m_y1); break;
+	case REGION_SELECT_BOX: painter.drawRect(m_x0, m_y0, m_x1-m_x0, m_y1-m_y0); break;
 	case REGION_SELECT_CIRCLE:
 		{
 			double dx = (m_x1 - m_x0);
 			double dy = (m_y1 - m_y0);
 			double R = sqrt(dx*dx + dy*dy);
-			glx::drawCircle(re, vec3d(m_x0, m_y0, 0), R, 64);
+			painter.drawEllipse(QPointF(m_x0, m_y0), R, R);
 		}
 		break;
 	case REGION_SELECT_FREE:
 		{
-			glx::drawPath2D(re, m_pl);
+			QPainterPath path;
+			path.moveTo(QPoint(m_pl[0].first, m_pl[1].second));
+			for (int i = 1; i < m_pl.size(); ++i)
+				path.lineTo(m_pl[i].first, m_pl[i].second);
+			painter.drawPath(path);
 		}
 		break;
 	}
-
-	re.popState();
 }
 
 void CGLView::ShowSafeFrame(bool b)
@@ -2591,7 +2487,7 @@ quatd CGLView::GetPivotRotation()
 bool CGLView::GetPivotUserMode() const { return m_userPivot; }
 void CGLView::SetPivotUserMode(bool b) { m_userPivot = b; }
 
-void CGLView::RenderTags(GLRenderEngine& re)
+void CGLView::RenderTags(QPainter& painter)
 {
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
@@ -2610,33 +2506,21 @@ void CGLView::RenderTags(GLRenderEngine& re)
 		tag.wy = p.y;
 	}
 
-	re.pushState();
-
-	re.disable(GLRenderEngine::LIGHTING);
-	re.disable(GLRenderEngine::DEPTHTEST);
-
 	int H = height();
 
 	double dpr = devicePixelRatio();
-	re.begin(GLRenderEngine::POINTS);
+	for (int i = 0; i< ntags; i++)
 	{
-		for (int i = 0; i< ntags; i++)
-		{
-			GLTAG& tag = scene->Tag(i);
-			int x = (int)(tag.wx * dpr);
-			int y = (int)(H - dpr*(H - tag.wy));
-			re.setColor(GLColor(0, 0, 0));
-			re.vertex(x, y);
-			re.setColor(tag.c);
-			re.vertex(x - 1, y + 1);
-		}
+		GLTAG& tag = scene->Tag(i);
+		int x = (int)(tag.wx * dpr);
+		int y = (int)(H - dpr*(H - tag.wy));
+		painter.setBrush(QColor(0,0,0));
+		painter.drawEllipse(QPoint(x, y), 4, 4);
+		painter.setBrush(toQColor(tag.c));
+		painter.drawEllipse(QPoint(x-1, y-1), 4, 4);
 	}
-	re.end();
-/*
 	GLViewSettings& vs = GetViewSettings();
 
-	QPainter painter(this);
-	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 	painter.setFont(QFont("Helvetica", vs.m_tagFontSize));
 	for (int i = 0; i<ntags; ++i)
 	{
@@ -2653,14 +2537,6 @@ void CGLView::RenderTags(GLRenderEngine& re)
 
 		painter.drawText(x + 2, y - 3, tag.sztag);
 	}
-
-	painter.end();
-
-	re.popState();
-
-	// QPainter messes this up so reset it
-//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-*/
 }
 
 QSize CGLView::GetSafeFrameSize() const

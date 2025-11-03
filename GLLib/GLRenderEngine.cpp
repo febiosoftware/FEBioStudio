@@ -33,7 +33,7 @@ void GLRenderEngine::ResetStats()
 	m_stats.clear();
 }
 
-GLRenderStats GLRenderEngine::GetRenderStats()
+GLRenderStats GLRenderEngine::GetRenderStats() const
 {
 	return m_stats;
 }
