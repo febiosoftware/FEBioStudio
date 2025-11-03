@@ -94,7 +94,6 @@ SOFTWARE.*/
 #include <PyLib/PythonRunner.h>
 #include "FEBioBatchView.h"
 #include "DocPropsPanel.h"
-#include <RHILib/rhiDocView.h>
 
 class QProcess;
 
@@ -161,7 +160,6 @@ public:
 		GL_VIEWER,
 		FEBREPORT_VIEW,
 		BATCHRUN_VIEW,
-		RHI_VIEW
 	};
 
 public:
@@ -176,7 +174,6 @@ public:
 	::C2DImageTimeView* timeView2D;
 	CFEBioReportView* febReportView;
 	FEBioBatchView* batchView;
-	rhiDocView* rhiView;
 
 public:
 	CMainCentralWidget(CMainWindow* wnd) : m_wnd(wnd)
@@ -219,9 +216,6 @@ public:
 		batchView = new FEBioBatchView(wnd);
 		batchView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		stack->addWidget(batchView);
-
-		rhiView = new rhiDocView(wnd);
-		stack->addWidget(QWidget::createWindowContainer(rhiView));
 
 		centralLayout->addWidget(tab);
 		centralLayout->addWidget(stack);

@@ -1372,16 +1372,8 @@ void CMainWindow::on_actionRayTrace_triggered()
 	if (scene == nullptr) return;
 
 	int W = 0, H = 0;
-	if (ui->m_activeConfig == Ui::Config::RHI_CONFIG)
-	{
-		W = ui->centralWidget->rhiView->width();
-		H = ui->centralWidget->rhiView->height();
-	}
-	else
-	{
-		W = GetGLView()->width();
-		H = GetGLView()->height();
-	}
+	W = GetGLView()->width();
+	H = GetGLView()->height();
 	if ((W == 0) || (H == 0)) return;
 
 	RayTracer* rayTracer = new RayTracer;

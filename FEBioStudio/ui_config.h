@@ -38,8 +38,7 @@ namespace Ui {
 		XML_CONFIG,			// text document	(i.e. feb file)
 		MONITOR_CONFIG,		// febio monitor document
 		FEBREPORT_CONFIG,	// febio report document
-		BATCHRUN_CONFIG,	// febio batch run document
-		RHI_CONFIG			// new Qt RHI-based rendering target
+		BATCHRUN_CONFIG		// febio batch run document
 	};
 
 	// Protected base class for configurations
@@ -132,13 +131,4 @@ namespace Ui {
 		CBatchRunConfig(Ui::CMainWindow* ui) : CUIConfig(ui, Ui::Config::BATCHRUN_CONFIG) {}
 		void Apply() override;
 	};
-
-	// test Configuration for RHI 
-	class CRHIConfig : public CUIConfig
-	{
-	public:
-		CRHIConfig(Ui::CMainWindow* ui) : CUIConfig(ui, Ui::Config::RHI_CONFIG) {}
-		void Apply() override;
-	};
-
 } // namespace Ui

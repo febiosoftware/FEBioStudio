@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,15 +27,10 @@ SOFTWARE.*/
 #include <QPainter>
 #include <QFile>
 #include <QWidget>
-#include <GLLib/GLMesh.h>
 #include "rhiScene.h"
-#include "rhiDocument.h"
 #include <FEBioStudio/MainWindow.h>
 #include <GLLib/GLContext.h>
 #include <QMouseEvent>
-#include <QMimeData>
-#include <QFileInfo>
-#include <QPainter>
 #include <QTimer>
 
 rhiSceneView::rhiSceneView(CMainWindow* wnd) : m_wnd(wnd)
@@ -52,31 +47,6 @@ void rhiSceneView::SetScene(GLScene* scene)
 	m_scene = scene;
 	if (m_rhiRender) m_rhiRender->clearCache();
 	requestUpdate();
-}
-
-bool rhiSceneView::event(QEvent* event)
-{
-	/*
-	if (m_doc && (event->type()==QEvent::Drop))
-	{
-		QDropEvent* ev = dynamic_cast<QDropEvent*>(event);
-		if (ev)
-		{
-			foreach(const QUrl& url, ev->mimeData()->urls()) {
-				QString fileName = url.toLocalFile();
-
-				FileReader* fileReader = nullptr;
-
-				QFileInfo file(fileName);
-				m_doc->ImportFile(fileName);
-			}
-
-			m_doc->GetScene()->ZoomExtents(false);
-			requestUpdate();
-		}
-	}
-	*/
-	return RhiWindow::event(event);
 }
 
 void rhiSceneView::customInit()

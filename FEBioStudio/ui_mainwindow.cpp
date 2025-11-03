@@ -354,7 +354,6 @@ void Ui::CMainWindow::BuildConfigs()
 	m_configs.push_back(new CMonitorConfig(this));
 	m_configs.push_back(new CFEBReportConfig(this));
 	m_configs.push_back(new CBatchRunConfig(this));
-	m_configs.push_back(new CRHIConfig(this));
 
 	setUIConfig(Ui::Config::EMPTY_CONFIG);
 }

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,10 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "rhiwindow.h"
-#include "rhiDocument.h"
 #include "rhiRenderer.h"
 #include <GLWLib/GLWidgetManager.h>
 #include <GLWLib/GLTriad.h>
+#include <GLLib/GLScene.h>
 
 class CMainWindow;
 
@@ -52,9 +52,6 @@ protected:
 	void mousePressEvent(QMouseEvent* event) override;
 	void mouseMoveEvent(QMouseEvent* event) override;
 	void mouseReleaseEvent(QMouseEvent* event) override;
-
-public:
-	bool event(QEvent* event) override;
 
 private:
 	CMainWindow* m_wnd = nullptr;

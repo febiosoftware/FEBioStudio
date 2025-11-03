@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include "ui_mainwindow.h"
 #include "TextDocument.h"
 #include "../FEBioMonitor/FEBioReportDoc.h"
-#include <RHILib/rhiDocument.h>
 
 // configuration base class
 void Ui::CUIConfig::Apply()
@@ -567,54 +566,4 @@ void Ui::CBatchRunConfig::Apply()
 	ui->febioMonitorView->parentWidget()->hide();
 	ui->logPanel->parentWidget()->show();
 	ui->docProps->parentWidget()->hide();
-}
-
-// Configure for app document
-void Ui::CRHIConfig::Apply()
-{
-	CUIConfig::Apply();
-
-	ui->setActiveCentralView(CMainCentralWidget::RHI_VIEW);
-
-	ui->mainMenu->actionRayTrace->setEnabled(true);
-
-	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
-	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
-	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
-	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
-	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
-	ui->mainMenu->menuPost->menuAction()->setVisible(false);
-	ui->mainMenu->menuRecord->menuAction()->setVisible(false);
-	ui->mainMenu->menuView->menuAction()->setVisible(false);
-	ui->mainMenu->menuFEBio->menuAction()->setVisible(false);
-
-	ui->buildToolBar->hide();
-	ui->postToolBar->hide();
-	ui->imageToolBar->hide();
-	ui->pFontToolBar->hide();
-	ui->xmlToolbar->hide();
-	ui->monitorToolBar->hide();
-
-	ui->centralWidget->glw->HideControlBar();
-
-	ui->modelViewer->parentWidget()->hide();
-	ui->buildPanel->parentWidget()->hide();
-	ui->postPanel->parentWidget()->hide();
-	ui->timePanel->parentWidget()->hide();
-	ui->infoPanel->parentWidget()->hide();
-	ui->imageSettingsPanel->parentWidget()->hide();
-	ui->timePanel->parentWidget()->hide();
-	ui->febioMonitor->parentWidget()->hide();
-	ui->febioMonitorView->parentWidget()->hide();
-	ui->logPanel->parentWidget()->show();
-
-	ui->docProps->parentWidget()->show();
-	ui->docProps->parentWidget()->raise();
-
-	::CMainWindow* wnd = ui->m_wnd;
-	rhiDocument* doc = dynamic_cast<rhiDocument*>(wnd->GetDocument());
-	if (doc)
-		ui->centralWidget->rhiView->SetScene(doc->GetScene());
-	else
-		ui->centralWidget->rhiView->SetScene(nullptr);
 }
