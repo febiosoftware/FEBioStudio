@@ -3,8 +3,8 @@
 // input
 layout(location = 0) in vec3 v_pos;
 layout(location = 1) in vec3 v_normal;
-layout(location = 2) in vec3 v_color;
-layout(location = 3) in vec3 v_tex;
+layout(location = 2) in vec3 v_tex;
+layout(location = 3) in vec4 v_color;
 
 // output
 layout(location = 0) out vec4 fragColor;
@@ -29,6 +29,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     int useClipping;
     int useVertexColor;
     int useLighting;
+    int frontOnly;
 } mesh;
 
 // texture sampler
@@ -57,19 +58,21 @@ void main()
     vec3 L = normalize(glob.lightPos.xyz);
     vec3 N = normalize(v_normal);
 
-    vec3 f_col = vec3(0,0,0);
+    vec4 f_col = vec4(0,0,0,1);
 
-
-    vec3 col = v_color;
+    vec4 col = v_color;
     if (mesh.useTexture > 0)
-        col *= texture(smp, v_tex.xy).xyz;
+        col.xyz *= texture(smp, v_tex.xy).xyz;
 
     if (mesh.useLighting > 0)
     {
         // ambient value
         f_col += col*0.2;
 
-        if (gl_FrontFacing) {
+        if (gl_FrontFacing || (mesh.frontOnly == 0)) {
+
+            if (!gl_FrontFacing)
+                N = -N;
 
             // front-lit
             float b = max(dot(N, vec3(0,0,1)),0);
@@ -86,13 +89,13 @@ void main()
                 float se = clamp(64.0 * mesh.specExp, 0.0, 64.0);
                 float s = pow(c, se);
                 s = clamp(s, 0, 1);
-                f_col += glob.specColor.xyz*(s*mesh.specStrength);
+                f_col.xyz += glob.specColor.xyz*(s*mesh.specStrength);
             }
         }
         else {
             // only diffuse for backfacing triangles
             float a = max(dot(-N, L),0);
-            f_col += vec3(1, 0.7, 0.7)*a;
+            f_col.xyz += vec3(1, 0.7, 0.7)*a;
         }
     }
     else
@@ -101,6 +104,5 @@ void main()
     }
 
     // return final color
-    float a = clamp(mesh.opacity, 0.0, 1.0);
-    fragColor = vec4(f_col, a);
+    fragColor = f_col;
 }

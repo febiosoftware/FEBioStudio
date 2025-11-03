@@ -37,7 +37,7 @@ void rhi::Shader::create(const QString& vertexShader, const QString& fragmentSha
 class PointShaderResource : public rhi::MeshShaderResource
 {
 public:
-	enum { MVP, MV, COL, CLIP };
+	enum { MVP, MV, COL, CLIP, VCOL };
 
 public:
 	PointShaderResource(QRhi* rhi, rhi::SharedResources* sharedResources) : MeshShaderResource(rhi)
@@ -46,7 +46,8 @@ public:
 			{rhi::UniformBlock::MAT4, "mvp"},
 			{rhi::UniformBlock::MAT4, "mv"},
 			{rhi::UniformBlock::VEC4, "col"},
-			{rhi::UniformBlock::INT , "useClipping"}
+			{rhi::UniformBlock::INT , "useClipping"},
+			{rhi::UniformBlock::INT , "useVertexColor"}
 			});
 
 		// create the buffer
@@ -74,6 +75,7 @@ public:
 		m_data.setMat4(MV, mv);
 		m_data.setVec4(COL, diffuse);
 		m_data.setInt (CLIP, (m.doClipping? 1 : 0));
+		m_data.setInt (VCOL, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
 	}
 };
 
@@ -89,10 +91,11 @@ QRhiVertexInputLayout PointShader::meshLayout()
 {
 	QRhiVertexInputLayout meshLayout;
 	meshLayout.setBindings({
-		{ 3 * sizeof(float) }
+		{ 6 * sizeof(float) }
 		});
 	meshLayout.setAttributes({
-		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 } // position
+		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
+		{ 0, 1, QRhiVertexInputAttribute::Float3, 3*sizeof(float)} // color
 		});
 	return meshLayout;
 }
@@ -190,7 +193,8 @@ public:
 			{rhi::UniformBlock::INT  , "useStipple"},
 			{rhi::UniformBlock::INT  , "useClipping"},
 			{rhi::UniformBlock::INT  , "useVertexColor"},
-			{rhi::UniformBlock::INT  , "useLighting"}
+			{rhi::UniformBlock::INT  , "useLighting"},
+			{rhi::UniformBlock::INT  , "frontOnly"}
 			});
 
 		// create the buffer
@@ -226,6 +230,7 @@ public:
 		m_data.setInt  ( 8, (m.doClipping ? 1 : 0));
 		m_data.setInt  ( 9, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
 		m_data.setInt  (10, (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0 : 1);
+		m_data.setInt  (11, (m.mat.frontOnly ? 1 : 0));
 	}
 };
 
@@ -241,13 +246,13 @@ QRhiVertexInputLayout SolidShader::meshLayout()
 {
 	QRhiVertexInputLayout meshLayout;
 	meshLayout.setBindings({
-		{ 12 * sizeof(float) }
+		{ 13 * sizeof(float) }
 		});
 	meshLayout.setAttributes({
 		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
 		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // normal 
-		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }, // color
-		{ 0, 3, QRhiVertexInputAttribute::Float3, 9 * sizeof(float) }, // texcoord
+		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }, // texcoord
+		{ 0, 3, QRhiVertexInputAttribute::Float4, 9 * sizeof(float) }, // color
 		});
 	return meshLayout;
 }

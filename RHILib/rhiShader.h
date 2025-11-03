@@ -60,7 +60,14 @@ class PointShader : public rhi::Shader
 public:
 	struct Vertex {
 		vec3f r; // coordinate
-		void operator = (const GLMesh::NODE& nd) { r = nd.r; }
+		vec3f c; // color
+		void operator = (const GLMesh::NODE& nd) 
+		{ 
+			r = nd.r; 
+			float f[4] = { 0 };
+			nd.c.toFloat(f);
+			c = vec3f(f[0], f[1], f[2]);
+		}
 	};
 
 public:
@@ -99,18 +106,15 @@ public:
 	struct Vertex {
 		vec3f r; // coordinate
 		vec3f n; // normal
-		vec3f c; // color
 		vec3f t; // texture coordinate
+		float c[4] = { 0.f }; // color
 
 		void operator = (const GLMesh::NODE& nd)
 		{
 			r = nd.r;
 			n = nd.n;
 			t = nd.t;
-
-			float col[4] = { 0.f };
-			nd.c.toFloat(col);
-			c = vec3f(col[0], col[1], col[2]);
+			nd.c.toFloat(c);
 		}
 	};
 

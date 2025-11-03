@@ -119,6 +119,8 @@ private:
 
 	void UpdateState(int nstate);
 
+	void BuildMesh();
+
 protected:
 	float	m_scale;
 	float	m_dens;
@@ -152,5 +154,7 @@ protected:
 	vec2f			m_staticRange;
 
 	float			m_fscale;	// total scale factor for rendering
+
+	GLMesh* m_mesh = nullptr;
 };
 }

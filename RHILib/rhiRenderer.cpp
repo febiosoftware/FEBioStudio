@@ -270,6 +270,7 @@ void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::D
 	m_currentMat.diffuse = m_currentMat.ambient = c;
 	m_currentMat.type = matType;
 	m_currentMat.diffuseMap = map;
+	m_currentMat.frontOnly = frontOnly;
 	mb.setColor(c);
 }
 

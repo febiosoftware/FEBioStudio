@@ -2,6 +2,7 @@
 
 // input
 layout(location = 0) in vec3 v_pos;
+layout(location = 1) in vec3 v_col;
 
 // output
 layout(location = 0) out vec4 fragColor;
@@ -19,6 +20,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     mat4 mv;
     vec4 col;
     int useClipping;
+    int useVertexColor;
 } mesh;
 
 void main()
@@ -30,5 +32,9 @@ void main()
         if (d < 0) discard;
     }
 
-    fragColor = vec4(mesh.col.xyz, 0.5f);
+    vec4 col = mesh.col;
+    if (mesh.useVertexColor > 0)
+        col = vec4(v_col, 1.f);
+
+    fragColor = col;
 }

@@ -57,6 +57,7 @@ public:
 	double		reflectivity = 0; // reflectivity factor (specular intensity)
 	double		reflection = 0; // reflection factor
 	double		opacity = 1.0;	// opacity (1.0 = opaque, 0.0 = transparent)
+	bool		frontOnly = false;
 
 public:
 	void AmbientDiffuse(const GLColor& c) { ambient = diffuse = c; }

@@ -3,14 +3,14 @@
 // input
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;
-layout(location = 2) in vec3 color;
-layout(location = 3) in vec3 tex;
+layout(location = 2) in vec3 tex;
+layout(location = 3) in vec4 color;
 
 // output
 layout(location = 0) out vec3 v_pos;
 layout(location = 1) out vec3 v_normal;
-layout(location = 2) out vec3 v_color;
-layout(location = 3) out vec3 v_tex;
+layout(location = 2) out vec3 v_tex;
+layout(location = 3) out vec4 v_color;
 
 // global (shared) block
 layout(std140, binding = 0) uniform GlobalBlock {
@@ -32,6 +32,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     int useClipping;
     int useVertexColor;
     int useLighting;
+    int frontOnly;
 } mesh;
 
 // texture sampler
@@ -39,8 +40,13 @@ layout(binding = 2) uniform sampler2D smp;
 
 void main()
 {
-    v_color = mesh.col.xyz; //color;
+    float a = clamp(mesh.opacity, 0.0, 1.0);
+
     if (mesh.useVertexColor > 0) v_color = color;
+    else {
+        v_color = mesh.col;
+        v_color.a = mesh.opacity;
+    }
 
     v_normal = normalize((mesh.mv*vec4(normal, 0)).xyz);
     v_pos = (mesh.mv*vec4(position,1)).xyz;

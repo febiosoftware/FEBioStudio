@@ -45,7 +45,10 @@ namespace rhi {
 			for (int i = 0; i < NE; ++i) {
 				const GLMesh::EDGE& e = gmsh->Edge(i);
 				for (int j = 0; j < 2; ++j, ++v) {
-					(*v) = gmsh->Node(e.n[j]);
+					GLMesh::NODE nd;
+					nd.r = e.vr[j];
+					nd.c = e.c[j];
+					(*v) =nd;
 				}
 			}
 			create(NV, sizeof(Vertex), vertexData.data());

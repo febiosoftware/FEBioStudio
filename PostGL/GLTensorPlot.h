@@ -111,6 +111,8 @@ protected:
 
 	void Update() override;
 
+	void BuildMesh();
+
 	LegendData GetLegendData() const override;
 
 protected:
@@ -140,5 +142,7 @@ protected:
 	int		m_lastTime;
 	float	m_lastDt;
 	int		m_lastCol;
+
+	GLMesh* m_mesh = nullptr;
 };
 }
