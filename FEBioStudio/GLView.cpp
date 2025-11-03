@@ -1227,12 +1227,14 @@ void CGLView::keyPressEvent(QKeyEvent* ev)
 		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 		if (doc && doc->SelectHighlightedItems())
 		{
+			ev->accept();
 			GLHighlighter::ClearHighlights();
 			repaint();
 		}
-		else ev->ignore();
 	}
-	else ev->ignore();
+
+	// pass it to the mainwindow
+	m_pWnd->keyPressEvent(ev);
 }
 
 void CGLView::customInit()
