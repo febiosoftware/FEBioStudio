@@ -57,32 +57,6 @@ void glx::drawLine(GLRenderEngine& re, double x0, double y0, double x1, double y
 	re.end();
 }
 
-void glx::drawPath2D(GLRenderEngine& re, const std::vector<std::pair<int, int>>& points)
-{
-	re.begin(GLRenderEngine::LINESTRIP);
-	{
-		for (int i = 0; i < (int)points.size(); ++i)
-		{
-			int x = points[i].first;
-			int y = points[i].second;
-			re.vertex(vec3d(x, y,0));
-		}
-	}
-	re.end();
-}
-
-void glx::drawRect(GLRenderEngine& re, double x0, double y0, double x1, double y1)
-{
-	re.begin(GLRenderEngine::LINELOOP);
-	{
-		re.vertex(x0, y0);
-		re.vertex(x1, y0);
-		re.vertex(x1, y1);
-		re.vertex(x0, y1);
-	}
-	re.end();
-}
-
 void glx::drawCircle(GLRenderEngine& re, double R, int N)
 {
 	double x, y;
