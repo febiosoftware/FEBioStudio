@@ -52,15 +52,13 @@ void rhi::MeshRenderPass::clearUnusedCache()
 	renderBatch.clear();
 }
 
-void rhi::MeshRenderPass::deleteCachedMesh(const GLMesh* mesh)
+void rhi::MeshRenderPass::removeCachedMesh(const GLMesh* mesh)
 {
 	auto it = m_meshList.find(mesh);
 	if (it != m_meshList.end())
 	{
-		delete it->second;
-		m_meshList.erase(it);
+		it->first = nullptr;
 	}
-	renderBatch.clear();
 }
 
 void rhi::MeshRenderPass::addToRenderBatch(rhi::Mesh* mesh, int startVertex, int vertexCount)

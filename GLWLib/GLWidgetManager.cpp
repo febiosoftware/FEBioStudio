@@ -172,9 +172,6 @@ void CGLWidgetManager::DrawWidgets(GLPainter* painter)
 
 void CGLWidgetManager::DrawWidget(GLWidget* pw, GLPainter* painter)
 {
-	// now draw the widget
-	pw->draw(painter);
-
 	// if the widget has the focus, draw a box around it
 	if (pw->has_focus())
 	{
@@ -184,7 +181,9 @@ void CGLWidgetManager::DrawWidget(GLWidget* pw, GLPainter* painter)
 		int y1 = (pw->m_y + pw->m_h);
 
 		painter->setPen(QPen(QColor::fromRgb(0, 0, 128)));
-		painter->fillRect(x0, y0, pw->m_w, pw->m_h, QColor::fromRgb(200, 200, 200, 64));
+
+		if (pw->m_bgFillMode == GLWidget::FILL_NONE)
+			painter->fillRect(x0, y0, pw->m_w, pw->m_h, QColor::fromRgb(255, 255, 255, 128));
 
 		if (pw->resizable())
 		{
@@ -193,7 +192,10 @@ void CGLWidgetManager::DrawWidget(GLWidget* pw, GLPainter* painter)
 			painter->drawLine(x1 - 10, y1, x1 - 1, y1 - 9);
 			painter->drawLine(x1 - 5, y1, x1 - 1, y1 - 4);
 		}
-		
+	
 		painter->drawRect(x0, y0, pw->m_w, pw->m_h);
 	}
+
+	// now draw the widget
+	pw->draw(painter);
 }

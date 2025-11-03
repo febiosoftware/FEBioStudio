@@ -84,7 +84,7 @@ namespace rhi {
 
 		void clearUnusedCache();
 
-		void deleteCachedMesh(const GLMesh* mesh);
+		void removeCachedMesh(const GLMesh* mesh);
 
 		void addToRenderBatch(rhi::Mesh* mesh, int startVertex = 0, int vertexCount = -1);
 

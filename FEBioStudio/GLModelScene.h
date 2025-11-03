@@ -106,6 +106,7 @@ private:
 	void RenderFENodes(GLRenderEngine& re, GLContext& rc);
 	void RenderSurfaceMeshNodes(GLRenderEngine& re, GLContext& rc);
 	void RenderNormals(GLRenderEngine& re, double scale);
+	void renderTaggedGMeshNodes(GLRenderEngine& re, const GLMesh& mesh, int tag);
 
 	void RenderSelection(GLRenderEngine& re);
 

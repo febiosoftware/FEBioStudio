@@ -183,13 +183,13 @@ void rhiRenderer::clearUnusedCache()
 
 void rhiRenderer::deleteCachedMesh(GLMesh* gm)
 {
-	m_solidPass->deleteCachedMesh(gm);
-	m_solidOverlayPass->deleteCachedMesh(gm);
-	m_volumeRenderPass->deleteCachedMesh(gm);
-	m_linePass->deleteCachedMesh(gm);
-	m_lineOverlayPass->deleteCachedMesh(gm);
-	m_pointPass->deleteCachedMesh(gm);
-	m_pointOverlayPass->deleteCachedMesh(gm);
+	m_solidPass->removeCachedMesh(gm);
+	m_solidOverlayPass->removeCachedMesh(gm);
+	m_volumeRenderPass->removeCachedMesh(gm);
+	m_linePass->removeCachedMesh(gm);
+	m_lineOverlayPass->removeCachedMesh(gm);
+	m_pointPass->removeCachedMesh(gm);
+	m_pointOverlayPass->removeCachedMesh(gm);
 }
 
 void rhiRenderer::setBackgroundColor(const GLColor& c)
@@ -366,9 +366,9 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 {
 	rhi::Mesh* pointMesh = nullptr;
 	if (m_currentMat.type == GLMaterial::OVERLAY)
-		m_pointOverlayPass->addGLMesh(mesh, cacheMesh);
+		pointMesh = m_pointOverlayPass->addGLMesh(mesh, cacheMesh);
 	else
-		m_pointPass->addGLMesh(mesh, cacheMesh);
+		pointMesh = m_pointPass->addGLMesh(mesh, cacheMesh);
 
 	if (pointMesh)
 	{
@@ -628,6 +628,12 @@ void rhiRenderer::endShape()
 		{
 			renderGMeshEdges(*pm, false);
 		}
+
+		if ((pm->Nodes() > 0) && (pm->Edges() == 0) && (pm->Faces() == 0))
+		{
+			renderGMeshNodes(*pm, false);
+		}
+
 		delete pm;
 	}
 	buildingShape = false;

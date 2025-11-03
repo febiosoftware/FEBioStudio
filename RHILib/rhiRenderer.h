@@ -87,7 +87,7 @@ public:
 	// clear cached resources that were not used in the last frame
 	void clearUnusedCache();
 
-	void deleteCachedMesh(GLMesh* gm);
+	void deleteCachedMesh(GLMesh* gm) override;
 
 	QSize pixelSize() const;
 

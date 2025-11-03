@@ -1876,7 +1876,7 @@ void GLObjectItem::RenderFENodes(GLRenderEngine& re, GLContext& rc)
 
 	// render the visible nodes
 	re.setMaterial(GLMaterial::CONSTANT, GLColor(0, 0, 255, 128));
-	re.renderTaggedGMeshNodes(*gm, 1);
+	renderTaggedGMeshNodes(re, *gm, 1);
 
 	// render selected nodes
 	// TODO: Shouldn't this be done in the GLSelectionItem?
@@ -1890,6 +1890,22 @@ void GLObjectItem::RenderFENodes(GLRenderEngine& re, GLContext& rc)
 			re.renderGMeshNodes(selectionMesh, false);
 		}
 	}
+}
+
+void GLObjectItem::renderTaggedGMeshNodes(GLRenderEngine& re, const GLMesh& mesh, int tag)
+{
+	std::vector<vec3f> points; points.reserve(mesh.Nodes());
+	for (int i = 0; i < mesh.Nodes(); ++i)
+	{
+		const GLMesh::NODE& node = mesh.Node(i);
+		if (node.tag == tag) points.push_back(node.r);
+	}
+	if (points.empty()) return;
+
+	re.begin(GLRenderEngine::POINTS);
+	for (int i = 0; i < points.size(); ++i)
+		re.vertex(to_vec3d(points[i]));
+	re.end();
 }
 
 void GLObjectItem::RenderSelectedFEFaces(GLRenderEngine& re)

@@ -1453,7 +1453,7 @@ void CGLView::RenderScene(GLRenderEngine& re)
 	if (scene == nullptr) return;
 
 	GLViewSettings& view = GetViewSettings();
-	re.setBackgroundColor(view.m_col1);
+	re.setBackgroundColor(view.m_col2);
 	// position the light
 	vec3f lp = m_view.m_light; lp.Normalize();
 	re.setLightPosition(0, lp);
@@ -1514,7 +1514,7 @@ void CGLView::RenderOverlay(GLRenderEngine& re, GLContext& rc)
 
 	// Create the overlay image that we'll paint in
 	QImage img(rhiRender->pixelSize(), QImage::Format_RGBA8888_Premultiplied);
-	img.fill(Qt::transparent);
+	img.fill(QColor(255, 255, 255, 0));
 	QPainter painter(&img);
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
