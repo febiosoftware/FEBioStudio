@@ -112,6 +112,10 @@ void GLMesh::AddEdge(int n0, int n1, int groupID)
 	EDGE e;
 	e.n[0] = n0;
 	e.n[1] = n1;
+	e.vr[0] = Node(n0).r;
+	e.vr[1] = Node(n1).r;
+	e.c[0] = Node(n0).c;
+	e.c[1] = Node(n1).c;
 	e.pid = groupID;
 	m_Edge.push_back(e);
 }
@@ -123,6 +127,11 @@ void GLMesh::AddEdge(int* n, int nodes, int gid)
 	{
 		e.n[0] = n[0];
 		e.n[1] = n[1];
+		e.vr[0] = Node(n[0]).r;
+		e.vr[1] = Node(n[1]).r;
+		e.c[0] = Node(n[0]).c;
+		e.c[1] = Node(n[1]).c;
+
 		e.pid = gid;
 		m_Edge.push_back(e);
 	}
@@ -130,11 +139,20 @@ void GLMesh::AddEdge(int* n, int nodes, int gid)
 	{
 		e.n[0] = n[0];
 		e.n[1] = n[2];
+		e.vr[0] = Node(n[0]).r;
+		e.vr[1] = Node(n[2]).r;
+		e.c[0] = Node(n[0]).c;
+		e.c[1] = Node(n[2]).c;
 		e.pid = gid;
 		m_Edge.push_back(e);
 
 		e.n[0] = n[2];
 		e.n[1] = n[1];
+		e.vr[0] = Node(n[2]).r;
+		e.vr[1] = Node(n[1]).r;
+		e.c[0] = Node(n[2]).c;
+		e.c[1] = Node(n[1]).c;
+
 		e.pid = gid;
 		m_Edge.push_back(e);
 	}
@@ -142,16 +160,31 @@ void GLMesh::AddEdge(int* n, int nodes, int gid)
 	{
 		e.n[0] = n[0];
 		e.n[1] = n[2];
+		e.vr[0] = Node(n[0]).r;
+		e.vr[1] = Node(n[2]).r;
+		e.c[0] = Node(n[0]).c;
+		e.c[1] = Node(n[2]).c;
+
 		e.pid = gid;
 		m_Edge.push_back(e);
 
 		e.n[0] = n[2];
 		e.n[1] = n[3];
+		e.vr[0] = Node(n[2]).r;
+		e.vr[1] = Node(n[3]).r;
+		e.c[0] = Node(n[2]).c;
+		e.c[1] = Node(n[3]).c;
+
 		e.pid = gid;
 		m_Edge.push_back(e);
 
 		e.n[0] = n[3];
 		e.n[1] = n[1];
+		e.vr[0] = Node(n[3]).r;
+		e.vr[1] = Node(n[1]).r;
+		e.c[0] = Node(n[3]).c;
+		e.c[1] = Node(n[1]).c;
+
 		e.pid = gid;
 		m_Edge.push_back(e);
 	}
