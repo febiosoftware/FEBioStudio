@@ -1020,10 +1020,9 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 		{
 			if ((m_x0 == m_x1) && (m_y0 == m_y1))
 			{
-/*				QMenu menu(this);
+				QMenu menu(m_pWnd);
 				m_pWnd->BuildContextMenu(menu);
 				menu.exec(ev->globalPos());
-*/
 			}
 			else
 			{

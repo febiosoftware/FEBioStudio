@@ -2276,16 +2276,6 @@ void GLObjectItem::RenderSurfaceMeshFaces(GLRenderEngine& re, GLContext& rc)
 	RenderSelection(re);
 }
 
-void RenderLine(GLRenderEngine& re, GNode& n0, GNode& n1)
-{
-	vec3d r0 = n0.Position();
-	vec3d r1 = n1.Position();
-
-	re.renderPoint(r0);
-	re.renderPoint(r1);
-	re.renderLine(r0, r1);
-}
-
 GLDiscreteItem::GLDiscreteItem(CGLModelScene* scene) : GLModelSceneItem(scene)
 {
 	// get the selection mode
@@ -2417,8 +2407,8 @@ void GLDiscreteItem::render(GLRenderEngine& re, GLContext& rc)
 
 	if (m_lines.empty()) return;
 
-	re.pushState();
-	re.disable(GLRenderEngine::LIGHTING);
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
+	re.beginShape();
 	for (const Line& line : m_lines)
 	{
 		GLColor c = line.col;
@@ -2428,7 +2418,7 @@ void GLDiscreteItem::render(GLRenderEngine& re, GLContext& rc)
 		re.renderPoint(line.b);
 		re.renderLine(line.a, line.b);
 	}
-	re.popState();
+	re.endShape();
 }
 
 void GLSelectionBox::render(GLRenderEngine& re, GLContext& rc)
