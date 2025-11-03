@@ -35,6 +35,7 @@ namespace rhi {
 
 		bool CreateFromGLMesh(const GLMesh* gmsh)
 		{
+			m_partitions.clear();
 			if (gmsh == nullptr) return false;
 			int NE = gmsh->Edges();
 			int NV = 2 * NE;
@@ -48,6 +49,7 @@ namespace rhi {
 				}
 			}
 			create(NV, sizeof(Vertex), vertexData.data());
+			m_partitions.push_back({ 0, NV });
 			return true;
 		}
 

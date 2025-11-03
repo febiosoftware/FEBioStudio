@@ -37,6 +37,8 @@ namespace rhi {
 	public:
 		MeshList() {}
 
+		size_t size() const { return meshList.size(); }
+
 		Container::iterator begin() { return meshList.begin(); }
 		Container::iterator end() { return meshList.end(); }
 
@@ -85,6 +87,8 @@ namespace rhi {
 		void deleteCachedMesh(const GLMesh* mesh);
 
 		void addToRenderBatch(rhi::Mesh* mesh, int startVertex = 0, int vertexCount = -1);
+
+		size_t cachedMeshes() const { return m_meshList.size(); }
 
 	protected:
 		rhi::MeshList m_meshList;

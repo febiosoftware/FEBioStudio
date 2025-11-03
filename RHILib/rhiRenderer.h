@@ -91,6 +91,8 @@ public:
 
 	QSize pixelSize() const;
 
+	GLRenderStats GetRenderStats() const override;
+
 public:
 
 	void setProjection(double fov, double fnear, double ffar) override;
