@@ -61,8 +61,7 @@ void rhi::Mesh::Update(QRhiResourceUpdateBatch* u)
 
 	if (sr)
 	{
-		QMatrix4x4 mvp = prMatrix * mvMatrix;
-		sr->setData(mvp, mvMatrix, *this);
+		sr->setData(*this);
 		sr->update(u);
 	}
 }

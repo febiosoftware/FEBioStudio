@@ -66,13 +66,15 @@ public:
 		srb->create();
 	}
 
-	void setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const rhi::Mesh& m) override
+	void setData(const rhi::Mesh& m) override
 	{
 		float diffuse[4] = { 0.f };
 		m.mat.diffuse.toFloat(diffuse);
 
+		QMatrix4x4 mvp = m.prMatrix * m.mvMatrix;
+
 		m_data.setMat4(MVP, mvp);
-		m_data.setMat4(MV, mv);
+		m_data.setMat4(MV, m.mvMatrix);
 		m_data.setVec4(COL, diffuse);
 		m_data.setInt (CLIP, (m.doClipping? 1 : 0));
 		m_data.setInt (VCOL, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
@@ -138,13 +140,15 @@ public:
 		srb->create();
 	}
 
-	void setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const rhi::Mesh& m) override
+	void setData(const rhi::Mesh& m) override
 	{
 		float diffuse[4] = { 0.f };
 		m.mat.diffuse.toFloat(diffuse);
 
+		QMatrix4x4 mvp = m.prMatrix * m.mvMatrix;
+
 		m_data.setMat4(MVP, mvp);
-		m_data.setMat4(MV, mv);
+		m_data.setMat4(MV, m.mvMatrix);
 		m_data.setVec4(COL, diffuse);
 		m_data.setInt (CLIP, (m.doClipping ? 1 : 0));
 		m_data.setInt (VCOL, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
@@ -214,13 +218,15 @@ public:
 		srb->create();
 	}
 
-	void setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const rhi::Mesh& m) override
+	void setData(const rhi::Mesh& m) override
 	{
 		float diffuse[4] = { 0.f };
 		m.mat.diffuse.toFloat(diffuse);
 
+		QMatrix4x4 mvp = m.prMatrix * m.mvMatrix;
+
 		m_data.setMat4 ( 0, mvp);
-		m_data.setMat4 ( 1, mv);
+		m_data.setMat4 ( 1, m.mvMatrix);
 		m_data.setVec4 ( 2, diffuse);
 		m_data.setFloat( 3, m.mat.shininess);
 		m_data.setFloat( 4, m.mat.reflectivity);
@@ -343,10 +349,11 @@ public:
 		srb->create();
 	}
 
-	void setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const rhi::Mesh& m)
+	void setData(const rhi::Mesh& m) override
 	{
+		QMatrix4x4 mvp = m.prMatrix * m.mvMatrix;
 		m_data.setMat4(0, mvp);
-		m_data.setMat4(1, mv);
+		m_data.setMat4(1, m.mvMatrix);
 	}
 };
 
@@ -405,8 +412,9 @@ public:
 		srb->create();
 	}
 
-	void setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const rhi::Mesh& m) override
+	void setData(const rhi::Mesh& m) override
 	{
+		QMatrix4x4 mvp = m.prMatrix * m.mvMatrix;
 		m_data.setMat4(0, mvp);
 		m_data.setVec4(1, m.mat.diffuse);
 	}

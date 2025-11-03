@@ -48,7 +48,7 @@ namespace rhi {
 		MeshShaderResource(QRhi* rhi) : m_rhi(rhi) {}
 		virtual ~MeshShaderResource() {}
 
-		virtual void setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const Mesh& m) {}
+		virtual void setData(const Mesh& m) {}
 
 		QRhiShaderResourceBindings* get() { return srb.get(); }
 
@@ -99,12 +99,12 @@ namespace rhi {
 	public:
 		GLMaterial mat;
 		bool doClipping = false;
+		QMatrix4x4 mvMatrix; // model view
+		QMatrix4x4 prMatrix; // projection
 
 	protected:
 		QRhi* m_rhi = nullptr;
 
-		QMatrix4x4 mvMatrix; // model view
-		QMatrix4x4 prMatrix; // projection
 		bool active = false;
 		std::vector<Partition> m_partitions;
 
