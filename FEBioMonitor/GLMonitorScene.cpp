@@ -298,7 +298,6 @@ void CGLMonitorScene::BuildMesh()
 
 		Post::Material m;
 		m.diffuse = c;
-		m.ambient = c;
 		m.specular = GLColor(128, 128, 128);
 		m.emission = GLColor(0, 0, 0);
 		m.shininess = 0.5f;

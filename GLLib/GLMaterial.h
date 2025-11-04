@@ -54,7 +54,6 @@ public:
 	GLColor		specular;	// specular color of material
 	GLColor		emission;	// emission color of material
 	double		shininess = 0;	// shininess factor (specular exponent)
-	double		reflectivity = 0; // reflectivity factor (specular intensity)
 	double		reflection = 0; // reflection factor
 	double		opacity = 1.0;	// opacity (1.0 = opaque, 0.0 = transparent)
 	bool		frontOnly = false;

@@ -488,9 +488,13 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 			GPart* pg = PickPart(x, y);
 			if (pg)
 			{
-				pickColor->AssignColor(pg);
-				repaint();
-				return;
+				CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(pdoc);
+				if (modelDoc)
+				{
+					modelDoc->AssignColor(pg, toGLColor(pickColor->GetColor()));
+					repaint();
+					return;
+				}
 			}
 		}
 
@@ -1456,6 +1460,7 @@ void CGLView::RenderScene(GLRenderEngine& re)
 	// position the light
 	vec3f lp = m_view.m_light; lp.Normalize();
 	re.setLightPosition(0, lp);
+	re.setLightSpecularColor(0, GLColor::White());
 
 	GLCamera& cam = scene->GetCamera();
 	cam.MakeActive();

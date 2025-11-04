@@ -56,7 +56,8 @@ public:
 		m_glFaceMesh = nullptr;
 		m_objManip = nullptr;
 
-		m_col = GLColor(200, 200, 200);
+		m_mat.type = GLMaterial::PLASTIC;
+		m_mat.diffuse = GLColor(200, 200, 200);
 
 		m_bValid = true;
 	}
@@ -72,7 +73,7 @@ public:
 
 public:
 	int	m_ntype = -1;	//!< object type identifier
-	GLColor	m_col;	//!< color of object
+	GLMaterial m_mat;	//!< color of object
 	bool	m_bValid;
 
 	FSMesh*		m_pmesh;	//!< the mesh that this object manages
@@ -151,14 +152,23 @@ bool GObject::CanDeleteMesh() const
 // return type of Object
 int GObject::GetType() const { return imp->m_ntype; }
 
-//-----------------------------------------------------------------------------
 // get/set object color
-GLColor GObject::GetColor() const { return imp->m_col; }
+GLColor GObject::GetColor() const { return imp->m_mat.diffuse; }
 
-//-----------------------------------------------------------------------------
 void GObject::SetColor(const GLColor& c) 
 { 
-	imp->m_col = c; 
+	imp->m_mat.diffuse = c; 
+}
+
+GLMaterial GObject::GetMaterial() const
+{
+	return imp->m_mat;
+}
+
+void GObject::SetMaterial(GLMaterial mat)
+{
+	imp->m_mat = mat;
+	SetRenderMesh(nullptr);
 }
 
 //-----------------------------------------------------------------------------

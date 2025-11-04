@@ -167,7 +167,6 @@ void OverlayRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sharedRe
 
 	GLMaterial mat;
 	mat.diffuseMap = GLMaterial::VERTEX_COLOR;
-	mat.reflectivity = 0.f;
 	triadMesh->SetMaterial(mat);
 	delete gltriad;
 }

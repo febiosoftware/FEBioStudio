@@ -172,10 +172,8 @@ void glx::drawSphere(GLRenderEngine& re, const vec3d& c, float R)
 	re.popTransform();
 }
 
-void glx::drawSphere(GLRenderEngine& re, float R)
+void glx::drawSphere(GLRenderEngine& re, float R, int M, int N)
 {
-	const int M = 10;
-	const int N = 16;
 	for (int j = 0; j < M; ++j)
 	{
 		double th0 = -0.5 * PI + PI * j / (double)M;

@@ -61,8 +61,8 @@ public:
 	void enable() { benable = true; }
 	void disable() { benable = false; }
 
-	void setColor(GLColor c) { diffuse = ambient = c; }
-	void setColor(uint8_t r, uint8_t g, uint8_t b) { diffuse = ambient = GLColor(r,g,b); }
+	void setColor(GLColor c) { diffuse = c; }
+	void setColor(uint8_t r, uint8_t g, uint8_t b) { diffuse = GLColor(r,g,b); }
 
 public:
 	GLColor	diffuse;		// diffuse material color

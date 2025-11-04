@@ -337,7 +337,6 @@ bool CPostDocument::Initialize()
 					GLColor c = docfem.GetMaterial(i)->GetColor();
 
 					Post::Material* mat = m_fem->GetMaterial(i);
-					mat->ambient = c;
 					mat->diffuse = c;
 				}
 
@@ -345,7 +344,6 @@ bool CPostDocument::Initialize()
 				{
 					GLColor c = mdl->DiscreteObject(i)->GetColor();
 					Post::Material* mat = m_fem->GetMaterial(i + mats);
-					mat->ambient = c;
 					mat->diffuse = c;
 				}
 			}
@@ -590,7 +588,6 @@ void CPostDocument::ApplyPalette(const CPalette& pal)
 
 		Post::Material& m = *m_fem->GetMaterial(i);
 		m.diffuse = c;
-		m.ambient = c;
 		m.specular = GLColor(128, 128, 128);
 		m.emission = GLColor(0, 0, 0);
 		m.shininess = 0.5f;

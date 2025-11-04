@@ -1319,3 +1319,20 @@ CModelDocument* CreateDocumentFromTemplate(CMainWindow* wnd, int templateID, std
 	doc->SetUnitSystem(units);
 	return doc;
 }
+
+void CModelDocument::AssignColor(GPart* pg, GLColor c)
+{
+	OBJECT_COLOR_MODE mode = dynamic_cast<CGLModelScene*>(GetScene())->ObjectColorMode();
+
+	if (mode == OBJECT_COLOR_MODE::OBJECT_COLOR)
+	{
+		GObject* po = dynamic_cast<GObject*>(pg->Object());
+		if (po) po->SetColor(c);
+	}
+	else if (mode == OBJECT_COLOR_MODE::DEFAULT_COLOR)
+	{
+		int matID = pg->GetMaterialID();
+		GMaterial* mat = GetFSModel()->GetMaterialFromID(matID);
+		if (mat) mat->SetColor(c);
+	}
+}

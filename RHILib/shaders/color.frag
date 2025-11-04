@@ -20,9 +20,10 @@ layout(std140, binding = 0) uniform GlobalBlock {
 layout(std140, binding = 1) uniform MeshBlock {
     mat4 mvp;
     mat4 mv;
-    vec4 col;
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
     float specExp;
-    float specStrength;
     float opacity;
     int useTexture;
     int useStipple;
@@ -67,7 +68,7 @@ void main()
     if (mesh.useLighting > 0)
     {
         // ambient value
-        f_col += col*0.2;
+        f_col += mesh.ambient;
 
         if (gl_FrontFacing || (mesh.frontOnly == 0)) {
 
@@ -83,14 +84,14 @@ void main()
             f_col += col*a;
 
             // specular component
-            if (mesh.specStrength > 1e-4) {
-                vec3 R = normalize(reflect(V, N));
-                float c = clamp(dot(R, L), 1e-4, 0.99999);
-                float se = clamp(64.0 * mesh.specExp, 0.0, 64.0);
-                float s = pow(c, se);
-                s = clamp(s, 0, 1);
-                f_col.xyz += glob.specColor.xyz*(s*mesh.specStrength);
-            }
+            vec3 R = normalize(reflect(V, N));
+            float c = clamp(dot(R, L), 1e-4, 0.99999);
+            float se = clamp(128.0 * mesh.specExp, 0.0, 128.0);
+            float s = pow(c, se);
+            s = clamp(s, 0, 1);
+
+            vec3 specColor = glob.specColor.xyz * mesh.specular.xyz;
+            f_col.xyz += specColor*s;
         }
         else {
             // only diffuse for backfacing triangles

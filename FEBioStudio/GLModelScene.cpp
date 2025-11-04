@@ -1433,6 +1433,7 @@ void GLObjectItem::render(GLRenderEngine& re, GLContext& rc)
 			if (gm && gm->IsModified())
 			{
 				re.deleteCachedMesh(gm);
+				UpdateGMeshColor(*gm);
 				gm->setModified(false);
 			}
 
@@ -1440,6 +1441,7 @@ void GLObjectItem::render(GLRenderEngine& re, GLContext& rc)
 			if (gm && gm->IsModified())
 			{
 				re.deleteCachedMesh(gm);
+				UpdateGMeshColor(*gm);
 				gm->setModified(false);
 			}
 
@@ -2194,7 +2196,13 @@ void GLObjectItem::RenderObject(GLRenderEngine& re, GLContext& rc)
 	bool frontOnly = rc.m_settings.m_identifyBackfacing;
 
 	if (useStipple) re.setMaterial(GLMaterial::GLASS, m_po->GetColor(), GLMaterial::VERTEX_COLOR, frontOnly);
-	else re.setMaterial(GLMaterial::PLASTIC, m_po->GetColor(), GLMaterial::VERTEX_COLOR, frontOnly);
+	else
+	{
+		GLMaterial mat = m_po->GetMaterial();
+		mat.diffuseMap = GLMaterial::VERTEX_COLOR;
+		mat.frontOnly = frontOnly;
+		re.setMaterial(mat);
+	}
 
 	GLMesh* mesh = m_po->GetRenderMesh();
 	if (mesh == nullptr) return;

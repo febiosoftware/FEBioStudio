@@ -189,9 +189,10 @@ public:
 		m_data.create({
 			{rhi::UniformBlock::MAT4 , "mvp"},
 			{rhi::UniformBlock::MAT4 , "mv"},
-			{rhi::UniformBlock::VEC4 , "col"},
+			{rhi::UniformBlock::VEC4 , "ambient"},
+			{rhi::UniformBlock::VEC4 , "diffuse"},
+			{rhi::UniformBlock::VEC4 , "specular"},
 			{rhi::UniformBlock::FLOAT, "specExp"},
-			{rhi::UniformBlock::FLOAT, "specStrength"},
 			{rhi::UniformBlock::FLOAT, "opacity"},
 			{rhi::UniformBlock::INT  , "useTexture"},
 			{rhi::UniformBlock::INT  , "useStipple"},
@@ -220,23 +221,26 @@ public:
 
 	void setData(const rhi::Mesh& m) override
 	{
-		float diffuse[4] = { 0.f };
+		float diffuse[4] = { 0.f }, spec[4] = { 0.f }, amb[4] = { 0.f };
+		m.mat.ambient.toFloat(amb);
 		m.mat.diffuse.toFloat(diffuse);
+		m.mat.specular.toFloat(spec);
 
 		QMatrix4x4 mvp = m.prMatrix * m.mvMatrix;
 
 		m_data.setMat4 ( 0, mvp);
 		m_data.setMat4 ( 1, m.mvMatrix);
-		m_data.setVec4 ( 2, diffuse);
-		m_data.setFloat( 3, m.mat.shininess);
-		m_data.setFloat( 4, m.mat.reflectivity);
-		m_data.setFloat( 5, m.mat.opacity);
-		m_data.setInt  ( 6, (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 1 : 0));
-		m_data.setInt  ( 7, (m.mat.type == GLMaterial::HIGHLIGHT ? 1 : 0));
-		m_data.setInt  ( 8, (m.doClipping ? 1 : 0));
-		m_data.setInt  ( 9, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
-		m_data.setInt  (10, (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0 : 1);
-		m_data.setInt  (11, (m.mat.frontOnly ? 1 : 0));
+		m_data.setVec4 ( 2, amb);
+		m_data.setVec4 ( 3, diffuse);
+		m_data.setVec4 ( 4, spec);
+		m_data.setFloat( 5, m.mat.shininess);
+		m_data.setFloat( 6, m.mat.opacity);
+		m_data.setInt  ( 7, (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 1 : 0));
+		m_data.setInt  ( 8, (m.mat.type == GLMaterial::HIGHLIGHT ? 1 : 0));
+		m_data.setInt  ( 9, (m.doClipping ? 1 : 0));
+		m_data.setInt  (10, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
+		m_data.setInt  (11, (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0 : 1);
+		m_data.setInt  (12, (m.mat.frontOnly ? 1 : 0));
 	}
 };
 

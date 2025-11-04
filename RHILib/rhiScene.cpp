@@ -58,9 +58,8 @@ public:
 		{
 			GLMaterial mat;
 			mat.type = (useStipple ? GLMaterial::HIGHLIGHT : GLMaterial::PLASTIC);
-			mat.ambient = mat.diffuse = color;
+			mat.ambient = color;
 			mat.shininess = shininess;
-			mat.reflectivity = reflectivity;
 			mat.opacity = opacity;
 			mat.diffuseMap = (useTexture ? GLMaterial::TEXTURE_1D : GLMaterial::NONE);
 			re.setMaterial(mat);
@@ -85,7 +84,6 @@ public:
 public:
 	GLColor color = GLColor(200, 180, 160);
 	float shininess = 0.8f;
-	float reflectivity = 0.8f;
 	float opacity = 1.0f;
 	bool useTexture = false;
 	bool renderMesh = false;
@@ -200,16 +198,6 @@ void rhiScene::SetObjectShininess(float f)
 	{
 		rhiMeshItem* m = dynamic_cast<rhiMeshItem*>(*it);
 		if (m) m->shininess = f;
-	}
-}
-
-void rhiScene::SetObjectReflectivity(float f)
-{
-	GLItemIterator it = begin();
-	for (int i = 0; i < items(); ++i, ++it)
-	{
-		rhiMeshItem* m = dynamic_cast<rhiMeshItem*>(*it);
-		if (m) m->reflectivity = f;
 	}
 }
 

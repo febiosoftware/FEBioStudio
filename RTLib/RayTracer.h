@@ -36,7 +36,6 @@ namespace rt {
 	{
 		bool lighting = true;
 		double shininess = 0;
-		double reflectivity = 0.8;
 		int tex1d = -1;
 		int tex3d = -1;
 		double reflection = 0;
@@ -54,6 +53,10 @@ public:
 	void setProjection(double fov, double fnear, double far) override;
 
 	void setBackgroundColor(const GLColor& c) override;
+
+	void setSampleCount(int n);
+
+	void setOutput(bool b) { output = b; }
 
 	void setWidth (size_t W) { SetIntValue(WIDTH , (int) W); }
 	void setHeight(size_t H) { SetIntValue(HEIGHT, (int) H); }
@@ -167,4 +170,6 @@ private:
 	double clipPlane[4] = { 0,0,0,0 };
 
 	bool cancelled;
+
+	bool output = true;
 };

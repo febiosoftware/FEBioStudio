@@ -137,8 +137,8 @@ public:
 		GLMaterial mat;
 		mat.type = GLMaterial::PLASTIC;
 		mat.diffuse = mat.ambient = GLColor::FromRGBf(0.7f, 0.5f, 0.2f);
+		mat.specular = GLColor(200, 200, 200);
 		mat.shininess = 0.8f;
-		mat.reflectivity = 0.8f;
 
 		engine.setMaterial(mat);
 

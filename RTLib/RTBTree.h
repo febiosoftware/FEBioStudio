@@ -51,6 +51,11 @@ namespace rt
 		Btree() {}
 		~Btree() { delete root; }
 
+		void clear() {
+			delete root;
+			root = nullptr;
+		}
+
 		Block* root = nullptr;
 
 		void Build(rt::Mesh& mesh, int levels);
@@ -60,5 +65,8 @@ namespace rt
 		std::vector<rt::Btree::Block*> leaves();
 
 		size_t blocks() const;
+
+	public:
+		bool output = true;
 	};
 }

@@ -78,6 +78,7 @@ void CanvasUniformBlock::update(QRhiResourceUpdateBatch* u)
 
 rhiRenderer::rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp) : m_rhi(rhi), m_sc(sc), m_rp(rp), m_tex1D(rhi)
 {
+	m_lightSpecular = GLColor::White();
 }
 
 rhiRenderer::~rhiRenderer()
@@ -134,7 +135,7 @@ void rhiRenderer::init()
 	m_canvasPass->create(m_sc);
 
 	// reset timing
-	timing.m_tic = timing.m_toc = high_resolution_clock::now();
+	timing.m_tic = timing.m_toc = steady_clock::now();
 }
 
 void rhiRenderer::clearCache()
@@ -267,7 +268,7 @@ void rhiRenderer::scale(double x, double y, double z)
 
 void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
 {
-	m_currentMat.diffuse = m_currentMat.ambient = c;
+	m_currentMat.diffuse = c;
 	m_currentMat.type = matType;
 	m_currentMat.diffuseMap = map;
 	m_currentMat.frontOnly = frontOnly;
@@ -276,7 +277,7 @@ void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::D
 
 void rhiRenderer::setColor(GLColor c)
 {
-	m_currentMat.diffuse = m_currentMat.ambient = c;
+	m_currentMat.diffuse = c;
 	mb.setColor(c);
 }
 
@@ -482,8 +483,8 @@ void rhiRenderer::start()
 
 void rhiRenderer::TimingInfo::update()
 {
-	m_toc = high_resolution_clock::now();
-	time_point<high_resolution_clock> toc = high_resolution_clock::now();
+	m_toc = steady_clock::now();
+	time_point<steady_clock> toc = steady_clock::now();
 	double sec = duration_cast<dseconds>(m_toc - m_tic).count();
 	totalSec += sec;
 	if (totalSec > 0)

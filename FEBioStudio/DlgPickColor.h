@@ -43,8 +43,6 @@ public:
 
 	QColor GetColor() const;
 
-	void AssignColor(GPart* part);
-
 private:
 	UIDlgPickColor* ui;
 };

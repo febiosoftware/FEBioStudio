@@ -23,9 +23,10 @@ layout(std140, binding = 0) uniform GlobalBlock {
 layout(std140, binding = 1) uniform MeshBlock {
     mat4 mvp;
     mat4 mv;
-    vec4 col;
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
     float specExp;
-    float specStrength;
     float opacity;
     int useTexture;
     int useStipple;
@@ -44,7 +45,7 @@ void main()
 
     if (mesh.useVertexColor > 0) v_color = color;
     else {
-        v_color = mesh.col;
+        v_color = mesh.diffuse;
         v_color.a = mesh.opacity;
     }
 

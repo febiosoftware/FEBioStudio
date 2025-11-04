@@ -43,7 +43,7 @@ Material::Material()
 	transparency = 1.f;
 
 	diffuse = GLColor(200, 200, 200);
-	ambient = GLColor(0,0,0);
+	ambient = GLColor(0,0,32);
 	specular = GLColor(0,0,0);
 	emission = GLColor(0,0,0);
 }

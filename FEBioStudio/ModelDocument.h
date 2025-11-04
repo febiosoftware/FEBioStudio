@@ -104,6 +104,8 @@ public:
 
 	BOX GetBoundingBox() override;
 
+	void AssignColor(GPart* pg, GLColor c);
+
 public:
 	void AddImageModel(CImageModel* imgModel) override;
 

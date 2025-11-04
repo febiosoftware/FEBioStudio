@@ -74,6 +74,13 @@ void RayTracer::setBackgroundColor(const GLColor& c)
 	backgroundCol = c;
 }
 
+void RayTracer::setSampleCount(int n)
+{
+	if (n < 1) n = 1;
+	if (n > 4) n = 4;
+	SetIntValue(MULTI_SAMPLE, n - 1);
+}
+
 void RayTracer::start()
 {
 	cancelled = false;
@@ -104,13 +111,13 @@ void RayTracer::finish()
 	preprocess();
 	time_point<steady_clock> toc = steady_clock::now();
 	double sec1 = duration_cast<dseconds>(toc - tic).count();
-	FSLogger::Write("Preprocessing completed in %lg sec.\n", sec1);
+	if (output) FSLogger::Write("Preprocessing completed in %lg sec.\n", sec1);
 	tic = toc;
 	render();
 	toc = steady_clock::now();
 	double sec2 = duration_cast<dseconds>(toc - tic).count();
-	FSLogger::Write("Rendering completed in %lg sec.\n", sec2);
-	FSLogger::Write("Total elapsed time : %lg\n", sec1 + sec2);
+	if (output) FSLogger::Write("Rendering completed in %lg sec.\n", sec2);
+	if (output) FSLogger::Write("Total elapsed time : %lg\n", sec1 + sec2);
 
 	// clean up
 	mesh.clear();
@@ -183,7 +190,7 @@ void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::Dif
 	rt::Material mat;
 	if ((matType == GLMaterial::PLASTIC) || (matType == GLMaterial::GLASS))
 	{
-		mat.shininess = 64;
+		mat.shininess = 128;
 	}
 
 	if ((matType == GLMaterial::HIGHLIGHT) || (matType == GLMaterial::CONSTANT))
@@ -219,12 +226,10 @@ void RayTracer::setMaterial(const GLMaterial& glmat)
 	rt::Material mat;
 	if ((glmat.type == GLMaterial::PLASTIC) || (glmat.type == GLMaterial::GLASS))
 	{
-		mat.shininess = 64* glmat.shininess;
+		mat.shininess = 128* glmat.shininess;
 		if (mat.shininess < 0) mat.shininess = 0;
-		if (mat.shininess > 64) mat.shininess = 64;
+		if (mat.shininess > 128) mat.shininess = 128;
 		mat.reflection = glmat.reflection;
-
-		mat.reflectivity = glmat.reflectivity;
 	}
 
 	if (useTexture1D)
@@ -540,6 +545,8 @@ void RayTracer::preprocess()
 	}
 	if (levels < 0) levels = 0;
 	if (levels > 20) levels = 20;
+
+	bhv.output = output;
 	bhv.Build(mesh, levels);
 }
 
@@ -734,7 +741,7 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 			H.normalize();
 			double f = H * L;
 			double s = (f > 0 ? pow(f, mat.shininess) : 0);
-			fragCol += lightSpecular * (s * mat.reflectivity);
+			fragCol += lightSpecular * (s);
 		}
 		fragCol.a() = c.a();
 	}

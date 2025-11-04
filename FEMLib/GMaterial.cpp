@@ -44,8 +44,8 @@ GMaterial::GMaterial(FSMaterial* pm)
 	m_nID = m_nref++;
 
 	// give a default color
-	m_glmat.diffuse = GLColor(255,255,255);
-	m_glmat.ambient = GLColor(128,128,128);
+	m_glmat.diffuse = GLColor(200,200,200);
+	m_glmat.ambient = GLColor(0,0,32);
 	m_glmat.specular = GLColor(0,0,0);
 	m_glmat.emission = GLColor(0,0,0);
 	m_glmat.shininess = 1.f;

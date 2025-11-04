@@ -28,10 +28,6 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QBoxLayout>
 #include <QColorDialog>
-#include <GLWLib/convert.h>
-#include "ModelDocument.h"
-#include <GeomLib/GObject.h>
-#include "GLModelScene.h"
 
 class UIDlgPickColor
 {
@@ -72,25 +68,4 @@ CDlgPickColor::~CDlgPickColor()
 QColor CDlgPickColor::GetColor() const
 {
 	return ui->colordlg->currentColor();
-}
-
-void CDlgPickColor::AssignColor(GPart* pg)
-{
-	GLColor c = toGLColor(GetColor());
-	CModelDocument* doc = ui->m_wnd->GetModelDocument();
-	if (doc == nullptr) return;
-
-	OBJECT_COLOR_MODE mode = dynamic_cast<CGLModelScene*>(doc->GetScene())->ObjectColorMode();
-
-	if (mode == OBJECT_COLOR_MODE::OBJECT_COLOR)
-	{
-		GObject* po = dynamic_cast<GObject*>(pg->Object());
-		if (po) po->SetColor(c);
-	}
-	else if(mode == OBJECT_COLOR_MODE::DEFAULT_COLOR)
-	{
-		int matID = pg->GetMaterialID();
-		GMaterial* mat = doc->GetFSModel()->GetMaterialFromID(matID);
-		if (mat) mat->SetColor(c);
-	}
 }
