@@ -447,10 +447,7 @@ void rhiRenderer::useOverlayImage(bool b)
 
 void rhiRenderer::setOverlayImage(const QImage& img)
 {
-	if (m_rhi->isYUpInNDC())
-		m_overlay2DPass->setImage(img.mirrored());
-	else
-		m_overlay2DPass->setImage(img);
+	m_overlay2DPass->setImage(img);
 }
 
 void rhiRenderer::setTriadInfo(const QMatrix4x4& m, QRhiViewport vp)

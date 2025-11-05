@@ -1488,11 +1488,6 @@ void CGLView::RenderScene(GLRenderEngine& re)
 
 	RenderDecorations(re);
 
-	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
-	// Note that Y is flipped! Why?
-	re.setOrthoProjection(0, width(), height(), 0, -1, 1);
-	re.resetTransform();
-
 	RenderOverlay(re, rc);
 
 /*
@@ -1529,9 +1524,7 @@ void CGLView::RenderOverlay(GLRenderEngine& re, GLContext& rc)
 	painter.end();
 
 	// the triad requires a bit of special handling
-	float H = (float)img.height();
-	float h = (float)m_ptriad->h();
-	QRhiViewport vp = { (float)m_ptriad->x(), H - (float)m_ptriad->y() - h, (float)m_ptriad->w(), h };
+	QRhiViewport vp = { (float)m_ptriad->x(), (float)m_ptriad->y(), (float)m_ptriad->w(), (float)m_ptriad->h() };
 	quatd q = rc.m_cam->GetOrientation();
 	QMatrix4x4 Q; Q.rotate(QQuaternion(q.w, q.x, q.y, q.z));
 	m_ptriad->setOrientation(q);

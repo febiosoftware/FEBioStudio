@@ -173,8 +173,10 @@ void OverlayRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sharedRe
 
 void OverlayRenderPass::setImage(const QImage& img)
 {
-//	assert(img.size() == m_overlayTex.image.size());
-	m_overlayTex.image = img;
+	if (m_rhi->isYUpInNDC())
+		m_overlayTex.image = img.mirrored();
+	else
+		m_overlayTex.image = img;
 }
 
 void OverlayRenderPass::update(QRhiResourceUpdateBatch* u)
@@ -212,11 +214,19 @@ void OverlayRenderPass::update(QRhiResourceUpdateBatch* u)
 	// update triad stuff
 	QMatrix4x4 proj = m_rhi->clipSpaceCorrMatrix();
 	auto vp = m_overlayVP.viewport();
-	double W = vp[2];
-	double H = vp[3];
-	double ar = (H == 0 ? 1 : W / H);
+	double w = vp[2];
+	double h = vp[3];
+	double ar = (h == 0 ? 1 : w / h);
 	float d = 1.2f;
-	proj.ortho(-d * ar, d * ar, -d, d, -1, 1);
+	float dx = d * ar;
+	float dy = d;
+
+	if (m_rhi->isYUpInNDC() != m_rhi->isYUpInFramebuffer())
+	{
+		dy = -dy;
+	}
+
+	proj.ortho(-dx, dx, -dy, dy, -1, 1);
 
 	triadMesh->SetMatrices(m_overlayVM, proj);
 	triadMesh->Update(u);
@@ -234,6 +244,14 @@ void OverlayRenderPass::draw(QRhiCommandBuffer* cb)
 void OverlayRenderPass::drawTriad(QRhiCommandBuffer* cb)
 {
 	auto vp = m_overlayVP.viewport();
+
+	if (m_rhi->isYUpInNDC() == m_rhi->isYUpInFramebuffer())
+	{
+		// flip the viewport
+		double H = (double)m_sc->currentPixelSize().height();
+		vp[1] = H - vp[3] - vp[1];
+	}
+
 	cb->setViewport({ vp[0], vp[1], vp[2], vp[3] });
 	cb->setGraphicsPipeline(m_triadPass->pipeline());
 	cb->setShaderResources();

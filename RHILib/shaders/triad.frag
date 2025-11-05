@@ -33,8 +33,6 @@ void main()
     // ambient value
     f_col += col*0.2;
 
-    if (!gl_FrontFacing) { N = -N; }
-
     // front-lit
     float b = max(dot(N, vec3(0,0,1)),0);
     f_col += col*(b*0.2);
