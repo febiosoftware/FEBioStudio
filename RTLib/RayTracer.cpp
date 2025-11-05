@@ -81,6 +81,11 @@ void RayTracer::setSampleCount(int n)
 	SetIntValue(MULTI_SAMPLE, n - 1);
 }
 
+void RayTracer::setRenderShadows(bool b)
+{
+	SetBoolValue(SHADOWS, b);
+}
+
 void RayTracer::start()
 {
 	cancelled = false;

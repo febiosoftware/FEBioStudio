@@ -56,6 +56,8 @@ public:
 
 	void setSampleCount(int n);
 
+	void setRenderShadows(bool b);
+
 	void setOutput(bool b) { output = b; }
 
 	void setWidth (size_t W) { SetIntValue(WIDTH , (int) W); }

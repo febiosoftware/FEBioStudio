@@ -229,7 +229,7 @@ bool rt::intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt:
 			if ((tri.id != ray.tri_id) && intersectTri(tri, ray, p))
 			{
 				double D2 = (p.point - ray.origin).sqrLength();
-				if ((imin == -1) || (D2 < Dmin))
+				if ((D2 > 1e-12) && (((imin == -1) || (D2 < Dmin))))
 				{
 					imin = i;
 					Dmin = D2;

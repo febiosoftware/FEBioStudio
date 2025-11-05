@@ -84,11 +84,18 @@ void CMatEditButton::updateImage()
 
 	m.rt.setWidth(W);
 	m.rt.setHeight(H);
+
+#ifndef NDEBUG
+	m.rt.setSampleCount(1);
+#else
 	m.rt.setSampleCount(2);
+#endif
 
 #ifdef NDEBUG
 	m.rt.setOutput(false);
 #endif
+
+	m.rt.setRenderShadows(false);
 
 	GLContext rc;
 	rc.m_cam = &m.scene.GetCamera();
