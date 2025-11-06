@@ -74,6 +74,13 @@ void RayTracer::setClearColor(const GLColor& c)
 	backgroundCol = c;
 }
 
+void RayTracer::setBackgroundGradient(const GLColor& c1, const GLColor& c2, GradientType orient)
+{
+	m_col1 = c1;
+	m_col2 = c2;
+	m_orient = orient;
+}
+
 void RayTracer::setSampleCount(int n)
 {
 	if (n < 1) n = 1;
@@ -571,8 +578,8 @@ void RayTracer::render()
 
 	double ar = (double)W / (double)H;
 
-	double fh = nearPlane * tan(0.5 * fieldOfView * DEG2RAD);
-	double fw = fh * ar;
+	m_fh = nearPlane * tan(0.5 * fieldOfView * DEG2RAD);
+	m_fw = m_fh * ar;
 
 	int samples = GetIntValue(MULTI_SAMPLE) + 1;
 	if (samples < 1) samples = 1;
@@ -592,12 +599,12 @@ void RayTracer::render()
 		{
 			if (!cancelled)
 			{
-				double x = -fw + 2.0 * i * fw / (W - 1.0);
-				double y = fh - 2.0 * j * fh / (H - 1.0);
+				double x = -m_fw + 2.0 * i * m_fw / (W - 1.0);
+				double y = m_fh - 2.0 * j * m_fh / (H - 1.0);
 				double z = -nearPlane;
 
-				double dx = fw / W;
-				double dy = fh / H;
+				double dx = m_fw / W;
+				double dy = m_fh / H;
 
 				Color c(0, 0, 0, 0);
 				for (int k = 0; k < samples; ++k)
@@ -631,6 +638,24 @@ void RayTracer::render()
 	percentCompleted = 100.0;
 }
 
+GLColor RayTracer::backgroundColor(const rt::Vec3& p)
+{
+	double r = 0.5* (p.x() / m_fw)+0.5;
+	double s = 0.5* (p.y() / m_fh)+0.5;
+	if (r < 0) r = 0; if (r > 1) r = 1;
+	if (s < 0) s = 0; if (s > 1) s = 1;
+
+	GLColor c;
+	if (m_orient == GLRenderEngine::HORIZONTAL)
+		c = m_col2 * (1 - s) + m_col1 * s;
+	else
+		c = m_col1 * (1 - r) + m_col2 * r;
+
+	c.a = 1;
+
+	return c;
+}
+
 rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 {
 	rt::Point q;
@@ -641,7 +666,10 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 	switch (bgOption)
 	{
 	case 0: // default
-		fragCol = backgroundCol;
+		if (ray.bounce == 0)
+			fragCol = backgroundColor(ray.origin);
+		else
+			fragCol = backgroundCol;
 		break;
 	case 1: // transparent
 		fragCol = Color(0, 0, 0, 0);

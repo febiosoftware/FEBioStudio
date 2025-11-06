@@ -57,6 +57,8 @@ public:
 
 	void setClearColor(const GLColor& c) override;
 
+	void setBackgroundGradient(const GLColor& c1, const GLColor& c2, GradientType orient) override;
+
 	void setSampleCount(int n);
 
 	void setRenderShadows(bool b);
@@ -130,6 +132,8 @@ private:
 
 	void addTriangle(rt::Tri& tri);
 
+	GLColor backgroundColor(const rt::Vec3& r);
+
 private:
 	RayTraceSurface surf;
 
@@ -154,6 +158,7 @@ private:
 
 	double fieldOfView;
 	double nearPlane;
+	double m_fw, m_fh;
 
 	bool immediateMode = false;
 	PrimitiveType primType = POINTS;
@@ -168,6 +173,10 @@ private:
 	bool useVertexColor;
 
 	GLColor backgroundCol;
+
+	// gradient
+	GLColor m_col1, m_col2;
+	GLRenderEngine::GradientType m_orient = GLRenderEngine::HORIZONTAL;
 
 	GLRenderEngine::FrontFace front = GLRenderEngine::COUNTER_CLOCKWISE;
 
