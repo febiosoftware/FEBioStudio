@@ -1695,15 +1695,20 @@ void CGLView::DrawWidgets(QPainter& painter)
 		if (bshow) m_legendPlot->show();
 		else m_legendPlot->hide();
 	}
+
+	// only show menu on model docs
+	bool isMenuVisible = (m_menu ? m_menu->visible() : false);
 	if (m_menu)
 	{
-		// only show menu on model docs
-		if (dynamic_cast<CModelDocument*>(doc)) m_menu->show();
-		else m_menu->hide();
+		if (dynamic_cast<CModelDocument*>(doc) == nullptr)
+			m_menu->hide();
 	}
 
 	GLPainter glpainter(&painter, nullptr);
 	m_Widget->DrawWidgets(&glpainter);
+
+	// reset menu's visible status
+	if (m_menu && isMenuVisible) m_menu->show();
 }
 
 void CGLView::ShowMeshData(bool b)
