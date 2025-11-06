@@ -175,6 +175,10 @@ GLRenderStats rhiRenderer::GetRenderStats() const
 	stats.cachedObjects += m_pointOverlayPass->cachedMeshes();
 	stats.cachedObjects += m_volumeRenderPass->cachedMeshes();
 
+	// note that at this point, nothing has actually been uploaded yet.
+	// so this reflects the total of the last frame. 
+	stats.dataUploadSize = rhi::Mesh::uploadedBytes;
+
 	return stats;
 }
 
@@ -521,6 +525,9 @@ void rhiRenderer::TimingInfo::update()
 
 void rhiRenderer::finish()
 {
+	// reset the mesh data upload size
+	rhi::Mesh::uploadedBytes = 0;
+
 	timing.update();
 
 	QRhiResourceUpdateBatch* resourceUpdates = m_rhi->nextResourceUpdateBatch();

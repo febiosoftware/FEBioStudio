@@ -1446,7 +1446,7 @@ void CGLView::RenderScene(GLRenderEngine& re)
 	double sec = duration_cast<duration<double>>(stopTime - startTime).count();
 	double fps = (sec != 0 ? 1.0 / sec : 0);
 
-	if (m_fps.size() >= 50) m_fps.pop_back();
+	if (m_fps.size() >= 10) m_fps.pop_back();
 	m_fps.push_front(fps);
 	
 	RenderPivot(re);
@@ -1530,65 +1530,88 @@ void CGLView::RenderOverlayComponents(QPainter& painter)
 			fps /= (m_fps.size());
 		}
 
+		const int fieldWidth = 8;
+
 		QRect rt = rect();
 		QTextOption to;
 		QFont font = painter.font();
 		const int fontSize = 20;
+		font.setFamily("consolas");
 		font.setPixelSize(fontSize);
 		painter.setFont(font);
 		painter.setPen(QPen(Qt::red));
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
-		painter.drawText(rt, QString("FPS: %1").arg(fps, 0, 'f', 2), to);
+		painter.drawText(rt, QString("FPS:%1").arg(fps, fieldWidth, 'f', 2), to);
 
 		const GLRenderEngine* re = GetRenderEngine();
 		if (re)
 		{
+			QString t;
 			GLRenderStats stats = re->GetRenderStats();
+
+			// triangles
 			int Y = rt.y() + fontSize + 5;
 			rt.setY(Y);
 			float tris = (float)stats.triangles;
 			if (tris < 1e3)
 			{
-				painter.drawText(rt, QString("TRIs: %1").arg(stats.triangles), to);
+				t = QString("%1").arg(stats.triangles);
 			}
 			else
 			{
 				QChar suffix(' ');
 				if (tris > 1e6) { tris /= 1e6; suffix = 'M'; }
 				else if (tris > 1e3) { tris /= 1e3; suffix = 'K'; }
-				painter.drawText(rt, QString("TRIs: %1%2").arg(tris, 0, 'f', 2).arg(suffix), to);
+				t = QString("%1%2").arg(tris).arg(suffix);
 			}
+			painter.drawText(rt, QString("Tris:%1").arg(t, fieldWidth), to);
+
+			// lines
 			Y += fontSize + 5;
 			rt.setY(Y);
 			float lines = (float)stats.lines;
 			if (lines < 1e3)
 			{
-				painter.drawText(rt, QString("Lines: %1").arg(stats.lines), to);
+				t = QString("%1").arg(stats.lines);
 			}
 			else
 			{
 				QChar suffix(' ');
 				if (lines > 1e6) { lines /= 1e6; suffix = 'M'; }
 				else if (lines > 1e3) { lines /= 1e3; suffix = 'K'; }
-				painter.drawText(rt, QString("Lines: %1%2").arg(lines, 0, 'f', 2).arg(suffix), to);
+				t = QString("%1%2").arg(stats.lines).arg(suffix);
 			}
+			painter.drawText(rt, QString("Lines:%1").arg(t, fieldWidth), to);
+
+			// points
 			Y += fontSize + 5;
 			rt.setY(Y);
 			float points = (float)stats.points;
 			if (points < 1e3)
 			{
-				painter.drawText(rt, QString("Points: %1").arg(stats.points), to);
+				t = QString("%1").arg(stats.points);
 			}
 			else
 			{
 				QChar suffix(' ');
 				if (points > 1e6) { points /= 1e6; suffix = 'M'; }
 				else if (points > 1e3) { points /= 1e3; suffix = 'K'; }
-				painter.drawText(rt, QString("Points: %1%2").arg(points, 0, 'f', 2).arg(suffix), to);
+				t = QString("%1%2").arg(stats.points).arg(suffix);
 			}
+			painter.drawText(rt, QString("Points:%1").arg(t, fieldWidth), to);
+
+			// caches
 			Y += fontSize + 5;
 			rt.setY(Y);
-			painter.drawText(rt, QString("Caches: %1").arg(stats.cachedObjects), to);
+			t = QString("%1").arg(stats.cachedObjects);
+			painter.drawText(rt, QString("Caches:%1").arg(t, fieldWidth), to);
+
+			// upload
+			Y += fontSize + 5;
+			rt.setY(Y);
+			double uploadMB = (double) stats.dataUploadSize / (1024 * 1024);
+			t = QString("%1MB").arg(uploadMB, 0, 'f', 3);
+			painter.drawText(rt, QString("upload:%1").arg(t, fieldWidth), to);
 		}
 	}
 }

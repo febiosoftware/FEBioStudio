@@ -115,5 +115,8 @@ namespace rhi {
 		unsigned int nvertexCount = 0;
 		unsigned int vbufSize = 0;
 		unsigned char* vertexData = nullptr;
+
+	public:
+		static size_t uploadedBytes;
 	};
 } // rhi

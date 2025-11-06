@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "rhiMesh.h"
 
+size_t rhi::Mesh::uploadedBytes = 0;
+
 void rhi::MeshShaderResource::update(QRhiResourceUpdateBatch* u)
 {
 	if (ubuf)
@@ -57,6 +59,7 @@ void rhi::Mesh::Update(QRhiResourceUpdateBatch* u)
 		u->uploadStaticBuffer(vbuf.get(), vertexData);
 		delete[] vertexData;
 		vertexData = nullptr;
+		uploadedBytes += vbufSize;
 	}
 
 	if (sr)
