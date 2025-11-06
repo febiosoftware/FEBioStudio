@@ -91,6 +91,8 @@ public:
 
 	void PositionCameraInScene(GLRenderEngine& re);
 
+	void SetupProjection(GLRenderEngine& re);
+
 public:
 	GLGrid& GetGrid() { return m_grid; }
 	double GetGridScale() { return m_grid.GetScale(); }

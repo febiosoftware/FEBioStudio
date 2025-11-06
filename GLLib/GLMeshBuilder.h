@@ -41,6 +41,9 @@ public:
 
 	GLMesh* takeMesh();
 
+	int surfaceWidth() const override { return 0; }
+	int surfaceHeight() const override { return 0; }
+
 public:
 	void pushTransform() override;
 	void popTransform() override;

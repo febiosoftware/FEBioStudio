@@ -55,6 +55,8 @@ public:
 
 	void setProjection(double fov, double fnear, double far) override;
 
+	void setOrthoProjection(double left, double right, double bottom, double top, double near, double far) override;
+
 	void setClearColor(const GLColor& c) override;
 
 	void setBackgroundGradient(const GLColor& c1, const GLColor& c2, GradientType orient) override;
@@ -69,8 +71,8 @@ public:
 	void setHeight(size_t H) { SetIntValue(HEIGHT, (int) H); }
 	RayTraceSurface& surface() { return surf; }
 
-	int width() const { return GetIntValue(WIDTH); }
-	int height() const { return GetIntValue(HEIGHT); }
+	int surfaceWidth() const override { return GetIntValue(WIDTH); }
+	int surfaceHeight() const override { return GetIntValue(HEIGHT); }
 
 public:
 	void start() override;
@@ -156,9 +158,12 @@ private:
 	rt::Vec4 lightPos;
 	rt::Color lightSpecular = rt::Color(1.f, 1.f, 1.f);
 
+	bool ortho = false;
 	double fieldOfView;
 	double nearPlane;
 	double m_fw, m_fh;
+	double m_left, m_right;
+	double m_bottom, m_top;
 
 	bool immediateMode = false;
 	PrimitiveType primType = POINTS;

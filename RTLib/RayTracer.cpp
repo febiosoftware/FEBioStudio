@@ -37,6 +37,8 @@ RayTracer::RayTracer()
 {
 	fieldOfView = 60.0;
 	nearPlane = 0.01;
+	m_left = m_bottom = -1;
+	m_right = m_top = 1;
 	percentCompleted = 0.0;
 	renderStarted = false;
 	useVertexColor = false;
@@ -67,6 +69,17 @@ void RayTracer::setProjection(double fov, double fnear, double far)
 {
 	fieldOfView = fov;
 	nearPlane = fnear;
+	ortho = false;
+}
+
+void RayTracer::setOrthoProjection(double left, double right, double bottom, double top, double near, double far)
+{
+	m_left = left;
+	m_right = right;
+	m_bottom = bottom;
+	m_top = top;
+	nearPlane = near;
+	ortho = true;
 }
 
 void RayTracer::setClearColor(const GLColor& c)
@@ -578,8 +591,16 @@ void RayTracer::render()
 
 	double ar = (double)W / (double)H;
 
-	m_fh = nearPlane * tan(0.5 * fieldOfView * DEG2RAD);
-	m_fw = m_fh * ar;
+	if (ortho)
+	{
+		m_fw = 0.5*(m_right - m_left);
+		m_fh = 0.5*(m_top - m_bottom);
+	}
+	else
+	{
+		m_fh = nearPlane * tan(0.5 * fieldOfView * DEG2RAD);
+		m_fw = m_fh * ar;
+	}
 
 	int samples = GetIntValue(MULTI_SAMPLE) + 1;
 	if (samples < 1) samples = 1;
@@ -617,7 +638,14 @@ void RayTracer::render()
 						double yf = y + fy * dy;
 
 						Vec3 origin(xf, yf, z);
-						Vec3 direction = origin; direction.normalize();
+						Vec3 direction;
+						if (ortho)
+							direction = Vec3(0, 0, -1);
+						else
+						{
+							direction = origin;
+							direction.normalize();
+						}
 
 						Ray ray(origin, direction);
 

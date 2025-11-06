@@ -77,6 +77,9 @@ public:
 	void ResetStats();
 	virtual GLRenderStats GetRenderStats() const;
 
+	virtual int surfaceWidth() const = 0;
+	virtual int surfaceHeight() const = 0;
+
 public:
 	virtual void init() {}
 	virtual void start() { ResetStats(); }

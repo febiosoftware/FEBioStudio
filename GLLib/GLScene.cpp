@@ -58,9 +58,53 @@ void GLScene::Update()
 
 }
 
+void GLScene::SetupProjection(GLRenderEngine& re)
+{
+	BOX box = GetBoundingBox();
+
+	double R = box.Radius();
+
+	GLCamera& cam = GetCamera();
+	vec3d p = cam.GlobalPosition();
+	vec3d c = box.Center();
+	double L = (c - p).Length();
+
+	double ffar = (L + R) * 2;
+	double fnear = 0.01 * ffar;
+	double fov = cam.GetFOV();
+
+	double D = 0.5 * cam.GetFinalTargetDistance();
+	if ((D > 0) && (D < fnear)) fnear = D;
+
+	cam.SetNearPlane(fnear);
+	cam.SetFarPlane(ffar);
+
+	int W = re.surfaceWidth();
+	int H = re.surfaceHeight();
+
+	double ar = 1;
+	if (H == 0) ar = 1; ar = (double)W / (double)H;
+
+	// set up projection matrix
+	if (cam.IsOrtho())
+	{
+		// orthographic projection
+		double f = 0.35 * cam.GetTargetDistance();
+		double ox = f * ar;
+		double oy = f;
+		re.setOrthoProjection(-ox, ox, -oy, oy, fnear, ffar);
+	}
+	else
+	{
+		re.setProjection(fov, fnear, ffar);
+	}
+}
+
 void GLScene::PositionCameraInScene(GLRenderEngine& re)
 {
 	GLCamera& cam = m_cam;
+
+	SetupProjection(re);
 
 	re.resetTransform();
 

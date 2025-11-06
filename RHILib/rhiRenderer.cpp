@@ -158,6 +158,9 @@ QSize rhiRenderer::pixelSize() const
 	return m_sc->surfacePixelSize();
 }
 
+int rhiRenderer::surfaceWidth() const { return pixelSize().width(); }
+int rhiRenderer::surfaceHeight() const { return pixelSize().height(); }
+
 GLRenderStats rhiRenderer::GetRenderStats() const
 {
 	// update cache count

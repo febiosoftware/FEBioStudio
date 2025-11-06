@@ -198,8 +198,6 @@ public:
 protected:
 	void customInit() override;
 
-	void SetupProjection(GLRenderEngine& re);
-
 	void RenderScene(GLRenderEngine& re) override;
 
 private: // overlay rendering

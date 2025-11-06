@@ -94,6 +94,9 @@ public:
 
 	GLRenderStats GetRenderStats() const override;
 
+	int surfaceWidth() const override;
+	int surfaceHeight() const override;
+
 public:
 
 	void setProjection(double fov, double fnear, double ffar) override;

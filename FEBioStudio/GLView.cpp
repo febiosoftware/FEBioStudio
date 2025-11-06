@@ -1407,49 +1407,6 @@ void CGLView::RenderDecorations(GLRenderEngine& re)
 	}
 }
 
-void CGLView::SetupProjection(GLRenderEngine& re)
-{
-	GLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-	BOX box = scene->GetBoundingBox();
-
-	double R = box.Radius();
-	GLViewSettings& vs = GetViewSettings();
-
-	GLCamera& cam = scene->GetCamera();
-	vec3d p = cam.GlobalPosition();
-	vec3d c = box.Center();
-	double L = (c - p).Length();
-
-	double ffar = (L + R) * 2;
-	double fnear = 0.01 * ffar;
-	double fov = cam.GetFOV();
-
-	double D = 0.5 * cam.GetFinalTargetDistance();
-	if ((D > 0) && (D < fnear)) fnear = D;
-
-	cam.SetNearPlane(fnear);
-	cam.SetFarPlane(ffar);
-
-	double ar = 1;
-	if (height() == 0) ar = 1; ar = (double)width() / (double)height();
-
-	// set up projection matrix
-	if (cam.IsOrtho())
-	{
-		// orthographic projection
-		double f = 0.35 * cam.GetTargetDistance();
-		double ox = f * ar;
-		double oy = f;
-		re.setOrthoProjection(-ox, ox, -oy, oy, fnear, ffar);
-	}
-	else
-	{
-		re.setProjection(fov, fnear, ffar);
-	}
-}
-
 void CGLView::RenderScene(GLRenderEngine& re)
 {
 	GLScene* scene = GetActiveScene();
@@ -1475,8 +1432,6 @@ void CGLView::RenderScene(GLRenderEngine& re)
 	GLCamera& cam = scene->GetCamera();
 	cam.MakeActive();
 	cam.SetOrthoProjection(cam.IsOrtho());
-
-	SetupProjection(re);
 
 	GLContext& rc = m_rc;
 	rc.m_cam = &cam;

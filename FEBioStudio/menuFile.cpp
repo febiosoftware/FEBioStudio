@@ -1383,8 +1383,8 @@ void CMainWindow::on_actionRayTrace_triggered()
 	CDlgEditObject dlg(rayTracer, "RayTracer Settings", this);
 	if (dlg.exec())
 	{
-		W = rayTracer->width();
-		H = rayTracer->height();
+		W = rayTracer->surfaceWidth();
+		H = rayTracer->surfaceHeight();
 
 		GLCamera& cam = scene->GetCamera();
 
