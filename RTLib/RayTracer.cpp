@@ -69,7 +69,7 @@ void RayTracer::setProjection(double fov, double fnear, double far)
 	nearPlane = fnear;
 }
 
-void RayTracer::setBackgroundColor(const GLColor& c)
+void RayTracer::setClearColor(const GLColor& c)
 {
 	backgroundCol = c;
 }

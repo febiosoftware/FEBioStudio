@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "rhiLineRenderPass.h"
 #include "rhiSolidRenderPass.h"
 #include "rhiVolumeRenderPass.h"
+#include "rhiGradientRenderPass.h"
 #include "rhiOverlay.h"
 #include "rhiCanvas.h"
 #include <GLLib/GLMeshBuilder.h>
@@ -109,7 +110,9 @@ public:
 	void setLightPosition(unsigned int n, const vec3f& lp) override;
 	void setLightSpecularColor(unsigned int lightIndex, const GLColor& col);
 
-	void setBackgroundColor(const GLColor& c) override;
+	void setClearColor(const GLColor& c) override;
+
+	void setBackgroundGradient(const GLColor& c1, const GLColor& c2, GradientType grad) override;
 
 	void setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly) override;
 
@@ -169,6 +172,7 @@ private:
 	std::unique_ptr<VolumeRenderPass> m_volumeRenderPass;
 
 	// 2D render passes
+	std::unique_ptr<GradientRenderPass> m_gradientPass;
 	std::unique_ptr<OverlayRenderPass> m_overlay2DPass;
 	std::unique_ptr<CanvasRenderPass> m_canvasPass;
 
@@ -199,7 +203,7 @@ private:
 	// variables used when creating meshes
 	vec3f m_light;
 	GLColor m_lightSpecular;
-	QColor m_bgColor;
+	QColor m_clearColor;
 	GLMaterial m_currentMat;
 	bool m_clipEnabled = false;
 	float clipPlane[4];

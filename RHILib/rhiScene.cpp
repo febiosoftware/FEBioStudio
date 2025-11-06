@@ -134,7 +134,7 @@ void rhiScene::Render(GLRenderEngine& re, GLContext& rc)
 
 	PositionCameraInScene(re);
 
-	re.setBackgroundColor(bgcol);
+	re.setClearColor(bgcol);
 	re.setLightPosition(0, light);
 	re.setLightSpecularColor(0, specColor);
 

@@ -134,6 +134,10 @@ void rhiRenderer::init()
 	m_canvasPass.reset(new CanvasRenderPass(m_rhi));
 	m_canvasPass->create(m_sc);
 
+	// background rendering pass
+	m_gradientPass.reset(new GradientRenderPass(m_rhi));
+	m_gradientPass->create(m_sc);
+
 	// reset timing
 	timing.m_tic = timing.m_toc = steady_clock::now();
 }
@@ -193,9 +197,17 @@ void rhiRenderer::deleteCachedMesh(GLMesh* gm)
 	m_pointOverlayPass->removeCachedMesh(gm);
 }
 
-void rhiRenderer::setBackgroundColor(const GLColor& c)
+void rhiRenderer::setClearColor(const GLColor& c)
 {
-	m_bgColor = QColor(c.r, c.g, c.b, c.a);
+	m_clearColor = QColor(c.r, c.g, c.b, c.a);
+}
+
+void rhiRenderer::setBackgroundGradient(const GLColor& c1, const GLColor& c2, GradientType grad)
+{
+	if (m_rhi->isYUpInNDC() || (grad == GradientType::VERTICAL))
+		m_gradientPass->setColorGradient(c1, c2, (int)grad);
+	else
+		m_gradientPass->setColorGradient(c2, c1, (int)grad);
 }
 
 void rhiRenderer::setLightPosition(unsigned int n, const vec3f& lp)
@@ -549,6 +561,9 @@ void rhiRenderer::finish()
 	m_canvasPass->setFPS(timing.m_fps, timing.m_fpsMin, timing.m_fpsMax);
 	m_canvasPass->update(resourceUpdates);
 
+	// update background pass
+	m_gradientPass->update(resourceUpdates);
+
 	// overlay stuff
 	if (m_useOverlay)
 	{
@@ -567,10 +582,13 @@ void rhiRenderer::finish()
 	}
 
 	// start the rendering pass
-	cb->beginPass(m_sc->currentFrameRenderTarget(), m_bgColor, { 1.0f, 0 }, resourceUpdates);
+	cb->beginPass(m_sc->currentFrameRenderTarget(), m_clearColor, { 1.0f, 0 }, resourceUpdates);
 	{
 		// set the viewport 
 		cb->setViewport({ m_viewport[0], m_viewport[1], m_viewport[2], m_viewport[3] });
+
+		// draw the background first
+		m_gradientPass->draw(cb);
 
 		// render solid meshes
 		m_solidPass->draw(cb);

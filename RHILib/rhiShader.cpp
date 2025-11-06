@@ -449,3 +449,17 @@ rhi::MeshShaderResource* VolumeShader::createShaderResource(QRhi* rhi, rhi::Text
 {
 	return new VolumeShaderResource(rhi, tex, buf);
 }
+
+//=============================================================================
+GradientShader::GradientShader(QRhi* rhi) : rhi::Shader(rhi)
+{
+	rhi::Shader::create(
+		QLatin1String(":/RHILib/shaders/grad.vert.qsb"),
+		QLatin1String(":/RHILib/shaders/grad.frag.qsb")
+	);
+}
+
+QRhiVertexInputLayout GradientShader::meshLayout()
+{
+	return QRhiVertexInputLayout();
+}

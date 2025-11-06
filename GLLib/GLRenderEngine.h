@@ -65,6 +65,11 @@ public:
 		CLOCKWISE
 	};
 
+	enum GradientType {
+		HORIZONTAL,
+		VERTICAL
+	};
+
 public:
 	GLRenderEngine() {}
 	virtual ~GLRenderEngine() {}
@@ -133,7 +138,9 @@ public:
 	virtual void setLightPosition(unsigned int lightIndex, const vec3f& p) {}
 	virtual void setLightSpecularColor(unsigned int lightIndex, const GLColor& col) {}
 
-	virtual void setBackgroundColor(const GLColor& c) {}
+	virtual void setClearColor(const GLColor& c) {}
+
+	virtual void setBackgroundGradient(const GLColor& c1, const GLColor& c2, GradientType grad) {}
 
 public: // immediate mode rendering
 	virtual void beginShape() {}

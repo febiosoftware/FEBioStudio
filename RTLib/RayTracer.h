@@ -55,7 +55,7 @@ public:
 
 	void setProjection(double fov, double fnear, double far) override;
 
-	void setBackgroundColor(const GLColor& c) override;
+	void setClearColor(const GLColor& c) override;
 
 	void setSampleCount(int n);
 

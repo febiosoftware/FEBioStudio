@@ -192,3 +192,11 @@ public:
 
 	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, rhi::Texture3D& tex, QRhiBuffer* buf);
 };
+
+class GradientShader : public rhi::Shader
+{
+public:
+	GradientShader(QRhi* rhi);
+
+	QRhiVertexInputLayout meshLayout() override;
+};

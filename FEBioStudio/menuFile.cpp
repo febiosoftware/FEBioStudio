@@ -1394,7 +1394,7 @@ void CMainWindow::on_actionRayTrace_triggered()
 		QImage img(W, H, QImage::Format_ARGB32);
 
 		rayTracer->setProjection(cam.GetFOV(), cam.GetNearPlane(), cam.GetFarPlane());
-		rayTracer->setBackgroundColor(rc.m_settings.m_col1);
+		rayTracer->setClearColor(rc.m_settings.m_col1);
 
 		CRayTracerThread* render_thread = new CRayTracerThread(scene, rc, &img, rayTracer);
 		CDlgStartThread dlg2(this, render_thread);

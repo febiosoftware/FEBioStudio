@@ -1456,7 +1456,17 @@ void CGLView::RenderScene(GLRenderEngine& re)
 	if (scene == nullptr) return;
 
 	GLViewSettings& view = GetViewSettings();
-	re.setBackgroundColor(view.m_col2);
+	GLColor c1, c2;
+	GLRenderEngine::GradientType orient = GLRenderEngine::HORIZONTAL;
+	switch (view.m_nbgstyle)
+	{
+	case 0: c1 = c2 = view.m_col1; break;
+	case 1: c1 = c2 = view.m_col2; break;
+	case 2: c1 = view.m_col1; c2 = view.m_col2; orient = GLRenderEngine::HORIZONTAL; break;
+	case 3: c1 = view.m_col1; c2 = view.m_col2; orient = GLRenderEngine::VERTICAL; break;
+	}
+	re.setBackgroundGradient(c1, c2, orient);
+
 	// position the light
 	vec3f lp = m_view.m_light; lp.Normalize();
 	re.setLightPosition(0, lp);
