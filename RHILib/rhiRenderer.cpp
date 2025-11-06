@@ -134,6 +134,9 @@ void rhiRenderer::init()
 	m_canvasPass.reset(new CanvasRenderPass(m_rhi));
 	m_canvasPass->create(m_sc);
 
+	// disable this pass by default
+	m_canvasPass->enable(false);
+
 	// background rendering pass
 	m_gradientPass.reset(new GradientRenderPass(m_rhi));
 	m_gradientPass->create(m_sc);
