@@ -235,6 +235,9 @@ void RayTracer::setMaterial(const GLMaterial& glmat)
 		if (mat.shininess < 0) mat.shininess = 0;
 		if (mat.shininess > 128) mat.shininess = 128;
 		mat.reflection = glmat.reflection;
+
+		mat.ambient = glmat.ambient;
+		mat.specular = glmat.specular;
 	}
 
 	if (useTexture1D)
@@ -701,7 +704,7 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 		if (mat.lighting)
 		{
 			// calculate an ambient value
-			fragCol = c * 0.2;
+			fragCol = mat.ambient;
 			double f = N * Vec3(0, 0, 1);
 			if (f < 0) f = 0;
 			fragCol += c * (f * 0.2);
@@ -740,13 +743,13 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 		}
 
 		// add specular component
-		if (!isOccluded && (mat.shininess > 0) && mat.lighting)
+		if (!isOccluded && (mat.shininess >= 0) && mat.lighting)
 		{
 			Vec3 H = t - N * (2 * (t * N));
 			H.normalize();
 			double f = H * L;
 			double s = (f > 0 ? pow(f, mat.shininess) : 0);
-			fragCol += lightSpecular * (s);
+			fragCol += lightSpecular * mat.specular* s;
 		}
 		fragCol.a() = c.a();
 	}

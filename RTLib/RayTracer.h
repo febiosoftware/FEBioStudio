@@ -39,6 +39,9 @@ namespace rt {
 		int tex1d = -1;
 		int tex3d = -1;
 		double reflection = 0;
+
+		Color ambient  = GLColor::Black();
+		Color specular = GLColor::Black();
 	};
 }
 
@@ -147,7 +150,7 @@ private:
 	std::vector<rt::Material> matList;
 
 	rt::Vec4 lightPos;
-	rt::Color lightSpecular = rt::Color(0.8f, 0.8f, 0.8f);
+	rt::Color lightSpecular = rt::Color(1.f, 1.f, 1.f);
 
 	double fieldOfView;
 	double nearPlane;

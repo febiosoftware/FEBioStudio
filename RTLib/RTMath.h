@@ -334,6 +334,11 @@ namespace rt
 			v[2] *= c.v[2];
 		}
 
+		Color operator * (const Color& c) const
+		{
+			return Color(v[0] * c.v[0], v[1] * c.v[1], v[2] * c.v[2], v[3] * c.v[3]);
+		}
+
 		void clamp()
 		{
 			v[0] = (v[0] < 0 ? 0 : (v[0] > 1 ? 1 : v[0]));
