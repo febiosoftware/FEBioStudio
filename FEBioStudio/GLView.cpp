@@ -1520,7 +1520,8 @@ void CGLView::RenderOverlayComponents(QPainter& painter)
 		painter.drawText(rect(), "Recording paused", to);
 	}
 
-	// stop render stats
+	// show render stats
+	ShowFPS(m_showFPS);
 	if (m_showFPS)
 	{
 		double fps = 0;
@@ -1548,21 +1549,23 @@ void CGLView::RenderOverlayComponents(QPainter& painter)
 		{
 			QString t;
 			GLRenderStats stats = re->GetRenderStats();
+			const double MB = 1024.0 * 1024.0;
+			const double KB = 1024.0;
 
 			// triangles
 			int Y = rt.y() + fontSize + 5;
 			rt.setY(Y);
 			float tris = (float)stats.triangles;
-			if (tris < 1e3)
+			if (tris < KB)
 			{
 				t = QString("%1").arg(stats.triangles);
 			}
 			else
 			{
 				QChar suffix(' ');
-				if (tris > 1e6) { tris /= 1e6; suffix = 'M'; }
-				else if (tris > 1e3) { tris /= 1e3; suffix = 'K'; }
-				t = QString("%1%2").arg(tris).arg(suffix);
+				if (tris > MB) { tris /= MB; suffix = 'M'; }
+				else if (tris > KB) { tris /= KB; suffix = 'K'; }
+				t = QString("%1%2").arg(tris, 0, 'g', 3).arg(suffix);
 			}
 			painter.drawText(rt, QString("Tris:%1").arg(t, fieldWidth), to);
 
@@ -1570,16 +1573,16 @@ void CGLView::RenderOverlayComponents(QPainter& painter)
 			Y += fontSize + 5;
 			rt.setY(Y);
 			float lines = (float)stats.lines;
-			if (lines < 1e3)
+			if (lines < KB)
 			{
 				t = QString("%1").arg(stats.lines);
 			}
 			else
 			{
 				QChar suffix(' ');
-				if (lines > 1e6) { lines /= 1e6; suffix = 'M'; }
-				else if (lines > 1e3) { lines /= 1e3; suffix = 'K'; }
-				t = QString("%1%2").arg(stats.lines).arg(suffix);
+				if (lines > MB) { lines /= MB; suffix = 'M'; }
+				else if (lines > KB) { lines /= KB; suffix = 'K'; }
+				t = QString("%1%2").arg(lines, 0, 'g', 3).arg(suffix);
 			}
 			painter.drawText(rt, QString("Lines:%1").arg(t, fieldWidth), to);
 
@@ -1587,16 +1590,16 @@ void CGLView::RenderOverlayComponents(QPainter& painter)
 			Y += fontSize + 5;
 			rt.setY(Y);
 			float points = (float)stats.points;
-			if (points < 1e3)
+			if (points < KB)
 			{
 				t = QString("%1").arg(stats.points);
 			}
 			else
 			{
 				QChar suffix(' ');
-				if (points > 1e6) { points /= 1e6; suffix = 'M'; }
-				else if (points > 1e3) { points /= 1e3; suffix = 'K'; }
-				t = QString("%1%2").arg(stats.points).arg(suffix);
+				if (points > MB) { points /= MB; suffix = 'M'; }
+				else if (points > KB) { points /= KB; suffix = 'K'; }
+				t = QString("%1%2").arg(points, 0, 'g', 3).arg(suffix);
 			}
 			painter.drawText(rt, QString("Points:%1").arg(t, fieldWidth), to);
 
@@ -1609,7 +1612,7 @@ void CGLView::RenderOverlayComponents(QPainter& painter)
 			// upload
 			Y += fontSize + 5;
 			rt.setY(Y);
-			double uploadMB = (double) stats.dataUploadSize / (1024 * 1024);
+			double uploadMB = (double) stats.dataUploadSize / MB;
 			t = QString("%1MB").arg(uploadMB, 0, 'f', 3);
 			painter.drawText(rt, QString("upload:%1").arg(t, fieldWidth), to);
 		}

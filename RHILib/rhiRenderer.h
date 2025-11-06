@@ -152,6 +152,7 @@ public:
 	void useOverlayImage(bool b);
 
 	double getFPS() const { return timing.m_fps; }
+	void showFPS(bool b);
 
 	void setDPR(double dpr) { m_dpr = dpr; }
 

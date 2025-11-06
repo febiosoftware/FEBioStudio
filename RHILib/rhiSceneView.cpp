@@ -96,6 +96,11 @@ void rhiSceneView::RenderScene(GLRenderEngine& re)
 	}
 }
 
+void rhiSceneView::ShowFPS(bool b)
+{
+	if (m_rhiRender) m_rhiRender->showFPS(b);
+}
+
 void rhiSceneView::mousePressEvent(QMouseEvent* ev)
 {
 	rhiScene* RhiScene = dynamic_cast<rhiScene*>(m_scene);

@@ -35,6 +35,9 @@ namespace rhi {
 		RenderPass(QRhi* rhi) : m_rhi(rhi) {}
 		virtual ~RenderPass() {}
 
+		void enable(bool b) { m_enabled = b; }
+		bool isEnabled() const { return m_enabled; }
+
 		// overload to upload any resources
 		virtual void update(QRhiResourceUpdateBatch* u) {}
 
@@ -48,6 +51,8 @@ namespace rhi {
 		QRhi* m_rhi;
 
 		bool m_depthTest = true;
+
+		bool m_enabled = true;
 	};
 }
 

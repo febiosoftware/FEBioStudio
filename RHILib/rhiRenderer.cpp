@@ -464,6 +464,11 @@ void rhiRenderer::useOverlayImage(bool b)
 	m_useOverlay = b;
 }
 
+void rhiRenderer::showFPS(bool b)
+{
+	m_canvasPass->enable(b);
+}
+
 void rhiRenderer::setOverlayImage(const QImage& img)
 {
 	m_overlay2DPass->setImage(img);
@@ -568,8 +573,11 @@ void rhiRenderer::finish()
 	m_pointOverlayPass->update(resourceUpdates);
 
 	// update fps indicator
-	m_canvasPass->setFPS(timing.m_fps, timing.m_fpsMin, timing.m_fpsMax);
-	m_canvasPass->update(resourceUpdates);
+	if (m_canvasPass->isEnabled())
+	{
+		m_canvasPass->setFPS(timing.m_fps, timing.m_fpsMin, timing.m_fpsMax);
+		m_canvasPass->update(resourceUpdates);
+	}
 
 	// update background pass
 	m_gradientPass->update(resourceUpdates);
@@ -622,7 +630,8 @@ void rhiRenderer::finish()
 		m_volumeRenderPass->draw(cb);
 
 		// render fps indicator
-		m_canvasPass->draw(cb);
+		if (m_canvasPass->isEnabled())
+			m_canvasPass->draw(cb);
 
 		// render overlay
 		if (m_useOverlay)

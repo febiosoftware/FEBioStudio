@@ -45,6 +45,8 @@ public:
 
 	const GLRenderEngine* GetRenderEngine() { return m_rhiRender; }
 
+	void ShowFPS(bool b);
+
 protected:
 	void customInit() override;
 	void customRender() override;
