@@ -194,6 +194,7 @@ public:
 			{rhi::UniformBlock::VEC4 , "specular"},
 			{rhi::UniformBlock::FLOAT, "specExp"},
 			{rhi::UniformBlock::FLOAT, "opacity"},
+			{rhi::UniformBlock::FLOAT, "reflection"},
 			{rhi::UniformBlock::INT  , "useTexture"},
 			{rhi::UniformBlock::INT  , "useStipple"},
 			{rhi::UniformBlock::INT  , "useClipping"},
@@ -214,7 +215,8 @@ public:
 		srb->setBindings({
 				QRhiShaderResourceBinding::uniformBuffer(0, visibility, sharedResources->globalbuf),
 				QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get()),
-				QRhiShaderResourceBinding::sampledTexture(2, visibility, sharedResources->texture, sharedResources->sampler)
+				QRhiShaderResourceBinding::sampledTexture(2, visibility, sharedResources->tex1D, sharedResources->sampler1D),
+				QRhiShaderResourceBinding::sampledTexture(3, visibility, sharedResources->envTex, sharedResources->envSmplr)
 			});
 		srb->create();
 	}
@@ -235,12 +237,13 @@ public:
 		m_data.setVec4 ( 4, spec);
 		m_data.setFloat( 5, m.mat.shininess);
 		m_data.setFloat( 6, m.mat.opacity);
-		m_data.setInt  ( 7, (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 1 : 0));
-		m_data.setInt  ( 8, (m.mat.type == GLMaterial::HIGHLIGHT ? 1 : 0));
-		m_data.setInt  ( 9, (m.doClipping ? 1 : 0));
-		m_data.setInt  (10, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
-		m_data.setInt  (11, (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0 : 1);
-		m_data.setInt  (12, (m.mat.frontOnly ? 1 : 0));
+		m_data.setFloat( 7, m.mat.reflection);
+		m_data.setInt  ( 8, (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 1 : 0));
+		m_data.setInt  ( 9, (m.mat.type == GLMaterial::HIGHLIGHT ? 1 : 0));
+		m_data.setInt  (10, (m.doClipping ? 1 : 0));
+		m_data.setInt  (11, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
+		m_data.setInt  (12, (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0 : 1);
+		m_data.setInt  (13, (m.mat.frontOnly ? 1 : 0));
 	}
 };
 

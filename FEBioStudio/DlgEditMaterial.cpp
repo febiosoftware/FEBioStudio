@@ -43,41 +43,43 @@ struct PresetMaterial
 	GLColor diffuse;
 	GLColor specular;
 	float shininess;
+	float reflection;
 	const char* szname;
 };
 
 PresetMaterial MatList[] = {
-	{GLColor( 30,   0,   0), GLColor(150,  15,  20), GLColor(180,  60,  60), 0.60, "blood"},
-	{GLColor( 80,  75,  65), GLColor(220, 210, 190), GLColor( 60,  60,  55), 0.10, "bone"},
-	{GLColor( 30,  15,  10), GLColor(120,  60,  40), GLColor(160,  80,  50), 0.35, "bone marrow"},
-	{GLColor( 60,  50,  55), GLColor(200, 170, 175), GLColor(120, 110, 115), 0.20, "brain tissue"},
-	{GLColor( 84,  56,   8), GLColor(199, 145,  28), GLColor(253, 232, 207), 0.22, "brass"},
-	{GLColor( 54,  33,  13), GLColor(181, 110,  46), GLColor( 99,  69,  43), 0.20, "bronze"},
-	{GLColor( 50,  60,  70), GLColor(180, 200, 210), GLColor(100, 110, 120), 0.15, "cartilage"},
-	{GLColor( 64,  64,  64), GLColor(102, 102, 102), GLColor(197, 197, 197), 0.60, "chrome"},
-	{GLColor( 48,  18,   5), GLColor(179,  69,  20), GLColor( 66,  36,  23), 0.10, "copper"},
-	{GLColor(  5,  43,   5), GLColor( 20, 156,  20), GLColor(161, 186, 161), 0.60, "emerald (gem)"},
-	{GLColor( 30,  40,  20), GLColor(120, 140,  60), GLColor(100, 120, 80) , 0.35, "gallbladder"},
-	{GLColor( 64,  51,  18), GLColor(191, 155,  59), GLColor(161, 143,  94), 0.40, "gold"},
-	{GLColor( 40,  10,  10), GLColor(170,  40,  40), GLColor(200,  80,  80), 0.35, "heart"},
-	{GLColor( 60,  45,  40), GLColor(210, 170, 150), GLColor(170, 150, 140), 0.30, "intestines"},
-	{GLColor( 50,  20,  20), GLColor(160,  70,  70), GLColor(190, 100,  90), 0.25, "kidneys"},
-	{GLColor( 45,  20,  15), GLColor(150,  60,  45), GLColor(180,  80,  70), 0.30, "liver"},
-	{GLColor( 70,  60,  60), GLColor(200, 160, 160), GLColor(150, 130, 130), 0.25, "lungs"},
-	{GLColor( 40,  10,  10), GLColor(180,  45,  45), GLColor(100,  50,  50), 0.25, "muscle "},
-	{GLColor(  0,   0,   0), GLColor(128,   0,   0), GLColor(179, 153, 153), 0.25, "plastic (red)"},
-	{GLColor(  0,   0,   0), GLColor(  0, 128,   0), GLColor(153, 179, 153), 0.25, "plastic (green)"},
-	{GLColor(  0,   0,   0), GLColor(  0,   0, 128), GLColor(153, 153, 179), 0.25, "plastic (blue)"},
-	{GLColor(  5,   5,   5), GLColor(  3,   3,   3), GLColor(102, 102, 102), 0.08, "rubber  (black)"},
-	{GLColor( 13,   0,   0), GLColor(128, 102, 102), GLColor(179,  10,  10), 0.08, "rubber  (red)"},
-	{GLColor( 70,  55,  45), GLColor(210, 180, 160), GLColor(150, 130, 120), 0.25, "pancreas"},
-	{GLColor( 48,  48,  48), GLColor(130, 130, 130), GLColor(130, 130, 130), 0.40, "silver"},
-	{GLColor( 40,  10,  10), GLColor(120,  20,  30), GLColor(150,  60,  70), 0.30, "spleen"},
-	{GLColor( 60,  45,  45), GLColor(210, 160, 160), GLColor(160, 140, 140), 0.25, "stomach"},
-	{GLColor( 60,  45,  35), GLColor(210, 160, 120), GLColor(150, 120, 100), 0.35, "tendon "},
-	{GLColor( 50,  50,  55), GLColor(160, 160, 170), GLColor(190, 200, 220), 0.45, "titanium " },
-	{GLColor(180, 180, 170), GLColor(240, 240, 230), GLColor(255, 255, 250), 0.65, "tooth enamel"},
-	{GLColor( 70,  50,  50), GLColor(220, 170, 170), GLColor(150, 120, 120), 0.30, "urinary bladder"},
+	{GLColor( 90,  90,  90), GLColor(180, 180, 190), GLColor(255, 255, 255), 0.80, 0.55, "aluminium"},
+	{GLColor( 30,   0,   0), GLColor(150,  15,  20), GLColor(180,  60,  60), 0.60, 0.10, "blood"},
+	{GLColor( 80,  75,  65), GLColor(220, 210, 190), GLColor( 60,  60,  55), 0.10, 0.00, "bone"},
+	{GLColor( 30,  15,  10), GLColor(120,  60,  40), GLColor(160,  80,  50), 0.35, 0.00, "bone marrow"},
+	{GLColor( 60,  50,  55), GLColor(200, 170, 175), GLColor(120, 110, 115), 0.20, 0.00, "brain tissue"},
+	{GLColor( 84,  56,   8), GLColor(199, 145,  28), GLColor(253, 232, 207), 0.22, 0.40, "brass"},
+	{GLColor( 54,  33,  13), GLColor(181, 110,  46), GLColor( 99,  69,  43), 0.20, 0.40, "bronze"},
+	{GLColor( 50,  60,  70), GLColor(180, 200, 210), GLColor(100, 110, 120), 0.15, 0.05, "cartilage"},
+	{GLColor( 64,  64,  64), GLColor(102, 102, 102), GLColor(197, 197, 197), 0.60, 0.70, "chrome"},
+	{GLColor( 48,  18,   5), GLColor(179,  69,  20), GLColor( 66,  36,  23), 0.10, 0.50, "copper"},
+	{GLColor(  5,  43,   5), GLColor( 20, 156,  20), GLColor(161, 186, 161), 0.60, 0.30, "emerald (gem)"},
+	{GLColor( 30,  40,  20), GLColor(120, 140,  60), GLColor(100, 120, 80) , 0.35, 0.00, "gallbladder"},
+	{GLColor( 64,  51,  18), GLColor(191, 155,  59), GLColor(161, 143,  94), 0.40, 0.50, "gold"},
+	{GLColor( 40,  10,  10), GLColor(170,  40,  40), GLColor(200,  80,  80), 0.35, 0.00, "heart"},
+	{GLColor( 60,  45,  40), GLColor(210, 170, 150), GLColor(170, 150, 140), 0.30, 0.00, "intestines"},
+	{GLColor( 50,  20,  20), GLColor(160,  70,  70), GLColor(190, 100,  90), 0.25, 0.00, "kidneys"},
+	{GLColor( 45,  20,  15), GLColor(150,  60,  45), GLColor(180,  80,  70), 0.30, 0.00, "liver"},
+	{GLColor( 70,  60,  60), GLColor(200, 160, 160), GLColor(150, 130, 130), 0.25, 0.00, "lungs"},
+	{GLColor( 40,  10,  10), GLColor(180,  45,  45), GLColor(100,  50,  50), 0.25, 0.00, "muscle "},
+	{GLColor(  0,   0,   0), GLColor(128,   0,   0), GLColor(179, 153, 153), 0.25, 0.10, "plastic (red)"},
+	{GLColor(  0,   0,   0), GLColor(  0, 128,   0), GLColor(153, 179, 153), 0.25, 0.10, "plastic (green)"},
+	{GLColor(  0,   0,   0), GLColor(  0,   0, 128), GLColor(153, 153, 179), 0.25, 0.10, "plastic (blue)"},
+	{GLColor(  5,   5,   5), GLColor(  3,   3,   3), GLColor(102, 102, 102), 0.08, 0.00, "rubber  (black)"},
+	{GLColor( 13,   0,   0), GLColor(128, 102, 102), GLColor(179,  10,  10), 0.08, 0.00, "rubber  (red)"},
+	{GLColor( 70,  55,  45), GLColor(210, 180, 160), GLColor(150, 130, 120), 0.25, 0.00, "pancreas"},
+	{GLColor( 48,  48,  48), GLColor(130, 130, 130), GLColor(130, 130, 130), 0.40, 0.50, "silver"},
+	{GLColor( 40,  10,  10), GLColor(120,  20,  30), GLColor(150,  60,  70), 0.30, 0.00, "spleen"},
+	{GLColor( 60,  45,  45), GLColor(210, 160, 160), GLColor(160, 140, 140), 0.25, 0.00, "stomach"},
+	{GLColor( 60,  45,  35), GLColor(210, 160, 120), GLColor(150, 120, 100), 0.35, 0.00, "tendon "},
+	{GLColor( 50,  50,  55), GLColor(160, 160, 170), GLColor(190, 200, 220), 0.45, 0.50, "titanium " },
+	{GLColor(180, 180, 170), GLColor(240, 240, 230), GLColor(255, 255, 250), 0.65, 0.70, "tooth enamel"},
+	{GLColor( 70,  50,  50), GLColor(220, 170, 170), GLColor(150, 120, 120), 0.30, 0.00, "urinary bladder"},
 };
 
 EditMaterialScene::EditMaterialScene()
@@ -92,11 +94,13 @@ void EditMaterialScene::Render(GLRenderEngine& re, GLContext& rc)
 
 	if (mesh)
 	{
+		ActivateEnvironmentMap(re);
 		re.setLightPosition(0, vec3f(1, 1, 1));
 		re.setProjection(45, 0.01, 5);
 		PositionCameraInScene(re);
 		re.setMaterial(mat);
 		re.renderGMesh(*mesh.get());
+		DeactivateEnvironmentMap(re);
 	}
 }
 
@@ -116,6 +120,7 @@ public:
 	CColorButton* diffuse;
 	CColorButton* specular;
 	CDragBox* specExp;
+	CDragBox* reflect;
 	rhiSceneView* view;
 	QComboBox* preset;
 
@@ -142,7 +147,9 @@ public:
 		form->addRow("Diffuse", diffuse = new CColorButton);
 		form->addRow("Specular", specular = new CColorButton);
 		form->addRow("Shininess", specExp = new CDragBox);
+		form->addRow("Reflection", reflect = new CDragBox);
 		specExp->setRange(0, 1); specExp->setSingleStep(0.01);
+		reflect->setRange(0, 1); reflect->setSingleStep(0.01);
 
 		preset->addItem("(user)");
 		int n = sizeof(MatList) / sizeof(PresetMaterial);
@@ -150,7 +157,6 @@ public:
 			preset->addItem(MatList[i].szname);
 
 		l->addLayout(form);
-
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		l->addWidget(bb);
@@ -166,6 +172,7 @@ public:
 		QObject::connect(diffuse, &CColorButton::colorChanged, dlg, &CDlgEditMaterial::updateMaterial);
 		QObject::connect(specular, &CColorButton::colorChanged, dlg, &CDlgEditMaterial::updateMaterial);
 		QObject::connect(specExp, &CDragBox::valueChanged, dlg, &CDlgEditMaterial::updateMaterial);
+		QObject::connect(reflect, &CDragBox::valueChanged, dlg, &CDlgEditMaterial::updateMaterial);
 	}
 };
 
@@ -173,6 +180,28 @@ CDlgEditMaterial::CDlgEditMaterial(QWidget* parent) : QDialog(parent), ui(new UI
 {
 	setWindowTitle("Edit material");
 	ui->setup(this);
+
+	CMainWindow* wnd = CMainWindow::GetInstance();
+	if (wnd)
+	{
+		bool useEnvMap = wnd->IsEnvironmentMapEnabled();
+		QString file = wnd->GetEnvironmentMap();
+		if (useEnvMap && !file.isEmpty())
+		{
+			QImage img(file);
+			if (!img.isNull())
+			{
+				QImage::Format format = img.format();
+				CRGBAImage rgba(img.width(), img.height(), img.constBits());
+				ui->scene.SetEnvironmentMap(rgba);
+			}
+		}
+		else
+		{
+			ui->reflect->setValue(0.0);
+			ui->reflect->setDisabled(true);
+		}
+	}
 }
 
 CDlgEditMaterial::~CDlgEditMaterial()
@@ -198,6 +227,13 @@ void CDlgEditMaterial::SetMaterial(const GLMaterial& mat)
 	ui->specExp->blockSignals(true);
 	ui->specExp->setValue(mat.shininess);
 	ui->specExp->blockSignals(false);
+
+	if (ui->reflect->isEnabled())
+	{
+		ui->reflect->blockSignals(true);
+		ui->reflect->setValue(mat.reflection);
+		ui->reflect->blockSignals(false);
+	}
 }
 
 GLMaterial CDlgEditMaterial::GetMaterial() const
@@ -219,6 +255,7 @@ void CDlgEditMaterial::updateMaterial()
 	ui->scene.mat.diffuse = toGLColor(ui->diffuse->color());
 	ui->scene.mat.specular = toGLColor(ui->specular->color());
 	ui->scene.mat.shininess = ui->specExp->value();
+	ui->scene.mat.reflection = ui->reflect->value();
 	ui->view->requestUpdate();
 }
 
@@ -232,6 +269,12 @@ void CDlgEditMaterial::selectPreset()
 		ui->scene.mat.diffuse = mat.diffuse;
 		ui->scene.mat.specular = mat.specular;
 		ui->scene.mat.shininess = mat.shininess;
+
+		if (ui->reflect->isEnabled())
+			ui->scene.mat.reflection = mat.reflection;
+		else
+			ui->scene.mat.reflection = 0;
+
 		SetMaterial(ui->scene.mat);
 		ui->view->requestUpdate();
 	}

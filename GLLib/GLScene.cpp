@@ -123,7 +123,8 @@ void GLScene::PositionCameraInScene(GLRenderEngine& re)
 
 void GLScene::ActivateEnvironmentMap(GLRenderEngine& re)
 {
-	if (m_envtex == 0) LoadEnvironmentMap(re);
+	if (m_envMap.isNull()) return;
+	m_envtex = re.SetEnvironmentMap(m_envMap);
 	if (m_envtex == 0) return;
 	re.ActivateEnvironmentMap(m_envtex);
 }
@@ -132,13 +133,6 @@ void GLScene::DeactivateEnvironmentMap(GLRenderEngine& re)
 {
 	if (m_envtex == 0) return;
 	re.DeactivateEnvironmentMap(m_envtex);
-}
-
-void GLScene::LoadEnvironmentMap(GLRenderEngine& re)
-{
-	if (m_envtex != 0) return;
-	if (m_envMap.empty()) return;
-	m_envtex = re.LoadEnvironmentMap(m_envMap);
 }
 
 void GLScene::clear()

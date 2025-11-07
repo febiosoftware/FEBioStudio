@@ -39,10 +39,14 @@ CRGBAImage::CRGBAImage()
 	m_cx = m_cy = 0;
 }
 
-CRGBAImage::CRGBAImage(int nx, int ny)
+CRGBAImage::CRGBAImage(int nx, int ny, const void* imgdata)
 {
 	m_pb = new uint8_t[nx*ny * 4];
-	for (int i = 0; i<nx*ny * 4; i++) m_pb[i] = 0;
+
+	if (imgdata)
+		memcpy(m_pb, imgdata, 4 * nx * ny);
+	else
+		for (int i = 0; i<nx*ny * 4; i++) m_pb[i] = 0;
 
 	m_cx = nx;
 	m_cy = ny;

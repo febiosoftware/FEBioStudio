@@ -35,8 +35,10 @@ namespace rhi {
 	struct SharedResources
 	{
 		QRhiBuffer* globalbuf = nullptr;
-		QRhiTexture* texture = nullptr;
-		QRhiSampler* sampler = nullptr;
+		QRhiTexture* tex1D = nullptr;
+		QRhiSampler* sampler1D = nullptr;
+		QRhiTexture* envTex = nullptr;
+		QRhiSampler* envSmplr = nullptr;
 	};
 
 	class Mesh;

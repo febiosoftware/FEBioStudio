@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <RTLib/RayTracer.h>
 #include <RTLib/RayTraceSurface.h>
 #include <QPainter>
+#include "MainWindow.h"
 
 class CMatEditButton::Imp
 {
@@ -37,6 +38,7 @@ public:
 	QImage img;
 	EditMaterialScene scene;
 	RayTracer rt;
+	CRGBAImage envMap;
 
 	Imp()
 	{
@@ -99,6 +101,28 @@ void CMatEditButton::updateImage()
 
 	GLContext rc;
 	rc.m_cam = &m.scene.GetCamera();
+
+	CMainWindow* wnd = CMainWindow::GetInstance();
+	bool useEnvMap = wnd->IsEnvironmentMapEnabled();
+	if (useEnvMap)
+	{
+		if (m.envMap.isNull())
+		{
+			QString file = wnd->GetEnvironmentMap();
+			if (!file.isEmpty())
+			{
+				QImage img(file);
+				if (!img.isNull())
+				{
+					QImage::Format format = img.format();
+					m.envMap = CRGBAImage(img.width(), img.height(), img.constBits());
+				}
+			}
+		}
+
+		if (!m.envMap.isNull())
+			m.scene.SetEnvironmentMap(m.envMap);
+	}
 
 	m.rt.start();
 	m.scene.Render(m.rt, rc);

@@ -274,6 +274,10 @@ namespace rt
 		{
 			v[0] = r; v[1] = g; v[2] = b; v[3] = a;
 		}
+		Color(double d[4])
+		{
+			v[0] = d[0]; v[1] = d[1]; v[2] = d[2]; v[3] = d[3];
+		}
 
 		Color(const GLColor& c)
 		{

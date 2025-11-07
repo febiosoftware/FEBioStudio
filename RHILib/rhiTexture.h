@@ -39,6 +39,8 @@ namespace rhi {
 
 		void upload(QRhiResourceUpdateBatch* u);
 
+		void setImage(const QImage& img);
+
 	public:
 		QRhi* m_rhi = nullptr;
 		std::unique_ptr<QRhiTexture> texture;

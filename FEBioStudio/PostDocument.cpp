@@ -237,7 +237,17 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLModelDo
 	m_binit = false;
 
 	m_scene = new CGLPostScene(this);
-	m_scene->SetEnvironmentMap(wnd->GetEnvironmentMap().toStdString());
+
+	QString envMap = wnd->GetEnvironmentMap();
+	if (!envMap.isEmpty())
+	{
+		QImage img(envMap);
+		if (!img.isNull() && (img.format() == QImage::Format_RGB32))
+		{
+			CRGBAImage rgba(img.width(), img.height(), img.constBits());
+			m_scene->SetEnvironmentMap(rgba);
+		}
+	}
 
 	SetItemMode(ITEM_ELEM);
 

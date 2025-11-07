@@ -135,6 +135,11 @@ public:
 	void enableClipPlane(unsigned int n) override;
 	void disableClipPlane(unsigned int n) override;
 
+public:
+	unsigned int SetEnvironmentMap(const CRGBAImage& img) override;
+	void ActivateEnvironmentMap(unsigned int mapid) override;
+	void DeactivateEnvironmentMap(unsigned int mapid) override;
+
 public: // immediate mode rendering
 	void beginShape() override;
 	void endShape() override;
@@ -184,6 +189,8 @@ private:
 	GlobalUniformBlock m_global;
 	rhi::Texture m_tex1D;
 	rhi::SharedResources m_sharedResources;
+	rhi::Texture m_envTex;
+	const CRGBAImage* envImg = nullptr;
 
 	// used for submitting updates in init.
 	QRhiResourceUpdateBatch* m_initialUpdates = nullptr;

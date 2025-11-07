@@ -76,7 +76,7 @@ void CanvasUniformBlock::update(QRhiResourceUpdateBatch* u)
 	u->updateDynamicBuffer(m_ubuf.get(), 0, m_ub.size(), m_ub.data());
 }
 
-rhiRenderer::rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp) : m_rhi(rhi), m_sc(sc), m_rp(rp), m_tex1D(rhi)
+rhiRenderer::rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp) : m_rhi(rhi), m_sc(sc), m_rp(rp), m_tex1D(rhi), m_envTex(rhi)
 {
 	m_lightSpecular = GLColor::White();
 }
@@ -99,8 +99,13 @@ void rhiRenderer::init()
 	m_tex1D.create(img);
 	m_tex1D.upload(m_initialUpdates);
 
+	// create with dummy image
+	QImage envImg(QSize(100, 100), QImage::Format_RGB32);
+	envImg.fill(Qt::black);
+	m_envTex.create(envImg);
+
 	// convenience class for passing around all the resources that are shared between shaders
-	m_sharedResources = { m_global.get(), m_tex1D.texture.get(), m_tex1D.sampler.get()};
+	m_sharedResources = { m_global.get(), m_tex1D.texture.get(), m_tex1D.sampler.get(), m_envTex.texture.get(), m_envTex.sampler.get()};
 
 	// create all render passes
 	m_solidPass.reset(new TwoPassSolidRenderPass(m_rhi));
@@ -462,6 +467,32 @@ void rhiRenderer::disableClipPlane(unsigned int n)
 	}
 }
 
+unsigned int rhiRenderer::SetEnvironmentMap(const CRGBAImage& img)
+{
+	if (img.isNull()) return 0;
+
+	if (envImg == nullptr)
+	{
+		QImage map(img.GetBytes(), img.Width(), img.Height(), QImage::Format::Format_RGBA8888_Premultiplied);
+		if (!map.isNull())
+		{
+			m_envTex.setImage(map);
+			envImg = &img;
+			return 1;
+		}
+		else return 0;
+	}
+	else return 1;
+}
+
+void rhiRenderer::ActivateEnvironmentMap(unsigned int mapid)
+{
+}
+
+void rhiRenderer::DeactivateEnvironmentMap(unsigned int mapid)
+{
+}
+
 void rhiRenderer::useOverlayImage(bool b)
 {
 	m_useOverlay = b;
@@ -558,6 +589,12 @@ void rhiRenderer::finish()
 	{
 		m_tex1D.upload(resourceUpdates);
 		m_tex1D.needsUpload = false;
+	}
+
+	if (m_envTex.needsUpload)
+	{
+		m_envTex.upload(resourceUpdates);
+		m_envTex.needsUpload = false;
 	}
 
 	// update solid mesh data

@@ -44,6 +44,17 @@ void rhi::Texture::create(const QImage& img)
 	needsUpload = true;
 }
 
+void rhi::Texture::setImage(const QImage& img)
+{
+	if (texture->pixelSize() != img.size())
+	{
+		image = img;
+		texture->setPixelSize(img.size());
+		texture->create();
+		needsUpload = true;
+	}
+}
+
 void rhi::Texture::upload(QRhiResourceUpdateBatch* u)
 {
 	u->uploadTexture(texture.get(), image);

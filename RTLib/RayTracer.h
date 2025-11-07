@@ -127,6 +127,10 @@ public:
 	void setTexture(GLTexture1D& tex) override;
 	void setTexture(GLTexture3D& tex) override;
 
+	unsigned int SetEnvironmentMap(const CRGBAImage& img) override;
+	void ActivateEnvironmentMap(unsigned int id) override;
+	void DeactivateEnvironmentMap(unsigned int id) override;
+
 private:
 	void preprocess();
 	void render();
@@ -147,6 +151,9 @@ private:
 	std::vector<rt::Texture1D*> tex1d;
 	int currentTexture1D = -1;
 	bool useTexture1D = false;
+
+	rt::Texture2D envTex;
+	bool useEnvTex = false;
 
 	std::vector<rt::Texture3D*> tex3d;
 	int currentTexture3D = -1;

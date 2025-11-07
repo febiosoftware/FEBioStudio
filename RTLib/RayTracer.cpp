@@ -722,8 +722,21 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 
 		if (mat.lighting)
 		{
+			// environment map
+			if ((mat.reflection > 0) && (!envTex.isNull()))
+			{
+				double r = mat.reflection;
+				Vec3 N = q.n;
+
+				float u = atan2(N.z(), N.x()) / (2.0 * PI) + 0.5;
+				float v = 0.5 - asin(N.y()) / PI;
+
+				Color envCol = envTex.sample(u, v);
+				c = envCol * r + c * (1 - r);
+			}
+
 			// reflection
-			if ((mat.reflection > 0) && (ray.bounce < 2))
+/*			if ((mat.reflection > 0) && (ray.bounce < 2))
 			{
 				Vec3 H = t - N * (2 * (t * N));
 				H.normalize();
@@ -731,6 +744,7 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 				ray2.bounce = ray.bounce + 1;
 				c = c * (1 - mat.reflection) + castRay(bhv, ray2) * mat.reflection;
 			}
+*/
 		}
 
 		// see if we've reached the front or back face
@@ -811,4 +825,20 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 	}
 	fragCol.clamp();
 	return fragCol;
+}
+
+unsigned int RayTracer::SetEnvironmentMap(const CRGBAImage& img)
+{
+	envTex.setImageData(img);
+	return 1;
+}
+
+void RayTracer::ActivateEnvironmentMap(unsigned int id)
+{
+
+}
+
+void RayTracer::DeactivateEnvironmentMap(unsigned int id)
+{
+
 }

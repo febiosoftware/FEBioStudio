@@ -123,7 +123,17 @@ CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd), m_skipPlugi
 	m_context = new CModelContext(this);
 
 	m_scene = new CGLModelScene(this);
-	m_scene->SetEnvironmentMap(wnd->GetEnvironmentMap().toStdString());
+
+	QString envMap = wnd->GetEnvironmentMap();
+	if (!envMap.isEmpty())
+	{
+		QImage img(envMap);
+		if (!img.isNull() && (img.format() == QImage::Format_RGB32))
+		{
+			CRGBAImage rgba(img.width(), img.height(), img.constBits());
+			m_scene->SetEnvironmentMap(rgba);
+		}
+	}
 
 	SetFileWriter(new CModelFileWriter(this));
 

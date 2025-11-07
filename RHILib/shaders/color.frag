@@ -25,6 +25,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     vec4 specular;
     float specExp;
     float opacity;
+    float reflection;
     int useTexture;
     int useStipple;
     int useClipping;
@@ -35,6 +36,7 @@ layout(std140, binding = 1) uniform MeshBlock {
 
 // texture sampler
 layout(binding = 2) uniform sampler2D smp;
+layout(binding = 3) uniform sampler2D envSmp;
 
 void main()
 {
@@ -64,6 +66,16 @@ void main()
     vec4 col = v_color;
     if (mesh.useTexture > 0)
         col.xyz *= texture(smp, v_tex.xy).xyz;
+
+    if (mesh.reflection > 0)
+    {
+        float r = clamp(mesh.reflection, 0, 1);
+        const float PI = 3.14159265358979323846;
+        float u = atan(N.z, N.x) / (2.0 * PI) + 0.5;
+        float v = 0.5 - asin(N.y) / PI;
+        vec4 envCol = texture(envSmp, vec2(u,v));
+        col.xyz = envCol.xyz*r + col.xyz*(1-r);
+    }
 
     if (mesh.useLighting > 0)
     {

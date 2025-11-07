@@ -179,7 +179,7 @@ public:
 	void renderGMeshOutline(const GLCamera& cam, const GLMesh& mesh, const Transform& T, int surfID);
 
 public:
-	virtual unsigned int LoadEnvironmentMap(const std::string& fileName) { return 0; }
+	virtual unsigned int SetEnvironmentMap(const CRGBAImage& tex) { return 0; }
 	virtual void ActivateEnvironmentMap(unsigned int mapid) {}
 	virtual void DeactivateEnvironmentMap(unsigned int mapid) {}
 

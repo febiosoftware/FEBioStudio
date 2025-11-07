@@ -3410,7 +3410,7 @@ QStringList CMainWindow::GetRecentFileList()
 	return ui->m_settings.m_recentFiles;
 }
 
-QString CMainWindow::GetEnvironmentMap()
+QString CMainWindow::GetEnvironmentMap() const
 {
 	return ui->m_settings.m_envMapFile;
 }
@@ -3418,6 +3418,13 @@ QString CMainWindow::GetEnvironmentMap()
 void CMainWindow::SetEnvironmentMap(const QString& filename)
 {
 	ui->m_settings.m_envMapFile = filename;
+}
+
+bool CMainWindow::IsEnvironmentMapEnabled()
+{
+	CGLView* glv = GetGLView();
+	if (glv) return glv->GetViewSettings().m_use_environment_map;
+	else return false;
 }
 
 QStringList CMainWindow::GetRecentProjectsList()

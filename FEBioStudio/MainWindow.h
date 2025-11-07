@@ -394,8 +394,9 @@ public:
 	QStringList GetRecentProjectsList();
 	QStringList GetRecentPluginsList();
 
-	QString GetEnvironmentMap();
+	QString GetEnvironmentMap() const;
 	void SetEnvironmentMap(const QString& filename);
+	bool IsEnvironmentMapEnabled();
 
 	void AddRecentPlugin(const QString& fileName);
 

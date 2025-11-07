@@ -97,11 +97,10 @@ public:
 	GLGrid& GetGrid() { return m_grid; }
 	double GetGridScale() { return m_grid.GetScale(); }
 
-	void SetEnvironmentMap(const std::string& filename) { m_envMap = filename; }
+	void SetEnvironmentMap(const CRGBAImage& img) { m_envMap = img; }
 
 	void ActivateEnvironmentMap(GLRenderEngine& re);
 	void DeactivateEnvironmentMap(GLRenderEngine& re);
-	void LoadEnvironmentMap(GLRenderEngine& re);
 
 public:
 	void AddTag(const GLTAG& tag) { m_tags.push_back(tag); }
@@ -129,8 +128,8 @@ protected:
 	GLGrid	m_grid;	//!< the grid object
 	BOX m_box;
 
-	unsigned int	m_envtex;	// enironment texture ID
-	std::string		m_envMap; // file name used for environment mapping 
+	unsigned int m_envtex;	// enironment texture ID
+	CRGBAImage m_envMap; // the texture to use
 
 	std::vector<GLTAG> m_tags;
 

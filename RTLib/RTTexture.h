@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "RTMath.h"
 #include <ImageLib/3DImage.h>
+#include <ImageLib/RGBAImage.h>
 
 namespace rt {
 
@@ -42,6 +43,22 @@ namespace rt {
 	private:
 		size_t size = 0;
 		float* data = nullptr;
+	};
+
+	class Texture2D
+	{
+	public:
+		Texture2D();
+		~Texture2D();
+
+		bool isNull() const { return img.isNull(); }
+
+		void setImageData(const CRGBAImage& image);
+
+		rt::Color sample(float r, float s);
+
+	private:
+		CRGBAImage img;
 	};
 
 	class Texture3D

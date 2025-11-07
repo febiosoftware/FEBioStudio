@@ -219,12 +219,12 @@ void CGLModelScene::Render(GLRenderEngine& engine, GLContext& rc)
 		m_buildScene = false;
 	}
 
-//	if (view.m_use_environment_map) ActivateEnvironmentMap(engine);
+	if (view.m_use_environment_map) ActivateEnvironmentMap(engine);
 
 	// now render it
 	GLScene::Render(engine, rc);
 
-//	if (view.m_use_environment_map) DeactivateEnvironmentMap(engine);
+	if (view.m_use_environment_map) DeactivateEnvironmentMap(engine);
 
 	// Render 2D stuff
 	ClearTags();

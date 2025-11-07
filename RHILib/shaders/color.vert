@@ -28,6 +28,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     vec4 specular;
     float specExp;
     float opacity;
+    float reflection;
     int useTexture;
     int useStipple;
     int useClipping;
@@ -38,6 +39,7 @@ layout(std140, binding = 1) uniform MeshBlock {
 
 // texture sampler
 layout(binding = 2) uniform sampler2D smp;
+layout(binding = 3) uniform sampler2D envSmp;
 
 void main()
 {

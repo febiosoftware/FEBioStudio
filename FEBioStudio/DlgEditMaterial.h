@@ -43,6 +43,7 @@ private:
 public:
 	int res = 48;
 	GLMaterial mat;
+	QString envTexFile;
 
 private:
 	std::unique_ptr<GLMesh> mesh;
