@@ -728,8 +728,10 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 				double r = mat.reflection;
 				Vec3 N = q.n;
 
-				float u = atan2(N.z(), N.x()) / (2.0 * PI) + 0.5;
-				float v = 0.5 - asin(N.y()) / PI;
+				Vec3 R = rt::reflect(t, N);
+
+				float u = atan2(R.z(), R.x()) / (2.0 * PI) + 0.5;
+				float v = 0.5 - asin(R.y()) / PI;
 
 				Color envCol = envTex.sample(u, v);
 				c = envCol * r + c * (1 - r);

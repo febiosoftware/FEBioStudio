@@ -71,8 +71,10 @@ void main()
     {
         float r = clamp(mesh.reflection, 0, 1);
         const float PI = 3.14159265358979323846;
-        float u = atan(N.z, N.x) / (2.0 * PI) + 0.5;
-        float v = 0.5 - asin(N.y) / PI;
+
+        vec3 R = reflect(V, N);
+        float u = atan(R.z, R.x) / (2.0 * PI) + 0.5;
+        float v = 0.5 - asin(R.y) / PI;
         vec4 envCol = texture(envSmp, vec2(u,v));
         col.xyz = envCol.xyz*r + col.xyz*(1-r);
     }

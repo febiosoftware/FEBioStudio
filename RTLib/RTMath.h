@@ -497,4 +497,9 @@ namespace rt
 			return box;
 		}
 	};
+
+	inline Vec3 reflect(const Vec3& I, const Vec3& N)
+	{
+		return I - N * (2 * (N * I));
+	}
 }
