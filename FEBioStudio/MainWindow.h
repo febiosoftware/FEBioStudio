@@ -754,6 +754,8 @@ public slots:
 
 	void on_planecut_dataChanged();
 
+	void onCaptureFrameFinished(QImage img);
+
 private:
 	Ui::CMainWindow*	ui;
 

@@ -1305,7 +1305,11 @@ void CMainWindow::on_actionCloseAll_triggered()
 
 void CMainWindow::on_actionSnapShot_triggered()
 {
-	QImage img = GetGLView()->CaptureScreen();
+	GetGLView()->CaptureScreen();
+}
+
+void CMainWindow::onCaptureFrameFinished(QImage img)
+{
 	ShowImageViewer(img);
 }
 

@@ -213,7 +213,7 @@ private:
 	Snap_Mode GetSnapMode() { return m_nsnap; }
 
 public:
-	QImage CaptureScreen();
+	void CaptureScreen();
 
 	void UpdateWidgets();
 
@@ -250,6 +250,10 @@ public: // added to support new rhi base class
 
 public slots:
 	void updateView();
+	void captureFrameReady(QImage img);
+
+signals:
+	void captureFrameFinished(QImage img);
 
 protected:
 	CMainWindow*	m_pWnd;	// parent window

@@ -207,6 +207,7 @@ void RhiWindow::init()
 
     m_sc.reset(m_rhi->newSwapChain());
 	m_sc->setSampleCount(sampleCount);
+	m_sc->setFlags(QRhiSwapChain::UsedAsTransferSource);
 
     m_ds.reset(m_rhi->newRenderBuffer(QRhiRenderBuffer::DepthStencil,
                                       QSize(), // no need to set the size here, due to UsedWithSwapChainOnly

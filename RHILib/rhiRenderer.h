@@ -60,8 +60,10 @@ private:
 	std::unique_ptr<QRhiBuffer> m_ubuf;
 };
 
-class rhiRenderer : public GLRenderEngine
+class rhiRenderer : public QObject, public GLRenderEngine
 {
+	Q_OBJECT
+
 	struct TimingInfo
 	{
 		time_point<steady_clock> m_tic;
@@ -135,6 +137,8 @@ public:
 	void enableClipPlane(unsigned int n) override;
 	void disableClipPlane(unsigned int n) override;
 
+	void setCaptureNextFrame(bool b) { captureNextFrame = b; }
+
 public:
 	unsigned int SetEnvironmentMap(const CRGBAImage& img) override;
 	void ActivateEnvironmentMap(unsigned int mapid) override;
@@ -162,6 +166,11 @@ public:
 	void setDPR(double dpr) { m_dpr = dpr; }
 
 	void setTriadInfo(const QMatrix4x4& m, QRhiViewport vp);
+
+	int getFramesRequested() const { return framesRequested; }
+
+signals:
+	void captureFrameReady(QImage img);
 
 private:
 	QRhi* m_rhi;
@@ -205,6 +214,9 @@ private:
 	bool m_useOverlay = false;
 
 	double m_dpr = 1;
+
+	bool captureNextFrame = false;
+	unsigned int framesRequested = 0;
 
 private:
 	GLMeshBuilder mb;

@@ -281,6 +281,8 @@ CMainWindow::CMainWindow(bool reset, GraphicsAPI api, QWidget* parent) : QMainWi
 #endif
     ui->m_pluginManager.ReadDatabase();
     ui->m_pluginManager.Connect();
+
+	QObject::connect(GetGLView(), &CGLView::captureFrameFinished, this, &CMainWindow::onCaptureFrameFinished);
 }
 
 //-----------------------------------------------------------------------------

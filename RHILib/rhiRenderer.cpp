@@ -680,6 +680,48 @@ void rhiRenderer::finish()
 		}
 	}
 	cb->endPass();
+
+	if (captureNextFrame)
+	{
+		captureNextFrame = false;
+		framesRequested++;
+
+		QRhiReadbackDescription rbDesc;
+
+		static QRhiReadbackResult rbResult;  // must stay alive until callback fires
+		rbResult.completed = [this]() {
+			qDebug() << "Readback done! Size:" << rbResult.pixelSize
+				<< "Bytes:" << rbResult.data.size();
+
+			int W = rbResult.pixelSize.width();
+			int H = rbResult.pixelSize.height();
+
+			const uchar* pixels = reinterpret_cast<const uchar*>(rbResult.data.constData());
+			QImage img;
+			
+			if (rbResult.format == QRhiTexture::RGBA8)
+				img = QImage(pixels, W, H, QImage::Format_RGBA8888);
+			else if (rbResult.format == QRhiTexture::BGRA8)
+				img = QImage(pixels, W, H, QImage::Format_RGBA8888).rgbSwapped();
+
+			framesRequested--;
+			if (framesRequested < 0) framesRequested = 0;
+
+			emit this->captureFrameReady(img);
+			};
+
+		// --- Enqueue the readback on a resource update batch ---
+		QRhiResourceUpdateBatch* u = m_rhi->nextResourceUpdateBatch();
+		u->readBackTexture(rbDesc, &rbResult);
+
+		// Commit the batch. You must pass the batch to the command buffer so QRhi
+		// will process it. There are two common ways:
+		//  - pass it to beginPass/endPass (typical): pass as the resourceUpdates parameter
+		//  - or call cb->resourceUpdate(u) when not inside a pass.
+		//
+		// In this example we already ended the pass, so submit the batch directly:
+		cb->resourceUpdate(u);
+	}
 }
 
 void rhiRenderer::beginShape()
