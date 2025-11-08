@@ -1914,6 +1914,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("shadowIntensity", vs.m_shadow_intensity);
 		settings.setValue("lightDirection", Vec3fToString(vs.m_light));
 		settings.setValue("environmentMap", fbs.m_envMapFile);
+		settings.setValue("useEnvironmentMap", vs.m_use_environment_map);
 
 		// Physics
 		settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
@@ -2082,6 +2083,9 @@ void CMainWindow::readSettings()
 		vs.m_light = StringToVec3f(settings.value("lightDirection", "{0.5,0.5,1}").toString());
 		QString envmap = settings.value("environmentMap").toString();
 		fbs.m_envMapFile = envmap;
+		vs.m_use_environment_map = settings.value("useEnvironmentMap", false).toBool();
+
+		if (envmap.isEmpty()) vs.m_use_environment_map = false;
 
 		// Physics
 		vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
