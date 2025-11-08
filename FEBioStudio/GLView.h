@@ -144,8 +144,6 @@ public:
 	void Set3DCursor(const vec3d& r) { m_view.m_pos3d = r; }
 	vec3d Get3DCursor() const { return m_view.m_pos3d; }
 
-	std::string GetOGLVersionString();
-
 	void ToggleFPS();
 
 	void ToggleMeshLines(bool b);
@@ -322,7 +320,6 @@ private:
 
 	bool renderOverlay = false;
 
-	std::string		m_oglVersionString;
 	static GLViewSettings	m_view;
 };
 

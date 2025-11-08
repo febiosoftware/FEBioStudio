@@ -386,11 +386,6 @@ void CGLView::AllocateDefaultWidgets(bool b)
 	m_ballocDefaultWidgets = b;
 }
 
-std::string CGLView::GetOGLVersionString()
-{
-	return m_oglVersionString;
-}
-
 CGLDocument* CGLView::GetDocument()
 {
 	return m_pWnd->GetGLDocument();
@@ -1280,9 +1275,6 @@ void CGLView::customInit()
 		m_menu->align(GLW_ALIGN_RIGHT | GLW_ALIGN_TOP);
 		m_Widget->AddWidget(m_menu);
 	}
-
-//	const char* szv = (const char*) glGetString(GL_VERSION);
-//	m_oglVersionString = szv;
 
 	// initialize clipping planes
 	Post::CGLPlaneCutPlot::InitClipPlanes();
