@@ -776,7 +776,7 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 		if (mat.lighting)
 		{
 			// calculate an ambient value
-			fragCol = mat.ambient;
+			fragCol = mat.ambient * lightAmbient;
 			double f = N * Vec3(0, 0, 1);
 			if (f < 0) f = 0;
 			fragCol += c * (f * 0.2);

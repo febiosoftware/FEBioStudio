@@ -43,6 +43,9 @@ using dseconds = duration<double>;
 class GlobalUniformBlock
 {
 public:
+	enum {LIGHTPOS, LIGHTAMB, LIGHTSPEC, CLIPPLANE};
+
+public:
 	GlobalUniformBlock() {}
 	void create(QRhi* rhi);
 
@@ -52,6 +55,7 @@ public:
 
 public:
 	void setLightPosition(const vec3f& lp);
+	void setAmbientColor(GLColor c);
 	void setSpecularColor(GLColor c);
 	void setClipPlane(const float f[4]);
 

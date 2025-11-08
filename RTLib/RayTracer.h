@@ -164,6 +164,7 @@ private:
 
 	rt::Vec4 lightPos;
 	rt::Color lightSpecular = rt::Color(1.f, 1.f, 1.f);
+	rt::Color lightAmbient  = rt::Color(0.2f, 0.2f, 0.2f);
 
 	bool ortho = false;
 	double fieldOfView;

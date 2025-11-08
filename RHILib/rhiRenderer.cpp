@@ -34,22 +34,34 @@ void GlobalUniformBlock::create(QRhi* rhi)
 {
 	m_ub.create({
 		{ rhi::UniformBlock::VEC4, "lightPos" },
+		{ rhi::UniformBlock::VEC4, "ambient"},
 		{ rhi::UniformBlock::VEC4, "specColor"},
 		{ rhi::UniformBlock::VEC4, "clipPlane"}
 	});
+
+	m_ub.setVec4(LIGHTSPEC, GLColor::White());
+	m_ub.setVec4(LIGHTAMB, GLColor(50, 50, 50));
 
 	m_ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, m_ub.size()));
 	m_ubuf->create();
 }
 
-void GlobalUniformBlock::setLightPosition(const vec3f& lp) { m_ub.setVec4(0, lp); }
+void GlobalUniformBlock::setLightPosition(const vec3f& lp) { m_ub.setVec4(LIGHTPOS, lp); }
+
+void GlobalUniformBlock::setAmbientColor(GLColor c)
+{
+	float f[4] = { 0.f };
+	c.toFloat(f);
+	m_ub.setVec4(LIGHTAMB, f[0], f[1], f[2], f[3]);
+}
+
 void GlobalUniformBlock::setSpecularColor(GLColor c) 
 { 
 	float f[4] = { 0.f };
 	c.toFloat(f);
-	m_ub.setVec4(1, f[0], f[1], f[2], f[3]); 
+	m_ub.setVec4(LIGHTSPEC, f[0], f[1], f[2], f[3]);
 }
-void GlobalUniformBlock::setClipPlane(const float f[4]) { m_ub.setVec4(2, f[0], f[1], f[2], f[3]); }
+void GlobalUniformBlock::setClipPlane(const float f[4]) { m_ub.setVec4(CLIPPLANE, f[0], f[1], f[2], f[3]); }
 
 void GlobalUniformBlock::update(QRhiResourceUpdateBatch* u)
 {

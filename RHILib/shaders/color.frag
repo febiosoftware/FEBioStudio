@@ -12,6 +12,7 @@ layout(location = 0) out vec4 fragColor;
 // global (shared) block
 layout(std140, binding = 0) uniform GlobalBlock {
     vec4 lightPos;
+    vec4 ambient;
     vec4 specColor;
     vec4 clipPlane;
 } glob;
@@ -82,7 +83,7 @@ void main()
     if (mesh.useLighting > 0)
     {
         // ambient value
-        f_col += mesh.ambient;
+        f_col += glob.ambient*mesh.ambient;
 
         if (gl_FrontFacing || (mesh.frontOnly == 0)) {
 
