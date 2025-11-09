@@ -172,6 +172,8 @@ void CGLWidgetManager::DrawWidgets(GLPainter* painter)
 
 void CGLWidgetManager::DrawWidget(GLWidget* pw, GLPainter* painter)
 {
+	pw->draw(painter);
+
 	// if the widget has the focus, draw a box around it
 	if (pw->has_focus())
 	{
@@ -195,7 +197,4 @@ void CGLWidgetManager::DrawWidget(GLWidget* pw, GLPainter* painter)
 	
 		painter->drawRect(x0, y0, pw->m_w, pw->m_h);
 	}
-
-	// now draw the widget
-	pw->draw(painter);
 }

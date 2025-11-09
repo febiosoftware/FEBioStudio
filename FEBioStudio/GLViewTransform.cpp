@@ -73,18 +73,11 @@ vec3d GLViewTransform::WorldToScreen(const vec3d& r)
 	float xd = W*((d.x + 1.f)*0.5f);
 	float yd = H - H*((d.y + 1.f)*0.5f);
 
-	double dpr = m_view->devicePixelRatio();
-
-	return vec3d(xd / dpr, yd / dpr, d.z);
+	return vec3d(xd, yd, d.z);
 }
 
 Ray GLViewTransform::PointToRay(int x, int y)
 {
-	// adjust for high resolution displays
-	double dpr = m_view->devicePixelRatio();
-	x = (int)(x*dpr);
-	y = (int)(y*dpr);
-
 	// flip the y-axis
 	y = m_vp[3] - y;
 

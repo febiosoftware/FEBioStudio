@@ -314,7 +314,8 @@ private:
 void RenderBrush(QPainter& painter, int x, int y, double R)
 {
 	QPen oldPen = painter.pen();
-	painter.setPen(QPen(Qt::white, 1, Qt::DotLine));
+	painter.setPen(QPen(Qt::white, 2, Qt::DotLine));
+	painter.setBrush(Qt::NoBrush);
 	painter.drawEllipse(QPointF(x, y), R, R);
 }
 
@@ -435,9 +436,13 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 	int x = (int)ev->position().x();
 	int y = (int)ev->position().y();
 
+	double dpr = devicePixelRatio();
+	int x_dpr = (int)(x * dpr);
+	int y_dpr = (int)(y * dpr);
+
 	// let the widget manager handle it first
 	GLWidget* pw = GLWidget::get_focus();
-	if (m_Widget && (m_Widget->handle(x, y, GLWEvent::GLW_PUSH) == 1))
+	if (m_Widget && (m_Widget->handle(x_dpr, y_dpr, GLWEvent::GLW_PUSH) == 1))
 	{
 		m_pWnd->UpdateFontToolbar();
 		repaint();
@@ -573,8 +578,12 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	int x = ev->pos().x();
 	int y = ev->pos().y();
 
+	double dpr = devicePixelRatio();
+	int x_dpr = (int)(x * dpr);
+	int y_dpr = (int)(y * dpr);
+
 	// let the widget manager handle it first
-	if (but1 && (m_Widget && (m_Widget->handle(x, y, GLWEvent::GLW_DRAG) == 1)))
+	if (but1 && (m_Widget && (m_Widget->handle(x_dpr, y_dpr, GLWEvent::GLW_DRAG) == 1)))
 	{
 		repaint();
 		m_pWnd->UpdateFontToolbar();
@@ -838,8 +847,12 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	int x = (int)ev->position().x();
 	int y = (int)ev->position().y();
 
+	double dpr = devicePixelRatio();
+	int x_dpr = (int)(x * dpr);
+	int y_dpr = (int)(y * dpr);
+
 	// let the widget manager handle it first
-	if (m_Widget && (m_Widget->handle(x, y, GLWEvent::GLW_RELEASE) == 1))
+	if (m_Widget && (m_Widget->handle(x_dpr, y_dpr, GLWEvent::GLW_RELEASE) == 1))
 	{
 		ev->accept();
 		m_pWnd->UpdateFontToolbar();
@@ -1525,7 +1538,12 @@ void CGLView::RenderOverlayComponents(QPainter& painter)
 
 	DrawWidgets(painter);
 	RenderTags(painter);
-	if (vs.m_bselbrush) RenderBrush(painter, m_x1, m_y1, vs.m_brushSize);
+
+	double dpr = devicePixelRatio();
+	int x_dpr = (int)(m_x1 * dpr);
+	int y_dpr = (int)(m_y1 * dpr);
+
+	if (vs.m_bselbrush) RenderBrush(painter, x_dpr, y_dpr, vs.m_brushSize*dpr);
 
 	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand(painter);
 
@@ -1823,24 +1841,40 @@ void CGLView::RenderRubberBand(QPainter& painter)
 	int nstyle = pdoc->GetSelectionStyle();
 
 	painter.setPen(QPen(Qt::white, 2, Qt::DotLine));
+	painter.setBrush(Qt::NoBrush);
+
+	double dpr = devicePixelRatio();
+
+	int x0 = (int)(dpr * m_x0);
+	int x1 = (int)(dpr * m_x1);
+	int y0 = (int)(dpr * m_y0);
+	int y1 = (int)(dpr * m_y1);
 
 	switch (nstyle)
 	{
-	case REGION_SELECT_BOX: painter.drawRect(m_x0, m_y0, m_x1-m_x0, m_y1-m_y0); break;
+	case REGION_SELECT_BOX: 
+		painter.drawRect(x0, y0, x1-x0, y1-y0); 
+		break;
 	case REGION_SELECT_CIRCLE:
 		{
-			double dx = (m_x1 - m_x0);
-			double dy = (m_y1 - m_y0);
+			double dx = (x1 - x0);
+			double dy = (y1 - y0);
 			double R = sqrt(dx*dx + dy*dy);
-			painter.drawEllipse(QPointF(m_x0, m_y0), R, R);
+			painter.drawEllipse(QPointF(x0, y0), R, R);
 		}
 		break;
 	case REGION_SELECT_FREE:
 		{
 			QPainterPath path;
-			path.moveTo(QPoint(m_pl[0].first, m_pl[1].second));
+			x0 = (int)(dpr * m_pl[0].first);
+			y0 = (int)(dpr * m_pl[0].second);
+			path.moveTo(QPoint(x0, y0));
 			for (int i = 1; i < m_pl.size(); ++i)
-				path.lineTo(m_pl[i].first, m_pl[i].second);
+			{
+				x1 = (int)(dpr * m_pl[i].first);
+				y1 = (int)(dpr * m_pl[i].second);
+				path.lineTo(x1, y1);
+			}
 			painter.drawPath(path);
 		}
 		break;
@@ -2526,7 +2560,7 @@ void CGLView::RenderTags(QPainter& painter)
 	{
 		GLTAG& tag = scene->Tag(i);
 		int x = (int)(tag.wx * dpr);
-		int y = (int)(H - dpr*(H - tag.wy));
+		int y = (int)(tag.wy * dpr);
 		painter.setBrush(QColor(0,0,0));
 		painter.drawEllipse(QPoint(x, y), 4, 4);
 		painter.setBrush(toQColor(tag.c));
@@ -2539,8 +2573,8 @@ void CGLView::RenderTags(QPainter& painter)
 	{
 		GLTAG& tag = scene->Tag(i);
 
-		int x = tag.wx;
-		int y = tag.wy;
+		int x = (int)(dpr*tag.wx);
+		int y = (int)(dpr*tag.wy);
 		painter.setPen(Qt::black);
 
 		painter.drawText(x + 3, y - 2, tag.sztag);
