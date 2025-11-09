@@ -70,7 +70,7 @@ rhi::Mesh* LineRenderPass::addGLMesh(const GLMesh& mesh, int partition, bool cac
 
 	rhi::MeshShaderResource* sr = LineShader::createShaderResource(m_rhi, m_sharedResource);
 	rhi::LineMesh<LineShader::Vertex>* rm = new rhi::LineMesh<LineShader::Vertex>(m_rhi, sr);
-	rm->CreateFromGLMesh(&mesh);
+	rm->CreateFromGLMesh(&mesh, partition);
 
 	if (cacheMesh)
 	{

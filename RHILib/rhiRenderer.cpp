@@ -399,6 +399,25 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 	}
 }
 
+void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cacheMesh)
+{
+	rhi::Mesh* lineMesh = nullptr;
+	if (m_currentMat.type == GLMaterial::OVERLAY)
+		lineMesh = m_lineOverlayPass->addGLMesh(mesh, partition, cacheMesh);
+	else
+		lineMesh = m_linePass->addGLMesh(mesh, partition, cacheMesh);
+
+	if (lineMesh)
+	{
+		lineMesh->SetMaterial(m_currentMat);
+		lineMesh->SetMatrices(m_modelViewMatrix, m_projMatrix);
+		lineMesh->doClipping = m_clipEnabled;
+		lineMesh->setActive(true);
+
+		m_stats.lines += (lineMesh->vertexCount() / 2); // 2 vertices per edge
+	}
+}
+
 void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 {
 	rhi::Mesh* pointMesh = nullptr;

@@ -132,6 +132,8 @@ public:
 	void renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh = true) override;
 
 	void renderGMeshEdges(const GLMesh& mesh, bool cacheMesh = true) override;
+	void renderGMeshEdges(const GLMesh& mesh, int partition, bool cacheMesh = true) override;
+
 	void renderGMeshNodes(const GLMesh& mesh, bool cacheMesh = true) override;
 
 	void setTexture(GLTexture1D& tex);

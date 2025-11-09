@@ -2631,7 +2631,8 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, GLContext& rc)
 					if (m)
 					{
 						re.setColor(GLColor::Black());
-						re.renderGMeshEdges(*m);
+						for (int j = 0; j < po->Edges(); ++j)
+							re.renderGMeshEdges(*m, j);
 
 						if (vs.m_nrender == RENDER_WIREFRAME)
 						{

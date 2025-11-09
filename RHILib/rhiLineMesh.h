@@ -36,21 +36,46 @@ namespace rhi {
 		bool CreateFromGLMesh(const GLMesh* gmsh, int partition = -1) override
 		{
 			if (gmsh == nullptr) return false;
-			int NE = gmsh->Edges();
-			int NV = 2 * NE;
-			std::vector<Vertex> vertexData;
-			vertexData.resize(NV);
-			Vertex* v = vertexData.data();
-			for (int i = 0; i < NE; ++i) {
-				const GLMesh::EDGE& e = gmsh->Edge(i);
-				for (int j = 0; j < 2; ++j, ++v) {
-					GLMesh::NODE nd;
-					nd.r = e.vr[j];
-					nd.c = e.c[j];
-					(*v) =nd;
+
+			if (partition < 0)
+			{
+				int NE = gmsh->Edges();
+				int NV = 2 * NE;
+				std::vector<Vertex> vertexData;
+				vertexData.resize(NV);
+				Vertex* v = vertexData.data();
+				for (int i = 0; i < NE; ++i) {
+					const GLMesh::EDGE& e = gmsh->Edge(i);
+					for (int j = 0; j < 2; ++j, ++v) {
+						GLMesh::NODE nd;
+						nd.r = e.vr[j];
+						nd.c = e.c[j];
+						(*v) = nd;
+					}
 				}
+				create(NV, sizeof(Vertex), vertexData.data());
 			}
-			create(NV, sizeof(Vertex), vertexData.data());
+			else
+			{
+				const std::pair<int, int>& edge = gmsh->EIL(partition);
+
+				int NE = edge.second;
+				int NV = 2 * NE;
+				std::vector<Vertex> vertexData;
+				vertexData.resize(NV);
+				Vertex* v = vertexData.data();
+				for (int i = 0; i < NE; ++i) {
+					const GLMesh::EDGE& e = gmsh->Edge(i + edge.first);
+					for (int j = 0; j < 2; ++j, ++v) {
+						GLMesh::NODE nd;
+						nd.r = e.vr[j];
+						nd.c = e.c[j];
+						(*v) = nd;
+					}
+				}
+				create(NV, sizeof(Vertex), vertexData.data());
+			}
+
 			return true;
 		}
 
