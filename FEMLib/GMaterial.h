@@ -64,9 +64,10 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-	void SetColor(GLColor c) { m_glmat.AmbientDiffuse(c); }
+	void SetColor(GLColor c) { m_glmat.diffuse = m_glmat.ambient = c; }
 	GLColor GetColor() const { return m_glmat.diffuse; }
 	GLMaterial& GetGLMaterial() { return m_glmat; }
+	void SetGLMaterial(const GLMaterial& mat) { m_glmat = mat; }
 
 	// location where glyph will be rendered (e.g. for rigid bodies)
 	vec3d GetPosition() const { return m_pos; }

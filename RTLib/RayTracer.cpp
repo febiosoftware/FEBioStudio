@@ -213,14 +213,9 @@ void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::Dif
 	useTexture3D = (map == GLMaterial::TEXTURE_3D);
 
 	rt::Material mat;
-	if ((matType == GLMaterial::PLASTIC) || (matType == GLMaterial::GLASS))
-	{
-		mat.shininess = 128;
-	}
 
 	if ((matType == GLMaterial::HIGHLIGHT) || (matType == GLMaterial::CONSTANT))
 	{
-		mat.shininess = 0;
 		mat.lighting = false;
 	}
 

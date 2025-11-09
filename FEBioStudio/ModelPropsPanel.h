@@ -37,12 +37,14 @@ class CPropertyList;
 class QLineEdit;
 class QLabel;
 class CColorButton;
+class CMatEditButton;
 class QComboBox;
 class QCheckBox;
 class GDiscreteElementSet;
 class QListWidget;
 class FSCoreBase;
 class Param;
+class GLMaterial;
 
 namespace Ui {
 	class CModelPropsPanel;
@@ -59,11 +61,11 @@ public:
 
 	void setType(const QString& name);
 
-	void setColor(const QColor& col);
+	void setMaterial(const GLMaterial& mat);
 
 	void setStatus(bool b);
 
-	void showColor(bool b);
+	void showMaterial(bool b);
 
 	void showStatus(bool b);
 
@@ -71,18 +73,18 @@ public:
 
 protected slots:
 	void on_name_textEdited(const QString&);
-	void on_col_colorChanged(QColor c);
+	void on_mat_materialChanged(GLMaterial col);
 	void on_status_clicked(bool b);
 
 signals:
 	void nameChanged(const QString& newName);
-	void colorChanged(const QColor& c);
+	void materialChanged(GLMaterial mat);
 	void statusChanged(bool b);
 
 private:
 	QLineEdit*		m_name;
 	QLabel*			m_type;
-	CColorButton*	m_col;
+	CMatEditButton*	m_mat;
 	QCheckBox*		m_status;
 	QLabel*			m_statusLabel;
 };
@@ -223,7 +225,7 @@ private slots:
 	void on_partInfo_nameChanged(const QString&);
 	void on_partInfo_activeChanged(bool);
 	void on_data_nameChanged(const QString&);
-	void on_object_colorChanged(const QColor& col);
+	void on_object_materialChanged(GLMaterial mat);
 	void on_props_dataChanged(int n);
 	void on_form_dataChanged(bool itemModified);
 	void on_bcobject_stepChanged(int n);

@@ -198,6 +198,8 @@ SOFTWARE.*/
 #define CID_MATERIAL_COMPONENT		0x00070014	// added in 2.0
 #define CID_MATERIAL_COMPONENT_TYPE	0x00070015	// added in 2.0
 #define CID_MATERIAL_COMPONENT_DATA	0x00070016	// added in 2.0
+#define CID_MAT_OPACITY				0x00070017	// added in 3.0
+#define CID_MAT_REFLECTION			0x00070018	// added in 3.0
 
 // --- geometry data ---
 #define CID_GEOMETRY_SECTION		0x00080000
@@ -212,7 +214,7 @@ SOFTWARE.*/
 #define CID_OBJ_FACES				0x00080009
 #define CID_OBJ_EDGES				0x0008000A
 #define CID_OBJ_NODES				0x0008000B
-#define CID_OBJ_COLOR				0x0008000C
+#define CID_OBJ_COLOR				0x0008000C // obsolete in 3.0 (replaced by CID_MAT_XXX)
 #define CID_OBJ_SCALE				0x0008000D
 #define CID_OBJ_FEMESHER			0x0008000E
 #define CID_OBJ_MESH_LAYER			0x0008000F

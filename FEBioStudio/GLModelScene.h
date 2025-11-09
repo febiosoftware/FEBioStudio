@@ -94,9 +94,9 @@ private:
 	void RenderSurfaceMeshEdges(GLRenderEngine& re);
 
 	void RenderFEFacesFromGMesh(GLRenderEngine& re, GLContext& rc);
-	void RenderMeshByDefault(GLRenderEngine& re, GLContext& rc);
-	void RenderMeshByObjectColor(GLRenderEngine& re, GLContext& rc);
-	void RenderMeshByElementType(GLRenderEngine& re, GLContext& rc, GLMesh& mesh);
+	void RenderFEMeshByDefault(GLRenderEngine& re, GLContext& rc);
+	void RenderFEMeshByObjectColor(GLRenderEngine& re, GLContext& rc);
+	void RenderFEMeshByElementType(GLRenderEngine& re, GLContext& rc, GLMesh& mesh);
 
 	void RenderUnselectedBeamElements(GLRenderEngine& re);
 	void RenderSelectedFEElements(GLRenderEngine& re);
@@ -119,8 +119,11 @@ private:
 	void ColorByElementType (GLMesh& msh);
 	void ColorByPhysics     (GLMesh& msh);
 
+	void UpdateGFaceMaterials();
+
 private:
 	GObject* m_po;
+	std::vector<GLMaterial> m_mat; // material per face
 	bool	m_clearCache;
 };
 
@@ -273,8 +276,8 @@ public:
 	void RenderTags(GLContext& rc);
 
 public:
-	GLColor GetPartColor(GPart* pg);
-	GLColor GetFaceColor(GFace& face);
+	GLMaterial GetPartMaterial(GPart* pg);
+	GLMaterial GetFaceMaterial(GFace& face);
 
 	void BuildFiberViz(GLContext& rc);
 

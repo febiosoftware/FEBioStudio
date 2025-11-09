@@ -3286,7 +3286,7 @@ void CCmdConvertToMultiBlock::Execute()
 
 		// copy data
 		m_pnew->CopyTransform(m_pold);
-		m_pnew->SetColor(m_pold->GetColor());
+		m_pnew->SetMaterial(m_pold->GetMaterial());
 
 		// copy the selection state
 		if (m_pold->IsSelected()) m_pnew->Select();

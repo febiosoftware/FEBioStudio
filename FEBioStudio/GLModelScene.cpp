@@ -627,10 +627,11 @@ GLColor GetMaterialTypeColor(GMaterial* mat)
 	return c;
 }
 
-GLColor CGLModelScene::GetPartColor(GPart* pg)
+GLMaterial CGLModelScene::GetPartMaterial(GPart* pg)
 {
-	if (pg == nullptr) return GLColor(0, 0, 0);
-	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return GLColor(0,0,0);
+	GLMaterial mat;
+	if (pg == nullptr) return mat;
+	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return mat;
 
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
 	FSModel* fem = m_doc->GetFSModel();
@@ -639,52 +640,68 @@ GLColor CGLModelScene::GetPartColor(GPart* pg)
 	{
 	case OBJECT_COLOR_MODE::DEFAULT_COLOR:
 	{
-		GLColor c = po->GetColor();
+		mat = po->GetMaterial();
 		if (!pg->IsActive())
 		{
-			c = GLColor(128, 128, 128);
+			mat.ambient = mat.specular = GLColor(0, 0, 0);
+			mat.diffuse = GLColor(128, 128, 128);
+			mat.reflection = 0;
 		}
 		else
 		{
 			GMaterial* pmat = fem->GetMaterialFromID(pg->GetMaterialID());
-			GLMaterial& glm = pmat->GetGLMaterial();
-			if (pmat) c = glm.diffuse;
+			if (pmat) mat = pmat->GetGLMaterial();
 		}
-		return c;
+		return mat;
 	}
 	break;
 	case OBJECT_COLOR_MODE::OBJECT_COLOR:
 	{
-		return po->GetColor();
+		return po->GetMaterial();
 	}
 	break;
 	case OBJECT_COLOR_MODE::MATERIAL_TYPE:
 	{
 		GMaterial* gmat = fem->GetMaterialFromID(pg->GetMaterialID());
 		GLColor c = GetMaterialTypeColor(gmat);
-		return c;
+
+		mat.type = GLMaterial::PLASTIC;
+		mat.ambient = mat.diffuse = c;
+		mat.specular = GLColor::Black();
+		mat.reflection = 0;
+		mat.opacity = 1;
+		return mat;
 	}
 	break;
 	case OBJECT_COLOR_MODE::FSELEMENT_TYPE:
 	{
-		return GLColor(255, 255, 255);
+		mat.type = GLMaterial::PLASTIC;
+		mat.ambient = mat.diffuse = GLColor(255, 255, 255);
+		mat.specular = GLColor::Black();
+		mat.reflection = 0;
+		mat.opacity = 1;
 	}
 	break;
 	case OBJECT_COLOR_MODE::PHYSICS_TYPE:
 	{
-		return GLColor(200, 200, 200, 128);
+		mat.type = GLMaterial::PLASTIC;
+		mat.ambient = mat.diffuse = GLColor(200, 200, 200, 128);
+		mat.specular = GLColor::Black();
+		mat.reflection = 0;
+		mat.opacity = 1;
+		return mat;
 	}
 	break;
 	}
-	return GLColor(0, 0, 0);
+	return mat;
 }
 
-GLColor CGLModelScene::GetFaceColor(GFace& f)
+GLMaterial CGLModelScene::GetFaceMaterial(GFace& f)
 {
-	GLColor c = GLColor::Black();
+	GLMaterial mat;
 
 	GBaseObject* po = f.Object();
-	if (po == nullptr) return c;
+	if (po == nullptr) return mat;
 
 	// get the part (that is visible)
 	int* pid = f.m_nPID;
@@ -700,6 +717,7 @@ GLColor CGLModelScene::GetFaceColor(GFace& f)
 	{
 		if (ObjectColorMode()  == OBJECT_COLOR_MODE::PHYSICS_TYPE)
 		{
+			GLColor c;
 			switch (f.m_ntag)
 			{
 			case 0: c = GLColor(200, 200, 200, 128); break;
@@ -709,11 +727,14 @@ GLColor CGLModelScene::GetFaceColor(GFace& f)
 			case 4: c = GLColor(200,   0, 200); break;	// contact primary
 			case 5: c = GLColor(100,   0, 100); break;	// contact secondary
 			}
+
+			mat.type = GLMaterial::PLASTIC;
+			mat.diffuse = c;
 		}
-		else c = GetPartColor(pg);
+		else mat = GetPartMaterial(pg);
 	}
 
-	return c;
+	return mat;
 }
 
 void CGLModelScene::RenderTags(GLContext& rc)
@@ -1294,6 +1315,7 @@ GLObjectItem::GLObjectItem(CGLModelScene* scene, GObject* po) : GLModelSceneItem
 	m_clearCache = true;
 	if (m_po)
 	{
+		UpdateGFaceMaterials();
 		UpdateGMeshColor(*m_po->GetRenderMesh());
 		UpdateGMeshColor(*m_po->GetFERenderMesh());
 	}
@@ -1308,9 +1330,9 @@ void GLObjectItem::UpdateGMeshColor(GLMesh& msh)
 	int objColorMode = m_scene->GetObjectColorMode();
 	switch (objColorMode)
 	{
-	case DEFAULT_COLOR : ColorByDefault(*gm); break;
-	case OBJECT_COLOR  : ColorByObject(*gm); break;
-	case MATERIAL_TYPE : ColorByMaterialType(*gm); break;
+//	case DEFAULT_COLOR : ColorByDefault(*gm); break;
+//	case OBJECT_COLOR  : ColorByObject(*gm); break;
+//	case MATERIAL_TYPE : ColorByMaterialType(*gm); break;
 	case FSELEMENT_TYPE: ColorByElementType(*gm); break;
 	case PHYSICS_TYPE  : ColorByPhysics(*gm); break;
 	}
@@ -1318,17 +1340,17 @@ void GLObjectItem::UpdateGMeshColor(GLMesh& msh)
 
 void GLObjectItem::ColorByDefault(GLMesh& msh)
 {
-	GLColor c = m_po->GetColor();
+	GLMaterial mat = m_po->GetMaterial();
 	for (int n = 0; n < msh.Partitions(); ++n)
 	{
 		const GLMesh::PARTITION& p = msh.Partition(n);
 		GFace* pf = m_po->Face(n);
-		GLColor c = m_scene->GetFaceColor(*pf);
+		mat = m_scene->GetFaceMaterial(*pf);
 
 		for (int i = 0; i < p.nf; ++i)
 		{
 			GLMesh::FACE& face = msh.Face(i + p.n0);
-			face.c[0] = face.c[1] = face.c[2] = c;
+			face.c[0] = face.c[1] = face.c[2] = mat.diffuse;
 		}
 	}
 }
@@ -1345,17 +1367,17 @@ void GLObjectItem::ColorByObject(GLMesh& msh)
 
 void GLObjectItem::ColorByMaterialType(GLMesh& msh)
 {
-	GLColor c = m_po->GetColor();
+	GLMaterial mat = m_po->GetMaterial();
 	for (int n = 0; n < msh.Partitions(); ++n)
 	{
 		const GLMesh::PARTITION& p = msh.Partition(n);
 		GFace* pf = m_po->Face(n);
-		GLColor c = m_scene->GetFaceColor(*pf);
+		mat = m_scene->GetFaceMaterial(*pf);
 
 		for (int i = 0; i < p.nf; ++i)
 		{
 			GLMesh::FACE& face = msh.Face(i + p.n0);
-			face.c[0] = face.c[1] = face.c[2] = c;
+			face.c[0] = face.c[1] = face.c[2] = mat.diffuse;
 		}
 	}
 }
@@ -1417,12 +1439,11 @@ void GLObjectItem::ColorByElementType(GLMesh& msh)
 
 void GLObjectItem::ColorByPhysics(GLMesh& msh)
 {
-	GLColor c = m_po->GetColor();
 	for (int n = 0; n < msh.Partitions(); ++n)
 	{
 		const GLMesh::PARTITION& p = msh.Partition(n);
 		GFace* pf = m_po->Face(n);
-		GLColor c = m_scene->GetFaceColor(*pf);
+		GLColor c = m_scene->GetFaceMaterial(*pf).diffuse;
 
 		for (int i = 0; i < p.nf; ++i)
 		{
@@ -1432,35 +1453,49 @@ void GLObjectItem::ColorByPhysics(GLMesh& msh)
 	}
 }
 
+void GLObjectItem::UpdateGFaceMaterials()
+{
+	m_mat.clear();
+	if (m_po == nullptr) return;
+
+	for (int i = 0; i < m_po->Faces(); ++i)
+	{
+		GFace* pf = m_po->Face(i);
+		GLMaterial m = m_scene->GetFaceMaterial(*pf);
+		m_mat.push_back(m);
+	}
+}
+
 void GLObjectItem::render(GLRenderEngine& re, GLContext& rc)
 {
+	if ((m_po == nullptr) || (!m_po->IsVisible())) return;
+	if (!m_po->IsValid()) return;
+
 	GLViewSettings& vs = rc.m_settings;
 	int nitem = m_scene->GetItemMode();
 	if ((vs.m_nrender == RENDER_SOLID) || (nitem != ITEM_MESH))
 	{
-		if (m_po && m_po->IsValid())
+		GLMesh* gm = m_po->GetRenderMesh();
+		if (gm && gm->IsModified())
 		{
-			GLMesh* gm = m_po->GetRenderMesh();
-			if (gm && gm->IsModified())
-			{
-				re.deleteCachedMesh(gm);
-				UpdateGMeshColor(*gm);
-				gm->setModified(false);
-			}
-
-			gm = m_po->GetFERenderMesh();
-			if (gm && gm->IsModified())
-			{
-				re.deleteCachedMesh(gm);
-				UpdateGMeshColor(*gm);
-				gm->setModified(false);
-			}
-
-			re.pushTransform();
-			SetModelView(re, m_po);
-			RenderGObject(re, rc);
-			re.popTransform();
+			UpdateGFaceMaterials();
+			re.deleteCachedMesh(gm);
+			UpdateGMeshColor(*gm);
+			gm->setModified(false);
 		}
+
+		gm = m_po->GetFERenderMesh();
+		if (gm && gm->IsModified())
+		{
+			re.deleteCachedMesh(gm);
+			UpdateGMeshColor(*gm);
+			gm->setModified(false);
+		}
+
+		re.pushTransform();
+		SetModelView(re, m_po);
+		RenderGObject(re, rc);
+		re.popTransform();
 	}
 }
 
@@ -1608,6 +1643,8 @@ void GLObjectItem::RenderParts(GLRenderEngine& re, GLContext& rc)
 	GLMesh* pm = po->GetRenderMesh(); assert(pm);
 	if (pm == nullptr) return;
 
+	bool frontOnly = vs.m_identifyBackfacing;
+
 	// render non-selected parts
 	int NF = po->Faces();
 	for (int n = 0; n < NF; ++n)
@@ -1627,19 +1664,24 @@ void GLObjectItem::RenderParts(GLRenderEngine& re, GLContext& rc)
 
 			if (pg && !pg->IsSelected())
 			{
-				GLColor c = m_scene->GetFaceColor(f);
+				GLMaterial mat = m_mat[n];
 
 				bool useStipple = false;
-				if (c.a != 255)
+				if (mat.diffuse.a != 255)
 				{
-					c.a = 255;
+					mat.diffuse.a = 255;
 					useStipple = true;
+				}
+				else
+				{
+					mat.frontOnly = frontOnly;
+					mat.diffuseMap = GLMaterial::NONE;
 				}
 
 				// render the face
-				bool frontOnly = vs.m_identifyBackfacing;
-				if (useStipple) re.setMaterial(GLMaterial::GLASS, c, GLMaterial::NONE, frontOnly);
-				else re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
+				if (useStipple) re.setMaterial(GLMaterial::GLASS, mat.diffuse, GLMaterial::NONE, frontOnly);
+				else re.setMaterial(mat);
+
 				re.renderGMesh(*pm, n);
 			}
 		}
@@ -1672,18 +1714,21 @@ void GLObjectItem::RenderSurfaces(GLRenderEngine& re, GLContext& rc)
 		// make sure this face is not selected
 		if (f.IsVisible() && (f.IsSelected() == false))
 		{
-			GLColor c = m_scene->GetFaceColor(f);
+			GLMaterial mat = m_mat[n];
 
 			bool useStipple = false;
-			if (c.a != 255)
+			if (mat.diffuse.a != 255)
 			{
 				useStipple = true;
-				c.a = 255;
+				mat.diffuse.a = 255;
 			}
 
+			mat.diffuseMap = GLMaterial::NONE;
+			mat.frontOnly = frontOnly;
+
 			// render the face
-			if (useStipple) re.setMaterial(GLMaterial::GLASS, c, GLMaterial::NONE, frontOnly);
-			else re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
+			if (useStipple) re.setMaterial(GLMaterial::GLASS, mat.diffuse, GLMaterial::NONE, frontOnly);
+			else re.setMaterial(mat);
 			re.renderGMesh(*pm, n);
 		}
 	}
@@ -1754,18 +1799,18 @@ void GLObjectItem::RenderFEFacesFromGMesh(GLRenderEngine& re, GLContext& rc)
 		int objectColor = m_scene->GetObjectColorMode();
 		switch (objectColor)
 		{
-		case OBJECT_COLOR_MODE::DEFAULT_COLOR : RenderMeshByDefault(re, rc); break;
-		case OBJECT_COLOR_MODE::OBJECT_COLOR  : RenderMeshByObjectColor(re, rc); break;
-		case OBJECT_COLOR_MODE::MATERIAL_TYPE : RenderMeshByDefault(re, rc); break;
-		case OBJECT_COLOR_MODE::PHYSICS_TYPE  : RenderMeshByDefault(re, rc); break;
-		case OBJECT_COLOR_MODE::FSELEMENT_TYPE: RenderMeshByElementType(re, rc, *gm); break;
+		case OBJECT_COLOR_MODE::DEFAULT_COLOR : RenderFEMeshByDefault(re, rc); break;
+		case OBJECT_COLOR_MODE::OBJECT_COLOR  : RenderFEMeshByObjectColor(re, rc); break;
+		case OBJECT_COLOR_MODE::MATERIAL_TYPE : RenderFEMeshByDefault(re, rc); break;
+		case OBJECT_COLOR_MODE::PHYSICS_TYPE  : RenderFEMeshByDefault(re, rc); break;
+		case OBJECT_COLOR_MODE::FSELEMENT_TYPE: RenderFEMeshByElementType(re, rc, *gm); break;
 		default:
 			assert(false);
 		}
 	}
 }
 
-void GLObjectItem::RenderMeshByDefault(GLRenderEngine& re, GLContext& rc)
+void GLObjectItem::RenderFEMeshByDefault(GLRenderEngine& re, GLContext& rc)
 {
 	GObject* po = m_po;
 	GLMesh* gm = po->GetFERenderMesh();
@@ -1782,18 +1827,30 @@ void GLObjectItem::RenderMeshByDefault(GLRenderEngine& re, GLContext& rc)
 		// get the next face
 		GFace& f = *po->Face(n);
 
-		GLColor c = m_scene->GetFaceColor(f);
+		GLMaterial mat = m_mat[n];
 
 		bool useStipple = false;
-		if (c.a != 255)
+		if (mat.diffuse.a != 255)
 		{
 			useStipple = true;
-			c.a = 255;
+			mat.diffuse.a = 255;
 		}
 
+		// create a matte look
+		mat.reflection = 0;
+		mat.specular = GLColor::Black();
+
+		mat.diffuseMap = GLMaterial::NONE;
+		mat.frontOnly = rc.m_settings.m_identifyBackfacing;
+
 		// render the face
-		if (useStipple) re.setMaterial(GLMaterial::GLASS, c, GLMaterial::NONE, rc.m_settings.m_identifyBackfacing);
-		else re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, rc.m_settings.m_identifyBackfacing);
+		if (useStipple) re.setMaterial(GLMaterial::GLASS, mat.diffuse, GLMaterial::NONE, rc.m_settings.m_identifyBackfacing);
+		else
+		{
+			mat.type = GLMaterial::PLASTIC;
+			re.setMaterial(mat);
+		}
+
 		re.renderGMesh(*gm, n);
 	}
 
@@ -1806,13 +1863,17 @@ void GLObjectItem::RenderMeshByDefault(GLRenderEngine& re, GLContext& rc)
 		{
 			GPart* pg = po->Part(i);
 
-			GLColor c = m_scene->GetPartColor(pg);
+			GLMaterial mat = m_scene->GetPartMaterial(pg);
 			bool useStipple = false;
-			if (c.a != 255)
+			if (mat.diffuse.a != 255)
 			{
-				c.a = 255;
+				mat.diffuse.a = 255;
 				useStipple = true;
 			}
+
+			// create a matte look
+			mat.reflection = 0;
+			mat.specular = GLColor::Black();
 
 			if (vs.m_transparencyMode != 0)
 			{
@@ -1824,14 +1885,17 @@ void GLObjectItem::RenderMeshByDefault(GLRenderEngine& re, GLContext& rc)
 			}
 
 			// render the face
-			if (useStipple) re.setMaterial(GLMaterial::GLASS, c, GLMaterial::NONE, rc.m_settings.m_identifyBackfacing);
-			else re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, rc.m_settings.m_identifyBackfacing);
+			mat.diffuseMap = GLMaterial::NONE;
+			mat.frontOnly = rc.m_settings.m_identifyBackfacing;
+			if (useStipple) re.setMaterial(GLMaterial::GLASS, mat.diffuse, GLMaterial::NONE, rc.m_settings.m_identifyBackfacing);
+			else re.setMaterial(mat);
+
 			re.renderGMesh(*gm, NF + i);
 		}
 	}
 }
 
-void GLObjectItem::RenderMeshByObjectColor(GLRenderEngine& re, GLContext& rc)
+void GLObjectItem::RenderFEMeshByObjectColor(GLRenderEngine& re, GLContext& rc)
 {
 	GLMesh* gm = m_po->GetFERenderMesh();
 	if (gm == nullptr) return;
@@ -1847,14 +1911,20 @@ void GLObjectItem::RenderMeshByObjectColor(GLRenderEngine& re, GLContext& rc)
 		}
 	}
 
-	GLColor c = m_po->GetColor();
-	if (useStipple) re.setMaterial(GLMaterial::GLASS, c, GLMaterial::NONE, rc.m_settings.m_identifyBackfacing);
-	else re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, rc.m_settings.m_identifyBackfacing);
+	GLMaterial mat = m_po->GetMaterial();
+	mat.diffuseMap = GLMaterial::NONE;
+	mat.frontOnly = rc.m_settings.m_identifyBackfacing;
+	// create a matte look
+	mat.reflection = 0;
+	mat.specular = GLColor::Black();
+
+	if (useStipple) re.setMaterial(GLMaterial::GLASS, mat.diffuse, GLMaterial::NONE, rc.m_settings.m_identifyBackfacing);
+	else re.setMaterial(mat);
 
 	re.renderGMesh(*gm);
 }
 
-void GLObjectItem::RenderMeshByElementType(GLRenderEngine& re, GLContext& rc, GLMesh& mesh)
+void GLObjectItem::RenderFEMeshByElementType(GLRenderEngine& re, GLContext& rc, GLMesh& mesh)
 {
 	GLViewSettings& vs = rc.m_settings;
 	bool useStipple = false;
@@ -1867,9 +1937,8 @@ void GLObjectItem::RenderMeshByElementType(GLRenderEngine& re, GLContext& rc, GL
 		}
 	}
 
-	GLColor c = m_po->GetColor();
-	if (useStipple) re.setMaterial(GLMaterial::GLASS, c, GLMaterial::VERTEX_COLOR, rc.m_settings.m_identifyBackfacing);
-	else re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::VERTEX_COLOR, rc.m_settings.m_identifyBackfacing);
+	if (useStipple) re.setMaterial(GLMaterial::GLASS, GLColor::White(), GLMaterial::VERTEX_COLOR, rc.m_settings.m_identifyBackfacing);
+	else re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR, rc.m_settings.m_identifyBackfacing);
 
 	re.renderGMesh(mesh);
 }
@@ -2194,6 +2263,9 @@ void GLObjectItem::RenderSelection(GLRenderEngine& re)
 //       hex layer.
 void GLObjectItem::RenderObject(GLRenderEngine& re, GLContext& rc)
 {
+	if (m_po == nullptr) return;
+	if (m_mat.size() != m_po->Faces()) UpdateGFaceMaterials();
+
 	bool useStipple = false;
 	if (rc.m_settings.m_transparencyMode != 0)
 	{
@@ -2205,15 +2277,6 @@ void GLObjectItem::RenderObject(GLRenderEngine& re, GLContext& rc)
 	}
 
 	bool frontOnly = rc.m_settings.m_identifyBackfacing;
-
-	if (useStipple) re.setMaterial(GLMaterial::GLASS, m_po->GetColor(), GLMaterial::VERTEX_COLOR, frontOnly);
-	else
-	{
-		GLMaterial mat = m_po->GetMaterial();
-		mat.diffuseMap = GLMaterial::VERTEX_COLOR;
-		mat.frontOnly = frontOnly;
-		re.setMaterial(mat);
-	}
 
 	GLMesh* mesh = m_po->GetRenderMesh();
 	if (mesh == nullptr) return;
@@ -2230,6 +2293,10 @@ void GLObjectItem::RenderObject(GLRenderEngine& re, GLContext& rc)
 		GFace* pf = m_po->Face(i);
 		if (pf->IsVisible())
 		{
+			GLMaterial mat = m_mat[i];
+			if (useStipple) mat.type = GLMaterial::GLASS;
+			mat.frontOnly = frontOnly;
+			re.setMaterial(mat);
 			re.renderGMesh(*mesh, i);
 		}
 	}

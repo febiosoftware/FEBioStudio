@@ -44,6 +44,7 @@ GMaterial::GMaterial(FSMaterial* pm)
 	m_nID = m_nref++;
 
 	// give a default color
+	m_glmat.type = GLMaterial::PLASTIC;
 	m_glmat.diffuse = GLColor(200,200,200);
 	m_glmat.ambient = GLColor(0,0,32);
 	m_glmat.specular = GLColor(0,0,0);
@@ -62,7 +63,7 @@ GMaterial::GMaterial(FSMaterial* pm)
 	const CPalette& pal = PM.CurrentPalette();
 	int NCOL = pal.Colors();
 
-	m_glmat.AmbientDiffuse(pal.Color((m_nID-1) % NCOL));
+	m_glmat.diffuse = pal.Color((m_nID-1) % NCOL);
 }
 
 GMaterial::~GMaterial(void)

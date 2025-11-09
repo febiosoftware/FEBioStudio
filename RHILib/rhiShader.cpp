@@ -239,7 +239,7 @@ public:
 		m_data.setFloat( 6, m.mat.opacity);
 		m_data.setFloat( 7, m.mat.reflection);
 		m_data.setInt  ( 8, (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 1 : 0));
-		m_data.setInt  ( 9, (m.mat.type == GLMaterial::HIGHLIGHT ? 1 : 0));
+		m_data.setInt  ( 9, ((m.mat.type == GLMaterial::HIGHLIGHT) || (m.mat.type == GLMaterial::GLASS) ? 1 : 0));
 		m_data.setInt  (10, (m.doClipping ? 1 : 0));
 		m_data.setInt  (11, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
 		m_data.setInt  (12, (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0 : 1);

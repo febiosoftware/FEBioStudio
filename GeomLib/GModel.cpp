@@ -1822,7 +1822,7 @@ GObject* GModel::CloneObject(GObject *po)
 	if (pco == 0) return 0;
 
 	pco->CopyTransform(po);
-	pco->SetColor(po->GetColor());
+	pco->SetMaterial(po->GetMaterial());
 
 	// set a new name
 	char sz[256];
