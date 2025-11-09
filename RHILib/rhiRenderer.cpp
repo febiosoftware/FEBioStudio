@@ -307,11 +307,14 @@ void rhiRenderer::scale(double x, double y, double z)
 
 void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
 {
-	m_currentMat.diffuse = c;
 	m_currentMat.type = matType;
 	m_currentMat.diffuseMap = map;
 	m_currentMat.frontOnly = frontOnly;
+	m_currentMat.diffuse = m_currentMat.ambient = c;
+	m_currentMat.specular = GLColor(0, 0, 0);
 	m_currentMat.reflection = 0;
+	m_currentMat.shininess = 0;
+
 	mb.setColor(c);
 }
 
@@ -333,17 +336,14 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 	if (m_currentMat.diffuseMap == GLMaterial::TEXTURE_3D)
 	{
 		pm = m_volumeRenderPass->addGLMesh(mesh, -1, cacheMesh);
-		if (pm) m_volumeRenderPass->addToRenderBatch(pm);
 	}
 	else if (m_currentMat.type == GLMaterial::OVERLAY)
 	{
 		pm = m_solidOverlayPass->addGLMesh(mesh, -1, cacheMesh);
-		if (pm) m_solidOverlayPass->addToRenderBatch(pm);
 	}
 	else
 	{
 		pm = m_solidPass->addGLMesh(mesh, -1, cacheMesh);
-		if (pm) m_solidPass->addToRenderBatch(pm);
 	}
 
 	if (pm)
@@ -353,8 +353,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 		pm->doClipping = m_clipEnabled;
 		pm->setActive(true);
 
-		const rhi::Mesh::Partition& p = pm->GetPartition(0);
-		m_stats.triangles += (p.vertexCount / 3); // 3 vertices per triangle
+		m_stats.triangles += (pm->vertexCount() / 3); // 3 vertices per triangle
 	}
 }
 
@@ -377,10 +376,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 		pm->doClipping = m_clipEnabled;
 		pm->setActive(true);
 
-		const rhi::Mesh::Partition& p = pm->GetPartition(surfId);
-
-		m_solidPass->addToRenderBatch(pm, p.startVertex, p.vertexCount);
-		m_stats.triangles += (p.vertexCount / 3); // 3 vertices per triangle
+		m_stats.triangles += (pm->vertexCount() / 3); // 3 vertices per triangle
 	}
 }
 
@@ -399,8 +395,7 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 		lineMesh->doClipping = m_clipEnabled;
 		lineMesh->setActive(true);
 
-		const rhi::Mesh::Partition& p = lineMesh->GetPartition(0);
-		m_stats.lines += (p.vertexCount / 2); // 2 vertices per edge
+		m_stats.lines += (lineMesh->vertexCount() / 2); // 2 vertices per edge
 	}
 }
 
@@ -419,8 +414,7 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 		pointMesh->doClipping = m_clipEnabled;
 		pointMesh->setActive(true);
 
-		const rhi::Mesh::Partition& p = pointMesh->GetPartition(0);
-		m_stats.points += p.vertexCount;
+		m_stats.points += pointMesh->vertexCount();
 	}
 }
 

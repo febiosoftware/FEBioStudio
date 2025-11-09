@@ -76,15 +76,15 @@ void VolumeRenderPass::create(QRhiSwapChain* sc)
 
 void VolumeRenderPass::draw(QRhiCommandBuffer* cb)
 {
-	if (renderBatch.empty()) return;
+	if (m_meshList.empty()) return;
 	if (!m_tex.texture) return;
 
 	cb->setGraphicsPipeline(pipeline());
 	cb->setShaderResources();
 
-	for (auto& it : renderBatch)
+	for (auto& it : m_meshList)
 	{
-		it.mesh->Draw(cb, it.vertexOffset, it.vertexCount);
+		it.mesh->Draw(cb);
 	}
 }
 
@@ -102,7 +102,7 @@ rhi::Mesh* VolumeRenderPass::addGLMesh(const GLMesh& mesh, int partition, bool c
 
 	rhi::MeshShaderResource* sr = VolumeShader::createShaderResource(m_rhi, m_tex, ubuf.get());
 	rhi::TriMesh<VolumeShader::Vertex>* rm = new rhi::TriMesh<VolumeShader::Vertex>(m_rhi, sr);
-	rm->CreateFromGLMesh(&mesh);
+	rm->CreateFromGLMesh(&mesh, partition);
 
 	if (cacheMesh)
 	{

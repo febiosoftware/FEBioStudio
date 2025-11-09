@@ -72,14 +72,6 @@ namespace rhi {
 	// specialized class for render passes that use meshes
 	class MeshRenderPass : public RenderPass
 	{
-	protected:
-		struct SubMesh
-		{
-			rhi::Mesh* mesh;
-			int vertexOffset;
-			int vertexCount;
-		};
-
 	public:
 		MeshRenderPass(QRhi* rhi) : RenderPass(rhi) {}
 
@@ -93,12 +85,9 @@ namespace rhi {
 
 		void removeCachedMesh(const GLMesh* mesh);
 
-		void addToRenderBatch(rhi::Mesh* mesh, int startVertex = 0, int vertexCount = -1);
-
 		size_t cachedMeshes() const { return m_meshList.size(); }
 
 	protected:
 		rhi::MeshList m_meshList;
-		std::vector<SubMesh> renderBatch;
 	};
 }

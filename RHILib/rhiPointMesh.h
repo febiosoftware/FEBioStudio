@@ -34,9 +34,8 @@ namespace rhi {
 	public:
 		PointMesh(QRhi* rhi, rhi::MeshShaderResource* srb) : rhi::Mesh(rhi, srb) {}
 
-		bool CreateFromGLMesh(const GLMesh* gmsh) override
+		bool CreateFromGLMesh(const GLMesh* gmsh, int partition = -1) override
 		{
-			m_partitions.clear();
 			if (gmsh == nullptr) return false;
 
 			int NN = gmsh->Nodes();
@@ -49,8 +48,6 @@ namespace rhi {
 
 			// create the vertex buffer
 			create(NN, sizeof(Vertex), vertexData.data());
-
-			m_partitions.push_back({ 0, NN });
 
 			return true;
 		}

@@ -33,9 +33,8 @@ namespace rhi {
 	public:
 		LineMesh(QRhi* rhi, rhi::MeshShaderResource* srb) : rhi::Mesh(rhi, srb) {}
 
-		bool CreateFromGLMesh(const GLMesh* gmsh)
+		bool CreateFromGLMesh(const GLMesh* gmsh, int partition = -1) override
 		{
-			m_partitions.clear();
 			if (gmsh == nullptr) return false;
 			int NE = gmsh->Edges();
 			int NV = 2 * NE;
@@ -52,7 +51,6 @@ namespace rhi {
 				}
 			}
 			create(NV, sizeof(Vertex), vertexData.data());
-			m_partitions.push_back({ 0, NV });
 			return true;
 		}
 

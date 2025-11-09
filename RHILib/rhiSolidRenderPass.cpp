@@ -81,7 +81,7 @@ rhi::Mesh* TwoPassSolidRenderPass::addGLMesh(const GLMesh& mesh, int partition, 
 
 	rhi::MeshShaderResource* sr = SolidShader::createShaderResource(m_rhi, sharedResource);
 	rhi::TriMesh<SolidShader::Vertex>* rm = new rhi::TriMesh<SolidShader::Vertex>(m_rhi, sr);
-	rm->CreateFromGLMesh(&mesh);
+	rm->CreateFromGLMesh(&mesh, partition);
 
 	if (cacheMesh)
 	{
@@ -110,18 +110,18 @@ void TwoPassSolidRenderPass::draw(QRhiCommandBuffer* cb)
 	cb->setGraphicsPipeline(m_backPass->pipeline());
 	cb->setShaderResources();
 
-	for (auto& it : renderBatch)
+	for (auto& it : m_meshList)
 	{
-		it.mesh->Draw(cb, it.vertexOffset, it.vertexCount);
+		it.mesh->Draw(cb);
 	}
 
 	// render front faces next
 	cb->setGraphicsPipeline(m_frontPass->pipeline());
 	cb->setShaderResources();
 
-	for (auto& it : renderBatch)
+	for (auto& it : m_meshList)
 	{
-		it.mesh->Draw(cb, it.vertexOffset, it.vertexCount);
+		it.mesh->Draw(cb);
 	}
 }
 
@@ -160,9 +160,9 @@ void SolidRenderPass::draw(QRhiCommandBuffer* cb)
 	cb->setGraphicsPipeline(pipeline());
 	cb->setShaderResources();
 
-	for (auto& it : renderBatch)
+	for (auto& it : m_meshList)
 	{
-		it.mesh->Draw(cb, it.vertexOffset, it.vertexCount);
+		it.mesh->Draw(cb);
 	}
 }
 
@@ -180,7 +180,7 @@ rhi::Mesh* SolidRenderPass::addGLMesh(const GLMesh& mesh, int partition, bool ca
 
 	rhi::MeshShaderResource* sr = SolidShader::createShaderResource(m_rhi, sharedResource);
 	rhi::TriMesh<SolidShader::Vertex>* rm = new rhi::TriMesh<SolidShader::Vertex>(m_rhi, sr);
-	rm->CreateFromGLMesh(&mesh);
+	rm->CreateFromGLMesh(&mesh, partition);
 
 	if (cacheMesh)
 	{

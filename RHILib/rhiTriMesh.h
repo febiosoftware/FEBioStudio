@@ -35,25 +35,45 @@ namespace rhi {
 	public:
 		TriMesh(QRhi* rhi, rhi::MeshShaderResource* srb) : rhi::Mesh(rhi, srb) {}
 
-		bool CreateFromGLMesh(const GLMesh* gmsh)
+		bool CreateFromGLMesh(const GLMesh* gmsh, int partition) override
 		{
-			m_partitions.clear();
 			if (gmsh == nullptr) return false;
 
 			assert(gmsh->Partitions() > 0);
-			m_partitions.reserve(gmsh->Partitions());
 
-			int NF = gmsh->Faces();
-			int NV = 3 * NF;
-			std::vector<Vertex> vertexData;
-			vertexData.resize(NV);
-			Vertex* v = vertexData.data();
-
-			int vertexIndex = 0;
-			for (int n = 0; n < gmsh->Partitions(); ++n)
+			if (partition == -1)
 			{
-				int vertexCount = 0;
-				const GLMesh::PARTITION& part = gmsh->Partition(n);
+				int NF = gmsh->Faces();
+				int NV = 3 * NF;
+				std::vector<Vertex> vertexData;
+				vertexData.resize(NV);
+				Vertex* v = vertexData.data();
+				for (int n = 0; n < gmsh->Faces(); ++n)
+				{
+					const GLMesh::FACE& f = gmsh->Face(n);
+					for (int j = 0; j < 3; ++j, ++v)
+					{
+						GLMesh::NODE nd;
+						nd.r = f.vr[j];
+						nd.n = f.vn[j];
+						nd.c = f.c[j];
+						nd.t = f.t[j];
+						(*v) = nd;
+					}
+				}
+				// create the vertex buffer
+				create(NV, sizeof(Vertex), vertexData.data());
+			}
+			else
+			{
+				const GLMesh::PARTITION& part = gmsh->Partition(partition);
+
+				int NF = part.nf;
+				int NV = 3 * NF;
+				std::vector<Vertex> vertexData;
+				vertexData.resize(NV);
+				Vertex* v = vertexData.data();
+
 				for (int i = 0; i < part.nf; ++i)
 				{
 					const GLMesh::FACE& f = gmsh->Face(i + part.n0);
@@ -65,16 +85,11 @@ namespace rhi {
 						nd.c = f.c[j];
 						nd.t = f.t[j];
 						(*v) = nd;
-
-						vertexCount++;
 					}
 				}
-				m_partitions.push_back({ vertexIndex, vertexCount });
-				vertexIndex += vertexCount;
+				// create the vertex buffer
+				create(NV, sizeof(Vertex), vertexData.data());
 			}
-
-			// create the vertex buffer
-			create(NV, sizeof(Vertex), vertexData.data());
 
 			return true;
 		}
