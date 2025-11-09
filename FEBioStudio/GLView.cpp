@@ -1230,6 +1230,12 @@ void CGLView::customInit()
 {
 	rhiSceneView::customInit();
 
+	QString msg;
+	msg += QString("backend = %1\n").arg(m_rhi->backendName());
+	msg += QString("driver  = %1\n").arg(QString(m_rhi->driverInfo().deviceName));
+	msg += QString("sample count = %1\n").arg(m_sc->sampleCount());
+	m_pWnd->AddLogEntry(msg);
+
 	GLRenderEngine* re = const_cast<GLRenderEngine*>(GetRenderEngine());
 	if (re)
 	{

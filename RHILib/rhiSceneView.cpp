@@ -51,12 +51,6 @@ void rhiSceneView::SetScene(GLScene* scene)
 
 void rhiSceneView::customInit()
 {
-	QString msg;
-	msg += QString("backend = %1\n").arg(m_rhi->backendName());
-	msg += QString("driver  = %1\n").arg(QString(m_rhi->driverInfo().deviceName));
-	msg += QString("sample count = %1\n").arg(m_sc->sampleCount());
-	m_wnd->AddLogEntry(msg);
-
 	m_rhiRender = new rhiRenderer(m_rhi.get(), m_sc.get(), m_rp.get());
 	m_rhiRender->setDPR(devicePixelRatio());
 	m_rhiRender->init();
