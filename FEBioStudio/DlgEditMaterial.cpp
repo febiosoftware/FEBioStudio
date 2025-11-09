@@ -37,6 +37,24 @@ SOFTWARE.*/
 #include <GLLib/GLMeshBuilder.h>
 #include <QComboBox>
 
+class EditMaterialScene : public GLScene
+{
+public:
+	EditMaterialScene();
+	void Render(GLRenderEngine& re, GLContext& rc);
+
+private:
+	void BuildMesh();
+
+public:
+	int res = 48;
+	GLMaterial mat;
+	QString envTexFile;
+
+private:
+	std::unique_ptr<GLMesh> mesh;
+};
+
 struct PresetMaterial
 {
 	GLColor ambient;

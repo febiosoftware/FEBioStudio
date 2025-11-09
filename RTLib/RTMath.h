@@ -358,12 +358,11 @@ namespace rt
 	struct Ray
 	{
 		Ray() {}
-		Ray(Vec3 o, Vec3 d, int id = -1) : origin(o), direction(d), tri_id(id) {}
+		Ray(Vec3 o, Vec3 d, int id = -1) : origin(o), direction(d) {}
 
 		Vec3 origin;
 		Vec3 direction;
 		int bounce = 0;
-		int tri_id = -1;
 	};
 
 	struct Intersect

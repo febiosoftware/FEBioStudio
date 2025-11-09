@@ -36,7 +36,6 @@ namespace rt {
 		Vec3 t;
 		Color c;
 		int matid = -1;
-		int tri_id = -1;
 	};
 
 	struct Tri

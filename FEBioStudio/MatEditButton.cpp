@@ -31,23 +31,62 @@ SOFTWARE.*/
 #include <QPainter>
 #include "MainWindow.h"
 
+class SphereItem : public GLSceneItem
+{
+public:
+	SphereItem(RayTracer& rt, vec3d c, double R) : m_c(c), m_R(R), m_rt(rt) {}
+
+	void render(GLRenderEngine& re, GLContext& rc)
+	{
+		m_rt.addSphere(m_c, m_R);
+	}
+
+private:
+	vec3d m_c;
+	double m_R;
+	RayTracer& m_rt;
+};
+
+class MatEditButtonScene : public GLScene
+{
+public:
+	MatEditButtonScene()
+	{
+		GetCamera().SetTargetDistance(3);
+		GetCamera().Update(true);
+	}
+
+	void Render(GLRenderEngine& re, GLContext& rc)
+	{
+		ActivateEnvironmentMap(re);
+		re.setLightPosition(0, vec3f(1, 1, 1));
+		re.setProjection(45, 0.01, 5);
+		PositionCameraInScene(re);
+		re.setMaterial(mat);
+		GLScene::Render(re, rc);
+		DeactivateEnvironmentMap(re);
+	}
+
+private:
+	void BuildMesh();
+
+public:
+	GLMaterial mat;
+	QString envTexFile;
+};
+
 class CMatEditButton::Imp
 {
 public:
 	GLMaterial	mat;
 	QImage img;
-	EditMaterialScene scene;
 	RayTracer rt;
+	MatEditButtonScene scene;
 	CRGBAImage envMap;
 
-	Imp()
+	Imp() 
 	{
-#ifndef NDEBUG
-		scene.res = 16;
-#else
-		scene.res = 25;
-#endif
-
+		scene.addItem(new SphereItem(rt, vec3d(0, 0, 0), 1));
 	}
 };
 

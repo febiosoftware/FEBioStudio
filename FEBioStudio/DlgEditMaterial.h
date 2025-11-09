@@ -31,24 +31,6 @@ SOFTWARE.*/
 #include <GLLib/GLScene.h>
 #include <GLLib/GLMesh.h>
 
-class EditMaterialScene : public GLScene
-{
-public:
-	EditMaterialScene();
-	void Render(GLRenderEngine& re, GLContext& rc);
-
-private:
-	void BuildMesh();
-
-public:
-	int res = 48;
-	GLMaterial mat;
-	QString envTexFile;
-
-private:
-	std::unique_ptr<GLMesh> mesh;
-};
-
 class UIDlgEditMaterial;
 
 class CDlgEditMaterial : public QDialog

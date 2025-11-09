@@ -32,6 +32,106 @@ using namespace rt;
 using namespace std::chrono;
 using dseconds = duration<double>;
 
+void rt::meshGeometry::start()
+{
+	mesh.clear();
+	bhv.clear();
+}
+
+void rt::meshGeometry::finish()
+{
+	size_t triangles = mesh.triangles();
+	for (size_t i = 0; i < triangles; ++i) mesh.triangle(i).id = (int)i;
+
+	int levels = bhv_levels;
+	if (levels < 0)
+	{
+		levels = (int)log2((double)triangles);
+	}
+	if (levels < 0) levels = 0;
+	if (levels > 20) levels = 20;
+
+	bhv.output = output;
+	bhv.Build(mesh, levels);
+}
+
+bool rt::meshGeometry::intersect(const rt::Ray& ray, rt::Point& q)
+{
+	return bhv.intersect(ray, q);
+}
+
+bool rt::sphere::intersect(const rt::Ray& ray, rt::Point& q)
+{
+	rt::Vec3 z = ray.origin - o;
+	rt::Vec3 t = ray.direction;
+	double a = t*t;
+	double b = 2.0 * (t*z);
+	double c = z*z - r*r;
+
+	double D2 = b * b - 4.0*a * c;
+	if (D2 >= 0)
+	{
+		double D = sqrt(D2);
+		double l1 = (-b - D) / (2.0 * a);
+		double l2 = (-b + D) / (2.0 * a);
+
+		if ((l1 > 0) && ((l2 <= 0) || (l1 < l2)))
+		{
+			q.r = ray.origin + t * l1;
+		}
+		else if ((l2 > 0) && ((l1 <= 0) || (l2 < l1)))
+		{
+			q.r = ray.origin + t * l2;
+		}
+		else return false;
+
+		q.n = q.r - o;
+		q.n.normalize();
+		q.c = col;
+		q.matid = matid;
+
+		return true;
+	}
+	else return false;
+}
+
+void rt::Geometry::finish()
+{
+	for (auto it : geom) it->finish();
+}
+
+bool rt::Geometry::intersect(const rt::Ray& rt, rt::Point& q)
+{
+	if (geom.empty()) return false;
+	if (geom.size() == 1) return geom[0]->intersect(rt, q);
+
+	bool intersected = false;
+	double Dmin = 0;
+	for (auto g : geom)
+	{
+		rt::Point p;
+		bool b = g->intersect(rt, p);
+		if (b)
+		{
+			double D = (p.r - rt.origin) * rt.direction;
+			if (D > 0)
+			{
+				if (intersected == false)
+				{
+					q = p;
+					intersected = true;
+					Dmin = D;
+				}
+				else if (D < Dmin)
+				{
+					q = p;
+					Dmin = D;
+				}
+			}
+		}
+	}
+	return intersected;
+}
 
 RayTracer::RayTracer()
 {
@@ -63,6 +163,8 @@ RayTracer::~RayTracer()
 
 	for (rt::Texture3D* t : tex3d) delete t;
 	tex3d.clear();
+
+	geom.clear();
 }
 
 void RayTracer::setProjection(double fov, double fnear, double far)
@@ -111,6 +213,18 @@ void RayTracer::start()
 	cancelled = false;
 	GLRenderEngine::start();
 	mesh.clear();
+	geom.clear();
+
+	// add the meshed geometry
+	meshGeometry* mg = new meshGeometry(mesh);
+	int levels = -1;
+#ifndef NDEBUG
+	levels = GetIntValue(BHV_LEVELS);
+#endif
+	mg->setBHVLevels(levels);
+	mg->setOutput(output);
+	geom.push_back(new meshGeometry(mesh));
+
 	modelView.makeIdentity();
 }
 
@@ -146,6 +260,7 @@ void RayTracer::finish()
 
 	// clean up
 	mesh.clear();
+	geom.clear();
 	GLRenderEngine::finish();
 }
 
@@ -555,22 +670,7 @@ void RayTracer::setTexture(GLTexture3D& tex)
 
 void RayTracer::preprocess()
 {
-	size_t triangles = mesh.triangles();
-	for (size_t i = 0; i < triangles; ++i) mesh.triangle(i).id = (int) i;
-
-	int levels = -1;
-#ifndef NDEBUG
-	levels = GetIntValue(BHV_LEVELS);
-#endif
-	if (levels < 0)
-	{
-		levels = (int)log2((double)triangles);
-	}
-	if (levels < 0) levels = 0;
-	if (levels > 20) levels = 20;
-
-	bhv.output = output;
-	bhv.Build(mesh, levels);
+	geom.finish();
 }
 
 void RayTracer::render()
@@ -644,7 +744,7 @@ void RayTracer::render()
 
 						Ray ray(origin, direction);
 
-						Color fragCol = castRay(bhv, ray);
+						Color fragCol = castRay(ray);
 
 						c += fragCol;
 					}
@@ -679,7 +779,12 @@ GLColor RayTracer::backgroundColor(const rt::Vec3& p)
 	return c;
 }
 
-rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
+bool RayTracer::intersect(const rt::Ray& ray, rt::Point& q)
+{
+	return geom.intersect(ray, q);
+}
+
+rt::Color RayTracer::castRay(rt::Ray& ray)
 {
 	rt::Point q;
 
@@ -698,7 +803,7 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 		fragCol = Color(0, 0, 0, 0);
 		break;
 	}
-	bool intersectMesh = (bhv.intersect(ray, q));
+	bool intersectMesh = intersect(ray, q);
 	bool renderShadows = GetBoolValue(SHADOWS);
 
 	if (intersectMesh)
@@ -737,7 +842,7 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 			{
 				Vec3 H = t - N * (2 * (t * N));
 				H.normalize();
-				Ray ray2(q.r, H, q.tri_id);
+				Ray ray2(q.r, H);
 				ray2.bounce = ray.bounce + 1;
 				c = c * (1 - mat.reflection) + castRay(bhv, ray2) * mat.reflection;
 			}
@@ -780,10 +885,10 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 			if (renderShadows)
 			{
 				Vec3 p = q.r;
-				Ray ray2(p, L, q.tri_id);
+				Ray ray2(p, L);
 				ray2.bounce = ray.bounce + 1;
 				rt::Point q2;
-				if (bhv.intersect(ray2, q2)) isOccluded = true;
+				if (intersect(ray2, q2)) isOccluded = true;
 			}
 
 			if (!isOccluded)
@@ -801,11 +906,11 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 		if ((c.a() < 0.99) && (ray.bounce < 100))
 		{
 			Vec3 p = q.r;
-			Ray ray2(p, ray.direction, q.tri_id);
+			Ray ray2(p, ray.direction);
 			ray2.bounce = ray.bounce + 1;
 
 			rt::Point q2;
-			Color c2 = castRay(bhv, ray2);
+			Color c2 = castRay(ray2);
 			fragCol = fragCol * opacity + c2 * (1 - opacity);
 		}
 
@@ -838,4 +943,14 @@ void RayTracer::ActivateEnvironmentMap(unsigned int id)
 void RayTracer::DeactivateEnvironmentMap(unsigned int id)
 {
 
+}
+
+void RayTracer::addSphere(const vec3d& c, double R)
+{
+	rt::Vec4 p = modelView * rt::Vec4(c.x, c.y, c.z, 1);
+	rt::Vec3 o(p.x(), p.y(), p.z());
+	rt::sphere* S = new rt::sphere(o, R);
+	S->col = currentColor;
+	S->matid = currentMaterial;
+	geom.push_back(S);
 }

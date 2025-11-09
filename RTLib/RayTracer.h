@@ -43,6 +43,82 @@ namespace rt {
 		Color ambient  = GLColor::Black();
 		Color specular = GLColor::Black();
 	};
+
+	class geometryItem {
+	public:
+		geometryItem() {}
+		virtual ~geometryItem() {}
+
+		virtual void start() {}
+		virtual void finish() {}
+
+		virtual bool intersect(const rt::Ray& ray, rt::Point& q) = 0;
+	};
+
+	class meshGeometry : public geometryItem
+	{
+	public:
+		meshGeometry(rt::Mesh& m) : mesh(m) {}
+
+		void setBHVLevels(int n) { bhv_levels = n; }
+		void setOutput(bool b) { output = b; }
+
+		void start() override;
+		void finish() override;
+
+		bool intersect(const rt::Ray& ray, rt::Point& q) override;
+
+	private:
+		rt::Mesh& mesh;
+		rt::Btree bhv;
+		int bhv_levels = -1;
+		bool output = false;
+	};
+
+	class sphere : public geometryItem
+	{
+	public:
+		sphere(const rt::Vec3& c, double R) : o(c), r(R) {}
+
+		bool intersect(const rt::Ray& ray, rt::Point& q) override;
+
+	public:
+		int matid = -1;
+		rt::Color col;
+
+	private:
+		rt::Vec3 o;
+		double r = 1;
+	};
+
+	class Geometry
+	{
+	public:
+		Geometry() {}
+		~Geometry() { clear(); }
+
+		void clear()
+		{
+			for (auto it : geom) delete it;
+			geom.clear();
+		}
+
+		void finish();
+
+		geometryItem* operator [] (size_t n) { return geom[n]; }
+
+		bool empty() const { return geom.empty(); }
+
+		void push_back(geometryItem* p) { geom.push_back(p); }
+
+		bool intersect(const rt::Ray& rt, rt::Point& q);
+
+		std::vector<geometryItem*>::iterator begin() { return geom.begin(); }
+		std::vector<geometryItem*>::iterator end() { return geom.end(); }
+
+	private:
+		std::vector<geometryItem*> geom;
+	};
 }
 
 class RayTracer : public GLRenderEngine
@@ -131,20 +207,26 @@ public:
 	void ActivateEnvironmentMap(unsigned int id) override;
 	void DeactivateEnvironmentMap(unsigned int id) override;
 
+public:
+	void addSphere(const vec3d& c, double R);
+
 private:
 	void preprocess();
 	void render();
-	rt::Color castRay(rt::Btree& bhv, rt::Ray& ray);
+	rt::Color castRay(rt::Ray& ray);
 
 	void addTriangle(rt::Tri& tri);
 
 	GLColor backgroundColor(const rt::Vec3& r);
 
+	bool intersect(const rt::Ray& ray, rt::Point& q);
+
 private:
 	RayTraceSurface surf;
 
 	rt::Mesh mesh;
-	rt::Btree bhv;
+	rt::Geometry geom;
+
 	rt::Matrix4 modelView;
 	std::stack<rt::Matrix4> mvStack;
 
