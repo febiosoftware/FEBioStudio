@@ -150,6 +150,8 @@ public:
 	int surfaceWidth() const override { return GetIntValue(WIDTH); }
 	int surfaceHeight() const override { return GetIntValue(HEIGHT); }
 
+	void useMultiThread(bool b) { use_multithread = b; }
+
 public:
 	void start() override;
 	void finish() override;
@@ -221,6 +223,8 @@ private:
 
 	bool intersect(const rt::Ray& ray, rt::Point& q);
 
+	rt::Color fragment(int i, int j, int samples);
+
 private:
 	RayTraceSurface surf;
 
@@ -279,6 +283,6 @@ private:
 	double clipPlane[4] = { 0,0,0,0 };
 
 	bool cancelled;
-
+	bool use_multithread = true;
 	bool output = true;
 };

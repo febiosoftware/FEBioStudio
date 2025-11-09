@@ -125,6 +125,7 @@ void CMatEditButton::updateImage()
 
 	m.rt.setWidth(W);
 	m.rt.setHeight(H);
+	m.rt.useMultiThread(false);
 
 #ifndef NDEBUG
 	m.rt.setSampleCount(1);

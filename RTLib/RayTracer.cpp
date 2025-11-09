@@ -704,61 +704,97 @@ void RayTracer::render()
 	int bgOption = GetIntValue(BACKGROUND);
 
 	renderStarted = true;
-#pragma omp parallel
-	for (size_t j = 0; j < H; ++j)
+
+	if (use_multithread)
 	{
+
+#pragma omp parallel
+		for (size_t j = 0; j < H; ++j)
+		{
 #pragma omp master
-		percentCompleted = (100.0 * j) / (double) H;
+			percentCompleted = (100.0 * j) / (double)H;
 
 #pragma omp for nowait schedule(dynamic, 5)
-		for (int i = 0; i < W; ++i)
-		{
-			if (!cancelled)
+			for (int i = 0; i < W; ++i)
 			{
-				double x = -m_fw + 2.0 * i * m_fw / (W - 1.0);
-				double y = m_fh - 2.0 * j * m_fh / (H - 1.0);
-				double z = -nearPlane;
+				if (!cancelled)
+				{
+					rt::Color c = fragment(i, j, samples);
 
-				double dx = m_fw / W;
-				double dy = m_fh / H;
-
-				Color c(0, 0, 0, 0);
-				for (int k = 0; k < samples; ++k)
-					for (int l = 0; l < samples; ++l)
-					{
-						double fx = (2.0 * k + 1 - samples) / (double)samples;
-						double fy = (2.0 * l + 1 - samples) / (double)samples;
-
-						double xf = x + fx * dx;
-						double yf = y + fy * dy;
-
-						Vec3 origin(xf, yf, z);
-						Vec3 direction;
-						if (ortho)
-							direction = Vec3(0, 0, -1);
-						else
-						{
-							direction = origin;
-							direction.normalize();
-						}
-
-						Ray ray(origin, direction);
-
-						Color fragCol = castRay(ray);
-
-						c += fragCol;
-					}
-				c /= (double)(samples * samples);
-
-				float* v = surf.value(i, j);
-				v[0] = (float)c.r();
-				v[1] = (float)c.g();
-				v[2] = (float)c.b();
-				v[3] = (bgOption ? (float)c.a() : 1.f);
+					float* v = surf.value(i, j);
+					v[0] = (float)c.r();
+					v[1] = (float)c.g();
+					v[2] = (float)c.b();
+					v[3] = (bgOption ? (float)c.a() : 1.f);
+				}
 			}
 		}
 	}
+	else
+	{
+		for (size_t j = 0; j < H; ++j)
+		{
+			percentCompleted = (100.0 * j) / (double)H;
+			for (int i = 0; i < W; ++i)
+			{
+				if (!cancelled)
+				{
+					rt::Color c = fragment(i, j, samples);
+
+					float* v = surf.value(i, j);
+					v[0] = (float)c.r();
+					v[1] = (float)c.g();
+					v[2] = (float)c.b();
+					v[3] = (bgOption ? (float)c.a() : 1.f);
+				}
+			}
+		}
+	}
+
 	percentCompleted = 100.0;
+}
+
+rt::Color RayTracer::fragment(int i, int j, int samples)
+{
+	int W = surf.width();
+	int H = surf.height();
+
+	double x = -m_fw + 2.0 * i * m_fw / (W - 1.0);
+	double y = m_fh - 2.0 * j * m_fh / (H - 1.0);
+	double z = -nearPlane;
+
+	double dx = m_fw / W;
+	double dy = m_fh / H;
+
+	Color c(0, 0, 0, 0);
+	for (int k = 0; k < samples; ++k)
+		for (int l = 0; l < samples; ++l)
+		{
+			double fx = (2.0 * k + 1 - samples) / (double)samples;
+			double fy = (2.0 * l + 1 - samples) / (double)samples;
+
+			double xf = x + fx * dx;
+			double yf = y + fy * dy;
+
+			Vec3 origin(xf, yf, z);
+			Vec3 direction;
+			if (ortho)
+				direction = Vec3(0, 0, -1);
+			else
+			{
+				direction = origin;
+				direction.normalize();
+			}
+
+			Ray ray(origin, direction);
+
+			Color fragCol = castRay(ray);
+
+			c += fragCol;
+		}
+	c /= (double)(samples * samples);
+
+	return c;
 }
 
 GLColor RayTracer::backgroundColor(const rt::Vec3& p)
