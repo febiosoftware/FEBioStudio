@@ -51,9 +51,14 @@ void rhi::MeshRenderPass::clearUnusedCache()
 
 void rhi::MeshRenderPass::removeCachedMesh(const GLMesh* mesh)
 {
-	for (auto& it : m_meshList)
+	for (auto it = m_meshList.begin(); it != m_meshList.end(); )
 	{
-		if (it.glmesh == mesh)
-			it.glmesh = nullptr;
+		if (it->glmesh == mesh)
+		{
+			delete it->mesh;
+			it = m_meshList.erase(it);
+		}
+		else
+			++it;
 	}
 }
