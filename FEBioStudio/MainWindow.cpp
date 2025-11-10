@@ -149,9 +149,7 @@ static QRhi::Implementation MapToValidAPI(GraphicsAPI graphicsApi)
 	if ((api == QRhi::Null) ||
 		((api != QRhi::D3D11) && (api != QRhi::D3D12) && (api != QRhi::Vulkan) && (api != QRhi::OpenGLES2)))
 	{
-		//	api = QRhi::D3D11;
 		api = QRhi::OpenGLES2;
-		//	api = QRhi::Vulkan;
 	}
 #endif
 
@@ -160,7 +158,8 @@ static QRhi::Implementation MapToValidAPI(GraphicsAPI graphicsApi)
 	if ((api == QRhi::Null) ||
 		((api != QRhi::Metal) && (api != QRhi::OpenGLES2)))
 	{
-		api = QRhi::Metal;
+//		api = QRhi::Metal; // TODO: Restore this when 3D textures are working on Metal
+		api = QRhi::OpenGLES2;
 	}
 #endif
 
@@ -169,11 +168,7 @@ static QRhi::Implementation MapToValidAPI(GraphicsAPI graphicsApi)
 	if ((api == QRhi::Null) ||
 		((api != QRhi::Vulkan) && (api != QRhi::OpenGLES2)))
 	{
-#ifdef QT_CONFIG(vulkan)
-		api = QRhi::Vulkan;
-#else
 		api = QRhi::OpenGLES2;
-#endif
 	}
 #endif
 
