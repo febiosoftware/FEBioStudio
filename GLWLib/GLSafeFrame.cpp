@@ -43,11 +43,11 @@ void GLSafeFrame::draw(GLPainter* painter)
 
 	switch (m_state)
 	{
-	case FREE      : painter->setPen(QColor::fromRgb(255, 255, 0)); break;
-	case FIXED_SIZE: painter->setPen(QColor::fromRgb(255, 128, 0)); break;
-	case LOCKED    : painter->setPen(QColor::fromRgb(255,   0, 0)); break;
+	case FREE      : painter->setPen(QPen(QColor::fromRgb(255, 255, 0),2)); break;
+	case FIXED_SIZE: painter->setPen(QPen(QColor::fromRgb(255, 128, 0),2)); break;
+	case LOCKED    : painter->setPen(QPen(QColor::fromRgb(255,   0, 0),2)); break;
 	default:
-		painter->setPen(Qt::black); break;
+		painter->setPen(QPen(Qt::black, 2)); break;
 	}
 	painter->drawRect(x()-1, y()-1, w()+2, h()+2);
 }
