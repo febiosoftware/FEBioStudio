@@ -315,6 +315,11 @@ void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::D
 	m_currentMat.reflection = 0;
 	m_currentMat.shininess = 0;
 
+	if (map == GLMaterial::TEXTURE_1D)
+	{
+		m_currentMat.ambient = GLColor::Black();
+	}
+
 	mb.setColor(c);
 }
 

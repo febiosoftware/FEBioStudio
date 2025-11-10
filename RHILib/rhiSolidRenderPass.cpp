@@ -112,7 +112,8 @@ void TwoPassSolidRenderPass::draw(QRhiCommandBuffer* cb)
 
 	for (auto& it : m_meshList)
 	{
-		it.mesh->Draw(cb);
+		if (it.mesh->isActive())
+			it.mesh->Draw(cb);
 	}
 
 	// render front faces next
@@ -121,7 +122,8 @@ void TwoPassSolidRenderPass::draw(QRhiCommandBuffer* cb)
 
 	for (auto& it : m_meshList)
 	{
-		it.mesh->Draw(cb);
+		if (it.mesh->isActive())
+			it.mesh->Draw(cb);
 	}
 }
 
@@ -162,7 +164,8 @@ void SolidRenderPass::draw(QRhiCommandBuffer* cb)
 
 	for (auto& it : m_meshList)
 	{
-		it.mesh->Draw(cb);
+		if (it.mesh->isActive())
+			it.mesh->Draw(cb);
 	}
 }
 
