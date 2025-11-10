@@ -223,7 +223,7 @@ void RayTracer::start()
 #endif
 	mg->setBHVLevels(levels);
 	mg->setOutput(output);
-	geom.push_back(new meshGeometry(mesh));
+	geom.push_back(mg);
 
 	modelView.makeIdentity();
 }
