@@ -710,7 +710,6 @@ void rhiRenderer::finish()
 	if (captureNextFrame)
 	{
 		captureNextFrame = false;
-		framesRequested++;
 
 		QRhiReadbackDescription rbDesc;
 
@@ -729,9 +728,6 @@ void rhiRenderer::finish()
 				img = QImage(pixels, W, H, QImage::Format_RGBA8888);
 			else if (rbResult.format == QRhiTexture::BGRA8)
 				img = QImage(pixels, W, H, QImage::Format_RGBA8888).rgbSwapped();
-
-			framesRequested--;
-			if (framesRequested < 0) framesRequested = 0;
 
 			emit this->captureFrameReady(img);
 			};

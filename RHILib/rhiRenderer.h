@@ -173,8 +173,6 @@ public:
 
 	void setTriadInfo(const QMatrix4x4& m, QRhiViewport vp);
 
-	int getFramesRequested() const { return framesRequested; }
-
 signals:
 	void captureFrameReady(QImage img);
 
@@ -222,7 +220,6 @@ private:
 	double m_dpr = 1;
 
 	bool captureNextFrame = false;
-	unsigned int framesRequested = 0;
 
 private:
 	GLMeshBuilder mb;

@@ -78,12 +78,6 @@ void rhiSceneView::onFrameFinished()
 		scene->GetCamera().Update();
 		QTimer::singleShot(50, this, &rhiSceneView::requestUpdate);
 	}
-	else if (m_rhiRender->getFramesRequested() > 0)
-	{
-		// When the user requests a screen grab, on some backends it won't be
-		// available. So, we keep rerendering the scene until the screen grab is processed. 
-		requestUpdate();
-	}
 }
 
 void rhiSceneView::RenderScene(GLRenderEngine& re)

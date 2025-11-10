@@ -1387,7 +1387,6 @@ QImage correct_premultiplied_image(const QImage& image)
 	return result;
 }
 
-
 void CGLView::CaptureScreen()
 {
 	GLRenderEngine* re = const_cast<GLRenderEngine*>(GetRenderEngine());
@@ -1395,12 +1394,16 @@ void CGLView::CaptureScreen()
 	{
 		rhiRenderer* rhiRender = dynamic_cast<rhiRenderer*>(re);
 		if (rhiRender) rhiRender->setCaptureNextFrame(true);
+		frameCapturesRequested++;
 		requestUpdate();
 	}
 }
 
 void CGLView::captureFrameReady(QImage img)
 {
+	frameCapturesRequested--;
+	if (frameCapturesRequested < 0) frameCapturesRequested = 0;
+
 	if (m_pframe && m_pframe->visible())
 	{
 		// crop based on the capture frame
@@ -1418,7 +1421,24 @@ void CGLView::captureFrameReady(QImage img)
 
 //	correct_premultiplied_image(img);
 
-	emit captureFrameFinished(img);
+	if (m_recorder.IsRecording())
+	{
+		if (m_recorder.AddFrame(img) == false)
+		{
+			m_recorder.Stop();
+//			QMessageBox::critical(this, "FEBio Studio", "An error occurred while writing frame to video stream.");
+		}
+
+		if (m_stopRequested && (frameCapturesRequested == 0))
+		{
+			m_recorder.Stop();
+			m_stopRequested = false;
+			UnlockSafeFrame();
+			m_pWnd->UpdateTitle();
+		}
+	}
+	else if (!m_recorder.IsPaused())
+		emit captureFrameFinished(img);
 }
 
 void CGLView::updateView()
@@ -1437,6 +1457,62 @@ void CGLView::RenderDecorations(GLRenderEngine& re)
 			m_deco[i]->render(re);
 		}
 		re.popState();
+	}
+}
+
+bool CGLView::StartRecording()
+{
+	if (m_recorder.HasRecording())
+	{
+		if (m_recorder.IsRecording()) return false;
+
+		m_recorder.Start();
+		LockSafeFrame();
+		return true;
+	}
+
+	return false;
+}
+
+bool CGLView::PauseRecording()
+{
+	if (m_recorder.HasRecording())
+	{
+		if (m_recorder.IsRecording())
+		{
+			m_recorder.Pause();
+			return true;
+		}
+	}
+	return false;
+}
+
+bool CGLView::StopRecording()
+{
+	if (m_recorder.HasRecording())
+	{
+		if (m_recorder.IsRecording() || m_recorder.IsPaused())
+		{
+			m_stopRequested = true;
+			repaint();
+			return true;
+		}
+	}
+	return false;
+}
+
+void CGLView::onFrameFinished()
+{
+	rhiSceneView::onFrameFinished();
+
+	if (!m_recorder.IsRecording() || m_stopRequested)
+	{
+		if (frameCapturesRequested > 0)
+		{
+			// When the user requests a screen grab, on some backends it won't be
+			// available. So, we keep rerendering the scene until the screen grab is processed. 
+			requestUpdate();
+		}
 	}
 }
 
@@ -1488,18 +1564,15 @@ void CGLView::RenderScene(GLRenderEngine& re)
 
 	RenderOverlay(re, rc);
 
-/*
-	if (m_recorder.IsRecording())
+	if (m_recorder.IsRecording() && !m_stopRequested)
 	{
-		re.flush();
-		QImage im = CaptureScreen();
-		if (m_recorder.AddFrame(im) == false)
+		rhiRenderer* rhiRender = dynamic_cast<rhiRenderer*>(&re);
+		if (rhiRender)
 		{
-			m_recorder.Stop();
-//			QMessageBox::critical(this, "FEBio Studio", "An error occurred while writing frame to video stream.");
+			frameCapturesRequested++;
+			rhiRender->setCaptureNextFrame(true);
 		}
 	}
-*/
 }
 
 void CGLView::RenderOverlay(GLRenderEngine& re, GLContext& rc)

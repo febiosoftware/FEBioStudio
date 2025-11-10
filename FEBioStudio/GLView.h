@@ -198,6 +198,8 @@ protected:
 
 	void RenderScene(GLRenderEngine& re) override;
 
+	void onFrameFinished() override;
+
 private: // overlay rendering
 	void RenderOverlay(GLRenderEngine& re, GLContext& rc);
 	void RenderOverlayComponents(QPainter& painter);
@@ -245,6 +247,11 @@ public: // added to support new rhi base class
 	void repaint();
 	void update();
 	QRect rect() const;
+
+public:
+	bool StartRecording();
+	bool PauseRecording();
+	bool StopRecording();
 
 public slots:
 	void updateView();
@@ -315,10 +322,13 @@ private:
 	GLViewSelector	m_select;
 
 	GLScreenRecorder	m_recorder;
+	bool m_stopRequested = false;
 
 	GLCamera	m_oldCam;
 
 	bool renderOverlay = false;
+
+	int frameCapturesRequested = 0;
 
 	static GLViewSettings	m_view;
 };
