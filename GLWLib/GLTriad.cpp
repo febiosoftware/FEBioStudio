@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "GLTriad.h"
 #include <GLLib/glx.h>
 #include <GLLib/GLMeshBuilder.h>
+#include <QFontMetrics>
 #include "convert.h"
 
 GLTriad::GLTriad(int x, int y, int w, int h) : GLWidget(x, y, w, h)
@@ -167,7 +168,7 @@ void GLTriad::draw(GLPainter* painter)
 	// restore identity matrix
 	if (m_bcoord_labels)
 	{
-		float a = 0.8f;
+		float a = 0.9f;
 		vec3d ex(a, 0.f, 0.f);
 		vec3d ey(0.f, a, 0.f);
 		vec3d ez(0.f, 0.f, a);
@@ -175,16 +176,30 @@ void GLTriad::draw(GLPainter* painter)
 		m_rot.RotateVector(ey);
 		m_rot.RotateVector(ez);
 
-		ex.x = x0 + (x1 - x0) * (ex.x + 1) * 0.5; ex.y = y0 + (y1 - y0) * (ex.y + 1) * 0.5;
-		ey.x = x0 + (x1 - x0) * (ey.x + 1) * 0.5; ey.y = y0 + (y1 - y0) * (ey.y + 1) * 0.5;
-		ez.x = x0 + (x1 - x0) * (ez.x + 1) * 0.5; ez.y = y0 + (y1 - y0) * (ez.y + 1) * 0.5;
+		QFontMetrics fm(m_font);
+		int ha = fm.horizontalAdvance('X') + 2;
+	
+		int X_x = x0 + (x1 - x0) * (ex.x + 1) * 0.5;
+		int X_y = y0 + (y1 - y0) * (ex.y + 1) * 0.5;
+		if (ex.x < 0) X_x -= ha;
+		if (ex.y < 0) X_y += ha;
+		
+		int Y_x = x0 + (x1 - x0) * (ey.x + 1) * 0.5;
+		int Y_y = y0 + (y1 - y0) * (ey.y + 1) * 0.5;
+		if (ey.x < 0) Y_x -= ha;
+		if (ey.y < 0) Y_y += ha;
+
+		int Z_x = x0 + (x1 - x0) * (ez.x + 1) * 0.5;
+		int Z_y = y0 + (y1 - y0) * (ez.y + 1) * 0.5;
+		if (ez.x < 0) Z_x -= ha;
+		if (ez.y < 0) Z_y += ha;
 
 		GLColor fc = get_fg_color();
 
 		painter->setFont(m_font);
 		painter->setPen(toQColor(fc));
-		painter->drawText(ex.x, ex.y, "X");
-		painter->drawText(ey.x, ey.y, "Y");
-		painter->drawText(ez.x, ez.y, "Z");
+		painter->drawText(X_x, X_y, "X");
+		painter->drawText(Y_x, Y_y, "Y");
+		painter->drawText(Z_x, Z_y, "Z");
 	}
 }

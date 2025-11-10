@@ -54,4 +54,7 @@ protected:
 private:
 	CGLWidgetManager(const CGLWidgetManager& m) = delete;
 	CGLWidgetManager& operator = (const CGLWidgetManager& m) = delete;
+
+	bool isResizing = false;
+	bool isDragging = false;
 };

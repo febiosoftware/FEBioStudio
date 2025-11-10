@@ -70,8 +70,6 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 {
 	static int xp, yp;
 	static int hp, fsp;
-	static bool bresize = false;
-	static bool bdrag = false;
 
 	// see if there is a widget that wishes to handle this event
 	// first we see if the user is trying to select a widget
@@ -107,13 +105,13 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 				double s = (pw->m_y+pw->m_h-y)/20.0;
 				if (pw->resizable() && (r >= 0) && (s >= 0) && (r+s <= 1.0))
 				{
-					bresize = true;
-					bdrag = false;
+					isResizing = true;
+					isDragging = false;
 					hp = pw->m_h;
 					fsp = pw->m_font.pointSize();
 				}
 				else {
-					bdrag = true; bresize = false;
+					isDragging = true; isResizing = false;
 				}
 			}
 			return 1;
@@ -126,7 +124,7 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 				int h0 = pw->h();
 				pw->align(0);
 
-				if (bresize && pw->resizable())
+				if (isResizing && pw->resizable())
 				{
 					pw->resize(x0, y0, w0 + (x - xp), h0 + (y - yp));
 
@@ -136,7 +134,7 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 
 					pw->m_font.setPointSize((int)(ar * fsp));
 				}
-				else if (bdrag)
+				else if (isDragging)
 				{
 					pw->resize(x0 + (x - xp), y0 + (y - yp), w0, h0);
 				}
@@ -148,8 +146,8 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 			return 1;
 		case GLWEvent::GLW_RELEASE:
 			{
-				bresize = false;
-				bdrag   = false;
+				isResizing = false;
+				isDragging = false;
 			}
 			break;
 		}
@@ -182,7 +180,10 @@ void CGLWidgetManager::DrawWidget(GLWidget* pw, GLPainter* painter)
 		int x1 = pw->m_x + pw->m_w;
 		int y1 = (pw->m_y + pw->m_h);
 
-		painter->setPen(QPen(QColor::fromRgb(0, 0, 128)));
+		if (isResizing)
+			painter->setPen(QPen(QColor::fromRgb(255, 255, 0), 2));
+		else
+			painter->setPen(QPen(QColor::fromRgb(0, 0, 128), 2));
 
 		if (pw->m_bgFillMode == GLWidget::FILL_NONE)
 			painter->fillRect(x0, y0, pw->m_w, pw->m_h, QColor::fromRgb(255, 255, 255, 128));

@@ -47,6 +47,22 @@ void GLLabel::fit_to_size()
 
 void GLLabel::draw(GLPainter* painter)
 {
+	// see if we need to resize the label to fit the text
+	std::string label;
+	if (m_szlabel)
+	{
+		label = processLabel();
+		if ((label.size() > 0) && !has_focus())
+		{
+			QFontMetrics fm(m_font);
+			QSize size = fm.size(Qt::TextExpandTabs, QString::fromStdString(label));
+			if ((size.width() < w() - 2*m_margin) || (size.height() < h() - 2 * m_margin))
+			{
+				resize(x(), y(), size.width() + 2 * m_margin, size.height() + 2 * m_margin);
+			}
+		}
+	}
+
 	GLWidget::draw(painter);
 
 	int x0 = m_x;
@@ -61,7 +77,7 @@ void GLLabel::draw(GLPainter* painter)
 	int w = m_w - 2 * m_margin;
 	int h = m_h - 2 * m_margin;
 
-	if (m_szlabel)
+	if (label.size() > 0)
 	{
 		// set the align flag
 		int flags = Qt::AlignVCenter;
@@ -72,7 +88,6 @@ void GLLabel::draw(GLPainter* painter)
 		case RightJustified: flags |= Qt::AlignRight; break;
 		}
 
-		std::string label = processLabel();
 		if (m_bshadow)
 		{
 			int dx = m_font.pointSize() / 10 + 1;
