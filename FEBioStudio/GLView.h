@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <rhiLib/rhiSceneView.h>
+#include <RHILib/rhiSceneView.h>
 #include <QNativeGestureEvent>
 #include <GLLib/GLCamera.h>
 #include <FSCore/ColorMap.h>
