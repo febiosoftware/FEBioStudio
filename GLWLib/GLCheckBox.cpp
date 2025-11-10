@@ -50,10 +50,12 @@ void GLCheckBox::draw(GLPainter* painter)
 
 	QPen oldpen = painter->pen();
 
+	GLColor fc = get_fg_color();
+
 	// draw the checkmark
 	const int checkSize = 2 * m_h / 3;
 	QPen pen = painter->pen();
-	pen.setColor(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
+	pen.setColor(QColor(fc.r, fc.g, fc.b));
 	painter->setPen(pen);
 	int xl = x0 + 2;
 	int yl = y0 + (h - checkSize) / 2;

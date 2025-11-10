@@ -67,7 +67,7 @@ public:
 	virtual int handle(int x, int y, int nevent) { return 0; }
 
 	void set_fg_color(const GLColor& c, bool setoverrideflag = true) { m_fgc = c; if (setoverrideflag) m_boverridefgc = true; }
-	GLColor get_fg_color() { return m_fgc; }
+	GLColor get_fg_color() { return (m_boverridefgc ? m_fgc : m_base); }
 	bool isfgc_overridden() const { return m_boverridefgc; }
 
 	void set_bg_style(int n) { m_bgFillMode = n; }

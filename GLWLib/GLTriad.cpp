@@ -179,8 +179,10 @@ void GLTriad::draw(GLPainter* painter)
 		ey.x = x0 + (x1 - x0) * (ey.x + 1) * 0.5; ey.y = y0 + (y1 - y0) * (ey.y + 1) * 0.5;
 		ez.x = x0 + (x1 - x0) * (ez.x + 1) * 0.5; ez.y = y0 + (y1 - y0) * (ez.y + 1) * 0.5;
 
+		GLColor fc = get_fg_color();
+
 		painter->setFont(m_font);
-		painter->setPen(toQColor(m_fgc));
+		painter->setPen(toQColor(fc));
 		painter->drawText(ex.x, ex.y, "X");
 		painter->drawText(ey.x, ey.y, "Y");
 		painter->drawText(ez.x, ez.y, "Z");

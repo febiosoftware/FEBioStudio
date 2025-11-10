@@ -1314,6 +1314,11 @@ void CGLView::Reset()
 
 	m_view.Defaults(ntheme);
 
+	if (m_view.m_defaultFGColorOption == 0)
+	{
+		GLWidget::set_base_color(m_view.m_defaultFGColor);
+	}
+
 	GLHighlighter::ClearHighlights();
 	repaint();
 }

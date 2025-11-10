@@ -211,10 +211,12 @@ void GLLegendBar::draw_gradient_vert(GLPainter* painter)
 		painter->drawImage(x0, y0, img);
 	}
 
+	GLColor fc = get_fg_color();
+
 	// lines
 	if (m_lineWidth > 0.f)
 	{
-		QPen pen(toQColor(m_fgc), m_lineWidth);
+		QPen pen(toQColor(fc), m_lineWidth);
 		painter->setPen(pen);
 		for (int i = 0; i <= nsteps; i++)
 		{
@@ -226,7 +228,7 @@ void GLLegendBar::draw_gradient_vert(GLPainter* painter)
 	// labels
 	if (m_blabels)
 	{
-		painter->setPen(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
+		painter->setPen(QColor(fc.r, fc.g, fc.b));
 		painter->setFont(m_font);
 		QFontMetrics fm(m_font);
 

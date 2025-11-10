@@ -80,8 +80,9 @@ void GLLabel::draw(GLPainter* painter)
 			painter->setFont(m_font);
 			painter->drawText(x0 + dx, y0 + dx, w, h, flags, QString::fromStdString(label));
 		}
+		GLColor fc = get_fg_color();
 		QPen pen = painter->pen();
-		pen.setColor(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
+		pen.setColor(QColor(fc.r, fc.g, fc.b));
 		painter->setFont(m_font);
 		painter->setPen(pen);
 		painter->drawText(x0, y0, w, h, flags, QString::fromStdString(label));
