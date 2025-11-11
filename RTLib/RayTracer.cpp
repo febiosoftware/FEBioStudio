@@ -401,6 +401,21 @@ void RayTracer::setLightSpecularColor(unsigned int lightIndex, const GLColor& co
 	lightSpecular = Color(col);
 }
 
+void RayTracer::setLightAmbientColor(unsigned int lightIndex, const GLColor& col)
+{
+	lightAmbient = Color(col);
+}
+
+void RayTracer::setLightDiffuseColor(unsigned int lightIndex, const GLColor& col)
+{
+	lightDiffuse = Color(col);
+}
+
+void RayTracer::setLightEnabled(unsigned int lightIndex, bool b)
+{
+	lightEnabled = b;
+}
+
 void RayTracer::begin(PrimitiveType prim)
 {
 	assert(immediateMode == false);
@@ -1053,7 +1068,7 @@ rt::Fragment RayTracer::castRay(rt::Ray& ray)
 		}
 		
 		bool isOccluded = false;
-		if (mat.lighting)
+		if (mat.lighting && lightEnabled)
 		{
 			// calculate an ambient value
 			frag.color = mat.ambient * lightAmbient;
@@ -1077,7 +1092,7 @@ rt::Fragment RayTracer::castRay(rt::Ray& ray)
 				double f = N * L;
 				if (f < 0) f = 0;
 				Color diffuse = c * f;
-				frag.color += diffuse;
+				frag.color += diffuse*lightDiffuse;
 			}
 		}
 		else frag.color = c;

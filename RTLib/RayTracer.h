@@ -181,7 +181,10 @@ public:
 	void setMaterial(const GLMaterial& mat) override;
 
 	void setLightPosition(unsigned int lightIndex, const vec3f& p) override;
+	void setLightAmbientColor (unsigned int lightIndex, const GLColor& col) override;
+	void setLightDiffuseColor (unsigned int lightIndex, const GLColor& col) override;
 	void setLightSpecularColor(unsigned int lightIndex, const GLColor& col) override;
+	void setLightEnabled(unsigned int lightIndex, bool b) override;
 
 public: // immediate mode rendering
 	void begin(PrimitiveType prim) override;
@@ -262,8 +265,10 @@ private:
 	int currentMaterial = -1;
 	std::vector<rt::Material> matList;
 
+	bool lightEnabled = true;
 	rt::Vec4 lightPos;
 	rt::Color lightSpecular = rt::Color(1.f, 1.f, 1.f);
+	rt::Color lightDiffuse  = rt::Color(1.f, 1.f, 1.f);
 	rt::Color lightAmbient  = rt::Color(0.2f, 0.2f, 0.2f);
 
 	bool ortho = false;

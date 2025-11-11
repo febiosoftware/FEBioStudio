@@ -1541,7 +1541,14 @@ void CGLView::RenderScene(GLRenderEngine& re)
 	// position the light
 	vec3f lp = m_view.m_light; lp.Normalize();
 	re.setLightPosition(0, lp);
-	re.setLightSpecularColor(0, GLColor::White());
+	if (view.m_bLighting)
+	{
+		re.setLightEnabled(0, true);
+	}
+	else
+	{
+		re.setLightEnabled(0, false);
+	}
 
 	GLCamera& cam = scene->GetCamera();
 	cam.MakeActive();

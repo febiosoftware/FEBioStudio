@@ -16,8 +16,10 @@ layout(location = 3) out vec4 v_color;
 layout(std140, binding = 0) uniform GlobalBlock {
     vec4 lightPos;
     vec4 ambient;
+    vec4 diffuse;
     vec4 specColor;
     vec4 clipPlane;
+    int lightEnabled;
 } glob;
 
 // mesh-specific block
@@ -36,6 +38,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     int useVertexColor;
     int useLighting;
     int frontOnly;
+    int useFrontLight;
 } mesh;
 
 // texture sampler

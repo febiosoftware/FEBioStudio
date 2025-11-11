@@ -139,7 +139,10 @@ public:
 
 public:
 	virtual void setLightPosition(unsigned int lightIndex, const vec3f& p) {}
+	virtual void setLightAmbientColor (unsigned int lightIndex, const GLColor& col) {}
+	virtual void setLightDiffuseColor (unsigned int lightIndex, const GLColor& col) {}
 	virtual void setLightSpecularColor(unsigned int lightIndex, const GLColor& col) {}
+	virtual void setLightEnabled(unsigned int lightIndex, bool b) {}
 
 	virtual void setClearColor(const GLColor& c) {}
 

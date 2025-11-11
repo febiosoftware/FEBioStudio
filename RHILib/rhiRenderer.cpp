@@ -35,11 +35,14 @@ void GlobalUniformBlock::create(QRhi* rhi)
 	m_ub.create({
 		{ rhi::UniformBlock::VEC4, "lightPos" },
 		{ rhi::UniformBlock::VEC4, "ambient"},
+		{ rhi::UniformBlock::VEC4, "diffuse"},
 		{ rhi::UniformBlock::VEC4, "specColor"},
-		{ rhi::UniformBlock::VEC4, "clipPlane"}
+		{ rhi::UniformBlock::VEC4, "clipPlane"},
+		{ rhi::UniformBlock::INT , "lightEnabled"}
 	});
 
 	m_ub.setVec4(LIGHTSPEC, GLColor::White());
+	m_ub.setVec4(LIGHTDIFF, GLColor::White());
 	m_ub.setVec4(LIGHTAMB, GLColor(50, 50, 50));
 
 	m_ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, m_ub.size()));
@@ -55,6 +58,13 @@ void GlobalUniformBlock::setAmbientColor(GLColor c)
 	m_ub.setVec4(LIGHTAMB, f[0], f[1], f[2], f[3]);
 }
 
+void GlobalUniformBlock::setDiffuseColor(GLColor c)
+{
+	float f[4] = { 0.f };
+	c.toFloat(f);
+	m_ub.setVec4(LIGHTDIFF, f[0], f[1], f[2], f[3]);
+}
+
 void GlobalUniformBlock::setSpecularColor(GLColor c) 
 { 
 	float f[4] = { 0.f };
@@ -62,6 +72,11 @@ void GlobalUniformBlock::setSpecularColor(GLColor c)
 	m_ub.setVec4(LIGHTSPEC, f[0], f[1], f[2], f[3]);
 }
 void GlobalUniformBlock::setClipPlane(const float f[4]) { m_ub.setVec4(CLIPPLANE, f[0], f[1], f[2], f[3]); }
+
+void GlobalUniformBlock::setLightEnabled(bool b)
+{
+	m_ub.setInt(LIGHTON, b ? 1 : 0);
+}
 
 void GlobalUniformBlock::update(QRhiResourceUpdateBatch* u)
 {
@@ -90,7 +105,6 @@ void CanvasUniformBlock::update(QRhiResourceUpdateBatch* u)
 
 rhiRenderer::rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp) : m_rhi(rhi), m_sc(sc), m_rp(rp), m_tex1D(rhi), m_envTex(rhi)
 {
-	m_lightSpecular = GLColor::White();
 }
 
 rhiRenderer::~rhiRenderer()
@@ -244,7 +258,22 @@ void rhiRenderer::setLightPosition(unsigned int n, const vec3f& lp)
 
 void rhiRenderer::setLightSpecularColor(unsigned int lightIndex, const GLColor& col)
 {
-	m_lightSpecular = col;
+	m_global.setSpecularColor(col);
+}
+
+void rhiRenderer::setLightAmbientColor(unsigned int lightIndex, const GLColor& col)
+{
+	m_global.setAmbientColor(col);
+}
+
+void rhiRenderer::setLightDiffuseColor(unsigned int lightIndex, const GLColor& col)
+{
+	m_global.setDiffuseColor(col);
+}
+
+void rhiRenderer::setLightEnabled(unsigned int lightIndex, bool b)
+{
+	m_global.setLightEnabled(b);
 }
 
 void rhiRenderer::setProjection(double fov, double fnear, double far)
@@ -612,7 +641,6 @@ void rhiRenderer::finish()
 
 	// set global properties
 	m_global.setLightPosition(m_light);
-	m_global.setSpecularColor(m_lightSpecular);
 	m_global.setClipPlane(clipPlane);
 	m_global.update(resourceUpdates);
 

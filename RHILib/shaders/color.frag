@@ -13,8 +13,10 @@ layout(location = 0) out vec4 fragColor;
 layout(std140, binding = 0) uniform GlobalBlock {
     vec4 lightPos;
     vec4 ambient;
+    vec4 diffuse;
     vec4 specColor;
     vec4 clipPlane;
+    int lightEnabled;
 } glob;
 
 // mesh-specific block
@@ -33,6 +35,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     int useVertexColor;
     int useLighting;
     int frontOnly;
+    int useFrontLight;
 } mesh;
 
 // texture sampler
@@ -65,23 +68,37 @@ void main()
     vec4 f_col = vec4(0,0,0,1);
 
     vec4 col = v_color;
+
+    // textured rendering
     if (mesh.useTexture > 0)
+    {
         col.xyz *= texture(smp, v_tex.xy).xyz;
 
-    if (mesh.reflection > 0)
-    {
-        float r = clamp(mesh.reflection, 0, 1);
-        const float PI = 3.14159265358979323846;
+        if ((mesh.useLighting > 0) && (glob.lightEnabled > 0))
+        {
+            // diffuse component
+            float a = max(dot(N, L),0);
+            a = clamp(a, 0.3, 1); // avoid too dark colors
+            vec3 diffuseColor = glob.diffuse.xyz * col.xyz;
+            col.xyz = diffuseColor*a;
+        }
 
-        vec3 R = reflect(V, N);
-        float u = atan(R.z, R.x) / (2.0 * PI) + 0.5;
-        float v = 0.5 - asin(R.y) / PI;
-        vec4 envCol = texture(envSmp, vec2(u,v));
-        col.xyz = envCol.xyz*r + col.xyz*(1-r);
+        f_col = col;
     }
-
-    if (mesh.useLighting > 0)
+    else if ((mesh.useLighting > 0) && (glob.lightEnabled > 0))
     {
+        if (mesh.reflection > 0)
+        {
+            float r = clamp(mesh.reflection, 0, 1);
+            const float PI = 3.14159265358979323846;
+
+            vec3 R = reflect(V, N);
+            float u = atan(R.z, R.x) / (2.0 * PI) + 0.5;
+            float v = 0.5 - asin(R.y) / PI;
+            vec4 envCol = texture(envSmp, vec2(u,v));
+            col.xyz = envCol.xyz*r + col.xyz*(1-r);
+        }
+
         // ambient value
         f_col += glob.ambient*mesh.ambient;
 
@@ -91,22 +108,30 @@ void main()
                 N = -N;
 
             // front-lit
-            float b = max(dot(N, vec3(0,0,1)),0);
-            f_col += col*(b*0.2);
+            if (mesh.useFrontLight > 0) {
+                float b = max(dot(N, vec3(0,0,1)),0);
+                f_col += col*(b*0.2);
+            }
 
             // diffuse component
             float a = max(dot(N, L),0);
-            f_col += col*a;
+            if (a > 0)
+            {
+                vec3 diffuseColor = glob.diffuse.xyz * col.xyz;
+                f_col.xyz += diffuseColor*a;
+            }
 
             // specular component
-            vec3 R = normalize(reflect(V, N));
-            float c = clamp(dot(R, L), 1e-4, 0.99999);
-            float se = clamp(128.0 * mesh.specExp, 0.0, 128.0);
-            float s = pow(c, se);
-            s = clamp(s, 0, 1);
+            if (mesh.specExp > 0) {
+                vec3 R = normalize(reflect(V, N));
+                float c = clamp(dot(R, L), 1e-4, 0.99999);
+                float se = clamp(128.0 * mesh.specExp, 0.0, 128.0);
+                float s = pow(c, se);
+                s = clamp(s, 0, 1);
 
-            vec3 specColor = glob.specColor.xyz * mesh.specular.xyz;
-            f_col.xyz += specColor*s;
+                vec3 specColor = glob.specColor.xyz * mesh.specular.xyz;
+                f_col.xyz += specColor*s;
+            }
         }
         else {
             // only diffuse for backfacing triangles
@@ -114,7 +139,7 @@ void main()
             f_col.xyz += vec3(1, 0.7, 0.7)*a;
         }
     }
-    else
+    else 
     {
         f_col = col;
     }

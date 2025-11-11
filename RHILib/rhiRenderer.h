@@ -43,7 +43,7 @@ using dseconds = duration<double>;
 class GlobalUniformBlock
 {
 public:
-	enum {LIGHTPOS, LIGHTAMB, LIGHTSPEC, CLIPPLANE};
+	enum {LIGHTPOS, LIGHTAMB, LIGHTDIFF, LIGHTSPEC, CLIPPLANE, LIGHTON};
 
 public:
 	GlobalUniformBlock() {}
@@ -56,8 +56,10 @@ public:
 public:
 	void setLightPosition(const vec3f& lp);
 	void setAmbientColor(GLColor c);
+	void setDiffuseColor(GLColor c);
 	void setSpecularColor(GLColor c);
 	void setClipPlane(const float f[4]);
+	void setLightEnabled(bool b);
 
 private:
 	rhi::UniformBlock m_ub;
@@ -117,7 +119,10 @@ public:
 	void scale(double x, double, double z) override;
 
 	void setLightPosition(unsigned int n, const vec3f& lp) override;
-	void setLightSpecularColor(unsigned int lightIndex, const GLColor& col);
+	void setLightAmbientColor(unsigned int lightIndex, const GLColor& col) override;
+	void setLightDiffuseColor(unsigned int lightIndex, const GLColor& col) override;
+	void setLightSpecularColor(unsigned int lightIndex, const GLColor& col) override;
+	void setLightEnabled(unsigned int lightIndex, bool b) override;
 
 	void setClearColor(const GLColor& c) override;
 
@@ -228,7 +233,6 @@ private:
 private:
 	// variables used when creating meshes
 	vec3f m_light;
-	GLColor m_lightSpecular;
 	QColor m_clearColor;
 	GLMaterial m_currentMat;
 	bool m_clipEnabled = false;

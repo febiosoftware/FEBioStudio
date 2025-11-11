@@ -12,8 +12,10 @@ layout(location = 1) out vec3 v_col;
 layout(std140, binding = 0) uniform GlobalBlock {
     vec4 lightPos;
     vec4 ambient;
+    vec4 diffuse;
     vec4 specColor;
     vec4 clipPlane;
+    int lightEnabled;
 } glob;
 
 // mesh-specific block

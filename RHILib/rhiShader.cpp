@@ -200,7 +200,8 @@ public:
 			{rhi::UniformBlock::INT  , "useClipping"},
 			{rhi::UniformBlock::INT  , "useVertexColor"},
 			{rhi::UniformBlock::INT  , "useLighting"},
-			{rhi::UniformBlock::INT  , "frontOnly"}
+			{rhi::UniformBlock::INT  , "frontOnly"},
+			{rhi::UniformBlock::INT  , "useFrontLight"}
 			});
 
 		// create the buffer
@@ -244,6 +245,7 @@ public:
 		m_data.setInt  (11, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
 		m_data.setInt  (12, (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0 : 1);
 		m_data.setInt  (13, (m.mat.frontOnly ? 1 : 0));
+		m_data.setInt  (14, (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 0 : 1));
 	}
 };
 
