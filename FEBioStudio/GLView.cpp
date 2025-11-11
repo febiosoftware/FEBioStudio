@@ -1595,7 +1595,7 @@ void CGLView::RenderOverlay(GLRenderEngine& re, GLContext& rc)
 	if (!renderOverlay) return;
 
 	// Create the overlay image that we'll paint in
-	QImage img(rhiRender->pixelSize(), QImage::Format_RGBA8888_Premultiplied);
+	QImage img(rhiRender->pixelSize(), QImage::Format_RGBA8888);
 	img.fill(QColor(255, 255, 255, 0));
 	QPainter painter(&img);
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);

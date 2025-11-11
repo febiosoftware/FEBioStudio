@@ -115,7 +115,7 @@ void OverlayRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sharedRe
 	m_overlayTex.sampler->create();
 
 	// create overlay texture
-	m_overlayTex.image = QImage(sc->surfacePixelSize(), QImage::Format_RGBA8888_Premultiplied);
+	m_overlayTex.image = QImage(sc->surfacePixelSize(), QImage::Format_RGBA8888);
 	m_overlayTex.image.fill(Qt::transparent);
 	m_overlayTex.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, sc->surfacePixelSize(), 1, QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
 	m_overlayTex.texture->create();
