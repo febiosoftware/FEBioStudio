@@ -26,6 +26,8 @@ SOFTWARE.*/
 #include "RayTracer.h"
 #include <GLLib/GLMesh.h>
 #include <FSCore/FSLogger.h>
+#include "rasterize.h"
+
 using namespace rt;
 
 #include <chrono>
@@ -171,7 +173,12 @@ void RayTracer::setProjection(double fov, double fnear, double far)
 {
 	fieldOfView = fov;
 	nearPlane = fnear;
+	farPlane = far;
 	ortho = false;
+
+	double ar = (double)surfaceWidth() / (double)surfaceHeight();
+
+	projMatrix.perspective(fov, ar, fnear, far);
 }
 
 void RayTracer::setOrthoProjection(double left, double right, double bottom, double top, double near, double far)
@@ -181,7 +188,10 @@ void RayTracer::setOrthoProjection(double left, double right, double bottom, dou
 	m_bottom = bottom;
 	m_top = top;
 	nearPlane = near;
+	farPlane = far;
 	ortho = true;
+
+	projMatrix.ortho(left, right, bottom, top, near, far);
 }
 
 void RayTracer::setClearColor(const GLColor& c)
@@ -226,6 +236,7 @@ void RayTracer::start()
 	geom.push_back(mg);
 
 	modelView.makeIdentity();
+	projMatrix.makeIdentity();
 }
 
 double RayTracer::progress()
@@ -541,6 +552,41 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, int surfId, bool cacheMesh)
 	}
 }
 
+void RayTracer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
+{
+	int NE = mesh.Edges();
+	for (int i = 0; i < NE; ++i)
+	{
+		const GLMesh::EDGE& edge = mesh.Edge(i);
+		rt::Line line;
+		for (int j = 0; j < 2; ++j)
+		{
+			line.r[j] = modelView * Vec4(edge.vr[j], 1);
+			line.c[j] = (useVertexColor ? edge.c[j] : currentColor);
+		}
+		addLine(line);
+	}
+}
+
+void RayTracer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cacheMesh)
+{
+	if (partition < 0) return;
+
+	const std::pair<int, int> p = mesh.EIL(partition);
+	int NE = p.second;
+	for (int i = 0; i < NE; ++i)
+	{
+		const GLMesh::EDGE& edge = mesh.Edge(i + p.first);
+		rt::Line line;
+		for (int j = 0; j < 2; ++j)
+		{
+			line.r[j] = modelView * Vec4(edge.vr[j], 1);
+			line.c[j] = (useVertexColor ? edge.c[j] : currentColor);
+		}
+		addLine(line);
+	}
+}
+
 Point interpolate(const Point& a, const Point& b, double w)
 {
 	double w1 = 1.0 - w;
@@ -562,6 +608,90 @@ const int rtLUT[8][7] = {
 	{ 0,  3,  5, -1, -1, -1, -1},
 	{-1, -1, -1, -1, -1, -1, -1},
 };
+
+
+void RayTracer::addLine(rt::Line& line)
+{
+	// make sure the line is in front of the near plane
+	if ((line.r[0].z() >= -nearPlane) && (line.r[1].z() >= -nearPlane)) return;
+
+	// clip to the near plane
+	if ((line.r[0].z() > -nearPlane) || (line.r[1].z() > -nearPlane))
+	{
+		Point p[3];
+		p[0] = line.point(0);
+		p[1] = line.point(1);
+		Vec3 a = line.r[0];
+		Vec3 b = line.r[1];
+		Vec3 t = b - a;
+		double D = t.z();
+		if (D != 0)
+		{
+			double l = (-nearPlane - a.z()) / D;
+			if (l < 0) l = 0;
+			else if (l > 1) l = 1;
+			p[2] = interpolate(p[0], p[1], l);
+			if (line.r[0].z() > -nearPlane)
+			{
+				line.r[0] = p[2].r;
+				line.c[0] = p[2].c;
+			}
+			else
+			{
+				line.r[1] = p[2].r;
+				line.c[1] = p[2].c;
+			}
+		}
+	}
+
+	// process triangle
+	if (!line.process()) return;
+
+	// TODO: do frustum clipping
+
+	// process clip plane
+	if (useClipPlane)
+	{
+		double* c = clipPlane;
+		Vec3 N(c[0], c[1], c[2]);
+		Vec3* v = line.r;
+		unsigned int ncase = 0;
+		for (int i = 0; i < 2; ++i)
+		{
+			double l = N * v[i] + c[3];
+			if (l < 0) ncase |= (1 << i);
+		}
+
+		if (ncase == 0) mesh.addLine(line);
+		else if (ncase < 2)
+		{
+			Point p[3];
+			p[0] = line.point(0);
+			p[1] = line.point(1);
+
+			Vec3 a = v[0];
+			Vec3 b = v[1];
+			Vec3 t = b - a;
+			double D = N * t;
+			if (D != 0)
+			{
+				double l = -(c[3] + N * a) / D;
+				if (l < 0) l = 0;
+				else if (l > 1) l = 1;
+				p[2] = interpolate(p[0], p[1], l);
+			}
+
+			rt::Line line_n;
+			line_n.r[0] = p[0].r;
+			line_n.r[1] = p[2].r;
+			line_n.c[0] = p[0].c;
+			line_n.c[1] = p[2].c;
+			if (line_n.process())
+				mesh.addLine(line_n);
+		}
+	}
+	else mesh.addLine(line);
+}
 
 void RayTracer::addTriangle(rt::Tri& tri)
 {
@@ -719,13 +849,14 @@ void RayTracer::render()
 			{
 				if (!cancelled)
 				{
-					rt::Color c = fragment(i, j, samples);
+					rt::Fragment f = fragment(i, j, samples);
 
 					float* v = surf.value(i, j);
-					v[0] = (float)c.r();
-					v[1] = (float)c.g();
-					v[2] = (float)c.b();
-					v[3] = (bgOption ? (float)c.a() : 1.f);
+					v[0] = (float)f.color.r();
+					v[1] = (float)f.color.g();
+					v[2] = (float)f.color.b();
+					v[3] = (bgOption ? (float)f.color.a() : 1.f);
+					v[4] = f.depth;
 				}
 			}
 		}
@@ -739,22 +870,26 @@ void RayTracer::render()
 			{
 				if (!cancelled)
 				{
-					rt::Color c = fragment(i, j, samples);
+					rt::Fragment f = fragment(i, j, samples);
 
 					float* v = surf.value(i, j);
-					v[0] = (float)c.r();
-					v[1] = (float)c.g();
-					v[2] = (float)c.b();
-					v[3] = (bgOption ? (float)c.a() : 1.f);
+					v[0] = (float)f.color.r();
+					v[1] = (float)f.color.g();
+					v[2] = (float)f.color.b();
+					v[3] = (bgOption ? (float)f.color.a() : 1.f);
+					v[4] = f.depth;
 				}
 			}
 		}
 	}
 
 	percentCompleted = 100.0;
+
+	// render the lines
+	renderLines();
 }
 
-rt::Color RayTracer::fragment(int i, int j, int samples)
+rt::Fragment RayTracer::fragment(int i, int j, int samples)
 {
 	int W = surf.width();
 	int H = surf.height();
@@ -767,6 +902,7 @@ rt::Color RayTracer::fragment(int i, int j, int samples)
 	double dy = m_fh / H;
 
 	Color c(0, 0, 0, 0);
+	float depth = 0.f;
 	for (int k = 0; k < samples; ++k)
 		for (int l = 0; l < samples; ++l)
 		{
@@ -788,13 +924,17 @@ rt::Color RayTracer::fragment(int i, int j, int samples)
 
 			Ray ray(origin, direction);
 
-			Color fragCol = castRay(ray);
+			Fragment fragCol = castRay(ray);
 
-			c += fragCol;
+			c += fragCol.color;
+			depth += fragCol.depth;
 		}
 	c /= (double)(samples * samples);
+	depth /= (float)(samples * samples);
 
-	return c;
+	depth = projMatrix.depthToNDC(depth, nearPlane, farPlane);
+
+	return Fragment{ c, depth };
 }
 
 GLColor RayTracer::backgroundColor(const rt::Vec3& p)
@@ -820,23 +960,24 @@ bool RayTracer::intersect(const rt::Ray& ray, rt::Point& q)
 	return geom.intersect(ray, q);
 }
 
-rt::Color RayTracer::castRay(rt::Ray& ray)
+rt::Fragment RayTracer::castRay(rt::Ray& ray)
 {
 	rt::Point q;
 
 	int bgOption = GetIntValue(BACKGROUND);
 
-	Color fragCol;
+	Fragment frag;
+	frag.depth = -farPlane;
 	switch (bgOption)
 	{
 	case 0: // default
 		if (ray.bounce == 0)
-			fragCol = backgroundColor(ray.origin);
+			frag.color = backgroundColor(ray.origin);
 		else
-			fragCol = backgroundCol;
+			frag.color = backgroundCol;
 		break;
 	case 1: // transparent
-		fragCol = Color(0, 0, 0, 0);
+		frag.color = Color(0, 0, 0, 0);
 		break;
 	}
 	bool intersectMesh = intersect(ray, q);
@@ -844,6 +985,9 @@ rt::Color RayTracer::castRay(rt::Ray& ray)
 
 	if (intersectMesh)
 	{
+		// set depth value
+		frag.depth = q.r.z();
+
 		// get some material props
 		rt::Material mat;
 		if (q.matid >= 0)
@@ -912,10 +1056,10 @@ rt::Color RayTracer::castRay(rt::Ray& ray)
 		if (mat.lighting)
 		{
 			// calculate an ambient value
-			fragCol = mat.ambient * lightAmbient;
+			frag.color = mat.ambient * lightAmbient;
 			double f = N * Vec3(0, 0, 1);
 			if (f < 0) f = 0;
-			fragCol += c * (f * 0.2);
+			frag.color += c * (f * 0.2);
 
 			// see if the point is occluded or not
 			if (renderShadows)
@@ -933,10 +1077,10 @@ rt::Color RayTracer::castRay(rt::Ray& ray)
 				double f = N * L;
 				if (f < 0) f = 0;
 				Color diffuse = c * f;
-				fragCol += diffuse;
+				frag.color += diffuse;
 			}
 		}
-		else fragCol = c;
+		else frag.color = c;
 
 		double opacity = c.a();
 		if ((c.a() < 0.99) && (ray.bounce < 100))
@@ -946,8 +1090,8 @@ rt::Color RayTracer::castRay(rt::Ray& ray)
 			ray2.bounce = ray.bounce + 1;
 
 			rt::Point q2;
-			Color c2 = castRay(ray2);
-			fragCol = fragCol * opacity + c2 * (1 - opacity);
+			Fragment f2 = castRay(ray2);
+			frag.color = frag.color * opacity + f2.color * (1 - opacity);
 		}
 
 		// add specular component
@@ -957,12 +1101,13 @@ rt::Color RayTracer::castRay(rt::Ray& ray)
 			H.normalize();
 			double f = H * L;
 			double s = (f > 0 ? pow(f, mat.shininess) : 0);
-			fragCol += lightSpecular * mat.specular* s;
+			frag.color += lightSpecular * mat.specular* s;
 		}
-		fragCol.a() = c.a();
+		frag.color.a() = c.a();
 	}
-	fragCol.clamp();
-	return fragCol;
+	frag.color.clamp();
+
+	return frag;
 }
 
 unsigned int RayTracer::SetEnvironmentMap(const CRGBAImage& img)
@@ -989,4 +1134,155 @@ void RayTracer::addSphere(const vec3d& c, double R)
 	S->col = currentColor;
 	S->matid = currentMaterial;
 	geom.push_back(S);
+}
+
+rt::Vec3 RayTracer::toNDC(rt::Vec4 v)
+{
+	// device coordinates
+	v = projMatrix * v;
+
+	// normalized device coordinates
+	v /= v.w();
+
+	return Vec3(v.x(), v.y(), v.z());
+}
+
+rt::Vec3 RayTracer::NDCtoView(const rt::Vec3& v)
+{
+	// viewport transform
+	rt::Vec3 p;
+	int W = surfaceWidth();
+	int H = surfaceHeight();
+	p.x( (v[0] + 1) * 0.5 * W );
+	p.y( (v[1] + 1) * 0.5 * H );
+	p.z(v[2]);
+
+	return p;
+}
+
+void RayTracer::renderLines()
+{
+	int W = surfaceWidth();
+	int H = surfaceHeight();
+
+	percentCompleted = 0;
+
+	for (int i = 0; i < mesh.lines(); ++i)
+	{
+		if (cancelled) break;
+
+		percentCompleted = (100.0 * i) / (double)mesh.lines();
+
+		rt::Line& line = mesh.line(i);
+
+		// convert to device coordinates
+		rt::Vec4 a = Vec4(line.r[0], 1);
+		rt::Vec4 b = Vec4(line.r[1], 1);
+
+		// convert to normalized device coordinates
+		rt::Vec3 a_ndc = toNDC(a);
+		rt::Vec3 b_ndc = toNDC(b);
+
+		bool isInside = clipLine(a_ndc, b_ndc);
+
+		if (isInside)
+		{
+			Vec3 an = NDCtoView(a_ndc);
+			Vec3 bn = NDCtoView(b_ndc);
+
+			// convert to view coordinates
+			int x0 = (int)an.x(); int y0 = (int)an.y();
+			int x1 = (int)bn.x(); int y1 = (int)bn.y();
+
+			rt::Color col0 = line.c[0];
+			rt::Color col1 = line.c[1];
+
+			float dz = 0.0002f;
+
+			bool swapped = false;
+			std::vector<rt::Pixel> pts = rt::rasterizeLineAA(x0, y0, x1, y1, swapped);
+			int n = 0;
+			for (auto& p : pts)
+			{
+				int x = p.x;
+				int y = H - p.y - 1;
+
+				double w = (pts.size() > 1 ? (double)n / (double)(pts.size() - 1) : 0.0);
+
+				if ((x >= 0) && (x < W) && (y >= 0) && (y < H))
+				{
+					rt::Color c;
+
+					double z = 0;
+					if (swapped)
+					{
+						c = col1 * (1.0 - w) + col0 * w;
+						z = bn.z() * (1.0 - w) + an.z() * w;
+					}
+					else
+					{
+						c = col0 * (1.0 - w) + col1 * w;
+						z = an.z() * (1.0 - w) + bn.z() * w;
+					}
+
+					float* v = surf.value(x, y);
+					if ((z < 1) && (z > -1) && (z <= v[4] + dz))
+					{
+						float a = c.a() * p.brightness;
+
+						v[0] = c.r() * a + v[0] * (1.f - a);
+						v[1] = c.g() * a + v[1] * (1.f - a);
+						v[2] = c.b() * a + v[2] * (1.f - a);
+						v[3] = a + v[3] * (1.f - a);
+					}
+				}
+
+				n++;
+			}
+		}
+	}
+
+	percentCompleted = 100.0;
+}
+
+bool RayTracer::clipLine(rt::Vec3& a, rt::Vec3& b)
+{
+    // NDC cube bounds
+    const double xmin = -1, xmax = 1;
+    const double ymin = -1, ymax = 1;
+    const double zmin = -1, zmax = 1;
+
+    double t0 = 0.0, t1 = 1.0;
+    rt::Vec3 d = b - a;
+
+    auto clip = [&](double p, double q, double& t0, double& t1) -> bool {
+        if (p == 0) return q >= 0; // Parallel, inside if q >= 0
+        double r = q / p;
+        if (p < 0) {
+            if (r > t1) return false;
+            if (r > t0) t0 = r;
+        } else {
+            if (r < t0) return false;
+            if (r < t1) t1 = r;
+        }
+        return true;
+    };
+
+    // Left, Right
+    if (!clip(-d.x(), a.x() - xmin, t0, t1)) return false;
+    if (!clip( d.x(), xmax - a.x(), t0, t1)) return false;
+    // Bottom, Top
+    if (!clip(-d.y(), a.y() - ymin, t0, t1)) return false;
+    if (!clip( d.y(), ymax - a.y(), t0, t1)) return false;
+    // Near, Far
+    if (!clip(-d.z(), a.z() - zmin, t0, t1)) return false;
+    if (!clip( d.z(), zmax - a.z(), t0, t1)) return false;
+
+    if (t1 < t0) return false;
+
+    rt::Vec3 new_a = a + d * t0;
+    rt::Vec3 new_b = a + d * t1;
+    a = new_a;
+    b = new_b;
+    return true;
 }

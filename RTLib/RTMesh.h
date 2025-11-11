@@ -38,6 +38,33 @@ namespace rt {
 		int matid = -1;
 	};
 
+	struct Line
+	{
+		Vec3 r[2];
+		Color c[2];
+		int id = -1;
+		int matid = -1;
+
+		Point point(unsigned int i) const
+		{
+			return Point{ r[i], Vec3(0,0,0), Vec3(0,0,0), c[i] };
+		}
+
+		Line() {}
+
+		Line(const Point& a, const Point& b)
+		{
+			r[0] = a.r; r[1] = b.r;
+			c[0] = a.c; c[1] = b.c;
+		}
+
+		bool process()
+		{
+			if (r[0] == r[1]) return false;
+			return true;
+		}
+	};
+
 	struct Tri
 	{
 		Vec3 r[3];
@@ -86,13 +113,21 @@ namespace rt {
 
 		void addTri(Tri& t);
 
+		void addLine(Line& l);
+
 		size_t triangles() const { return triList.size(); }
 
 		Tri& triangle(size_t n) { return triList[n]; }
 		const Tri& triangle(size_t n) const { return triList[n]; }
 
+		size_t lines() const { return lineList.size(); }
+
+		Line& line(size_t n) { return lineList[n]; }
+		const Line& line(size_t n) const { return lineList[n]; }
+
 	private:
 		std::vector<Tri> triList;
+		std::vector<Line> lineList;
 	};
 
 	bool intersect(Mesh& mesh, const Ray& ray, Point& q);

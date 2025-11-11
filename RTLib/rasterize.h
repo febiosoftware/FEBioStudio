@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,38 +23,19 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "RayTraceSurface.h"
-#include <memory>
-#include <cstring>
+#pragma once
+#include <vector>
 
-RayTraceSurface::RayTraceSurface()
+namespace rt
 {
-	w = 0;
-	h = 0;
-	d = nullptr;
-}
+	// A structure representing a pixel with a brightness (intensity)
+	struct Pixel {
+		int x, y;
+		float brightness; // range [0, 1]
+	};
 
-RayTraceSurface::~RayTraceSurface()
-{
-	delete d;
-}
+	std::vector<Pixel> rasterizeLine(int x0, int y0, int x1, int y1, bool& swapped);
 
-void RayTraceSurface::create(size_t W, size_t H)
-{
-	if (d) delete d;
-	w = W;
-	h = H;
-	d = new float[w * h * 5];
-	memset(d, 0, w * h * 5);
-}
+	std::vector<Pixel> rasterizeLineAA(float x0, float y0, float x1, float y1, bool& swapped);
 
-float* RayTraceSurface::value(size_t x, size_t y)
-{
-	return d + ((y * w + x)*5);
-}
-
-GLColor RayTraceSurface::colorValue(size_t x, size_t y)
-{
-	float* v = value(x, y);
-	return GLColor::FromRGBf(v[0], v[1], v[2], v[3]);
 }

@@ -170,6 +170,11 @@ namespace rt
 		double& operator[] (size_t n) { return d[n]; }
 		double operator[] (size_t n) const { return d[n]; }
 
+		void operator /= (double a)
+		{
+			d[0] /= a; d[1] /= a; d[2] /= a; d[3] /= a;
+		}
+
 		double d[4];
 	};
 
@@ -198,6 +203,13 @@ namespace rt
 			for (int i = 0; i < 4; ++i)
 				for (int j = 0; j < 4; ++j)
 					d[i][j] = (i == j ? 1 : 0);
+		}
+
+		void makeZero()
+		{
+			for (int i = 0; i < 4; ++i)
+				for (int j = 0; j < 4; ++j)
+					d[i][j] = 0;
 		}
 
 		void operator += (const Vec4& r)
@@ -261,6 +273,36 @@ namespace rt
 			m[2][0] = 0; m[2][1] = 0; m[2][2] = z; m[2][3] = 0;
 			m[3][0] = 0; m[3][1] = 0; m[3][2] = 0; m[3][3] = 1;
 			return m;
+		}
+
+		void perspective(double fovY, double ar, double near, double far)
+		{
+			makeZero();
+			double h = tan(fovY * DEG2RAD * 0.5);
+
+			d[0][0] = 1.0 / (ar * h);
+			d[1][1] = 1.0 / h;
+			d[2][2] = -(far + near) / (far - near);
+			d[2][3] = -2.0 * far * near / (far - near);
+			d[3][2] = -1;
+		}
+
+		void ortho(double left, double right, double bottom, double top, double near, double far)
+		{
+			makeZero();
+			d[0][0] = 2.0 / (right - left);
+			d[1][1] = 2.0 / (top - bottom);
+			d[2][2] = -2.0 / (far - near);
+			d[3][3] = 1;
+
+			d[0][3] = -(right + left) / (right - left);
+			d[1][3] = -(top + bottom) / (top - bottom);
+			d[2][3] = -(far + near) / (far - near);
+		}
+
+		double depthToNDC(double depth, double nearPlane, double farPlane)
+		{
+			return (d[2][2] * depth + d[2][3]) / (d[3][2]*depth + d[3][3]);
 		}
 
 	public:
@@ -370,6 +412,12 @@ namespace rt
 		Vec3 point;
 		double r[2] = { 0, 0 };
 
+	};
+
+	struct Fragment
+	{
+		Color color;
+		double depth = 0.0;
 	};
 
 	struct Box

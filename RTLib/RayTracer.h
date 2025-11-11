@@ -196,6 +196,9 @@ public:
 	void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) override;
 	void renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh = true) override;
 
+	void renderGMeshEdges(const GLMesh& mesh, bool cacheMesh = true) override;
+	void renderGMeshEdges(const GLMesh& mesh, int partition, bool cacheMesh = true) override;
+
 public:
 	void setClipPlane(unsigned int n, const double* v) override;
 	void enableClipPlane(unsigned int n) override;
@@ -215,15 +218,24 @@ public:
 private:
 	void preprocess();
 	void render();
-	rt::Color castRay(rt::Ray& ray);
+	rt::Fragment castRay(rt::Ray& ray);
 
 	void addTriangle(rt::Tri& tri);
+
+	void addLine(rt::Line& line);
 
 	GLColor backgroundColor(const rt::Vec3& r);
 
 	bool intersect(const rt::Ray& ray, rt::Point& q);
 
-	rt::Color fragment(int i, int j, int samples);
+	rt::Fragment fragment(int i, int j, int samples);
+
+	void renderLines();
+
+	rt::Vec3 toNDC(rt::Vec4 v);
+	rt::Vec3 NDCtoView(const rt::Vec3& v);
+
+	bool clipLine(rt::Vec3& a, rt::Vec3& b);
 
 private:
 	RayTraceSurface surf;
@@ -233,6 +245,8 @@ private:
 
 	rt::Matrix4 modelView;
 	std::stack<rt::Matrix4> mvStack;
+
+	rt::Matrix4 projMatrix;
 
 	std::vector<rt::Texture1D*> tex1d;
 	int currentTexture1D = -1;
@@ -254,7 +268,7 @@ private:
 
 	bool ortho = false;
 	double fieldOfView;
-	double nearPlane;
+	double nearPlane, farPlane;
 	double m_fw, m_fh;
 	double m_left, m_right;
 	double m_bottom, m_top;

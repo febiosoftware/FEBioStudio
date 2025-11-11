@@ -38,11 +38,19 @@ void Mesh::clear()
 	const size_t ALLOC_SIZE = 1024 * 1024;
 	triList.clear();
 	triList.reserve(ALLOC_SIZE);
+
+	lineList.clear();
+	lineList.reserve(ALLOC_SIZE);
 }
 
 void Mesh::addTri(rt::Tri& tri)
 {
 	triList.push_back(tri);
+}
+
+void Mesh::addLine(rt::Line& line)
+{
+	lineList.push_back(line);
 }
 
 bool intersectTri(rt::Tri& tri, const Ray& ray, Intersect& intersect)
