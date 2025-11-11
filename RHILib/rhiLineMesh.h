@@ -57,6 +57,7 @@ namespace rhi {
 			}
 			else
 			{
+				if (partition >= (int)gmsh->EILs()) return false;
 				const std::pair<int, int>& edge = gmsh->EIL(partition);
 
 				int NE = edge.second;
