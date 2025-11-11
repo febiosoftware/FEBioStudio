@@ -44,6 +44,7 @@ void GlobalUniformBlock::create(QRhi* rhi)
 	m_ub.setVec4(LIGHTSPEC, GLColor::White());
 	m_ub.setVec4(LIGHTDIFF, GLColor::White());
 	m_ub.setVec4(LIGHTAMB, GLColor(50, 50, 50));
+	m_ub.setInt(LIGHTON, 1);
 
 	m_ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, m_ub.size()));
 	m_ubuf->create();
