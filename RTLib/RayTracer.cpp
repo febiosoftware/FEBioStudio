@@ -585,7 +585,7 @@ void RayTracer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 
 void RayTracer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cacheMesh)
 {
-	if (partition < 0) return;
+	if ((partition < 0) || (partition >= mesh.EILs())) return;
 
 	const std::pair<int, int> p = mesh.EIL(partition);
 	int NE = p.second;
