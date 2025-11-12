@@ -22,13 +22,13 @@ layout(std140, binding = 0) uniform settings {
 } vr;
 
 // mesh-specific block
-layout(std140, binding = 0) uniform MeshBlock {
+layout(std140, binding = 1) uniform MeshBlock {
     mat4 mvp;
     vec4 col;
 } mesh;
 
 // texture sampler
-layout(binding = 1) uniform sampler3D smp;
+layout(binding = 2) uniform sampler3D smp;
 
 void main()
 {
