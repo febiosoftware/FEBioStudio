@@ -79,7 +79,6 @@ void GTriangleDecoration::render(GLRenderEngine& re)
 	vec3d r2 = to_vec3d(p2->position());
 	vec3d r3 = to_vec3d(p3->position());
 
-	re.pushState();
 	re.setColor(m_col);
 	re.setMaterial(GLMaterial::GLASS, m_col, GLMaterial::NONE, false);
 	re.begin(GLRenderEngine::TRIANGLES);
@@ -98,7 +97,6 @@ void GTriangleDecoration::render(GLRenderEngine& re)
 		re.vertex(r3);
 	}
 	re.end();
-	re.popState();
 }
 
 GArcDecoration::GArcDecoration(const vec3f& c, const vec3f& p0, const vec3f& p1, int ndivs, double scale)
@@ -219,8 +217,6 @@ void GPlaneCutDecoration::setPlane(double n0, double n1, double n2, double d)
 
 void GPlaneCutDecoration::render(GLRenderEngine& re)
 {
-	re.enable(GLRenderEngine::DEPTHTEST);
-
 	// get the nodal values
 	BOX box = m_box;
 	box.Scale(1.05);
@@ -330,8 +326,6 @@ void GPlaneCutDecoration::render(GLRenderEngine& re)
 
 		pf += 3;
 	}
-
-	re.disable(GLRenderEngine::DEPTHTEST);
 
 	// draw the normal
 	re.setColor(m_col2);

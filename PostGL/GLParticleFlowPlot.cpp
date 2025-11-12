@@ -158,7 +158,6 @@ void CGLParticleFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 	int NP = (int) m_particles.size();
 	if (NP == 0) return;
 
-	re.pushState();
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::White());
 
 	// build a point mesh
@@ -231,8 +230,6 @@ void CGLParticleFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 			re.renderGMeshEdges(lineMesh, false);
 		}
 	}
-
-	re.popState();
 }
 
 void CGLParticleFlowPlot::Update(int ntime, float dt, bool breset)

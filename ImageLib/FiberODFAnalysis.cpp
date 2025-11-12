@@ -953,8 +953,6 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, GLContext& rc)
 		return;
 	}
 
-	re.pushState();
-
 	// render the meshes (and selection box)
     bool showBoundingBoxes = GetBoolValue(SHOW_BOUND_BOX);
 	bool showSelBox = GetBoolValue(SHOW_SELBOX);
@@ -987,14 +985,11 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, GLContext& rc)
     // show selected box
 	if (sel && showSelBox)
 	{
-		re.disable(GLRenderEngine::DEPTHTEST);
 		re.pushTransform();
 		re.translate(sel->m_position);
 		glx::renderBox(re, sel->m_box, GLColor(255, 255, 0), false, 1);
 		re.popTransform();
 	}
-
-	re.popState();
 }
 
 void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, bool remeshOnly)

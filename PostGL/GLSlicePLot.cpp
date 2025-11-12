@@ -166,13 +166,11 @@ void CGLSlicePlot::Render(GLRenderEngine& re, GLContext& rc)
 
 	uint8_t a = uint8_t(255.0*GetFloatValue(TRANSPARENCY));
 
-	re.pushState();
 	re.setMaterial(GLMaterial::PLASTIC, GLColor(255, 255, 255, a), GLMaterial::TEXTURE_1D, false);
 	re.setTexture(tex);
 
 	// TODO: We used to z-sort the faces
 	re.renderGMesh(m_mesh, false);
-	re.popState();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

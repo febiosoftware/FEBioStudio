@@ -39,8 +39,6 @@ GLScene::~GLScene()
 
 void GLScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
-	engine.pushState();
-
 	PositionCameraInScene(engine);
 
 	GLScene& scene = *this;
@@ -49,8 +47,6 @@ void GLScene::Render(GLRenderEngine& engine, GLContext& rc)
 		assert(item);
 		item->render(engine, rc);
 	}
-
-	engine.popState();
 }
 
 void GLScene::Update()

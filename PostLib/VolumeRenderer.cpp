@@ -274,8 +274,6 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 		m_tex.col3 = GLColor::Black();
 	}
 
-	re.pushState();
-
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::TEXTURE_3D);
 	re.setTexture(m_tex);
 
@@ -332,8 +330,6 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 	re.disableClipPlane(3);
 	re.disableClipPlane(4);
 	re.disableClipPlane(5);
-
-	re.popState();
 }
 
 void CVolumeRenderer::RenderSlices(GLRenderEngine& re, const vec3d& view)

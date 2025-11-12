@@ -1455,13 +1455,11 @@ void CGLView::RenderDecorations(GLRenderEngine& re)
 {
 	if (m_deco.empty() == false)
 	{
-		re.pushState();
 		re.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow(), GLMaterial::NONE, false);
 		for (int i = 0; i < m_deco.size(); ++i)
 		{
 			m_deco[i]->render(re);
 		}
-		re.popState();
 	}
 }
 

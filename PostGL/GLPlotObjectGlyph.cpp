@@ -102,8 +102,6 @@ void Post::GLPlotObjectVector::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_po == nullptr) return;
 
-	re.pushState();
-
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
 
@@ -126,8 +124,6 @@ void Post::GLPlotObjectVector::Render(GLRenderEngine& re, GLContext& rc)
 
 	vec3d r = m_po->m_pos;
 	RenderVector(re, r, m_val);
-
-	re.popState();
 }
 
 void Post::GLPlotObjectVector::RenderVector(GLRenderEngine& re, const vec3d& r, vec3f v)

@@ -166,16 +166,12 @@ void CGLLinePlot::Render(GLRenderEngine& re, GLContext& rc)
 		int NL = lineData.Lines();
 		if (NL > 0)
 		{
-			re.pushState();
+			switch (m_nmode)
 			{
-				switch (m_nmode)
-				{
-				case 0: RenderLines(re); break;
-				case 1: Render3DLines(re); break;
-				case 2: Render3DSmoothLines(re); break;
-				}
+			case 0: RenderLines(re); break;
+			case 1: Render3DLines(re); break;
+			case 2: Render3DSmoothLines(re); break;
 			}
-			re.popState();
 		}
 	}
 }

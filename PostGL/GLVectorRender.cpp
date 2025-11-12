@@ -57,7 +57,6 @@ void GLVectorRenderer::SetDensity(double d) { m.density = d; }
 
 void GLVectorRenderer::Init(GLRenderEngine& re)
 {
-	re.pushState();
 	if (m.lineStyle == 0)
 	{
 		re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
@@ -109,5 +108,4 @@ void GLVectorRenderer::Finish(GLRenderEngine& re)
 	{
 		re.end(); // LINES
 	}
-	re.popState();
 }

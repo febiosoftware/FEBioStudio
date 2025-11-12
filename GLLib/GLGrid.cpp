@@ -72,9 +72,6 @@ vec3d GLGrid::Snap(vec3d r)
 
 void GLGrid::Render(GLRenderEngine& re, const GLCamera& cam)
 {
-	// store attributes
-	re.pushState();
-
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
 
 	// store modelview matrix
@@ -142,7 +139,4 @@ void GLGrid::Render(GLRenderEngine& re, const GLCamera& cam)
 
 	// restore modelview matrix
 	re.popTransform();
-
-	// restore attribs
-	re.popState();
 }

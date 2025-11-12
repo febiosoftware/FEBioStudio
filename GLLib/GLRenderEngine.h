@@ -40,15 +40,9 @@ class GLCamera;
 
 class GLRenderEngine : public FSObject
 {
-public:
-	enum StateFlag {
-		LIGHTING = 1,
-		DEPTHTEST,
-		CULLFACE,
-		BLENDING,
-		LINESTIPPLE
-	};
+	class Imp;
 
+public:
 	enum PrimitiveType {
 		POINTS,
 		LINES,
@@ -85,8 +79,6 @@ public:
 	virtual void start() { ResetStats(); }
 	virtual void finish() {}
 
-	virtual void flush() {}
-
 public:
 	virtual void deleteCachedMesh(GLMesh* gm) {}
 	 
@@ -112,14 +104,6 @@ public:
 	void rotate(const vec3d& r, vec3d ref = vec3d(0, 0, 1));
 
 public:
-	virtual void pushState() {}
-	virtual void popState() {}
-
-	virtual void enable(StateFlag flag) {}
-	virtual void disable(StateFlag flag) {}
-
-	virtual void clearDepthBuffer() {}
-
 	virtual void setColor(GLColor c) {}
 	virtual void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = false) {}
 	virtual void setMaterial(const GLMaterial& mat) {}

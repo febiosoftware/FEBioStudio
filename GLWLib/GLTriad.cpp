@@ -89,8 +89,6 @@ void GLTriad::draw(GLPainter* painter)
 		int oldView[4];
 		re->viewport(oldView);
 
-		re->pushState();
-
 		re->setLightPosition(0, vec3f(0, 0, -1));
 
 		// set the new viewport based on widget position and size
@@ -117,11 +115,6 @@ void GLTriad::draw(GLPainter* painter)
 		re->pushTransform();
 		re->resetTransform();
 
-		re->clearDepthBuffer();
-
-		re->enable(GLRenderEngine::StateFlag::DEPTHTEST);
-
-		re->disable(GLRenderEngine::StateFlag::CULLFACE);
 		re->setFrontFace(GLRenderEngine::FrontFace::CLOCKWISE);
 
 		quatd q = m_rot;
@@ -143,9 +136,6 @@ void GLTriad::draw(GLPainter* painter)
 
 		// restore modelview matrix
 		re->popTransform();
-
-		// restore attributes
-		re->popState();
 
 		// restore viewport
 		re->setViewport(oldView);

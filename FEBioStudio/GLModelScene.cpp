@@ -2503,8 +2503,6 @@ void GLSelectionBox::render(GLRenderEngine& re, GLContext& rc)
 
 	GObject* poa = m_scene->GetActiveObject();
 
-	re.enable(GLRenderEngine::DEPTHTEST);
-
 	if (item == ITEM_MESH)
 	{
 		for (int i = 0; i < model.Objects(); ++i)
@@ -3208,15 +3206,12 @@ void GLSelectionItem::RenderSelectedSurfaces(GLRenderEngine& re, GLContext& rc, 
 	if (selectedSurfaces.empty()) return;
 
 	// render the selected faces
-	re.pushState();
 	re.setMaterial(GLMaterial::HIGHLIGHT, GLColor::Blue());
 
 	for (int surfId : selectedSurfaces)
 	{
 		re.renderGMesh(*pm, surfId);
 	}
-	re.popState();
-
 
 #ifndef NDEBUG
 	{
@@ -3280,14 +3275,12 @@ void GLSelectionItem::RenderSelectedParts(GLRenderEngine& re, GLContext& rc, GOb
 	}
 	if (facesToRender.empty()) return;
 
-	re.pushState();
 	re.setMaterial(GLMaterial::HIGHLIGHT, GLColor::Blue());
 
 	for (int surfId : facesToRender)
 	{
 		re.renderGMesh(*m, surfId);
 	}
-	re.popState();
 
 	re.setMaterial(GLMaterial::OVERLAY, GLColor::Blue());
 	for (int surfId : facesToRender)

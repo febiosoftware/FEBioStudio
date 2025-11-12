@@ -121,11 +121,8 @@ void GLRuler::Render(GLRenderEngine& re, GLContext& rc)
 	}
 	re.popTransform();
 
-	re.pushState();
-
 	re.setMaterial(GLMaterial::OVERLAY, m_col);
 	re.renderLine(ra, rb);
-	re.popState();
 }
 
 void GLRuler::Update()

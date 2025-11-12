@@ -107,7 +107,6 @@ void GLPointProbe::Render(GLRenderEngine& re, GLContext& rc)
 	if (m_bshowPath && (m_path.size() > ntime) && (ntime >= 1))
 	{
 		GLColor c = GetColorValue(PATH_COLOR);
-		re.pushState();
 		re.setMaterial(GLMaterial::OVERLAY, c);
 		re.begin(GLRenderEngine::LINESTRIP);
 		for (int i = 0; i <= ntime; ++i)
@@ -116,7 +115,6 @@ void GLPointProbe::Render(GLRenderEngine& re, GLContext& rc)
 			re.vertex(r);
 		}
 		re.end();
-		re.popState();
 	}
 }
 

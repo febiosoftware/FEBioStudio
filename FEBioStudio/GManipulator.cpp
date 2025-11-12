@@ -45,7 +45,6 @@ void GTranslator::Render(GLRenderEngine& re, int npivot, bool bactive)
 	double l = 0.1*d;
 	double r = 0.3*d;
 
-	re.pushState();
 	re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
 
 	GLColor g(128, 128, 128);
@@ -139,8 +138,6 @@ void GTranslator::Render(GLRenderEngine& re, int npivot, bool bactive)
 	re.popTransform();
 
 	re.endShape();
-
-	re.popState();
 }
 
 int GTranslator::Pick(int x, int  y)
@@ -218,8 +215,6 @@ void GRotator::Render(GLRenderEngine& re, int npivot, bool bactive)
 	double d = m_scale;
 	double l = 0.1*d;
 	const int N = 50;
-
-	re.pushState();
 
 	re.beginShape();
 
@@ -324,8 +319,6 @@ void GRotator::Render(GLRenderEngine& re, int npivot, bool bactive)
 	re.popTransform();
 
 	re.endShape();
-
-	re.popState();
 }
 
 int GRotator::Pick(int x, int y)
@@ -416,7 +409,6 @@ void GScalor::Render(GLRenderEngine& re, int npivot, bool bactive)
 	double l = 0.1*d;
 	double r = 0.3*d;
 
-	re.pushState();
 	re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
 
 	GLColor g(128, 128, 128);
@@ -510,8 +502,6 @@ void GScalor::Render(GLRenderEngine& re, int npivot, bool bactive)
 	}
 
 	re.endShape();
-
-	re.popState();
 }
 
 int GScalor::Pick(int x, int y)

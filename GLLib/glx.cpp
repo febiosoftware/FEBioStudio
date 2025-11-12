@@ -902,7 +902,6 @@ void glx::renderBox(GLRenderEngine& re, const BOX& bbox, GLColor col, bool parti
 	BOX box = bbox;
 	box.Scale(scale);
 
-	re.pushState();
 	re.setMaterial(GLMaterial::CONSTANT, col);
 
 	GLMesh mesh;
@@ -973,8 +972,6 @@ void glx::renderBox(GLRenderEngine& re, const BOX& bbox, GLColor col, bool parti
 	}
 
 	re.renderGMeshEdges(mesh, false);
-
-	re.popState();
 }
 
 void glx::renderHelicalAxis(GLRenderEngine& re, double R)
@@ -1004,8 +1001,6 @@ void glx::renderHelicalAxis(GLRenderEngine& re, double R)
 
 void glx::renderGlyph(GLRenderEngine& re, glx::GlyphType glyph, float scale, GLColor c)
 {
-	re.pushState();
-
 	re.setMaterial(GLMaterial::OVERLAY, c);
 	re.beginShape();
 	switch (glyph)
@@ -1021,7 +1016,4 @@ void glx::renderGlyph(GLRenderEngine& re, glx::GlyphType glyph, float scale, GLC
 	case GlyphType::HELICAL_AXIS: glx::renderHelicalAxis(re, scale); break;
 	}
 	re.endShape();
-
-	// restore attributes
-	re.popState();
 }

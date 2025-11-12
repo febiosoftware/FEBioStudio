@@ -128,8 +128,6 @@ void GLPostModelItem::render(GLRenderEngine& re, GLContext& rc)
 		m_tex = color.GetTexture();
 	}
 
-	re.disable(GLRenderEngine::CULLFACE);
-
 	// match the selection mode
 	SelectionType selectionMode = SELECT_FE_ELEMS;
 	switch (m_scene->GetItemMode())
@@ -723,7 +721,6 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 
 	FSMesh& mesh = *gm.GetActiveMesh();
 
-	re.pushState();
 	int curMat = -1;
 	bool bvisible = true;
 
@@ -797,8 +794,6 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 		re.end();
 	}
 
-	re.popState();
-
 	re.setLineWidth(lineWidth);
 }
 
@@ -808,7 +803,6 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re)
 	if (ps == nullptr) return;
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 
-	re.pushState();
 	FSMesh& mesh = *gm.GetActiveMesh();
 	int curMat = -1;
 	bool bvisible = true;
@@ -934,8 +928,6 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re)
 			RenderDiscreteElementAsSolid(re, i, W);
 		}
 	}
-
-	re.popState();
 }
 
 void GLPostModelItem::RenderDiscreteElement(GLRenderEngine& re, int i)
@@ -1064,8 +1056,6 @@ void GLPostModelItem::RenderMinMaxMarkers(GLRenderEngine& re)
 	re.end();
 
 	re.setPointSize(pointSize);
-
-	re.popState();
 }
 
 void GLPostPlotItem::render(GLRenderEngine& re, GLContext& rc)
@@ -1096,7 +1086,6 @@ void GLPostObjectItem::render(GLRenderEngine& re, GLContext& rc)
 	double scale = 0.05 * (double)GetCamera().GetTargetDistance();
 	double R = 0.5 * scale;
 
-	re.pushState();
 	re.setMaterial(GLMaterial::OVERLAY, GLColor::Black());
 
 	bool renderRB = rc.m_settings.m_brigid;
@@ -1161,8 +1150,6 @@ void GLPostObjectItem::render(GLRenderEngine& re, GLContext& rc)
 			re.popTransform();
 		}
 	}
-
-	re.popState();
 }
 
 void GLPost3DImageItem::render(GLRenderEngine& re, GLContext& rc)
@@ -1248,10 +1235,8 @@ void CGLPostScene::Render(GLRenderEngine& engine, GLContext& rc)
 	// update and render the tracking
 	if (m_btrack)
 	{
-		engine.pushState();
 		engine.setMaterial(GLMaterial::OVERLAY, GLColor(255, 0, 255));
 		glx::renderAxes(engine, m_trackScale, m_trgPos, m_trgRot);
-		engine.popState();
 	}
 
 //	ClearTags();
