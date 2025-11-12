@@ -160,7 +160,6 @@ void OverlayRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sharedRe
 	m_triadPass->create(renderPassDescriptor(), 1, sharedResources);
 
 	// create the triad pass
-	rhi::MeshShaderResource * triadResources = TriadShader::createShaderResource(m_rhi, sharedResources);
 	GLMesh* gltriad = buildTriadMesh();
 	triadMesh.reset(new rhi::TriMesh<TriadShader::Vertex>(m_rhi));
 	triadMesh->CreateFromGLMesh(gltriad);

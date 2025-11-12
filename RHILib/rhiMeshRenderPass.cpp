@@ -47,7 +47,7 @@ void rhi::MeshRenderPass::clearCache()
 void rhi::MeshRenderPass::clearUnusedCache()
 {
 	for (auto it = m_meshList.begin(); it != m_meshList.end(); ) {
-		if (it->mesh->isActive() == false)
+		if ((it->mesh->isActive() == false) || (it->glmesh == nullptr))
 		{
 			delete it->mesh;
 			it = m_meshList.erase(it);
