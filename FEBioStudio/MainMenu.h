@@ -109,7 +109,6 @@ public:
 	QAction* actionShowOverlay;
 	QAction* actionShowMeshLines;
 	QAction* actionShowEdgeLines;
-	QAction* actionBackfaceCulling;
 	QAction* actionViewSmooth;
 	QAction* actionShowNormals;
 	QAction* actionOrtho;

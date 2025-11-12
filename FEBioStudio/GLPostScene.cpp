@@ -266,25 +266,6 @@ void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 		}
 	}
 
-	// see if backface-culling is enabled or not
-	if (rc.m_settings.m_bcull)
-	{
-		quatd q = GetCamera().GetOrientation();
-		vec3f f;
-		int NF = pm->Faces();
-		for (int i = 0; i < NF; ++i)
-		{
-			FSFace& face = pm->Face(i);
-			int n = face.Nodes();
-			for (int j = 0; j < n; ++j)
-			{
-				vec3d f = to_vec3d(face.m_nn[j]);
-				q.RotateVector(f);
-				if (f.z < 0) gm->Node(face.n[j]).tag = 0;
-			}
-		}
-	}
-
 	GLMesh pointMesh;
 	for (int i = 0; i < gm->Nodes(); ++i)
 	{

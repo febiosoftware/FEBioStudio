@@ -247,7 +247,6 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	actionShowOverlay = createAction("Toggle Overlay", "actionToggleOverlay"); actionShowOverlay->setCheckable(true); actionShowOverlay->setChecked(true); actionShowOverlay->setShortcut(Qt::Key_O);
 	actionShowMeshLines = createAction("Show Mesh Lines", "actionShowMeshLines", "show_mesh"); actionShowMeshLines->setCheckable(true); actionShowMeshLines->setChecked(true); actionShowMeshLines->setShortcut(Qt::Key_M);
 	actionShowEdgeLines = createAction("Show Edge Lines", "actionShowEdgeLines"); actionShowEdgeLines->setCheckable(true); actionShowEdgeLines->setChecked(true); actionShowEdgeLines->setShortcut(Qt::Key_Z);
-	actionBackfaceCulling = createAction("Backface Culling", "actionBackfaceCulling"); actionBackfaceCulling->setCheckable(true);
 	actionViewSmooth = createAction("Color Smoothing", "actionViewSmooth"); actionViewSmooth->setShortcut(Qt::Key_C); actionViewSmooth->setCheckable(true);
 	actionOrtho = createAction("Orthographic Projection", "actionOrtho"); actionOrtho->setCheckable(true); actionOrtho->setShortcut(Qt::Key_P);
 	actionShowNormals = createAction("Show Normals", "actionShowNormals"); actionShowNormals->setCheckable(true); actionShowNormals->setShortcut(Qt::Key_N);
@@ -613,7 +612,6 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuView->addAction(actionShowGrid);
 	menuView->addAction(actionShowMeshLines);
 	menuView->addAction(actionShowEdgeLines);
-	menuView->addAction(actionBackfaceCulling);
 	menuView->addAction(actionViewSmooth);
 	menuView->addAction(actionRenderMode);
 	menuView->addAction(actionShowFibers);

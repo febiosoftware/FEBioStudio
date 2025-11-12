@@ -153,7 +153,6 @@ struct GLViewSettings
 	bool	m_showRigidLabels;	//!< show labels on rigid bodies
 
 	// Selection
-	bool	m_bcull;	//!< cull backface flag
 	bool	m_bconn;	//!< select connected
 	bool	m_bmax;		//!< max angle constraint for select connected
 	bool	m_bpart;	//!< respect partition boundaries flag

@@ -117,16 +117,6 @@ void CMainWindow::on_actionShowEdgeLines_toggled(bool b)
 	Update(this);
 }
 
-void CMainWindow::on_actionBackfaceCulling_toggled(bool b)
-{
-	CDocument* doc = GetGLDocument();
-	if (doc == nullptr) return;
-
-	GLViewSettings& view = GetGLView()->GetViewSettings();
-	view.m_bcull = b;
-	Update(this);
-}
-
 void CMainWindow::on_actionViewSmooth_toggled(bool bchecked)
 {
 	CPostDocument* doc = GetPostDocument();

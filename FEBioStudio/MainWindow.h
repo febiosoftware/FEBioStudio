@@ -615,7 +615,6 @@ public slots:
 	void on_actionShowMeshLines_toggled(bool b);
 	void on_actionToggleOverlay_toggled(bool b);
 	void on_actionShowEdgeLines_toggled(bool b);
-	void on_actionBackfaceCulling_toggled(bool b);
 	void on_actionViewSmooth_toggled(bool bchecked);
 	void on_actionShowNormals_toggled(bool b);
 	void on_actionShowFibers_triggered();

@@ -2042,24 +2042,6 @@ void GLObjectItem::RenderSurfaceMeshNodes(GLRenderEngine& re, GLContext& rc)
 			if (node.IsVisible()) pointMesh.AddNode(to_vec3f(node.r));
 		}
 
-		// check the cull
-		if (view.m_bcull)
-		{
-			vec3d f;
-			int NF = mesh->Faces();
-			for (int i = 0; i < NF; ++i)
-			{
-				FSFace& face = mesh->Face(i);
-				int n = face.Nodes();
-				for (int j = 0; j < n; ++j)
-				{
-					vec3d nn = to_vec3d(face.m_nn[j]);
-					f = q * nn;
-					if (f.z < 0) pointMesh.AddNode(to_vec3f(mesh->Node(face.n[j]).r));
-				}
-			}
-		}
-
 		if (pointMesh.Nodes())
 		{
 			re.setMaterial(GLMaterial::CONSTANT, GLColor(0, 0, 255, 128));
