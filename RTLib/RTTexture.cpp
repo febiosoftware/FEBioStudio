@@ -58,14 +58,13 @@ void rt::Texture1D::setImageData(size_t n, unsigned char* bytes)
 	}
 }
 
-rt::Color rt::Texture1D::sample(float r)
+gl::Color rt::Texture1D::sample(float r)
 {
 	r = CLAMP(r, 0, 1);
 	int n = (int)(r * (size - 1));
 	float* v = data + 3 * n;
-	return rt::Color(v[0], v[1], v[2]);
+	return gl::Color(v[0], v[1], v[2]);
 }
-
 
 rt::Texture2D::Texture2D()
 {
@@ -80,7 +79,7 @@ void rt::Texture2D::setImageData(const CRGBAImage& image)
 	img = image;
 }
 
-rt::Color rt::Texture2D::sample(float u, float v)
+gl::Color rt::Texture2D::sample(float u, float v)
 {
 	int w = img.Width();
 	int h = img.Height();
@@ -130,7 +129,7 @@ rt::Color rt::Texture2D::sample(float u, float v)
 	c[2] = N[0] * f0[2] + N[1] * f1[2] + N[2] * f2[2] + N[3] * f3[2];
 	c[3] = N[0] * f0[3] + N[1] * f1[3] + N[2] * f2[3] + N[3] * f3[3];
 
-	return rt::Color(c);
+	return gl::Color(c);
 }
 
 rt::Texture3D::Texture3D()
@@ -148,14 +147,14 @@ void rt::Texture3D::setImageData(C3DImage* img3d)
 	img = img3d;
 }
 
-rt::Color rt::Texture3D::sample(float r, float s, float t)
+gl::Color rt::Texture3D::sample(float r, float s, float t)
 {
-	if (img == nullptr) return rt::Color(0, 0, 0);
+	if (img == nullptr) return gl::Color(0, 0, 0);
 
 	double v = img->Peek(r, s, t);
 	double vmin, vmax;
 	img->GetMinMax(vmin, vmax, false);
 	if (vmax == vmin) vmax++;
 	double f = (v - vmin) / (vmax - vmin);
-	return rt::Color(f, f, f, f);
+	return gl::Color(f, f, f, f);
 }

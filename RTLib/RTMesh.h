@@ -26,28 +26,28 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/math3d.h>
 #include <FSCore/color.h>
-#include "RTMath.h"
+#include <GLLib/GLMath.h>
 
 namespace rt {
 
 	struct Point {
-		Vec3 r;
-		Vec3 n;
-		Vec3 t;
-		Color c;
+		gl::Vec3 r;
+		gl::Vec3 n;
+		gl::Vec3 t;
+		gl::Color c;
 		int matid = -1;
 	};
 
 	struct Line
 	{
-		Vec3 r[2];
-		Color c[2];
+		gl::Vec3 r[2];
+		gl::Color c[2];
 		int id = -1;
 		int matid = -1;
 
 		Point point(unsigned int i) const
 		{
-			return Point{ r[i], Vec3(0,0,0), Vec3(0,0,0), c[i] };
+			return Point{ r[i], gl::Vec3(0,0,0), gl::Vec3(0,0,0), c[i] };
 		}
 
 		Line() {}
@@ -67,10 +67,10 @@ namespace rt {
 
 	struct Tri
 	{
-		Vec3 r[3];
-		Vec3 n[3];
-		Vec3 t[3];
-		Color c[3];
+		gl::Vec3 r[3];
+		gl::Vec3 n[3];
+		gl::Vec3 t[3];
+		gl::Color c[3];
 		int id = -1;
 		int matid = -1;
 
@@ -93,15 +93,28 @@ namespace rt {
 		{
 			if ((r[0] == r[1]) || (r[0] == r[2]) || (r[1] == r[2])) return false;
 
-			Vec3 e1 = r[1] - r[0];
-			Vec3 e2 = r[2] - r[0];
-			fn = Vec3::cross(e1, e2);
+			gl::Vec3 e1 = r[1] - r[0];
+			gl::Vec3 e2 = r[2] - r[0];
+			fn = gl::Vec3::cross(e1, e2);
 			fn.normalize();
 
 			return true;
 		}
 
-		Vec3 fn;
+		gl::Vec3 fn;
+	};
+
+	struct Intersect
+	{
+		gl::Vec3 point;
+		double r[2] = { 0, 0 };
+
+	};
+
+	struct Fragment
+	{
+		gl::Color color;
+		double depth = 0.0;
 	};
 
 	class Mesh
@@ -130,7 +143,7 @@ namespace rt {
 		std::vector<Line> lineList;
 	};
 
-	bool intersect(Mesh& mesh, const Ray& ray, Point& q);
-	bool intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt::Point& point);
-	bool intersectBox(Box& box, rt::Tri& tri);
+	bool intersect(Mesh& mesh, const gl::Ray& ray, rt::Point& q);
+	bool intersectTriangles(std::vector<rt::Tri*>& tris, const gl::Ray& ray, rt::Point& point);
+	bool intersectBox(gl::Box& box, rt::Tri& tri);
 }

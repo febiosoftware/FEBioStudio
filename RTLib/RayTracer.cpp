@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "rasterize.h"
 
 using namespace rt;
+using namespace gl;
 
 #include <chrono>
 using namespace std::chrono;
@@ -57,15 +58,15 @@ void rt::meshGeometry::finish()
 	bhv.Build(mesh, levels);
 }
 
-bool rt::meshGeometry::intersect(const rt::Ray& ray, rt::Point& q)
+bool rt::meshGeometry::intersect(const Ray& ray, rt::Point& q)
 {
 	return bhv.intersect(ray, q);
 }
 
-bool rt::sphere::intersect(const rt::Ray& ray, rt::Point& q)
+bool rt::sphere::intersect(const Ray& ray, rt::Point& q)
 {
-	rt::Vec3 z = ray.origin - o;
-	rt::Vec3 t = ray.direction;
+	Vec3 z = ray.origin - o;
+	Vec3 t = ray.direction;
 	double a = t*t;
 	double b = 2.0 * (t*z);
 	double c = z*z - r*r;
@@ -102,7 +103,7 @@ void rt::Geometry::finish()
 	for (auto it : geom) it->finish();
 }
 
-bool rt::Geometry::intersect(const rt::Ray& rt, rt::Point& q)
+bool rt::Geometry::intersect(const Ray& rt, rt::Point& q)
 {
 	if (geom.empty()) return false;
 	if (geom.size() == 1) return geom[0]->intersect(rt, q);
@@ -952,7 +953,7 @@ rt::Fragment RayTracer::fragment(int i, int j, int samples)
 	return Fragment{ c, depth };
 }
 
-GLColor RayTracer::backgroundColor(const rt::Vec3& p)
+GLColor RayTracer::backgroundColor(const Vec3& p)
 {
 	double r = 0.5* (p.x() / m_fw)+0.5;
 	double s = 0.5* (p.y() / m_fh)+0.5;
@@ -970,12 +971,12 @@ GLColor RayTracer::backgroundColor(const rt::Vec3& p)
 	return c;
 }
 
-bool RayTracer::intersect(const rt::Ray& ray, rt::Point& q)
+bool RayTracer::intersect(const Ray& ray, rt::Point& q)
 {
 	return geom.intersect(ray, q);
 }
 
-rt::Fragment RayTracer::castRay(rt::Ray& ray)
+rt::Fragment RayTracer::castRay(Ray& ray)
 {
 	rt::Point q;
 
@@ -1023,7 +1024,7 @@ rt::Fragment RayTracer::castRay(rt::Ray& ray)
 				double r = mat.reflection;
 				Vec3 N = q.n;
 
-				Vec3 R = rt::reflect(t, N);
+				Vec3 R = gl::reflect(t, N);
 
 				float u = atan2(R.z(), R.x()) / (2.0 * PI) + 0.5;
 				float v = 0.5 - asin(R.y()) / PI;
@@ -1143,15 +1144,15 @@ void RayTracer::DeactivateEnvironmentMap(unsigned int id)
 
 void RayTracer::addSphere(const vec3d& c, double R)
 {
-	rt::Vec4 p = modelView * rt::Vec4(c.x, c.y, c.z, 1);
-	rt::Vec3 o(p.x(), p.y(), p.z());
+	Vec4 p = modelView * Vec4(c.x, c.y, c.z, 1);
+	Vec3 o(p.x(), p.y(), p.z());
 	rt::sphere* S = new rt::sphere(o, R);
 	S->col = currentColor;
 	S->matid = currentMaterial;
 	geom.push_back(S);
 }
 
-rt::Vec3 RayTracer::toNDC(rt::Vec4 v)
+Vec3 RayTracer::toNDC(Vec4 v)
 {
 	// device coordinates
 	v = projMatrix * v;
@@ -1162,10 +1163,10 @@ rt::Vec3 RayTracer::toNDC(rt::Vec4 v)
 	return Vec3(v.x(), v.y(), v.z());
 }
 
-rt::Vec3 RayTracer::NDCtoView(const rt::Vec3& v)
+Vec3 RayTracer::NDCtoView(const Vec3& v)
 {
 	// viewport transform
-	rt::Vec3 p;
+	Vec3 p;
 	int W = surfaceWidth();
 	int H = surfaceHeight();
 	p.x( (v[0] + 1) * 0.5 * W );
@@ -1191,12 +1192,12 @@ void RayTracer::renderLines()
 		rt::Line& line = mesh.line(i);
 
 		// convert to device coordinates
-		rt::Vec4 a = Vec4(line.r[0], 1);
-		rt::Vec4 b = Vec4(line.r[1], 1);
+		Vec4 a = Vec4(line.r[0], 1);
+		Vec4 b = Vec4(line.r[1], 1);
 
 		// convert to normalized device coordinates
-		rt::Vec3 a_ndc = toNDC(a);
-		rt::Vec3 b_ndc = toNDC(b);
+		Vec3 a_ndc = toNDC(a);
+		Vec3 b_ndc = toNDC(b);
 
 		bool isInside = clipLine(a_ndc, b_ndc);
 
@@ -1209,8 +1210,8 @@ void RayTracer::renderLines()
 			int x0 = (int)an.x(); int y0 = (int)an.y();
 			int x1 = (int)bn.x(); int y1 = (int)bn.y();
 
-			rt::Color col0 = line.c[0];
-			rt::Color col1 = line.c[1];
+			Color col0 = line.c[0];
+			Color col1 = line.c[1];
 
 			float dz = 0.0002f;
 
@@ -1226,7 +1227,7 @@ void RayTracer::renderLines()
 
 				if ((x >= 0) && (x < W) && (y >= 0) && (y < H))
 				{
-					rt::Color c;
+					Color c;
 
 					double z = 0;
 					if (swapped)
@@ -1260,7 +1261,7 @@ void RayTracer::renderLines()
 	percentCompleted = 100.0;
 }
 
-bool RayTracer::clipLine(rt::Vec3& a, rt::Vec3& b)
+bool RayTracer::clipLine(Vec3& a, Vec3& b)
 {
     // NDC cube bounds
     const double xmin = -1, xmax = 1;
@@ -1268,7 +1269,7 @@ bool RayTracer::clipLine(rt::Vec3& a, rt::Vec3& b)
     const double zmin = -1, zmax = 1;
 
     double t0 = 0.0, t1 = 1.0;
-    rt::Vec3 d = b - a;
+    Vec3 d = b - a;
 
     auto clip = [&](double p, double q, double& t0, double& t1) -> bool {
         if (p == 0) return q >= 0; // Parallel, inside if q >= 0
@@ -1295,8 +1296,8 @@ bool RayTracer::clipLine(rt::Vec3& a, rt::Vec3& b)
 
     if (t1 < t0) return false;
 
-    rt::Vec3 new_a = a + d * t0;
-    rt::Vec3 new_b = a + d * t1;
+    Vec3 new_a = a + d * t0;
+    Vec3 new_b = a + d * t1;
     a = new_a;
     b = new_b;
     return true;

@@ -82,14 +82,14 @@ void GLMeshBuilder::popTransform()
 
 void GLMeshBuilder::translate(const vec3d& r)
 {
-	mat4d T = mat4d::translate(vec3d(r));
+	gl::Matrix4 T = gl::Matrix4::translate(r);
 	modelView *= T;
 	isMVIdentity = false;
 }
 
 void GLMeshBuilder::rotate(const quatd& rot)
 {
-	mat4d R = mat4d::rotate(rot);
+	gl::Matrix4 R = gl::Matrix4::rotate(rot);
 	modelView *= R;
 	isMVIdentity = false;
 }
@@ -102,7 +102,7 @@ void GLMeshBuilder::rotate(double deg, double x, double y, double z)
 
 void GLMeshBuilder::scale(double x, double y, double z)
 {
-	mat4d S = mat4d::scale(x, y, z);
+	gl::Matrix4 S = gl::Matrix4::scale(x, y, z);
 	modelView *= S;
 	isMVIdentity = false;
 }
@@ -122,8 +122,8 @@ void GLMeshBuilder::vertex(const vec3d& r)
 	}
 	else
 	{
-		vec4d q = modelView * vec4d(r);
-		vec4d N = modelView * vec4d(currentNormal, 0);
+		gl::Vec4 q = modelView * gl::Vec4(r);
+		gl::Vec4 N = modelView * gl::Vec4(currentNormal, 0);
 		p.r = vec3f(q[0], q[1], q[2]);
 		p.n = vec3f(N[0], N[1], N[2]); p.n.Normalize();
 	}
@@ -133,7 +133,7 @@ void GLMeshBuilder::vertex(const vec3d& r)
 
 void GLMeshBuilder::normal(const vec3d& r)
 {
-	currentNormal = r; currentNormal.Normalize();
+	currentNormal = r; currentNormal.normalize();
 }
 
 void GLMeshBuilder::setColor(GLColor c)

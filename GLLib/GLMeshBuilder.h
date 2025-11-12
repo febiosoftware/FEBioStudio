@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLMesh.h"
 #include "GLRenderEngine.h"
+#include "GLMath.h"
 #include <FSCore/math3d.h>
 #include <stack>
 
@@ -77,12 +78,12 @@ private:
 private:
 	GLMesh* m_pm = nullptr;
 
-	mat4d modelView;
+	gl::Matrix4 modelView;
 	bool isMVIdentity = true;
-	std::stack<mat4d> mvStack;
+	std::stack<gl::Matrix4> mvStack;
 
 	std::vector<GLMesh::NODE> vertList;
 	GLColor currentColor;
-	vec3d currentNormal;
+	gl::Vec3 currentNormal;
 	PrimitiveType currentPrimitive;
 };

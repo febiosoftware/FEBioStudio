@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "RTMath.h"
+#include <GLLib/GLMath.h>
 #include <ImageLib/3DImage.h>
 #include <ImageLib/RGBAImage.h>
 
@@ -38,7 +38,7 @@ namespace rt {
 
 		void setImageData(size_t n, unsigned char* bytes);
 
-		rt::Color sample(float r);
+		gl::Color sample(float r);
 
 	private:
 		size_t size = 0;
@@ -55,7 +55,7 @@ namespace rt {
 
 		void setImageData(const CRGBAImage& image);
 
-		rt::Color sample(float r, float s);
+		gl::Color sample(float r, float s);
 
 	private:
 		CRGBAImage img;
@@ -69,7 +69,7 @@ namespace rt {
 
 		void setImageData(C3DImage* img3d);
 
-		rt::Color sample(float r, float s, float t);
+		gl::Color sample(float r, float s, float t);
 
 	private:
 		C3DImage* img;

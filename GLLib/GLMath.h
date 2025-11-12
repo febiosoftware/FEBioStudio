@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include <FSCore/math3d.h>
 #include <FSCore/color.h>
 
-namespace rt
+namespace gl
 {
 	struct Vec4;
 
@@ -35,24 +35,15 @@ namespace rt
 	{
 		Vec3() { d[0] = d[1] = d[2] = 0.0; }
 		Vec3(double x, double y, double z) { d[0] = x; d[1] = y; d[2] = z; }
+		Vec3(const vec3f& v) { d[0] = v.x; d[1] = v.y; d[2] = v.z; }
+		Vec3(const vec3d& v) { d[0] = v.x; d[1] = v.y; d[2] = v.z; }
+
+		void operator = (const vec3f& v) { d[0] = v.x; d[1] = v.y; d[2] = v.z; }
+		void operator = (const vec3d& v) { d[0] = v.x; d[1] = v.y; d[2] = v.z; }
 
 		bool operator == (const Vec3& a) const
 		{
 			return (d[0] == a.d[0]) && (d[1] == a.d[1]) && (d[2] == a.d[2]);
-		}
-
-		explicit Vec3(const vec3f& v)
-		{
-			d[0] = v.x;
-			d[1] = v.y;
-			d[2] = v.z;
-		}
-
-		explicit Vec3(const vec3d& v)
-		{
-			d[0] = v.x;
-			d[1] = v.y;
-			d[2] = v.z;
 		}
 
 		explicit Vec3(const Vec4& v);
@@ -193,9 +184,7 @@ namespace rt
 	public:
 		Matrix4()
 		{
-			for (int i = 0; i < 4; ++i)
-				for (int j = 0; j < 4; ++j)
-					d[i][j] = 0.0;
+			makeIdentity();
 		}
 
 		void makeIdentity()
@@ -407,19 +396,6 @@ namespace rt
 		int bounce = 0;
 	};
 
-	struct Intersect
-	{
-		Vec3 point;
-		double r[2] = { 0, 0 };
-
-	};
-
-	struct Fragment
-	{
-		Color color;
-		double depth = 0.0;
-	};
-
 	struct Box
 	{
 		double x0 = 0, y0 = 0, z0 = 0;
@@ -548,5 +524,10 @@ namespace rt
 	inline Vec3 reflect(const Vec3& I, const Vec3& N)
 	{
 		return I - N * (2 * (N * I));
+	}
+
+	inline vec3f to_vec3f(const Vec3& v) 
+	{
+		return vec3f((float)v.x(), (float)v.y(), (float)v.z());
 	}
 }

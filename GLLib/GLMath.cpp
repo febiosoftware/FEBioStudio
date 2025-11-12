@@ -23,9 +23,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "RTMath.h"
+#include "GLMath.h"
 
-bool rt::Box::isInside(const rt::Vec3& p) const
+bool gl::Box::isInside(const gl::Vec3& p) const
 {
 	if (p.x()< x0) return false;
 	if (p.x()> x1) return false;
@@ -39,7 +39,7 @@ bool rt::Box::isInside(const rt::Vec3& p) const
 	return true;
 }
 
-bool rt::Box::intersect(const rt::Ray& ray, Vec3& q) const
+bool gl::Box::intersect(const gl::Ray& ray, gl::Vec3& q) const
 {
 	if (!valid) return false;
 
@@ -160,7 +160,7 @@ bool rt::Box::intersect(const rt::Ray& ray, Vec3& q) const
 	return intersected;
 }
 
-bool rt::Box::intersect(const Vec3& a, const Vec3& b) const
+bool gl::Box::intersect(const gl::Vec3& a, const gl::Vec3& b) const
 {
 	if (!valid) return false;
 

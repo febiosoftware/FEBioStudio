@@ -24,10 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include <GLLib/GLRenderEngine.h>
+#include <GLLib/GLMath.h>
 #include "RayTraceSurface.h"
 #include "RTMesh.h"
 #include "RTBTree.h"
-#include "RTMath.h"
 #include "RTTexture.h"
 #include <stack>
 
@@ -40,8 +40,8 @@ namespace rt {
 		int tex3d = -1;
 		double reflection = 0;
 
-		Color ambient  = GLColor::Black();
-		Color specular = GLColor::Black();
+		gl::Color ambient  = GLColor::Black();
+		gl::Color specular = GLColor::Black();
 	};
 
 	class geometryItem {
@@ -52,7 +52,7 @@ namespace rt {
 		virtual void start() {}
 		virtual void finish() {}
 
-		virtual bool intersect(const rt::Ray& ray, rt::Point& q) = 0;
+		virtual bool intersect(const gl::Ray& ray, rt::Point& q) = 0;
 	};
 
 	class meshGeometry : public geometryItem
@@ -66,7 +66,7 @@ namespace rt {
 		void start() override;
 		void finish() override;
 
-		bool intersect(const rt::Ray& ray, rt::Point& q) override;
+		bool intersect(const gl::Ray& ray, rt::Point& q) override;
 
 	private:
 		rt::Mesh& mesh;
@@ -78,16 +78,16 @@ namespace rt {
 	class sphere : public geometryItem
 	{
 	public:
-		sphere(const rt::Vec3& c, double R) : o(c), r(R) {}
+		sphere(const gl::Vec3& c, double R) : o(c), r(R) {}
 
-		bool intersect(const rt::Ray& ray, rt::Point& q) override;
+		bool intersect(const gl::Ray& ray, rt::Point& q) override;
 
 	public:
 		int matid = -1;
-		rt::Color col;
+		gl::Color col;
 
 	private:
-		rt::Vec3 o;
+		gl::Vec3 o;
 		double r = 1;
 	};
 
@@ -111,7 +111,7 @@ namespace rt {
 
 		void push_back(geometryItem* p) { geom.push_back(p); }
 
-		bool intersect(const rt::Ray& rt, rt::Point& q);
+		bool intersect(const gl::Ray& rt, rt::Point& q);
 
 		std::vector<geometryItem*>::iterator begin() { return geom.begin(); }
 		std::vector<geometryItem*>::iterator end() { return geom.end(); }
@@ -221,24 +221,24 @@ public:
 private:
 	void preprocess();
 	void render();
-	rt::Fragment castRay(rt::Ray& ray);
+	rt::Fragment castRay(gl::Ray& ray);
 
 	void addTriangle(rt::Tri& tri);
 
 	void addLine(rt::Line& line);
 
-	GLColor backgroundColor(const rt::Vec3& r);
+	GLColor backgroundColor(const gl::Vec3& r);
 
-	bool intersect(const rt::Ray& ray, rt::Point& q);
+	bool intersect(const gl::Ray& ray, rt::Point& q);
 
 	rt::Fragment fragment(int i, int j, int samples);
 
 	void renderLines();
 
-	rt::Vec3 toNDC(rt::Vec4 v);
-	rt::Vec3 NDCtoView(const rt::Vec3& v);
+	gl::Vec3 toNDC(gl::Vec4 v);
+	gl::Vec3 NDCtoView(const gl::Vec3& v);
 
-	bool clipLine(rt::Vec3& a, rt::Vec3& b);
+	bool clipLine(gl::Vec3& a, gl::Vec3& b);
 
 private:
 	RayTraceSurface surf;
@@ -246,10 +246,10 @@ private:
 	rt::Mesh mesh;
 	rt::Geometry geom;
 
-	rt::Matrix4 modelView;
-	std::stack<rt::Matrix4> mvStack;
+	gl::Matrix4 modelView;
+	std::stack<gl::Matrix4> mvStack;
 
-	rt::Matrix4 projMatrix;
+	gl::Matrix4 projMatrix;
 
 	std::vector<rt::Texture1D*> tex1d;
 	int currentTexture1D = -1;
@@ -266,10 +266,10 @@ private:
 	std::vector<rt::Material> matList;
 
 	bool lightEnabled = true;
-	rt::Vec4 lightPos;
-	rt::Color lightSpecular = rt::Color(1.f, 1.f, 1.f);
-	rt::Color lightDiffuse  = rt::Color(1.f, 1.f, 1.f);
-	rt::Color lightAmbient  = rt::Color(0.2f, 0.2f, 0.2f);
+	gl::Vec4 lightPos;
+	gl::Color lightSpecular = gl::Color(1.f, 1.f, 1.f);
+	gl::Color lightDiffuse  = gl::Color(1.f, 1.f, 1.f);
+	gl::Color lightAmbient  = gl::Color(0.2f, 0.2f, 0.2f);
 
 	bool ortho = false;
 	double fieldOfView;
@@ -281,8 +281,8 @@ private:
 	bool immediateMode = false;
 	PrimitiveType primType = POINTS;
 	std::vector<rt::Point> verts;
-	rt::Vec3 currentNormal;
-	rt::Vec3 currentTexCoord;
+	gl::Vec3 currentNormal;
+	gl::Vec3 currentTexCoord;
 
 	bool renderStarted;
 	double percentCompleted;

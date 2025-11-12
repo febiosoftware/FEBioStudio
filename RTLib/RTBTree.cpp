@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include <stack>
 #include <omp.h>
 
+using namespace gl;
+
 size_t rt::Btree::Block::size() const
 {
 	size_t n = tris.size();
@@ -124,7 +126,7 @@ void rt::Btree::Build(Mesh& mesh, int levels)
 	if (output) FSLogger::Write("Building binary tree ...\n");
 	int ntriangles = (int)mesh.triangles();
 	if (output) FSLogger::Write("  Nr of triangles : %d\n", ntriangles);
-	rt::Box box;
+	Box box;
 	for (size_t i = 0; i < mesh.triangles(); ++i)
 	{
 		rt::Tri& tri = mesh.triangle(i);
