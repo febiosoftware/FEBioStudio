@@ -26,9 +26,6 @@ SOFTWARE.*/
 #pragma once
 #include "rhiMeshRenderPass.h"
 #include "rhiMesh.h"
-#include <list>
-#include <vector>
-#include <algorithm>
 
 class LineRenderPass : public rhi::MeshRenderPass
 {
@@ -37,14 +34,11 @@ public:
 
 	void create(QRhiSwapChain* sc, rhi::SharedResources* sr);
 
-	rhi::Mesh* addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh) override;
+	rhi::Mesh* newMesh(const GLMesh* mesh) override;
 
-	void update(QRhiResourceUpdateBatch* u) override;
-
-	void draw(QRhiCommandBuffer* cb) override;
+	rhi::MeshShaderResource* createShaderResource() override;
 
 private:
-	std::unique_ptr<QRhiGraphicsPipeline> m_pl;
 	std::unique_ptr<rhi::MeshShaderResource> m_sr;
 	rhi::SharedResources* m_sharedResource = nullptr;
 };

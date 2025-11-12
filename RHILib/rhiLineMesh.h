@@ -31,20 +31,27 @@ namespace rhi {
 	class LineMesh : public Mesh
 	{
 	public:
-		LineMesh(QRhi* rhi, rhi::MeshShaderResource* srb) : rhi::Mesh(rhi, srb) {}
+		LineMesh(QRhi* rhi) : rhi::Mesh(rhi) {}
 
-		bool CreateFromGLMesh(const GLMesh* gmsh, int partition = -1) override
+		bool CreateFromGLMesh(const GLMesh* gmsh) override
 		{
+			submeshes.clear();
+
 			if (gmsh == nullptr) return false;
 
-			if (partition < 0)
-			{
-				int NE = gmsh->Edges();
-				int NV = 2 * NE;
-				std::vector<Vertex> vertexData;
-				vertexData.resize(NV);
-				Vertex* v = vertexData.data();
-				for (int i = 0; i < NE; ++i) {
+			int NE = gmsh->Edges();
+			int NV = 2 * NE;
+			submeshes.emplace_back(new SubMesh(this, 0, NV));
+
+			std::vector<Vertex> vertexData;
+			vertexData.resize(NV);
+			Vertex* v = vertexData.data();
+			unsigned int vertexCount = 0;
+
+			if (gmsh->EILs() == 0)
+			{ 
+				for (int i = 0; i < NE; ++i)
+				{
 					const GLMesh::EDGE& e = gmsh->Edge(i);
 					for (int j = 0; j < 2; ++j, ++v) {
 						GLMesh::NODE nd;
@@ -53,30 +60,27 @@ namespace rhi {
 						(*v) = nd;
 					}
 				}
-				create(NV, sizeof(Vertex), vertexData.data());
 			}
 			else
 			{
-				if (partition >= (int)gmsh->EILs()) return false;
-				const std::pair<int, int>& edge = gmsh->EIL(partition);
-
-				int NE = edge.second;
-				int NV = 2 * NE;
-				std::vector<Vertex> vertexData;
-				vertexData.resize(NV);
-				Vertex* v = vertexData.data();
-				for (int i = 0; i < NE; ++i) {
-					const GLMesh::EDGE& e = gmsh->Edge(i + edge.first);
-					for (int j = 0; j < 2; ++j, ++v) {
-						GLMesh::NODE nd;
-						nd.r = e.vr[j];
-						nd.c = e.c[j];
-						(*v) = nd;
+				unsigned int vertexCount = 0;
+				for (int n = 0; n < gmsh->EILs(); ++n)
+				{
+					const std::pair<int, int>& edge = gmsh->EIL(n);
+					for (int i = 0; i < edge.second; ++i) {
+						const GLMesh::EDGE& e = gmsh->Edge(i + edge.first);
+						for (int j = 0; j < 2; ++j, ++v) {
+							GLMesh::NODE nd;
+							nd.r = e.vr[j];
+							nd.c = e.c[j];
+							(*v) = nd;
+						}
 					}
+					submeshes.emplace_back(new SubMesh(this, vertexCount, (unsigned int)edge.second*2));
+					vertexCount += (unsigned int)edge.second*2;
 				}
-				create(NV, sizeof(Vertex), vertexData.data());
 			}
-
+			create(NV, sizeof(Vertex), vertexData.data());
 			return true;
 		}
 

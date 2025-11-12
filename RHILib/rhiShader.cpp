@@ -66,7 +66,7 @@ public:
 		srb->create();
 	}
 
-	void setData(const rhi::Mesh& m) override
+	void setData(const rhi::SubMesh& m) override
 	{
 		float diffuse[4] = { 0.f };
 		m.mat.diffuse.toFloat(diffuse);
@@ -140,7 +140,7 @@ public:
 		srb->create();
 	}
 
-	void setData(const rhi::Mesh& m) override
+	void setData(const rhi::SubMesh& m) override
 	{
 		float diffuse[4] = { 0.f };
 		m.mat.diffuse.toFloat(diffuse);
@@ -222,7 +222,7 @@ public:
 		srb->create();
 	}
 
-	void setData(const rhi::Mesh& m) override
+	void setData(const rhi::SubMesh& m) override
 	{
 		float diffuse[4] = { 0.f }, spec[4] = { 0.f }, amb[4] = { 0.f };
 		m.mat.ambient.toFloat(amb);
@@ -358,7 +358,7 @@ public:
 		srb->create();
 	}
 
-	void setData(const rhi::Mesh& m) override
+	void setData(const rhi::SubMesh& m) override
 	{
 		QMatrix4x4 mvp = m.prMatrix * m.mvMatrix;
 		m_data.setMat4(0, mvp);
@@ -421,7 +421,7 @@ public:
 		srb->create();
 	}
 
-	void setData(const rhi::Mesh& m) override
+	void setData(const rhi::SubMesh& m) override
 	{
 		QMatrix4x4 mvp = m.prMatrix * m.mvMatrix;
 		m_data.setMat4(0, mvp);

@@ -44,7 +44,6 @@ rhi::Mesh::~Mesh()
 
 void rhi::Mesh::create(unsigned int vertices, unsigned int sizeOfVertex, const void* data)
 {
-	nvertexCount = vertices;
 	vbufSize = vertices * sizeOfVertex;
 	vertexData = new unsigned char[vbufSize];
 	memcpy(vertexData, data, vbufSize);
@@ -62,20 +61,24 @@ void rhi::Mesh::Update(QRhiResourceUpdateBatch* u)
 		uploadedBytes += vbufSize;
 	}
 
-	if (sr)
+	for (auto& sm : submeshes)
 	{
-		sr->setData(*this);
-		sr->update(u);
+		if (sm->isActive && sm->sr)
+			sm->Update(u);
 	}
 }
 
 void rhi::Mesh::Draw(QRhiCommandBuffer* cb)
 {
-	if (nvertexCount > 0)
+	const QRhiCommandBuffer::VertexInput vbufBinding(vbuf.get(), 0);
+	cb->setVertexInput(0, 1, &vbufBinding);
+
+	for (auto& sm : submeshes)
 	{
-		if (sr) cb->setShaderResources(sr->get());
-		const QRhiCommandBuffer::VertexInput vbufBinding(vbuf.get(), 0);
-		cb->setVertexInput(0, 1, &vbufBinding);
-		cb->draw(nvertexCount);
+		if (sm->isActive && sm->sr)
+		{
+			cb->setShaderResources(sm->sr->get());
+			cb->draw(sm->vertexCount, 1, sm->vertexStart);
+		}
 	}
 }

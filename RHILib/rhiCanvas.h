@@ -55,7 +55,7 @@ class FPSMesh : public rhi::Mesh
 	};
 
 public:
-	FPSMesh(QRhi* rhi, rhi::MeshShaderResource* srb);
+	FPSMesh(QRhi* rhi);
 
 	void create(QSize size);
 

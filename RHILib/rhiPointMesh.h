@@ -32,10 +32,11 @@ namespace rhi {
 	class PointMesh : public Mesh
 	{
 	public:
-		PointMesh(QRhi* rhi, rhi::MeshShaderResource* srb) : rhi::Mesh(rhi, srb) {}
+		PointMesh(QRhi* rhi) : rhi::Mesh(rhi) {}
 
-		bool CreateFromGLMesh(const GLMesh* gmsh, int partition = -1) override
+		bool CreateFromGLMesh(const GLMesh* gmsh) override
 		{
+			submeshes.clear();
 			if (gmsh == nullptr) return false;
 
 			int NN = gmsh->Nodes();
@@ -48,7 +49,7 @@ namespace rhi {
 
 			// create the vertex buffer
 			create(NN, sizeof(Vertex), vertexData.data());
-
+			submeshes.emplace_back(std::make_unique<SubMesh>(this, 0, NN));
 			return true;
 		}
 

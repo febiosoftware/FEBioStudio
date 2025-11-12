@@ -56,54 +56,19 @@ void LineRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
 	m_pl->create();
 }
 
-rhi::Mesh* LineRenderPass::addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh)
+rhi::Mesh* LineRenderPass::newMesh(const GLMesh* mesh)
 {
-	if (mesh.Edges() == 0) return nullptr;
-
-	auto it = m_meshList.end();
-	if (cacheMesh)
+	if (mesh == nullptr) return nullptr;
+	rhi::Mesh* rm = new rhi::LineMesh<LineShader::Vertex>(m_rhi);
+	if (!rm->CreateFromGLMesh(mesh))
 	{
-		auto it = m_meshList.find(&mesh, partition);
-		if (it != m_meshList.end())
-			return it->mesh;
-	}
-
-	rhi::MeshShaderResource* sr = LineShader::createShaderResource(m_rhi, m_sharedResource);
-	rhi::LineMesh<LineShader::Vertex>* rm = new rhi::LineMesh<LineShader::Vertex>(m_rhi, sr);
-	rm->CreateFromGLMesh(&mesh, partition);
-
-	if (cacheMesh)
-	{
-		m_meshList.push_back(&mesh, rm, partition);
-	}
-	else
-	{
-		m_meshList.push_back(nullptr, rm, partition);
+		delete rm;
+		rm = nullptr;
 	}
 	return rm;
 }
 
-void LineRenderPass::update(QRhiResourceUpdateBatch* u)
+rhi::MeshShaderResource* LineRenderPass::createShaderResource()
 {
-	for (auto& it : m_meshList)
-	{
-		rhi::Mesh& m = *it.mesh;
-		if (m.isActive())
-			m.Update(u);
-	}
-}
-
-void LineRenderPass::draw(QRhiCommandBuffer* cb)
-{
-	if (!m_meshList.empty())
-	{
-		cb->setGraphicsPipeline(m_pl.get());
-		cb->setShaderResources();
-		for (auto& it : m_meshList)
-		{
-			rhi::Mesh& m = *it.mesh;
-			if (m.isActive())
-				m.Draw(cb);
-		}
-	}
+	return LineShader::createShaderResource(m_rhi, m_sharedResource);
 }

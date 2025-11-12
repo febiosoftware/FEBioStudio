@@ -67,46 +67,10 @@ void TwoPassSolidRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
 	m_backPass->create(sc->renderPassDescriptor(), sc->sampleCount(), sr);
 }
 
-rhi::Mesh* TwoPassSolidRenderPass::addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh)
-{
-	if (mesh.Faces() == 0) return nullptr;
-
-	auto it = m_meshList.end();
-	if (cacheMesh)
-	{
-		auto it = m_meshList.find(&mesh, partition);
-		if (it != m_meshList.end())
-			return it->mesh;
-	}
-
-	rhi::MeshShaderResource* sr = SolidShader::createShaderResource(m_rhi, sharedResource);
-	rhi::TriMesh<SolidShader::Vertex>* rm = new rhi::TriMesh<SolidShader::Vertex>(m_rhi, sr);
-	rm->CreateFromGLMesh(&mesh, partition);
-
-	if (cacheMesh)
-	{
-		m_meshList.push_back(&mesh, rm, partition);
-	}
-	else
-	{
-		m_meshList.push_back(nullptr, rm, partition);
-	}
-
-	return rm;
-}
-
-void TwoPassSolidRenderPass::update(QRhiResourceUpdateBatch* u)
-{
-	for (auto& it : m_meshList)
-	{
-		rhi::Mesh& m = *it.mesh;
-		if (m.isActive())
-			m.Update(u);
-	}
-}
-
 void TwoPassSolidRenderPass::draw(QRhiCommandBuffer* cb)
 {
+	if (m_meshList.empty()) return;
+
 	cb->setGraphicsPipeline(m_backPass->pipeline());
 	cb->setShaderResources();
 
@@ -125,6 +89,23 @@ void TwoPassSolidRenderPass::draw(QRhiCommandBuffer* cb)
 		if (it.mesh->isActive())
 			it.mesh->Draw(cb);
 	}
+}
+
+rhi::Mesh* TwoPassSolidRenderPass::newMesh(const GLMesh* mesh)
+{
+	if (mesh == nullptr) return nullptr;
+	rhi::Mesh* rm = new rhi::TriMesh<SolidShader::Vertex>(m_rhi);
+	if (!rm->CreateFromGLMesh(mesh))
+	{
+		delete rm;
+		rm = nullptr;
+	}
+	return rm;
+}
+
+rhi::MeshShaderResource* TwoPassSolidRenderPass::createShaderResource()
+{
+	return SolidShader::createShaderResource(m_rhi, sharedResource);
 }
 
 void SolidRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
@@ -157,52 +138,19 @@ void SolidRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
 	m_pl->create();
 }
 
-void SolidRenderPass::draw(QRhiCommandBuffer* cb)
+rhi::Mesh* SolidRenderPass::newMesh(const GLMesh* mesh)
 {
-	cb->setGraphicsPipeline(pipeline());
-	cb->setShaderResources();
-
-	for (auto& it : m_meshList)
+	if (mesh == nullptr) return nullptr;
+	rhi::Mesh* rm = new rhi::TriMesh<SolidShader::Vertex>(m_rhi);
+	if (!rm->CreateFromGLMesh(mesh))
 	{
-		if (it.mesh->isActive())
-			it.mesh->Draw(cb);
+		delete rm;
+		rm = nullptr;
 	}
-}
-
-rhi::Mesh* SolidRenderPass::addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh)
-{
-	if (mesh.Faces() == 0) return nullptr;
-
-	auto it = m_meshList.end();
-	if (cacheMesh)
-	{
-		auto it = m_meshList.find(&mesh, partition);
-		if (it != m_meshList.end())
-			return it->mesh;
-	}
-
-	rhi::MeshShaderResource* sr = SolidShader::createShaderResource(m_rhi, sharedResource);
-	rhi::TriMesh<SolidShader::Vertex>* rm = new rhi::TriMesh<SolidShader::Vertex>(m_rhi, sr);
-	rm->CreateFromGLMesh(&mesh, partition);
-
-	if (cacheMesh)
-	{
-		m_meshList.push_back(&mesh, rm, partition);
-	}
-	else
-	{
-		m_meshList.push_back(nullptr, rm, partition);
-	}
-
 	return rm;
 }
 
-void SolidRenderPass::update(QRhiResourceUpdateBatch* u)
+rhi::MeshShaderResource* SolidRenderPass::createShaderResource()
 {
-	for (auto& it : m_meshList)
-	{
-		rhi::Mesh& m = *it.mesh;
-		if (m.isActive())
-			m.Update(u);
-	}
+	return SolidShader::createShaderResource(m_rhi, sharedResource);
 }

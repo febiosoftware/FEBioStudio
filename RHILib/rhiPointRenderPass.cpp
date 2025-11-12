@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "rhiPointRenderPass.h"
 #include "rhiUtil.h"
 #include "rhiShader.h"
+#include "rhiPointMesh.h"
 
 void PointRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
 {
@@ -55,56 +56,19 @@ void PointRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
 	m_pl->create();
 }
 
-rhi::Mesh* PointRenderPass::addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh)
-{
-	if (mesh.Nodes() == 0) return nullptr;
-
-	auto it = m_meshList.end();
-	if (cacheMesh)
+rhi::Mesh* PointRenderPass::newMesh(const GLMesh* mesh)
+{ 
+	if (mesh == nullptr) return nullptr;
+	rhi::Mesh* rm = new rhi::PointMesh<PointShader::Vertex>(m_rhi);
+	if (!rm->CreateFromGLMesh(mesh))
 	{
-		auto it = m_meshList.find(&mesh, partition);
-		if (it != m_meshList.end())
-			return it->mesh;
+		delete rm;
+		rm = nullptr;
 	}
-
-	rhi::MeshShaderResource* sr = PointShader::createShaderResource(m_rhi, sharedResources);
-	rhi::PointMesh<PointShader::Vertex>* rm = new rhi::PointMesh<PointShader::Vertex>(m_rhi, sr);
-	rm->CreateFromGLMesh(&mesh);
-
-	if (cacheMesh)
-	{
-		m_meshList.push_back(&mesh, rm, partition);
-	}
-	else
-	{
-		m_meshList.push_back(nullptr, rm, partition);
-	}
-
 	return rm;
 }
 
-
-void PointRenderPass::update(QRhiResourceUpdateBatch* u)
+rhi::MeshShaderResource* PointRenderPass::createShaderResource()
 {
-	for (auto& it : m_meshList)
-	{
-		rhi::Mesh& m = *it.mesh;
-		if (m.isActive())
-			m.Update(u);
-	}
-}
-
-void PointRenderPass::draw(QRhiCommandBuffer* cb)
-{
-	if (!m_meshList.empty())
-	{
-		cb->setGraphicsPipeline(m_pl.get());
-		cb->setShaderResources();
-		for (auto& it : m_meshList)
-		{
-			rhi::Mesh& m = *it.mesh;
-			if (m.isActive())
-				m.Draw(cb);
-		}
-	}
+	return PointShader::createShaderResource(m_rhi, sharedResources);
 }

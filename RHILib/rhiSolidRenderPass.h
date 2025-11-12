@@ -52,11 +52,11 @@ public:
 
 	void create(QRhiSwapChain* sc, rhi::SharedResources* sr);
 
-	rhi::Mesh* addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh) override;
-
-	void update(QRhiResourceUpdateBatch* u) override;
-
 	void draw(QRhiCommandBuffer* cb) override;
+
+	rhi::Mesh* newMesh(const GLMesh* mesh) override;
+
+	rhi::MeshShaderResource* createShaderResource() override;
 
 private:
 	std::unique_ptr<FaceRenderPass> m_backPass;
@@ -71,16 +71,11 @@ public:
 
 	void create(QRhiSwapChain* sc, rhi::SharedResources* sr);
 
-	QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
+	rhi::Mesh* newMesh(const GLMesh* mesh) override;
 
-	void update(QRhiResourceUpdateBatch* u) override;
-
-	rhi::Mesh* addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh);
-
-	void draw(QRhiCommandBuffer* cb) override;
+	rhi::MeshShaderResource* createShaderResource() override;
 
 private:
-	std::unique_ptr<QRhiGraphicsPipeline> m_pl;
 	std::unique_ptr<rhi::MeshShaderResource> m_sr;
 	rhi::SharedResources* sharedResource = nullptr;
 };

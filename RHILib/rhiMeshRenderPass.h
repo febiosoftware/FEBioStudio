@@ -35,7 +35,6 @@ namespace rhi {
 		{
 			const GLMesh* glmesh = nullptr;
 			rhi::Mesh* mesh = nullptr;
-			int partition = -1;
 		};
 
 	public:
@@ -49,14 +48,14 @@ namespace rhi {
 		Container::iterator begin() { return meshList.begin(); }
 		Container::iterator end() { return meshList.end(); }
 
-		Container::iterator find(const GLMesh* m, int partition)
+		Container::iterator find(const GLMesh* m)
 		{
-			return std::find_if(begin(), end(), [=](const auto& item) { return ((item.glmesh == m) && (item.partition == partition)); });
+			return std::find_if(begin(), end(), [=](const auto& item) { return (item.glmesh == m); });
 		}
 
-		void push_back(const GLMesh* gm, rhi::Mesh* rm, int partition)
+		void push_back(const GLMesh* gm, rhi::Mesh* rm)
 		{
-			meshList.push_back({ gm, rm, partition });
+			meshList.push_back({ gm, rm});
 		}
 
 		bool empty() const { return meshList.empty(); }
@@ -64,6 +63,8 @@ namespace rhi {
 		void clear() { meshList.clear(); }
 
 		Container::iterator erase(Container::iterator it) { return meshList.erase(it); }
+
+		Container::iterator back() { return --meshList.end(); }
 
 	private:
 		Container meshList;
@@ -75,8 +76,6 @@ namespace rhi {
 	public:
 		MeshRenderPass(QRhi* rhi) : RenderPass(rhi) {}
 
-		virtual rhi::Mesh* addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh) = 0;
-
 		void reset();
 
 		void clearCache();
@@ -87,7 +86,20 @@ namespace rhi {
 
 		size_t cachedMeshes() const { return m_meshList.size(); }
 
+	public:
+		rhi::SubMesh* addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh);
+
+		void update(QRhiResourceUpdateBatch* u) override;
+
+		void draw(QRhiCommandBuffer* cb) override;
+
+	public:
+		virtual rhi::Mesh* newMesh(const GLMesh* mesh) = 0;
+
+		virtual rhi::MeshShaderResource* createShaderResource() = 0;
+
 	protected:
+		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
 		rhi::MeshList m_meshList;
 	};
 }

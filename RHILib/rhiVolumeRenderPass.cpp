@@ -82,38 +82,23 @@ void VolumeRenderPass::draw(QRhiCommandBuffer* cb)
 	cb->setGraphicsPipeline(pipeline());
 	cb->setShaderResources();
 
-	for (auto& it : m_meshList)
-	{
-		it.mesh->Draw(cb);
-	}
+	rhi::MeshRenderPass::draw(cb);
 }
 
-rhi::Mesh* VolumeRenderPass::addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh)
+rhi::Mesh* VolumeRenderPass::newMesh(const GLMesh* mesh)
 {
-	if (mesh.Faces() == 0) return nullptr;
-
-	auto it = m_meshList.end();
-	if (cacheMesh)
+	rhi::TriMesh<VolumeShader::Vertex>* rm = new rhi::TriMesh<VolumeShader::Vertex>(m_rhi);
+	if (!rm->CreateFromGLMesh(mesh))
 	{
-		auto it = m_meshList.find(&mesh, partition);
-		if (it != m_meshList.end())
-			return it->mesh;
+		delete rm;
+		rm = nullptr;
 	}
-
-	rhi::MeshShaderResource* sr = VolumeShader::createShaderResource(m_rhi, m_tex, ubuf.get());
-	rhi::TriMesh<VolumeShader::Vertex>* rm = new rhi::TriMesh<VolumeShader::Vertex>(m_rhi, sr);
-	rm->CreateFromGLMesh(&mesh, partition);
-
-	if (cacheMesh)
-	{
-		m_meshList.push_back(&mesh, rm, partition);
-	}
-	else
-	{
-		m_meshList.push_back(nullptr, rm, partition);
-	}
-
 	return rm;
+}
+
+rhi::MeshShaderResource* VolumeRenderPass::createShaderResource()
+{
+	return VolumeShader::createShaderResource(m_rhi, m_tex, ubuf.get());
 }
 
 void VolumeRenderPass::update(QRhiResourceUpdateBatch* u)
@@ -126,12 +111,7 @@ void VolumeRenderPass::update(QRhiResourceUpdateBatch* u)
 		m_tex.needsUpload = false;
 	}
 
-	for (auto& it : m_meshList)
-	{
-		rhi::Mesh& m = *it.mesh;
-		if (m.isActive())
-			m.Update(u);
-	}
+	rhi::MeshRenderPass::update(u);
 }
 
 void VolumeRenderPass::setTexture3D(GLTexture3D& tex)

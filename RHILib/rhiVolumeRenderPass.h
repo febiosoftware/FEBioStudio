@@ -38,14 +38,15 @@ public:
 
 	void update(QRhiResourceUpdateBatch* u) override;
 
-	rhi::Mesh* addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh) override;
-
 	void draw(QRhiCommandBuffer* cb) override;
 
 	void setTexture3D(GLTexture3D& tex);
 
+	rhi::Mesh* newMesh(const GLMesh* mesh) override;
+
+	rhi::MeshShaderResource* createShaderResource() override;
+
 private:
-	std::unique_ptr<QRhiGraphicsPipeline> m_pl;
 	std::unique_ptr<rhi::MeshShaderResource> m_sr;
 	rhi::Texture3D m_tex;
 

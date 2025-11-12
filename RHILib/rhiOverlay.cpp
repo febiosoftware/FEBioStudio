@@ -161,13 +161,15 @@ void OverlayRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sharedRe
 
 	// create the triad pass
 	rhi::MeshShaderResource * triadResources = TriadShader::createShaderResource(m_rhi, sharedResources);
-	triadMesh.reset(new rhi::TriMesh<TriadShader::Vertex>(m_rhi, triadResources));
 	GLMesh* gltriad = buildTriadMesh();
+	triadMesh.reset(new rhi::TriMesh<TriadShader::Vertex>(m_rhi));
 	triadMesh->CreateFromGLMesh(gltriad);
+	triadMesh->setShaderResource(TriadShader::createShaderResource(m_rhi, sharedResources));
+	triadMesh->getSubMesh(0)->SetActive(true);
 
 	GLMaterial mat;
 	mat.diffuseMap = GLMaterial::VERTEX_COLOR;
-	triadMesh->SetMaterial(mat);
+	triadMesh->setMaterial(mat);
 	delete gltriad;
 }
 
@@ -228,7 +230,7 @@ void OverlayRenderPass::update(QRhiResourceUpdateBatch* u)
 
 	proj.ortho(-dx, dx, -dy, dy, -1, 1);
 
-	triadMesh->SetMatrices(m_overlayVM, proj);
+	triadMesh->setMatrices(m_overlayVM, proj);
 	triadMesh->Update(u);
 }
 

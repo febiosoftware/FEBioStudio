@@ -39,7 +39,7 @@ public:
 			});
 
 		// create the buffer
-		ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, m_data.size()));
+		ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, (quint32)m_data.size()));
 		ubuf->create();
 
 		// create resource binding

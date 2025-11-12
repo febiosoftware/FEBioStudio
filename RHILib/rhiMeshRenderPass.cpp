@@ -27,7 +27,15 @@ SOFTWARE.*/
 
 void rhi::MeshRenderPass::reset()
 {
-	for (auto& it : m_meshList) it.mesh->setActive(false);
+	for (auto& it : m_meshList)
+	{
+		it.mesh->setActive(false);
+		for (size_t i = 0; i < it.mesh->subMeshCount(); ++i)
+		{
+			rhi::SubMesh* sm = it.mesh->getSubMesh((int)i);
+			if (sm) sm->SetActive(false);
+		}
+	}
 }
 
 void rhi::MeshRenderPass::clearCache()
@@ -60,5 +68,71 @@ void rhi::MeshRenderPass::removeCachedMesh(const GLMesh* mesh)
 		}
 		else
 			++it;
+	}
+}
+
+rhi::SubMesh* rhi::MeshRenderPass::addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh)
+{
+	if (mesh.Nodes() == 0) return nullptr;
+
+	// see if we have already cached this mesh
+	auto it = m_meshList.end();
+	if (cacheMesh)
+	{
+		it = m_meshList.find(&mesh);
+	}
+
+	// if we didn't find it, create a new mesh
+	if (it == m_meshList.end())
+	{
+		// create a new mesh
+		rhi::Mesh* rm = newMesh(&mesh); assert(rm);
+		if (rm == nullptr) return nullptr;
+		m_meshList.push_back((cacheMesh ? &mesh : nullptr), rm);
+		it = m_meshList.back();
+	}
+
+	// since we need the mesh, mark it as active so we don't delete it during a clearUnusedCache call
+	it->mesh->setActive(true);
+
+	// get the partition's submesh
+	rhi::SubMesh* subMesh = it->mesh->getSubMesh(partition + 1); assert(subMesh);
+	if (subMesh)
+	{
+		// make sure the submesh has a shader resource
+		if (subMesh->sr == nullptr)
+		{
+			subMesh->sr.reset(createShaderResource());
+		}
+
+		// mark the submesh as active
+		subMesh->isActive = true;
+	}
+
+	return subMesh;
+}
+
+void rhi::MeshRenderPass::update(QRhiResourceUpdateBatch* u)
+{
+	for (auto& it : m_meshList)
+	{
+		rhi::Mesh& m = *it.mesh;
+		if (m.isActive())
+			m.Update(u);
+	}
+}
+
+void rhi::MeshRenderPass::draw(QRhiCommandBuffer* cb)
+{
+	if (!m_meshList.empty())
+	{
+		cb->setGraphicsPipeline(m_pl.get());
+		cb->setShaderResources();
+		for (auto& it : m_meshList)
+		{
+			rhi::Mesh& m = *it.mesh;
+			if (m.isActive())
+				m.Draw(cb);
+		}
 	}
 }

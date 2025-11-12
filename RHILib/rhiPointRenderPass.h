@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "rhiMeshRenderPass.h"
-#include "rhiPointMesh.h"
 
 class PointRenderPass : public rhi::MeshRenderPass
 {
@@ -34,14 +33,11 @@ public:
 
 	void create(QRhiSwapChain* sc, rhi::SharedResources* sr);
 
-	rhi::Mesh* addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh);
+	rhi::Mesh* newMesh(const GLMesh* mesh) override;
 
-	void update(QRhiResourceUpdateBatch* u) override;
-
-	void draw(QRhiCommandBuffer* cb) override;
+	rhi::MeshShaderResource* createShaderResource() override;
 
 private:
-	std::unique_ptr<QRhiGraphicsPipeline> m_pl;
 	std::unique_ptr<rhi::MeshShaderResource> m_sr;
 	rhi::SharedResources* sharedResources = nullptr;
 };

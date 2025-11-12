@@ -41,7 +41,7 @@ namespace rhi {
 		QRhiSampler* envSmplr = nullptr;
 	};
 
-	class Mesh;
+	class SubMesh;
 
 	// base class for mesh shaders resources
 	class MeshShaderResource
@@ -50,7 +50,7 @@ namespace rhi {
 		MeshShaderResource(QRhi* rhi) : m_rhi(rhi) {}
 		virtual ~MeshShaderResource() {}
 
-		virtual void setData(const Mesh& m) {}
+		virtual void setData(const SubMesh& m) {}
 
 		QRhiShaderResourceBindings* get() { return srb.get(); }
 
@@ -63,31 +63,44 @@ namespace rhi {
 		std::unique_ptr<QRhiShaderResourceBindings> srb;
 	};
 
-	// base class for meshes.
-	// Don't use this class directly. Instead, use one of the derived classes
-	class Mesh
+	class Mesh;
+
+	class SubMesh
 	{
 	public:
-		Mesh(QRhi* rhi, rhi::MeshShaderResource* shaderResource = nullptr) : m_rhi(rhi), sr(shaderResource) {}
-		virtual ~Mesh();
+		SubMesh(Mesh* msh, unsigned int n0, unsigned int ncount, rhi::MeshShaderResource* shaderResource = nullptr) : sr(shaderResource)
+		{
+			mesh = msh;
+			vertexStart = n0;
+			vertexCount = ncount;
+			isActive = false;
+		}
 
-		void setActive(bool b) { active = b; }
-		bool isActive() const { return active; }
+		void SetMaterial(const GLMaterial& material) { mat = material; }
 
-		void SetMaterial(const GLMaterial& m) { mat = m; }
+		void SetMatrices(const QMatrix4x4& mv, const QMatrix4x4& pr)
+		{
+			mvMatrix = mv;
+			prMatrix = pr;
+		}
 
-		void SetMatrices(const QMatrix4x4& mv, const QMatrix4x4& pr) { mvMatrix = mv; prMatrix = pr; }
+		void SetActive(bool b) { isActive = b; }
 
-		virtual bool CreateFromGLMesh(const GLMesh* gmsh, int partition = -1) { return false; }
+		void DoClipping(bool b) { doClipping = b; }
 
-		void Update(QRhiResourceUpdateBatch* u);
+		void Update(QRhiResourceUpdateBatch* u)
+		{
+			if (sr) {
+				sr->setData(*this);
+				sr->update(u);
+			}
+		}
 
-		void Draw(QRhiCommandBuffer* cb);
-
-		int vertexCount() const { return (int)nvertexCount; }
-
-	protected:
-		void create(unsigned int vertices, unsigned int sizeOfVertex, const void* data);
+	public:
+		rhi::Mesh* mesh = nullptr;
+		bool isActive = false;
+		unsigned int vertexStart = 0;
+		unsigned int vertexCount = 0;
 
 	public:
 		GLMaterial mat;
@@ -95,16 +108,75 @@ namespace rhi {
 		QMatrix4x4 mvMatrix; // model view
 		QMatrix4x4 prMatrix; // projection
 
+	public:
+		std::unique_ptr<MeshShaderResource> sr; // shader resources
+	};
+
+	// base class for meshes.
+	// Don't use this class directly. Instead, use one of the derived classes
+	class Mesh
+	{
+	public:
+		Mesh(QRhi* rhi) : m_rhi(rhi) {}
+		virtual ~Mesh();
+
+		void setActive(bool b) { active = b; }
+		bool isActive() const { return active; }
+
+		virtual bool CreateFromGLMesh(const GLMesh* gmsh) { return false; }
+
+		size_t subMeshCount() const { return submeshes.size(); }
+
+		SubMesh* getSubMesh(int i)
+		{
+			if (i < 0 || i >= (int)submeshes.size()) return nullptr;
+			return submeshes[i].get();
+		}
+
+		void Update(QRhiResourceUpdateBatch* u);
+
+		void Draw(QRhiCommandBuffer* cb);
+
+		void setShaderResource(rhi::MeshShaderResource* sr, int subMeshIndex = -1)
+		{
+			subMeshIndex += 1;
+			if ((subMeshIndex >= 0) && (subMeshIndex <= (int)submeshes.size()))
+			{
+				submeshes[subMeshIndex]->sr.reset(sr);
+			}
+		}
+
+		void setMaterial(const GLMaterial& mat, int subMeshIndex = -1)
+		{
+			subMeshIndex += 1;
+			if ((subMeshIndex >= 0) && (subMeshIndex <= (int)submeshes.size()))
+			{
+				submeshes[subMeshIndex]->SetMaterial(mat);
+			}
+		}
+
+		void setMatrices(const QMatrix4x4& mv, const QMatrix4x4& pr, int subMeshIndex = -1)
+		{
+			subMeshIndex += 1;
+			if ((subMeshIndex >= 0) && (subMeshIndex <= (int)submeshes.size()))
+			{
+				if (subMeshIndex >= (int)submeshes.size()) return;
+				submeshes[subMeshIndex]->SetMatrices(mv, pr);
+			}
+		}
+
+	protected:
+		void create(unsigned int vertices, unsigned int sizeOfVertex, const void* data);
+
 	protected:
 		QRhi* m_rhi = nullptr;
 		bool active = false;
+		std::vector<std::unique_ptr<SubMesh> > submeshes;
 
 	private:
 		std::unique_ptr<QRhiBuffer> vbuf; // vertex buffer
-		std::unique_ptr<MeshShaderResource> sr; // shader resources
 
-		unsigned int nvertexCount = 0;
-		unsigned int vbufSize = 0;
+		size_t vbufSize = 0;
 		unsigned char* vertexData = nullptr;
 
 	public:

@@ -33,47 +33,34 @@ namespace rhi {
 	class TriMesh : public Mesh
 	{
 	public:
-		TriMesh(QRhi* rhi, rhi::MeshShaderResource* srb) : rhi::Mesh(rhi, srb) {}
+		TriMesh(QRhi* rhi) : rhi::Mesh(rhi) {}
 
-		bool CreateFromGLMesh(const GLMesh* gmsh, int partition) override
+		bool CreateFromGLMesh(const GLMesh* gmsh) override
 		{
+			submeshes.clear();
+
+			assert(gmsh);
 			if (gmsh == nullptr) return false;
 
 			assert(gmsh->Partitions() > 0);
+			if (gmsh->Partitions() == 0) return false;
 
-			if (partition == -1)
-			{
-				int NF = gmsh->Faces();
-				int NV = 3 * NF;
-				std::vector<Vertex> vertexData;
-				vertexData.resize(NV);
-				Vertex* v = vertexData.data();
-				for (int n = 0; n < gmsh->Faces(); ++n)
-				{
-					const GLMesh::FACE& f = gmsh->Face(n);
-					for (int j = 0; j < 3; ++j, ++v)
-					{
-						GLMesh::NODE nd;
-						nd.r = f.vr[j];
-						nd.n = f.vn[j];
-						nd.c = f.c[j];
-						nd.t = f.t[j];
-						(*v) = nd;
-					}
-				}
-				// create the vertex buffer
-				create(NV, sizeof(Vertex), vertexData.data());
-			}
-			else
+			int NF = gmsh->Faces();
+			if (NF == 0) return false;
+
+			int NV = 3 * NF;
+			std::vector<Vertex> vertexData;
+			vertexData.resize(NV);
+			Vertex* v = vertexData.data();
+			unsigned int vertexCount = 0;
+
+			// first sub-mesh is for the entire mesh
+			submeshes.emplace_back(std::make_unique<SubMesh>(this, 0, NV));
+
+			// add all the partitions
+			for (size_t partition = 0; partition < gmsh->Partitions(); ++partition)
 			{
 				const GLMesh::PARTITION& part = gmsh->Partition(partition);
-
-				int NF = part.nf;
-				int NV = 3 * NF;
-				std::vector<Vertex> vertexData;
-				vertexData.resize(NV);
-				Vertex* v = vertexData.data();
-
 				for (int i = 0; i < part.nf; ++i)
 				{
 					const GLMesh::FACE& f = gmsh->Face(i + part.n0);
@@ -87,9 +74,13 @@ namespace rhi {
 						(*v) = nd;
 					}
 				}
-				// create the vertex buffer
-				create(NV, sizeof(Vertex), vertexData.data());
+				submeshes.emplace_back(std::make_unique<SubMesh>(this, vertexCount, 3 * part.nf));
+
+				vertexCount += 3*part.nf;
 			}
+
+			// create the vertex buffer
+			create(NV, sizeof(Vertex), vertexData.data());
 
 			return true;
 		}

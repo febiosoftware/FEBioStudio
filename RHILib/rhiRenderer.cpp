@@ -367,7 +367,7 @@ void rhiRenderer::setMaterial(const GLMaterial& mat)
 
 void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 {
-	rhi::Mesh* pm = nullptr;
+	rhi::SubMesh* pm = nullptr;
 	if (m_currentMat.diffuseMap == GLMaterial::TEXTURE_3D)
 	{
 		pm = m_volumeRenderPass->addGLMesh(mesh, -1, cacheMesh);
@@ -386,15 +386,14 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 		pm->SetMaterial(m_currentMat);
 		pm->SetMatrices(m_modelViewMatrix, m_projMatrix);
 		pm->doClipping = m_clipEnabled;
-		pm->setActive(true);
 
-		m_stats.triangles += (pm->vertexCount() / 3); // 3 vertices per triangle
+		m_stats.triangles += (pm->vertexCount / 3); // 3 vertices per triangle
 	}
 }
 
 void rhiRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 {
-	rhi::Mesh* pm = nullptr;
+	rhi::SubMesh* pm = nullptr;
 	if (m_currentMat.type == GLMaterial::OVERLAY)
 	{
 		// TODO: implement this
@@ -409,15 +408,14 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 		pm->SetMaterial(m_currentMat);
 		pm->SetMatrices(m_modelViewMatrix, m_projMatrix);
 		pm->doClipping = m_clipEnabled;
-		pm->setActive(true);
 
-		m_stats.triangles += (pm->vertexCount() / 3); // 3 vertices per triangle
+		m_stats.triangles += (pm->vertexCount / 3); // 3 vertices per triangle
 	}
 }
 
 void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 {
-	rhi::Mesh* lineMesh = nullptr;
+	rhi::SubMesh* lineMesh = nullptr;
 	if (m_currentMat.type == GLMaterial::OVERLAY)
 		lineMesh = m_lineOverlayPass->addGLMesh(mesh, -1, cacheMesh);
 	else
@@ -428,15 +426,14 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 		lineMesh->SetMaterial(m_currentMat);
 		lineMesh->SetMatrices(m_modelViewMatrix, m_projMatrix);
 		lineMesh->doClipping = m_clipEnabled;
-		lineMesh->setActive(true);
 
-		m_stats.lines += (lineMesh->vertexCount() / 2); // 2 vertices per edge
+		m_stats.lines += (lineMesh->vertexCount / 2); // 2 vertices per edge
 	}
 }
 
 void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cacheMesh)
 {
-	rhi::Mesh* lineMesh = nullptr;
+	rhi::SubMesh* lineMesh = nullptr;
 	if (m_currentMat.type == GLMaterial::OVERLAY)
 		lineMesh = m_lineOverlayPass->addGLMesh(mesh, partition, cacheMesh);
 	else
@@ -447,15 +444,14 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cache
 		lineMesh->SetMaterial(m_currentMat);
 		lineMesh->SetMatrices(m_modelViewMatrix, m_projMatrix);
 		lineMesh->doClipping = m_clipEnabled;
-		lineMesh->setActive(true);
 
-		m_stats.lines += (lineMesh->vertexCount() / 2); // 2 vertices per edge
+		m_stats.lines += (lineMesh->vertexCount / 2); // 2 vertices per edge
 	}
 }
 
 void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 {
-	rhi::Mesh* pointMesh = nullptr;
+	rhi::SubMesh* pointMesh = nullptr;
 	if (m_currentMat.type == GLMaterial::OVERLAY)
 		pointMesh = m_pointOverlayPass->addGLMesh(mesh, -1, cacheMesh);
 	else
@@ -465,10 +461,9 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 	{
 		pointMesh->SetMaterial(m_currentMat);
 		pointMesh->SetMatrices(m_modelViewMatrix, m_projMatrix);
-		pointMesh->doClipping = m_clipEnabled;
-		pointMesh->setActive(true);
+		pointMesh->DoClipping(m_clipEnabled);
 
-		m_stats.points += pointMesh->vertexCount();
+		m_stats.points += pointMesh->vertexCount;
 	}
 }
 

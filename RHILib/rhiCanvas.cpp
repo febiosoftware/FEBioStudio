@@ -61,8 +61,10 @@ void CanvasRenderPass::create(QRhiSwapChain* sc)
 	// create the mesh
 	rhi::MeshShaderResource* sr = shader.createShaderResource(m_rhi, m_fpsTex, m_fpsub.get());
 
-	m_fpsMesh.reset(new FPSMesh(m_rhi, sr));
+	m_fpsMesh.reset(new FPSMesh(m_rhi));
 	m_fpsMesh->create(size);
+	m_fpsMesh->setShaderResource(sr);
+	m_fpsMesh->getSubMesh(0)->SetActive(true);
 }
 
 void CanvasRenderPass::update(QRhiResourceUpdateBatch* u)
@@ -104,7 +106,7 @@ void CanvasRenderPass::draw(QRhiCommandBuffer* cb)
 	m_fpsMesh->Draw(cb);
 }
 
-FPSMesh::FPSMesh(QRhi* rhi, rhi::MeshShaderResource* srb) : rhi::Mesh(rhi, srb)
+FPSMesh::FPSMesh(QRhi* rhi) : rhi::Mesh(rhi)
 {
 }
 
@@ -128,4 +130,6 @@ void FPSMesh::create(QSize size)
 
 	// create the vertex buffer
 	rhi::Mesh::create(NV, sizeof(Vertex), vertexData.data());
+
+	submeshes.emplace_back(std::make_unique<rhi::SubMesh>(this, 0, NV));
 }
