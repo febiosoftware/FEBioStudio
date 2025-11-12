@@ -393,7 +393,7 @@ void RayTracer::setMaterial(const GLMaterial& glmat)
 void RayTracer::setLightPosition(unsigned int lightIndex, const vec3f& p)
 {
 	Vec4 r(p, 0);
-	lightPos = r;// modelView* r;
+	lightPos = modelView * r;
 }
 
 void RayTracer::setLightSpecularColor(unsigned int lightIndex, const GLColor& col)

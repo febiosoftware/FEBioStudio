@@ -43,6 +43,8 @@ public:
 	EditMaterialScene();
 	void Render(GLRenderEngine& re, GLContext& rc);
 
+	BOX GetBoundingBox() override { return BOX(-1, -1, -1, 1, 1, 1); }
+
 private:
 	void BuildMesh();
 
@@ -114,7 +116,6 @@ void EditMaterialScene::Render(GLRenderEngine& re, GLContext& rc)
 	{
 		ActivateEnvironmentMap(re);
 		re.setLightPosition(0, vec3f(1, 1, 1));
-		re.setProjection(45, 0.01, 5);
 		PositionCameraInScene(re);
 		re.setMaterial(mat);
 		re.renderGMesh(*mesh.get());

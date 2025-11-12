@@ -60,12 +60,13 @@ public:
 	{
 		ActivateEnvironmentMap(re);
 		re.setLightPosition(0, vec3f(1, 1, 1));
-		re.setProjection(45, 0.01, 5);
 		PositionCameraInScene(re);
 		re.setMaterial(mat);
 		GLScene::Render(re, rc);
 		DeactivateEnvironmentMap(re);
 	}
+
+	BOX GetBoundingBox() override { return BOX(-1, -1, -1, 1, 1, 1); }
 
 private:
 	void BuildMesh();

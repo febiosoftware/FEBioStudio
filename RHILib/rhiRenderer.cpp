@@ -254,7 +254,8 @@ void rhiRenderer::setBackgroundGradient(const GLColor& c1, const GLColor& c2, Gr
 
 void rhiRenderer::setLightPosition(unsigned int n, const vec3f& lp)
 {
-	m_light = lp;
+	QVector4D pos = m_modelViewMatrix * QVector4D(lp.x, lp.y, lp.z, 0);
+	m_light = vec3f(pos.x(), pos.y(), pos.z());
 }
 
 void rhiRenderer::setLightSpecularColor(unsigned int lightIndex, const GLColor& col)

@@ -88,7 +88,6 @@ CODFScene::CODFScene()
 void CODFScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
 	PositionCameraInScene(engine);
-	engine.setProjection(45, 0.01, 100);
 	engine.setLightPosition(0, vec3f(1, 1, 1));
 
 	if (m_analysis && m_ODF) m_analysis->renderODFMesh(engine, m_ODF, rc.m_cam->IsMoving());

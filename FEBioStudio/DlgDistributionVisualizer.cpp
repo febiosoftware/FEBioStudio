@@ -128,11 +128,10 @@ public:
 	// Render the 3D scene
 	void Render(GLRenderEngine& engine, GLContext& rc) override 
 	{
-		PositionCameraInScene(engine);
-
-		engine.setProjection(45, 0.01, 100);
 		engine.setLightPosition(0, vec3f(1, 1, 1));
 		engine.setLightSpecularColor(0, GLColor(200, 200, 200));
+
+		PositionCameraInScene(engine);
 
 		GLMaterial mat;
 		mat.type = GLMaterial::PLASTIC;
