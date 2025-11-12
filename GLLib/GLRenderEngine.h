@@ -65,8 +65,8 @@ public:
 	};
 
 public:
-	GLRenderEngine() {}
-	virtual ~GLRenderEngine() {}
+	GLRenderEngine();
+	virtual ~GLRenderEngine();
 
 	void ResetStats();
 	virtual GLRenderStats GetRenderStats() const;
@@ -181,4 +181,7 @@ public:
 
 protected:
 	GLRenderStats m_stats;
+
+private:
+	Imp& m;
 };

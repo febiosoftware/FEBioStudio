@@ -26,7 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLMesh.h"
 #include "GLRenderEngine.h"
-#include "glmath.h"
+#include <FSCore/math3d.h>
 #include <stack>
 
 // Helper class for generating a GLMesh through render commands

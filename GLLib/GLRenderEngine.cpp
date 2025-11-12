@@ -28,6 +28,16 @@ SOFTWARE.*/
 #include "GLCamera.h"
 #include "GLMesh.h"
 
+class GLRenderEngine::Imp
+{
+public:
+	Imp() {}
+	~Imp() {}
+};
+
+GLRenderEngine::GLRenderEngine() : m(*(new Imp)) {}
+GLRenderEngine::~GLRenderEngine() { delete &m; }
+
 void GLRenderEngine::ResetStats()
 {
 	m_stats.clear();
