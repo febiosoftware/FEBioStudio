@@ -27,7 +27,6 @@ SOFTWARE.*/
 #include <QPainter>
 #include <QFile>
 #include <QWidget>
-#include "rhiScene.h"
 #include <FEBioStudio/MainWindow.h>
 #include <GLLib/GLContext.h>
 #include <QMouseEvent>
@@ -97,10 +96,6 @@ void rhiSceneView::ShowFPS(bool b)
 
 void rhiSceneView::mousePressEvent(QMouseEvent* ev)
 {
-	rhiScene* RhiScene = dynamic_cast<rhiScene*>(m_scene);
-	bool useOverlay = false;
-	if (RhiScene) useOverlay = RhiScene->renderOverlay;
-
 	m_prevPos = ev->pos();
 
 	setRenderMode(RenderMode::DYNAMIC);
@@ -111,10 +106,6 @@ void rhiSceneView::mousePressEvent(QMouseEvent* ev)
 void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 {
 	if (m_scene == nullptr) return;
-
-	rhiScene* RhiScene = dynamic_cast<rhiScene*>(m_scene);
-	bool useOverlay = false;
-	if (RhiScene) useOverlay = RhiScene->renderOverlay;
 
 	bool bshift = (ev->modifiers() & Qt::ShiftModifier ? true : false);
 	bool bctrl = (ev->modifiers() & Qt::ControlModifier ? true : false);
@@ -186,10 +177,6 @@ void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 
 void rhiSceneView::mouseReleaseEvent(QMouseEvent* event)
 {
-	rhiScene* RhiScene = dynamic_cast<rhiScene*>(m_scene);
-	bool useOverlay = false;
-	if (RhiScene) useOverlay = RhiScene->renderOverlay;
-
 	int x = (int)event->position().x();
 	int y = (int)event->position().y();
 
