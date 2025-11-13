@@ -34,7 +34,7 @@ void CanvasRenderPass::create(QRhiSwapChain* sc)
 	m_sc = sc;
 
 	// fps indicator texture
-	QSize size(250, 30);
+	QSize size(320, 40);
 	m_fpsTex.create(QImage(size, QImage::Format_RGBA8888_Premultiplied));
 
 	m_fpsub.create(m_rhi);
@@ -85,7 +85,7 @@ void CanvasRenderPass::update(QRhiResourceUpdateBatch* u)
 	img.fill(Qt::transparent);
 	QPainter painter(&img);
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-	QFont font("Monospace", 16);
+	QFont font("Monospace", 20);
 	painter.setFont(font);
 	painter.setPen(Qt::red);
 	QString txt = QString("fps: %1 [%2,%3]").arg(m_fps, 0, 'f', 1).arg(m_fpsMin, 0, 'f', 1).arg(m_fpsMax, 0, 'f', 1);

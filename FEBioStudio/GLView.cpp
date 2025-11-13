@@ -1662,16 +1662,22 @@ void CGLView::RenderOverlayComponents(QPainter& painter)
 
 		const int fieldWidth = 8;
 
+		double dpr = devicePixelRatio();
+
 		QRect rt = rect();
+		rt.setWidth(rt.width() * dpr);
+		rt.setHeight(rt.height() * dpr);
 		QTextOption to;
 		QFont font = painter.font();
-		const int fontSize = 20;
+		const int fontSize = (int)(16*dpr);
 		font.setFamily("consolas");
-		font.setPixelSize(fontSize);
+		font.setPointSize(fontSize);
 		painter.setFont(font);
 		painter.setPen(QPen(Qt::red));
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
 		painter.drawText(rt, QString("FPS:%1").arg(fps, fieldWidth, 'f', 2), to);
+
+		int Yinc = fontSize + (int)(5*dpr);
 
 		const GLRenderEngine* re = GetRenderEngine();
 		if (re)
@@ -1682,7 +1688,7 @@ void CGLView::RenderOverlayComponents(QPainter& painter)
 			const double KB = 1024.0;
 
 			// triangles
-			int Y = rt.y() + fontSize + 5;
+			int Y = rt.y() + Yinc;
 			rt.setY(Y);
 			float tris = (float)stats.triangles;
 			if (tris < KB)
@@ -1699,7 +1705,7 @@ void CGLView::RenderOverlayComponents(QPainter& painter)
 			painter.drawText(rt, QString("Tris:%1").arg(t, fieldWidth), to);
 
 			// lines
-			Y += fontSize + 5;
+			Y += Yinc;
 			rt.setY(Y);
 			float lines = (float)stats.lines;
 			if (lines < KB)
@@ -1716,7 +1722,7 @@ void CGLView::RenderOverlayComponents(QPainter& painter)
 			painter.drawText(rt, QString("Lines:%1").arg(t, fieldWidth), to);
 
 			// points
-			Y += fontSize + 5;
+			Y += Yinc;
 			rt.setY(Y);
 			float points = (float)stats.points;
 			if (points < KB)
@@ -1733,13 +1739,13 @@ void CGLView::RenderOverlayComponents(QPainter& painter)
 			painter.drawText(rt, QString("Points:%1").arg(t, fieldWidth), to);
 
 			// caches
-			Y += fontSize + 5;
+			Y += Yinc;
 			rt.setY(Y);
 			t = QString("%1").arg(stats.cachedObjects);
 			painter.drawText(rt, QString("Caches:%1").arg(t, fieldWidth), to);
 
 			// upload
-			Y += fontSize + 5;
+			Y += Yinc;
 			rt.setY(Y);
 			double uploadMB = (double) stats.dataUploadSize / MB;
 			t = QString("%1MB").arg(uploadMB, 0, 'f', 3);
