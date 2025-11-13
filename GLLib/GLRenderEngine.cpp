@@ -28,11 +28,43 @@ SOFTWARE.*/
 #include "GLCamera.h"
 #include "GLMesh.h"
 
+using namespace gl;
+
 class GLRenderEngine::Imp
 {
 public:
-	Imp() {}
-	~Imp() {}
+	Imp() 
+	{
+		vertList.reserve(1024);
+	}
+	~Imp() 
+	{
+		if (mesh) delete mesh;
+	}
+
+	// modelview matrix stack
+	gl::Matrix4 modelView;
+	std::stack<gl::Matrix4> mvStack;
+
+	// for building immediate mode meshes
+	bool buildingShape = false;
+	GLMesh* mesh = nullptr;
+	bool isMVIdentity = true;
+	std::vector<GLMesh::NODE> vertList;
+	GLColor currentColor;
+	gl::Vec3 currentTexCoord;
+	gl::Vec3 currentNormal;
+	PrimitiveType currentPrimitive = NULL_PRIMITIVE;
+
+public:
+	void buildPoints();
+	void buildLines();
+	void buildLineStrip();
+	void buildLineLoop();
+	void buildTriangles();
+	void buildTriangleFan();
+	void buildQuads();
+	void buildQuadStrip();
 };
 
 GLRenderEngine::GLRenderEngine() : m(*(new Imp)) {}
@@ -48,10 +80,81 @@ GLRenderStats GLRenderEngine::GetRenderStats() const
 	return m_stats;
 }
 
+void GLRenderEngine::start() 
+{ 
+	ResetStats(); 
+	while (!m.mvStack.empty()) m.mvStack.pop();
+	m.modelView.makeIdentity();
+}
+
+void GLRenderEngine::pushTransform()
+{
+	m.mvStack.push(m.modelView);
+}
+
+void GLRenderEngine::popTransform()
+{
+	assert(!m.mvStack.empty());
+	m.modelView = m.mvStack.top();
+	m.mvStack.pop();
+}
+
+void GLRenderEngine::resetTransform()
+{
+	m.modelView.makeIdentity();
+}
+
+gl::Matrix4 GLRenderEngine::currentTransform() const
+{
+	return m.modelView;
+}
+
+void GLRenderEngine::translate(const vec3d& r)
+{
+	Matrix4 T = Matrix4::translate(Vec3(r));
+	m.modelView *= T;
+}
+
+void GLRenderEngine::rotate(const quatd& rot)
+{
+	Matrix4 R = Matrix4::rotate(rot);
+	m.modelView *= R;
+}
+
+void GLRenderEngine::rotate(double deg, double x, double y, double z)
+{
+	quatd q(deg * DEG2RAD, vec3d(x, y, z));
+	rotate(q);
+}
+
+void GLRenderEngine::scale(double x, double y, double z)
+{
+	Matrix4 S = Matrix4::scale(x, y, z);
+	m.modelView *= S;
+}
+
 void GLRenderEngine::transform(const vec3d& r0, const vec3d& r1)
 {
 	translate(r0);
 	rotate(r1 - r0);
+}
+
+void GLRenderEngine::transform(const vec3d& pos, const quatd& rot)
+{
+	translate(pos);
+	rotate(rot);
+}
+
+void GLRenderEngine::multTransform(const double* a)
+{
+	Matrix4 M(
+		a[0], a[1], a[2], a[3],
+		a[4], a[5], a[6], a[7],
+		a[8], a[9], a[10], a[11],
+		a[12], a[13], a[14], a[15]
+	);
+
+	m.modelView *= M;
 }
 
 void GLRenderEngine::rotate(const vec3d& r, vec3d ref)
@@ -283,4 +386,308 @@ void GLRenderEngine::renderGMeshOutline(const GLCamera& cam, const GLMesh& gmsh,
 	mesh.Update();
 
 	renderGMeshEdges(mesh, false);
+}
+
+void GLRenderEngine::setColor(GLColor c)
+{
+	m.currentColor = c;
+}
+
+void GLRenderEngine::vertex(const vec3d& r)
+{
+	GLMesh::NODE p;
+	gl::Vec4 q = m.modelView * gl::Vec4(r);
+	gl::Vec4 N = m.modelView * gl::Vec4(m.currentNormal, 0);
+	p.r = vec3f(q[0], q[1], q[2]);
+	p.n = vec3f(N[0], N[1], N[2]); p.n.Normalize();
+	p.c = m.currentColor;
+	p.t = to_vec3f(m.currentTexCoord);
+	m.vertList.push_back(p);
+}
+
+void GLRenderEngine::normal(const vec3d& r)
+{
+	m.currentNormal = Vec3(r);
+}
+
+void GLRenderEngine::texCoord1d(double t)
+{
+	m.currentTexCoord = vec3f(t, 0, 0);
+}
+
+void GLRenderEngine::texCoord2d(double r, double s)
+{
+	m.currentTexCoord = Vec3(r, s, 0);
+}
+
+void GLRenderEngine::beginShape()
+{
+	if (m.mesh) delete m.mesh;
+	m.mesh = new GLMesh();
+	m.vertList.clear();
+	m.currentColor = GLColor(255, 255, 255);
+	m.currentNormal = Vec3(0, 0, 1);
+	m.buildingShape = true;
+	m.currentPrimitive = GLRenderEngine::NULL_PRIMITIVE;
+
+	pushTransform();
+	resetTransform();
+}
+
+void GLRenderEngine::begin(PrimitiveType prim)
+{
+	if (!m.buildingShape) {
+		beginShape(); 
+		m.buildingShape = false; // this was set to true in beginShape
+	}
+	m.currentPrimitive = prim;
+}
+
+void GLRenderEngine::endShape()
+{
+	if (m.mesh) m.mesh->UpdateBoundingBox();
+	popTransform();
+	m.buildingShape = false;
+
+	renderImmediateModeMesh();
+}
+
+GLMesh* GLRenderEngine::takeImmediateModeMesh()
+{
+	assert(m.mesh);
+	GLMesh* pm = m.mesh;
+	m.mesh = nullptr;
+	return pm;
+}
+
+void GLRenderEngine::renderImmediateModeMesh()
+{
+	GLMesh* pm = takeImmediateModeMesh();
+	if (pm)
+	{
+		if (pm->Faces() > 0)
+		{
+			renderGMesh(*pm, false);
+		}
+
+		if (pm->Edges() > 0)
+		{
+			renderGMeshEdges(*pm, false);
+		}
+
+		if ((pm->Nodes() > 0) && (pm->Edges() == 0) && (pm->Faces() == 0))
+		{
+			renderGMeshNodes(*pm, false);
+		}
+
+		delete pm;
+	}
+}
+
+void GLRenderEngine::end()
+{
+	switch (m.currentPrimitive)
+	{
+	case PrimitiveType::POINTS     : m.buildPoints(); break;
+	case PrimitiveType::LINES      : m.buildLines(); break;
+	case PrimitiveType::LINESTRIP  : m.buildLineStrip(); break;
+	case PrimitiveType::LINELOOP   : m.buildLineLoop(); break;
+	case PrimitiveType::TRIANGLES  : m.buildTriangles(); break;
+	case PrimitiveType::TRIANGLEFAN: m.buildTriangleFan(); break;
+	case PrimitiveType::QUADS      : m.buildQuads(); break;
+	case PrimitiveType::QUADSTRIP  : m.buildQuadStrip(); break;
+	default:
+		assert(false);
+	}
+
+	m.vertList.clear();
+	m.currentPrimitive = GLRenderEngine::NULL_PRIMITIVE;
+
+	if (!m.buildingShape) endShape();
+}
+
+void GLRenderEngine::Imp::buildPoints()
+{
+	assert(currentPrimitive == PrimitiveType::POINTS);
+	assert(mesh);
+	if (mesh == nullptr) return;
+
+	for (int i = 0; i < vertList.size(); ++i)
+	{
+		mesh->AddNode(vertList[i]);
+	}
+}
+
+void GLRenderEngine::Imp::buildLines()
+{
+	assert(currentPrimitive == PrimitiveType::LINES);
+	assert(mesh);
+	if (mesh == nullptr) return;
+
+	const int N = vertList.size();
+	vector<int> NL(N);
+
+	for (int i = 0; i < N; ++i)
+	{
+		NL[i] = mesh->AddNode(vertList[i]);
+	}
+
+	if (N > 1)
+	{
+		for (int i = 0; i < N; i += 2)
+		{
+			mesh->AddEdge(NL[i], NL[i + 1]);
+		}
+	}
+}
+
+void GLRenderEngine::Imp::buildLineStrip()
+{
+	assert(currentPrimitive == PrimitiveType::LINESTRIP);
+	assert(mesh);
+	if (mesh == nullptr) return;
+
+	const int N = vertList.size();
+	vector<int> NL(N);
+
+	for (int i = 0; i < N; ++i)
+	{
+		NL[i] = mesh->AddNode(vertList[i]);
+	}
+
+	if (N > 1)
+	{
+		for (int i = 0; i < N - 1; i++)
+		{
+			mesh->AddEdge(NL[i], NL[i + 1]);
+		}
+	}
+}
+
+void GLRenderEngine::Imp::buildLineLoop()
+{
+	assert(currentPrimitive == PrimitiveType::LINELOOP);
+	assert(mesh);
+	if (mesh == nullptr) return;
+
+	const int N = vertList.size();
+	vector<int> NL(N);
+
+	for (int i = 0; i < N; ++i)
+	{
+		NL[i] = mesh->AddNode(vertList[i]);
+	}
+
+	if (N > 1)
+	{
+		for (int i = 0; i < N; i++)
+		{
+			int ip1 = (i + 1) % N;
+			mesh->AddEdge(NL[i], NL[ip1]);
+		}
+	}
+}
+
+void GLRenderEngine::Imp::buildTriangles()
+{
+	assert(currentPrimitive == PrimitiveType::TRIANGLES);
+	assert(mesh);
+	if (mesh == nullptr) return;
+
+	const int N = vertList.size();
+	vector<int> NL(N);
+
+	for (int i = 0; i < N; ++i)
+	{
+		NL[i] = mesh->AddNode(vertList[i]);
+	}
+
+	if (N > 2)
+	{
+		for (int i = 0; i < N; i += 3)
+		{
+			mesh->AddFace(NL[i], NL[i + 1], NL[i + 2]);
+		}
+	}
+}
+
+void GLRenderEngine::Imp::buildTriangleFan()
+{
+	assert(currentPrimitive == PrimitiveType::TRIANGLEFAN);
+	assert(mesh);
+	if (mesh == nullptr) return;
+
+	const int N = vertList.size();
+	vector<int> NL(N);
+
+	for (int i = 0; i < N; ++i)
+	{
+		NL[i] = mesh->AddNode(vertList[i]);
+	}
+
+	if (N > 2)
+	{
+		for (int i = 1; i < N - 1; i++)
+		{
+			mesh->AddFace(NL[0], NL[i], NL[i + 1]);
+		}
+	}
+}
+
+void GLRenderEngine::Imp::buildQuads()
+{
+	assert(currentPrimitive == PrimitiveType::QUADS);
+	assert(mesh);
+	if (mesh == nullptr) return;
+
+	const int N = vertList.size();
+	vector<int> NL(N);
+
+	for (int i = 0; i < N; ++i)
+	{
+		NL[i] = mesh->AddNode(vertList[i]);
+	}
+
+	if (N > 3)
+	{
+		for (int i = 0; i < N - 3; i += 4)
+		{
+			int n0 = NL[i];
+			int n1 = NL[i + 1];
+			int n2 = NL[i + 2];
+			int n3 = NL[i + 3];
+			mesh->AddFace(n0, n1, n2);
+			mesh->AddFace(n2, n3, n0);
+		}
+	}
+}
+
+void GLRenderEngine::Imp::buildQuadStrip()
+{
+	assert(currentPrimitive == PrimitiveType::QUADSTRIP);
+	assert(mesh);
+	if (mesh == nullptr) return;
+
+	const int N = vertList.size();
+	vector<int> NL(N);
+
+	for (int i = 0; i < N; ++i)
+	{
+		NL[i] = mesh->AddNode(vertList[i]);
+	}
+
+	if (N > 3)
+	{
+		int n0 = NL[0];
+		int n1 = NL[1];
+		for (int i = 0; i < N - 3; i += 2)
+		{
+			int n2 = NL[i + 2];
+			int n3 = NL[i + 3];
+			mesh->AddFace(n0, n1, n2);
+			mesh->AddFace(n1, n3, n2);
+			n0 = n2;
+			n1 = n3;
+		}
+	}
 }

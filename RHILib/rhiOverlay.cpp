@@ -38,28 +38,32 @@ static GLMesh* buildTriadMesh()
 	GLMeshBuilder mb;
 	mb.start();
 
-	mb.setMaterial(GLMaterial::PLASTIC, GLColor(255, 0, 0));
-	mb.pushTransform();
-	mb.rotate(90, 0, 1, 0);
-	glx::drawCylinder(mb, r0, .9, 5);
-	mb.translate(vec3d(0, 0, .8f));
-	glx::drawCone(mb, r1, 0.2, 10);
-	mb.popTransform();
+	mb.beginShape();
+	{
+		mb.setColor(GLColor(255, 0, 0));
+		mb.pushTransform();
+		mb.rotate(90, 0, 1, 0);
+		glx::drawCylinder(mb, r0, .9, 5);
+		mb.translate(vec3d(0, 0, .8f));
+		glx::drawCone(mb, r1, 0.2, 10);
+		mb.popTransform();
 
-	mb.setMaterial(GLMaterial::PLASTIC, GLColor(0, 255, 0));
-	mb.pushTransform();
-	mb.rotate(-90, 1, 0, 0);
-	glx::drawCylinder(mb, r0, .9, 5);
-	mb.translate(vec3d(0, 0, .8f));
-	glx::drawCone(mb, r1, 0.2, 10);
-	mb.popTransform();
+		mb.setColor(GLColor(0, 255, 0));
+		mb.pushTransform();
+		mb.rotate(-90, 1, 0, 0);
+		glx::drawCylinder(mb, r0, .9, 5);
+		mb.translate(vec3d(0, 0, .8f));
+		glx::drawCone(mb, r1, 0.2, 10);
+		mb.popTransform();
 
-	mb.setMaterial(GLMaterial::PLASTIC, GLColor(0, 0, 255));
-	mb.pushTransform();
-	glx::drawCylinder(mb, r0, .9, 5);
-	mb.translate(vec3d(0, 0, .8f));
-	glx::drawCone(mb, r1, 0.2, 10);
-	mb.popTransform();
+		mb.setColor(GLColor(0, 0, 255));
+		mb.pushTransform();
+		glx::drawCylinder(mb, r0, .9, 5);
+		mb.translate(vec3d(0, 0, .8f));
+		glx::drawCone(mb, r1, 0.2, 10);
+		mb.popTransform();
+	}
+	mb.endShape();
 
 	mb.finish();
 

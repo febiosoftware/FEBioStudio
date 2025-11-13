@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <FSCore/math3d.h>
+#include "GLMath.h"
 #include <FSCore/color.h>
 #include <string>
 #include "GLRenderStats.h"
@@ -44,6 +44,7 @@ class GLRenderEngine : public FSObject
 
 public:
 	enum PrimitiveType {
+		NULL_PRIMITIVE = 0,
 		POINTS,
 		LINES,
 		LINELOOP,
@@ -76,7 +77,7 @@ public:
 
 public:
 	virtual void init() {}
-	virtual void start() { ResetStats(); }
+	virtual void start();
 	virtual void finish() {}
 
 public:
@@ -86,25 +87,24 @@ public:
 	virtual void viewport(int vp[4]) {}
 	virtual void setViewport(int v[4]) {}
 
-	virtual void resetTransform() {}
-	virtual void pushTransform() {}
-	virtual void popTransform() {}
+	void resetTransform();
+	void pushTransform();
+	void popTransform();
 
-	virtual void pushProjection() {}
-	virtual void popProjection() {}
+	gl::Matrix4 currentTransform() const;
 
-	virtual void translate(const vec3d& r) {}
-	virtual void rotate(const quatd& rot) {}
-	virtual void rotate(double angleDeg, double x, double y, double z) {}
-	virtual void scale(double x, double y, double z) {}
-	virtual void transform(const vec3d& pos, const quatd& rot) {}
-	virtual void multTransform(const double* m) {}
+	void translate(const vec3d& r);
+	void rotate(const quatd& rot);
+	void rotate(double angleDeg, double x, double y, double z);
+	void scale(double x, double y, double z);
+	void transform(const vec3d& pos, const quatd& rot);
+	void multTransform(const double* m);
 
 	void transform(const vec3d& r0, const vec3d& r1);
 	void rotate(const vec3d& r, vec3d ref = vec3d(0, 0, 1));
 
 public:
-	virtual void setColor(GLColor c) {}
+	virtual void setColor(GLColor c);
 	virtual void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = false) {}
 	virtual void setMaterial(const GLMaterial& mat) {}
 
@@ -133,18 +133,22 @@ public:
 	virtual void setBackgroundGradient(const GLColor& c1, const GLColor& c2, GradientType grad) {}
 
 public: // immediate mode rendering
-	virtual void beginShape() {}
-	virtual void endShape() {}
+	void beginShape();
+	void endShape();
 
-	virtual void begin(PrimitiveType prim) {}
-	virtual void end() {}
+	void begin(PrimitiveType prim);
+	void end();
 
-	virtual void vertex(const vec3d& r) {}
-	virtual void normal(const vec3d& r) {}
-	virtual void texCoord1d(double t) {}
-	virtual void texCoord2d(double r, double s) {}
+	void vertex(const vec3d& r);
+	void normal(const vec3d& r);
+	void texCoord1d(double t);
+	void texCoord2d(double r, double s);
 
 	void vertex(double x, double y, double z = 0.0) { vertex(vec3d(x, y, z)); }
+
+protected:
+	virtual void renderImmediateModeMesh();
+	GLMesh* takeImmediateModeMesh();
 
 public: // uses immediate mode
 	void renderPoint(const vec3d& r);

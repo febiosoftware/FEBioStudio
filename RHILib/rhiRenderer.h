@@ -35,7 +35,6 @@ SOFTWARE.*/
 #include "rhiGradientRenderPass.h"
 #include "rhiOverlay.h"
 #include "rhiCanvas.h"
-#include <GLLib/GLMeshBuilder.h>
 #include <chrono>
 using namespace std::chrono;
 using dseconds = duration<double>;
@@ -110,14 +109,6 @@ public:
 	void setProjection(double fov, double fnear, double ffar) override;
 	void setOrthoProjection(double left, double right, double bottom, double top, double zNear, double zFar) override;
 
-	void resetTransform() override;
-	void pushTransform() override;
-	void popTransform() override;
-	void translate(const vec3d& r) override;
-	void rotate(const quatd& rot) override;
-	void rotate(double deg, double x, double y, double z) override;
-	void scale(double x, double, double z) override;
-
 	void setLightPosition(unsigned int n, const vec3f& lp) override;
 	void setLightAmbientColor(unsigned int lightIndex, const GLColor& col) override;
 	void setLightDiffuseColor(unsigned int lightIndex, const GLColor& col) override;
@@ -155,18 +146,6 @@ public:
 	void ActivateEnvironmentMap(unsigned int mapid) override;
 	void DeactivateEnvironmentMap(unsigned int mapid) override;
 
-public: // immediate mode rendering
-	void beginShape() override;
-	void endShape() override;
-
-	void begin(PrimitiveType prim) override;
-	void end() override;
-
-	void vertex(const vec3d& r) override;
-	void normal(const vec3d& n) override;
-	void texCoord1d(double t) override;
-	void texCoord2d(double r, double s) override;
-
 public:
 	void setOverlayImage(const QImage& img);
 	void useOverlayImage(bool b);
@@ -177,6 +156,9 @@ public:
 	void setDPR(double dpr) { m_dpr = dpr; }
 
 	void setTriadInfo(const QMatrix4x4& m, QRhiViewport vp);
+
+private:
+	QMatrix4x4 modelViewMatrix() const;
 
 signals:
 	void captureFrameReady(QImage img);
@@ -216,8 +198,6 @@ private:
 	// matrix stuff
 	std::array<float, 4> m_viewport{ 0.f };
 	QMatrix4x4 m_projMatrix;
-	QMatrix4x4 m_modelViewMatrix;
-	std::stack<QMatrix4x4> m_transformStack;
 
 	// overlay flag
 	bool m_useOverlay = false;
@@ -225,10 +205,6 @@ private:
 	double m_dpr = 1;
 
 	bool captureNextFrame = false;
-
-private:
-	GLMeshBuilder mb;
-	bool buildingShape = false;
 
 private:
 	// variables used when creating meshes

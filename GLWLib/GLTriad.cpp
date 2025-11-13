@@ -108,7 +108,6 @@ void GLTriad::draw(GLPainter* painter)
 		float ar = 1.f;
 		if (h() != 0) ar = fabs((float)w() / (float)h());
 
-		re->pushProjection();
 		float d = 1.2f;
 		if (ar >= 1.f)	re->setOrthoProjection(-d * ar, d * ar, -d, d, -1, 1); else re->setOrthoProjection(-d, d, -d / ar, d / ar, -1, 1);
 
@@ -130,9 +129,6 @@ void GLTriad::draw(GLPainter* painter)
 			re->setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
 			re->renderGMesh(*m_pm);
 		}
-
-		// restore project matrix
-		re->popProjection();
 
 		// restore modelview matrix
 		re->popTransform();

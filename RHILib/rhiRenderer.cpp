@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include "rhiShader.h"
 #include <GLLib/GLTexture3D.h>
 
-
 void GlobalUniformBlock::create(QRhi* rhi)
 {
 	m_ub.create({
@@ -252,9 +251,20 @@ void rhiRenderer::setBackgroundGradient(const GLColor& c1, const GLColor& c2, Gr
 		m_gradientPass->setColorGradient(c2, c1, (int)grad);
 }
 
+QMatrix4x4 rhiRenderer::modelViewMatrix() const
+{
+	gl::Matrix4 m = currentTransform();
+	return QMatrix4x4(
+		m[0][0], m[0][1], m[0][2], m[0][3],
+		m[1][0], m[1][1], m[1][2], m[1][3],
+		m[2][0], m[2][1], m[2][2], m[2][3],
+		m[3][0], m[3][1], m[3][2], m[3][3]
+	);
+}
+
 void rhiRenderer::setLightPosition(unsigned int n, const vec3f& lp)
 {
-	QVector4D pos = m_modelViewMatrix * QVector4D(lp.x, lp.y, lp.z, 0);
+	QVector4D pos = modelViewMatrix() * QVector4D(lp.x, lp.y, lp.z, 0);
 	m_light = vec3f(pos.x(), pos.y(), pos.z());
 }
 
@@ -293,49 +303,6 @@ void rhiRenderer::setOrthoProjection(double left, double right, double bottom, d
 	m_projMatrix.ortho(left, right, bottom, top, zNear, zFar);
 }
 
-void rhiRenderer::resetTransform()
-{
-	m_modelViewMatrix.setToIdentity();
-}
-
-void rhiRenderer::pushTransform()
-{
-	m_transformStack.push(m_modelViewMatrix);
-	if (buildingShape) mb.pushTransform();
-}
-
-void rhiRenderer::popTransform()
-{
-	if (buildingShape) mb.popTransform();
-	assert(!m_transformStack.empty());
-	if (m_transformStack.empty()) return;
-	m_modelViewMatrix = m_transformStack.top();
-	m_transformStack.pop();
-}
-
-void rhiRenderer::translate(const vec3d& r)
-{
-	m_modelViewMatrix.translate(QVector3D(r.x, r.y, r.z));
-	mb.translate(r);
-}
-
-void rhiRenderer::rotate(const quatd& rot)
-{
-	m_modelViewMatrix.rotate(QQuaternion(rot.w, rot.x, rot.y, rot.z));
-	mb.rotate(rot);
-}
-
-void rhiRenderer::rotate(double deg, double x, double y, double z)
-{
-	quatd q(deg * DEG2RAD, vec3d(x, y, z));
-	rotate(q);
-}
-
-void rhiRenderer::scale(double x, double y, double z)
-{
-	m_modelViewMatrix.scale(x, y, z);
-}
-
 void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
 {
 	m_currentMat.type = matType;
@@ -350,20 +317,17 @@ void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::D
 	{
 		m_currentMat.ambient = GLColor::Black();
 	}
-
-	mb.setColor(c);
 }
 
 void rhiRenderer::setColor(GLColor c)
 {
 	m_currentMat.diffuse = c;
-	mb.setColor(c);
+	GLRenderEngine::setColor(c);
 }
 
 void rhiRenderer::setMaterial(const GLMaterial& mat)
 {
 	m_currentMat = mat;
-	mb.setColor(mat.diffuse);
 }
 
 void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
@@ -385,7 +349,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 	if (pm)
 	{
 		pm->SetMaterial(m_currentMat);
-		pm->SetMatrices(m_modelViewMatrix, m_projMatrix);
+		pm->SetMatrices(modelViewMatrix(), m_projMatrix);
 		pm->doClipping = m_clipEnabled;
 
 		m_stats.triangles += (pm->vertexCount / 3); // 3 vertices per triangle
@@ -407,7 +371,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 	if (pm)
 	{
 		pm->SetMaterial(m_currentMat);
-		pm->SetMatrices(m_modelViewMatrix, m_projMatrix);
+		pm->SetMatrices(modelViewMatrix(), m_projMatrix);
 		pm->doClipping = m_clipEnabled;
 
 		m_stats.triangles += (pm->vertexCount / 3); // 3 vertices per triangle
@@ -425,7 +389,7 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 	if (lineMesh)
 	{
 		lineMesh->SetMaterial(m_currentMat);
-		lineMesh->SetMatrices(m_modelViewMatrix, m_projMatrix);
+		lineMesh->SetMatrices(modelViewMatrix(), m_projMatrix);
 		lineMesh->doClipping = m_clipEnabled;
 
 		m_stats.lines += (lineMesh->vertexCount / 2); // 2 vertices per edge
@@ -443,7 +407,7 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cache
 	if (lineMesh)
 	{
 		lineMesh->SetMaterial(m_currentMat);
-		lineMesh->SetMatrices(m_modelViewMatrix, m_projMatrix);
+		lineMesh->SetMatrices(modelViewMatrix(), m_projMatrix);
 		lineMesh->doClipping = m_clipEnabled;
 
 		m_stats.lines += (lineMesh->vertexCount / 2); // 2 vertices per edge
@@ -461,7 +425,7 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 	if (pointMesh)
 	{
 		pointMesh->SetMaterial(m_currentMat);
-		pointMesh->SetMatrices(m_modelViewMatrix, m_projMatrix);
+		pointMesh->SetMatrices(modelViewMatrix(), m_projMatrix);
 		pointMesh->DoClipping(m_clipEnabled);
 
 		m_stats.points += pointMesh->vertexCount;
@@ -496,7 +460,7 @@ void rhiRenderer::setClipPlane(unsigned int n, const double* v)
 	{
 		// Transform to eye coordinates
 		QVector4D N(v[0], v[1], v[2], 0);
-		QMatrix4x4 modelView = m_modelViewMatrix;
+		QMatrix4x4 modelView = modelViewMatrix();
 		QVector4D Np = modelView * N;
 		// TODO: Do I need transpose of modelView?
 		double v3 = v[3] - (modelView(0,3) * Np[0] + modelView(1,3) * Np[1] + modelView(2,3) * Np[2]);
@@ -585,7 +549,7 @@ void rhiRenderer::start()
 	m_pointOverlayPass->reset();
 
 	// reset matrices
-	m_modelViewMatrix.setToIdentity();
+	resetTransform();
 	m_projMatrix.setToIdentity();
 
 	// default viewport is entire view
@@ -774,69 +738,4 @@ void rhiRenderer::finish()
 		// In this example we already ended the pass, so submit the batch directly:
 		cb->resourceUpdate(u);
 	}
-}
-
-void rhiRenderer::beginShape()
-{
-	mb.beginShape();
-	buildingShape = true;
-}
-
-void rhiRenderer::endShape()
-{
-	mb.endShape();
-	GLMesh* pm = mb.takeMesh();
-	if (pm)
-	{
-		m_currentMat.diffuseMap = GLMaterial::VERTEX_COLOR;
-		if (pm->Faces() > 0)
-		{
-			renderGMesh(*pm, false);
-		}
-
-		if (pm->Edges() > 0)
-		{
-			renderGMeshEdges(*pm, false);
-		}
-
-		if ((pm->Nodes() > 0) && (pm->Edges() == 0) && (pm->Faces() == 0))
-		{
-			renderGMeshNodes(*pm, false);
-		}
-
-		delete pm;
-	}
-	buildingShape = false;
-}
-
-void rhiRenderer::begin(PrimitiveType prim)
-{
-	if (!buildingShape) mb.beginShape();
-	mb.begin(prim);
-}
-
-void rhiRenderer::end()
-{
-	mb.end();
-	if (!buildingShape) endShape();
-}
-
-void rhiRenderer::vertex(const vec3d& r)
-{
-	mb.vertex(r);
-}
-
-void rhiRenderer::normal(const vec3d& n)
-{
-	mb.normal(n);
-}
-
-void rhiRenderer::texCoord1d(double t)
-{
-	mb.texCoord1d(t);
-}
-
-void rhiRenderer::texCoord2d(double r, double s)
-{
-	mb.texCoord2d(r, s);
 }

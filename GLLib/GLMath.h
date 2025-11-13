@@ -187,6 +187,18 @@ namespace gl
 			makeIdentity();
 		}
 
+		Matrix4(
+			double m00, double m01, double m02, double m03,
+			double m10, double m11, double m12, double m13,
+			double m20, double m21, double m22, double m23,
+			double m30, double m31, double m32, double m33)
+		{
+			d[0][0] = m00; d[0][1] = m01; d[0][2] = m02; d[0][3] = m03;
+			d[1][0] = m10; d[1][1] = m11; d[1][2] = m12; d[1][3] = m13;
+			d[2][0] = m20; d[2][1] = m21; d[2][2] = m22; d[2][3] = m23;
+			d[3][0] = m30; d[3][1] = m31; d[3][2] = m32; d[3][3] = m33;
+		}
+
 		void makeIdentity()
 		{
 			for (int i = 0; i < 4; ++i)

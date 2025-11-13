@@ -37,53 +37,14 @@ public:
 	GLMeshBuilder();
 	~GLMeshBuilder();
 
-	void start() override;
-	void finish() override;
-
 	GLMesh* takeMesh();
 
 	int surfaceWidth() const override { return 0; }
 	int surfaceHeight() const override { return 0; }
 
-public:
-	void pushTransform() override;
-	void popTransform() override;
-	void translate(const vec3d& r) override;
-	void rotate(const quatd& rot) override;
-	void rotate(double deg, double x, double y, double z) override;
-	void scale(double x, double, double z) override;
-
-	void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = true) override;
-
-	void beginShape();
-	void endShape();
-
-	void begin(PrimitiveType prim) override;
-	void end() override;
-
-	void vertex(const vec3d& r) override;
-	void normal(const vec3d& r) override;
-	void setColor(GLColor c) override;
-
 private:
-	void buildPoints();
-	void buildLines();
-	void buildLineStrip();
-	void buildLineLoop();
-	void buildTriangles();
-	void buildTriangleFan();
-	void buildQuads();
-	void buildQuadStrip();
+	void renderImmediateModeMesh() override;
 
 private:
 	GLMesh* m_pm = nullptr;
-
-	gl::Matrix4 modelView;
-	bool isMVIdentity = true;
-	std::stack<gl::Matrix4> mvStack;
-
-	std::vector<GLMesh::NODE> vertList;
-	GLColor currentColor;
-	gl::Vec3 currentNormal;
-	PrimitiveType currentPrimitive;
 };

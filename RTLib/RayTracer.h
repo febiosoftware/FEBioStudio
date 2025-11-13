@@ -162,16 +162,6 @@ public:
 	void cancel();
 
 public:
-	void pushTransform() override;
-	void popTransform() override;
-	void resetTransform() override;
-
-	void translate(const vec3d& r) override;
-	void rotate(const quatd& rot) override;
-	void rotate(double deg, double x, double y, double z) override;
-	void scale(double x, double, double z) override;
-
-public:
 	GLRenderEngine::FrontFace frontFace() const;
 	void setFrontFace(FrontFace f);
 
@@ -185,15 +175,6 @@ public:
 	void setLightDiffuseColor (unsigned int lightIndex, const GLColor& col) override;
 	void setLightSpecularColor(unsigned int lightIndex, const GLColor& col) override;
 	void setLightEnabled(unsigned int lightIndex, bool b) override;
-
-public: // immediate mode rendering
-	void begin(PrimitiveType prim) override;
-	void end() override;
-
-	void vertex(const vec3d& r) override;
-	void normal(const vec3d& r) override;
-	void texCoord1d(double t) override;
-	void texCoord2d(double r, double s) override;
 
 public:
 	void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) override;
@@ -246,9 +227,6 @@ private:
 	rt::Mesh mesh;
 	rt::Geometry geom;
 
-	gl::Matrix4 modelView;
-	std::stack<gl::Matrix4> mvStack;
-
 	gl::Matrix4 projMatrix;
 
 	std::vector<rt::Texture1D*> tex1d;
@@ -277,12 +255,6 @@ private:
 	double m_fw, m_fh;
 	double m_left, m_right;
 	double m_bottom, m_top;
-
-	bool immediateMode = false;
-	PrimitiveType primType = POINTS;
-	std::vector<rt::Point> verts;
-	gl::Vec3 currentNormal;
-	gl::Vec3 currentTexCoord;
 
 	bool renderStarted;
 	double percentCompleted;

@@ -236,7 +236,6 @@ void RayTracer::start()
 	mg->setOutput(output);
 	geom.push_back(mg);
 
-	modelView.makeIdentity();
 	projMatrix.makeIdentity();
 }
 
@@ -276,47 +275,6 @@ void RayTracer::finish()
 	GLRenderEngine::finish();
 }
 
-void RayTracer::pushTransform()
-{
-	mvStack.push(modelView);
-}
-
-void RayTracer::popTransform()
-{
-	assert(!mvStack.empty());
-	modelView = mvStack.top();
-	mvStack.pop();
-}
-
-void RayTracer::resetTransform()
-{
-	modelView.makeIdentity();
-}
-
-void RayTracer::translate(const vec3d& r)
-{
-	Matrix4 T = Matrix4::translate(Vec3(r));
-	modelView *= T;
-}
-
-void RayTracer::rotate(const quatd& rot)
-{
-	Matrix4 R = Matrix4::rotate(rot);
-	modelView *= R;
-}
-
-void RayTracer::rotate(double deg, double x, double y, double z)
-{
-	quatd q(deg * DEG2RAD, vec3d(x, y, z));
-	rotate(q);
-}
-
-void RayTracer::scale(double x, double y, double z)
-{
-	Matrix4 S = Matrix4::scale(x, y, z);
-	modelView *= S;
-}
-
 GLRenderEngine::FrontFace RayTracer::frontFace() const
 {
 	return front;
@@ -330,6 +288,7 @@ void RayTracer::setFrontFace(GLRenderEngine::FrontFace f)
 void RayTracer::setColor(GLColor c)
 {
 	currentColor = c;
+	GLRenderEngine::setColor(c);
 }
 
 void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
@@ -394,7 +353,7 @@ void RayTracer::setMaterial(const GLMaterial& glmat)
 void RayTracer::setLightPosition(unsigned int lightIndex, const vec3f& p)
 {
 	Vec4 r(p, 0);
-	lightPos = modelView * r;
+	lightPos = currentTransform()* r;
 }
 
 void RayTracer::setLightSpecularColor(unsigned int lightIndex, const GLColor& col)
@@ -417,93 +376,9 @@ void RayTracer::setLightEnabled(unsigned int lightIndex, bool b)
 	lightEnabled = b;
 }
 
-void RayTracer::begin(PrimitiveType prim)
-{
-	assert(immediateMode == false);
-	assert(verts.empty());
-	immediateMode = true;
-	primType = prim;
-	verts.reserve(1024 * 1024);
-}
-
-void RayTracer::end()
-{
-	assert(immediateMode);
-	if (immediateMode)
-	{
-		size_t vertices = verts.size();
-		size_t n = 0;
-		switch (primType)
-		{
-		case GLRenderEngine::TRIANGLES:
-		{
-			size_t ntri = vertices / 3;
-			for (size_t i = 0; i < ntri; ++i, n += 3)
-			{
-				rt::Tri tri(verts[n], verts[n+1], verts[n+2]);
-				tri.matid = currentMaterial;
-				addTriangle(tri);
-			}
-		}
-		break;
-		case GLRenderEngine::TRIANGLEFAN:
-		{
-			size_t ntri = vertices - 2;
-			for (size_t i = 0; i < ntri; ++i, n++)
-			{
-				rt::Tri tri(verts[0], verts[n + 1], verts[n + 2]);
-				tri.matid = currentMaterial;
-				addTriangle(tri);
-			}
-		}
-		break;
-		case GLRenderEngine::QUADSTRIP:
-		{
-			size_t nquads = (vertices - 2) / 2;
-			for (size_t i = 0; i < nquads; ++i, n += 2)
-			{
-				rt::Tri tri1(verts[n], verts[n + 1], verts[n + 2]);
-				rt::Tri tri2(verts[n+2], verts[n + 3], verts[n + 1]);
-				tri1.matid = currentMaterial;
-				tri2.matid = currentMaterial;
-				addTriangle(tri1);
-				addTriangle(tri2);
-			}
-		}
-		break;
-		}
-	}
-	immediateMode = false;
-	verts.clear();
-}
-
-void RayTracer::vertex(const vec3d& r)
-{
-	Point p;
-	p.r = modelView * Vec4(r);
-	p.n = modelView * Vec4(currentNormal, 0); p.n.normalize();
-	p.c = currentColor;
-	p.t = currentTexCoord;
-	verts.push_back(p);
-}
-
-void RayTracer::normal(const vec3d& r)
-{
-	currentNormal = Vec3(r);
-}
-
-void RayTracer::texCoord1d(double t)
-{
-	currentTexCoord = Vec3(t, 0, 0);
-}
-
-void RayTracer::texCoord2d(double r, double s)
-{
-	currentTexCoord = Vec3(r, s, 0);
-}
-
 void RayTracer::renderGMesh(const GLMesh& gmesh, bool cacheMesh)
 {
+	gl::Matrix4 mv = currentTransform();
 	int NF = gmesh.Faces();
 	for (int i = 0; i < NF; ++i)
 	{
@@ -513,8 +388,8 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, bool cacheMesh)
 		{
 			for (int j = 0; j < 3; ++j)
 			{
-				tri.r[j] = modelView * Vec4(face.vr[j], 1);
-				tri.n[j] = modelView * Vec4(face.vn[j], 0); tri.n[j].normalize();
+				tri.r[j] = mv * Vec4(face.vr[j], 1);
+				tri.n[j] = mv * Vec4(face.vn[j], 0); tri.n[j].normalize();
 				tri.t[j] = Vec3(face.t[j]);
 				tri.c[j] = (useVertexColor ? face.c[j] : currentColor);
 			}
@@ -523,8 +398,8 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, bool cacheMesh)
 		{
 			for (int j = 0; j < 3; ++j)
 			{
-				tri.r[2-j] = modelView * Vec4(face.vr[j], 1);
-				tri.n[2-j] = modelView * Vec4(face.vn[j], 0); tri.n[j].normalize();
+				tri.r[2-j] = mv * Vec4(face.vr[j], 1);
+				tri.n[2-j] = mv * Vec4(face.vn[j], 0); tri.n[j].normalize();
 				tri.t[2-j] = Vec3(face.t[j]);
 				tri.c[2-j] = (useVertexColor ? face.c[j] : currentColor);
 			}
@@ -537,6 +412,7 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, bool cacheMesh)
 void RayTracer::renderGMesh(const GLMesh& gmesh, int surfId, bool cacheMesh)
 {
 	if ((surfId < 0) || (surfId >= gmesh.Partitions())) return;
+	gl::Matrix4 mv = currentTransform();
 
 	const GLMesh::PARTITION& p = gmesh.Partition(surfId);
 	for (int i = 0; i < p.nf; ++i)
@@ -547,8 +423,8 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, int surfId, bool cacheMesh)
 		{
 			for (int j = 0; j < 3; ++j)
 			{
-				tri.r[j] = modelView * Vec4(face.vr[j], 1);
-				tri.n[j] = modelView * Vec4(face.vn[j], 0); tri.n[j].normalize();
+				tri.r[j] = mv * Vec4(face.vr[j], 1);
+				tri.n[j] = mv * Vec4(face.vn[j], 0); tri.n[j].normalize();
 				tri.t[j] = Vec3(face.t[j]);
 				tri.c[j] = (useVertexColor ? face.c[j] : currentColor);
 			}
@@ -557,8 +433,8 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, int surfId, bool cacheMesh)
 		{
 			for (int j = 0; j < 3; ++j)
 			{
-				tri.r[2-j] = modelView * Vec4(face.vr[j], 1);
-				tri.n[2-j] = modelView * Vec4(face.vn[j], 0); tri.n[j].normalize();
+				tri.r[2-j] = mv * Vec4(face.vr[j], 1);
+				tri.n[2-j] = mv * Vec4(face.vn[j], 0); tri.n[j].normalize();
 				tri.t[2-j] = Vec3(face.t[j]);
 				tri.c[2-j] = (useVertexColor ? face.c[j] : currentColor);
 			}
@@ -570,6 +446,7 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, int surfId, bool cacheMesh)
 
 void RayTracer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 {
+	gl::Matrix4 mv = currentTransform();
 	int NE = mesh.Edges();
 	for (int i = 0; i < NE; ++i)
 	{
@@ -577,7 +454,7 @@ void RayTracer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 		rt::Line line;
 		for (int j = 0; j < 2; ++j)
 		{
-			line.r[j] = modelView * Vec4(edge.vr[j], 1);
+			line.r[j] = mv * Vec4(edge.vr[j], 1);
 			line.c[j] = (useVertexColor ? edge.c[j] : currentColor);
 		}
 		addLine(line);
@@ -588,6 +465,7 @@ void RayTracer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cacheMe
 {
 	if ((partition < 0) || (partition >= mesh.EILs())) return;
 
+	gl::Matrix4 mv = currentTransform();
 	const std::pair<int, int> p = mesh.EIL(partition);
 	int NE = p.second;
 	for (int i = 0; i < NE; ++i)
@@ -596,7 +474,7 @@ void RayTracer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cacheMe
 		rt::Line line;
 		for (int j = 0; j < 2; ++j)
 		{
-			line.r[j] = modelView * Vec4(edge.vr[j], 1);
+			line.r[j] = mv * Vec4(edge.vr[j], 1);
 			line.c[j] = (useVertexColor ? edge.c[j] : currentColor);
 		}
 		addLine(line);
@@ -771,8 +649,9 @@ void RayTracer::setClipPlane(unsigned int n, const double* v)
 	if (n == 0)
 	{
 		Vec4 N(v[0], v[1], v[2], 0);
-		Vec4 Np = modelView * N;
-		double v3 = v[3] - (modelView[0][3] * Np[0] + modelView[1][3] * Np[1] + modelView[2][3] * Np[2]);
+		gl::Matrix4 mv = currentTransform();
+		Vec4 Np = mv * N;
+		double v3 = v[3] - (mv[0][3] * Np[0] + mv[1][3] * Np[1] + mv[2][3] * Np[2]);
 
 		clipPlane[0] = Np[0];
 		clipPlane[1] = Np[1];
@@ -1144,7 +1023,8 @@ void RayTracer::DeactivateEnvironmentMap(unsigned int id)
 
 void RayTracer::addSphere(const vec3d& c, double R)
 {
-	Vec4 p = modelView * Vec4(c.x, c.y, c.z, 1);
+	gl::Matrix4 mv = currentTransform();
+	Vec4 p = mv*Vec4(c.x, c.y, c.z, 1);
 	Vec3 o(p.x(), p.y(), p.z());
 	rt::sphere* S = new rt::sphere(o, R);
 	S->col = currentColor;
