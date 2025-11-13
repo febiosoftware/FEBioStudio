@@ -297,12 +297,6 @@ void CGLModel::UpdateDisplacements(int nstate, bool breset)
 void CGLModel::SetSmoothingAngle(double w)
 { 
 	m_stol = w;
-
-	FEPostModel* ps = GetFSModel();
-	if (ps == 0) return;
-
-	FSMeshBase* pm = ps->GetFEMesh(0);
-	pm->AutoSmooth(m_stol);
 }
 
 //-----------------------------------------------------------------------------

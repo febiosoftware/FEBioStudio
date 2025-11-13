@@ -755,7 +755,6 @@ void FEBoxMesher::BuildHexFaces(FSMesh* pm)
 			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 0;
-			f.m_sid = 0;
 			f.n[0] = NodeIndex(i  , 0, k  );
 			f.n[1] = NodeIndex(i+1, 0, k  );
 			f.n[2] = NodeIndex(i+1, 0, k+1);
@@ -769,7 +768,6 @@ void FEBoxMesher::BuildHexFaces(FSMesh* pm)
 			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 1;
-			f.m_sid = 1;
 			f.n[0] = NodeIndex(m_nx, j  , k  );
 			f.n[1] = NodeIndex(m_nx, j+1, k  );
 			f.n[2] = NodeIndex(m_nx, j+1, k+1);
@@ -783,7 +781,6 @@ void FEBoxMesher::BuildHexFaces(FSMesh* pm)
 			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 2;
-			f.m_sid = 2;
 			f.n[0] = NodeIndex(i+1, m_ny, k  );
 			f.n[1] = NodeIndex(i  , m_ny, k  );
 			f.n[2] = NodeIndex(i  , m_ny, k+1);
@@ -797,7 +794,6 @@ void FEBoxMesher::BuildHexFaces(FSMesh* pm)
 			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 3;
-			f.m_sid = 3;
 			f.n[0] = NodeIndex(0, j+1, k  );
 			f.n[1] = NodeIndex(0, j  , k  );
 			f.n[2] = NodeIndex(0, j  , k+1);
@@ -811,7 +807,6 @@ void FEBoxMesher::BuildHexFaces(FSMesh* pm)
 			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 4;
-			f.m_sid = 4;
 			f.n[0] = NodeIndex(i  , j  , 0);
 			f.n[1] = NodeIndex(i  , j+1, 0);
 			f.n[2] = NodeIndex(i+1, j+1, 0);
@@ -825,7 +820,6 @@ void FEBoxMesher::BuildHexFaces(FSMesh* pm)
 			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 5;
-			f.m_sid = 5;
 			f.n[0] = NodeIndex(i  , j  , m_nz);
 			f.n[1] = NodeIndex(i+1, j  , m_nz);
 			f.n[2] = NodeIndex(i+1, j+1, m_nz);
@@ -852,7 +846,6 @@ void FEBoxMesher::BuildTetFaces(FSMesh* pm)
 		{
 			pf->SetType(FE_FACE_TRI3);
 			pf->m_gid = 0;
-			pf->m_sid = 0;
 			pf->n[0] = NodeIndex(i  , 0, k  );
 			pf->n[1] = NodeIndex(i+1, 0, k  );
 			pf->n[2] = NodeIndex(i+1, 0, k+1);
@@ -861,7 +854,6 @@ void FEBoxMesher::BuildTetFaces(FSMesh* pm)
 
 			pf->SetType(FE_FACE_TRI3);
 			pf->m_gid = 0;
-			pf->m_sid = 0;
 			pf->n[0] = NodeIndex(i+1, 0, k+1);
 			pf->n[1] = NodeIndex(i  , 0, k+1);
 			pf->n[2] = NodeIndex(i  , 0, k  );
@@ -875,7 +867,6 @@ void FEBoxMesher::BuildTetFaces(FSMesh* pm)
 		{
 			pf->SetType(FE_FACE_TRI3);
 			pf->m_gid = 1;
-			pf->m_sid = 1;
 			pf->n[0] = NodeIndex(m_nx, j  , k  );
 			pf->n[1] = NodeIndex(m_nx, j+1, k  );
 			pf->n[2] = NodeIndex(m_nx, j+1, k+1);
@@ -884,7 +875,6 @@ void FEBoxMesher::BuildTetFaces(FSMesh* pm)
 
 			pf->SetType(FE_FACE_TRI3);
 			pf->m_gid = 1;
-			pf->m_sid = 1;
 			pf->n[0] = NodeIndex(m_nx, j+1, k+1);
 			pf->n[1] = NodeIndex(m_nx, j  , k+1);
 			pf->n[2] = NodeIndex(m_nx, j  , k  );
@@ -898,7 +888,6 @@ void FEBoxMesher::BuildTetFaces(FSMesh* pm)
 		{
 			pf->SetType(FE_FACE_TRI3);
 			pf->m_gid = 2;
-			pf->m_sid = 2;
 			pf->n[0] = NodeIndex(i+1, m_ny, k  );
 			pf->n[1] = NodeIndex(i  , m_ny, k  );
 			pf->n[2] = NodeIndex(i+1, m_ny, k+1);
@@ -907,7 +896,6 @@ void FEBoxMesher::BuildTetFaces(FSMesh* pm)
 
 			pf->SetType(FE_FACE_TRI3);
 			pf->m_gid = 2;
-			pf->m_sid = 2;
 			pf->n[0] = NodeIndex(i  , m_ny, k  );
 			pf->n[1] = NodeIndex(i  , m_ny, k+1);
 			pf->n[2] = NodeIndex(i+1, m_ny, k+1);
@@ -921,7 +909,6 @@ void FEBoxMesher::BuildTetFaces(FSMesh* pm)
 		{
 			pf->SetType(FE_FACE_TRI3);
 			pf->m_gid = 3;
-			pf->m_sid = 3;
 			pf->n[0] = NodeIndex(0, j+1, k  );
 			pf->n[1] = NodeIndex(0, j  , k  );
 			pf->n[2] = NodeIndex(0, j+1, k+1);
@@ -930,7 +917,6 @@ void FEBoxMesher::BuildTetFaces(FSMesh* pm)
 
 			pf->SetType(FE_FACE_TRI3);
 			pf->m_gid = 3;
-			pf->m_sid = 3;
 			pf->n[0] = NodeIndex(0, j  , k  );
 			pf->n[1] = NodeIndex(0, j  , k+1);
 			pf->n[2] = NodeIndex(0, j+1, k+1);
@@ -944,7 +930,6 @@ void FEBoxMesher::BuildTetFaces(FSMesh* pm)
 		{
 			pf->SetType(FE_FACE_TRI3);
 			pf->m_gid = 4;
-			pf->m_sid = 4;
 			pf->n[0] = NodeIndex(i  , j  , 0);
 			pf->n[1] = NodeIndex(i  , j+1, 0);
 			pf->n[2] = NodeIndex(i+1, j  , 0);
@@ -953,7 +938,6 @@ void FEBoxMesher::BuildTetFaces(FSMesh* pm)
 
 			pf->SetType(FE_FACE_TRI3);
 			pf->m_gid = 4;
-			pf->m_sid = 4;
 			pf->n[0] = NodeIndex(i+1, j  , 0);
 			pf->n[1] = NodeIndex(i  , j+1, 0);
 			pf->n[2] = NodeIndex(i+1, j+1, 0);
@@ -967,7 +951,6 @@ void FEBoxMesher::BuildTetFaces(FSMesh* pm)
 		{
 			pf->SetType(FE_FACE_TRI3);
 			pf->m_gid = 5;
-			pf->m_sid = 5;
 			pf->n[0] = NodeIndex(i  , j  , m_nz);
 			pf->n[1] = NodeIndex(i+1, j  , m_nz);
 			pf->n[2] = NodeIndex(i  , j+1, m_nz);
@@ -976,7 +959,6 @@ void FEBoxMesher::BuildTetFaces(FSMesh* pm)
 
 			pf->SetType(FE_FACE_TRI3);
 			pf->m_gid = 5;
-			pf->m_sid = 5;
 			pf->n[0] = NodeIndex(i+1, j  , m_nz);
 			pf->n[1] = NodeIndex(i+1, j+1, m_nz);
 			pf->n[2] = NodeIndex(i  , j+1, m_nz);

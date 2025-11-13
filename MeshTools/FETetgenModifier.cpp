@@ -278,7 +278,7 @@ FSMesh* FETetGenModifier::CreateMesh(FSMesh* pm)
 	pmesh->BuildMesh();
 
 	// update faces
-	pmesh->SmoothByPartition();
+	pmesh->UpdateNormals();
 
 	// associate the FE nodes with the GNodes
 	GObject* po = pm->GetGObject();
@@ -326,11 +326,10 @@ FSMesh* FETetGenModifier::RefineMesh(FSMesh* pm)
 	out.initialize();
 
 	int NF = pm->Faces();
-	vector<int> gid(NF), sid(NF);
+	vector<int> gid(NF);
 	for (int i=0; i<NF; ++i) 
 	{
 		gid[i] = pm->Face(i).m_gid;
-		sid[i] = pm->Face(i).m_sid;
 	}
 
 	// build the tetgen structure
@@ -408,12 +407,10 @@ FSMesh* FETetGenModifier::RefineMesh(FSMesh* pm)
 		if ((marker >= 0) && (marker < gid.size()))
 		{
 			f.m_gid = gid[marker];
-			f.m_sid = sid[marker];
 		}
 		else
 		{
 			f.m_gid = 0;
-			f.m_sid = 0;
 		}
 	}
 /*

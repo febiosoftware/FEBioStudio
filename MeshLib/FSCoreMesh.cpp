@@ -1573,18 +1573,6 @@ int FSCoreMesh::CountElementPartitions() const
 }
 
 //-----------------------------------------------------------------------------
-int FSCoreMesh::CountSmoothingGroups() const
-{
-	int max_sg = -1;
-	for (int i = 0; i<Faces(); ++i)
-	{
-		const FSFace& face = Face(i);
-		if (face.m_sid > max_sg) max_sg = face.m_sid;
-	}
-	return max_sg + 1;
-}
-
-//-----------------------------------------------------------------------------
 void ForAllElements(FSCoreMesh& mesh, std::function<void(FSElement_& el)> f)
 {
 	for (int i = 0; i < mesh.Elements(); ++i)

@@ -161,7 +161,7 @@ void CPostObject::BuildFERenderMesh()
 				int mid = -1;
 				if (eid >= 0) mid = pm->Element(eid).m_MatID;
 
-				gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), n, eid, mid);
+				gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_gid, face.IsExterior(), n, eid, mid);
 
 				int ne = face.Edges();
 				for (int j = 0; j < ne; ++j)
@@ -253,7 +253,6 @@ void CPostObject::BuildInternalSurfaces()
 						face.m_fn = (r1 - r0) ^ (r2 - r0);
 						for (int k = 0; k < face.Nodes(); ++k) face.m_nn[k] = face.m_fn;
 						face.m_fn.Normalize();
-						face.m_sid = 0;
 						face.m_gid = nsurf + m;
 
 						m_innerSurface[m]->add(face);

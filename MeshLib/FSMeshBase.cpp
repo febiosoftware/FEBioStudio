@@ -143,95 +143,6 @@ void FSMeshBase::RemoveEdges(int ntag)
 }
 
 //-----------------------------------------------------------------------------
-// This function assignes group ID's to the mesh' faces based on a smoothing
-// angle.
-//
-void FSMeshBase::AutoSmooth(double angleDegrees, bool creaseInternal)
-{
-	int NF = Faces();
-
-	// smoothing threshold
-	double eps = (double)cos(angleDegrees * DEG2RAD);
-
-	// clear face group ID's
-	for (int i = 0; i<NF; ++i)
-	{
-		FSFace* pf = FacePtr(i);
-		pf->m_sid = -1;
-	}
-
-	// calculate face normals
-	for (int i = 0; i<NF; ++i)
-	{
-		FSFace* pf = FacePtr(i);
-
-		// calculate the face normals
-		vec3d& r0 = Node(pf->n[0]).r;
-		vec3d& r1 = Node(pf->n[1]).r;
-		vec3d& r2 = Node(pf->n[2]).r;
-
-		pf->m_fn = to_vec3f((r1 - r0) ^ (r2 - r0));
-		pf->m_fn.Normalize();
-	}
-
-
-	// stack for tracking unprocessed faces
-	vector<FSFace*> stack(NF);
-	int ns = 0;
-
-	// process all faces
-	int nsg = 0;
-	for (int i = 0; i<NF; ++i)
-	{
-		FSFace* pf = FacePtr(i);
-		if (pf->m_sid == -1)
-		{
-			stack[ns++] = pf;
-			while (ns > 0)
-			{
-				// pop a face
-				pf = stack[--ns];
-
-				// mark as processed
-				pf->m_sid = nsg;
-
-				// loop over neighbors
-				int n = pf->Edges();
-				for (int j = 0; j<n; ++j)
-				{
-					FSFace* pf2 = FacePtr(pf->m_nbr[j]);
-
-					// push unprocessed neighbour
-					if (pf2 && (pf2->m_sid == -1))
-					{
-						bool badd = false;
-						if ((pf->IsExternal() == false) && (pf2->IsExternal() == false))
-						{
-							if ((creaseInternal == false) || (pf->m_fn * pf2->m_fn >= eps))
-								badd = true;
-						}
-						else if (pf->m_fn * pf2->m_fn >= eps)
-						{
-							badd = true;
-						}
-
-						if (badd)
-						{
-							pf2->m_sid = -2;
-							stack[ns++] = pf2;
-						}
-					}
-				}
-			}
-			++nsg;
-		}
-	}
-
-	// update the normals
-	UpdateNormals();
-}
-
-//-----------------------------------------------------------------------------
 // Calculate normals of the mesh' faces based on smoothing groups
 //
 void FSMeshBase::UpdateNormals()
@@ -306,7 +217,7 @@ void FSMeshBase::UpdateNormals()
 				{
 					FSFace* pf2 = FacePtr(pf->m_nbr[j]);
 					// push unprocessed neighbor
-					if (pf2 && (pf2->m_ntag == -1) && (pf->m_sid == pf2->m_sid))
+					if (pf2 && (pf2->m_ntag == -1) && (pf->m_gid == pf2->m_gid))
 					{
 						pf2->m_ntag = -2;
 						stack[ns++] = pf2;
@@ -335,21 +246,6 @@ void FSMeshBase::UpdateNormals()
 		int n = pf->Nodes();
 		for (int j = 0; j<n; ++j) pf->m_nn[j].Normalize();
 	}
-}
-
-//-----------------------------------------------------------------------------
-// assign smoothing IDs based on surface partition
-void FSMeshBase::SmoothByPartition()
-{
-	// assign group IDs to smoothing IDs
-	for (int i=0; i<Faces(); ++i)
-	{
-		FSFace& face = Face(i);
-		face.m_sid = face.m_gid;
-	}	
-
-	// update the normals
-	UpdateNormals();
 }
 
 //-----------------------------------------------------------------------------

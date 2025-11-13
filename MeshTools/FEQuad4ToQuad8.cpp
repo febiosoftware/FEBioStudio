@@ -228,7 +228,6 @@ FSMesh* FEQuad4ToQuad8::Apply(FSMesh* pm)
         
         f1.SetType(FE_FACE_QUAD8);
         f1.m_gid = f0.m_gid;
-        f1.m_sid = f0.m_sid;
         f1.n[0] = f0.n[0];
         f1.n[1] = f0.n[1];
         f1.n[2] = f0.n[2];
@@ -570,7 +569,6 @@ FSMesh* FEQuad8ToQuad4::Apply(FSMesh* pm)
         
         f1.SetType(FE_FACE_QUAD4);
         f1.m_gid = f0.m_gid;
-        f1.m_sid = f0.m_sid;
         f1.n[0] = f0.n[0];
         f1.n[1] = f0.n[1];
         f1.n[2] = f0.n[2];

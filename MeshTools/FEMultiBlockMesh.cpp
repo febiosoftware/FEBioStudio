@@ -570,7 +570,6 @@ void FEMultiBlockMesh::BuildFEFaces(FSMesh* pm)
 				{
 					FSFace* pf = pm->FacePtr(faces++);
 					pf->m_gid = F.m_gid;
-					pf->m_sid = (F.m_sid < 0 ? F.m_gid : F.m_sid);
 					switch (m_elemType)
 					{
 					case FE_HEX8 : pf->SetType(FE_FACE_QUAD4); break;

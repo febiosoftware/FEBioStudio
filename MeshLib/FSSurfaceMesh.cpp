@@ -157,7 +157,6 @@ void FSSurfaceMesh::Create(unsigned int nodes, unsigned int edges, unsigned int 
 		for (unsigned int i = 0; i < faces; ++i)
 		{
 			m_Face[i].m_gid = 0;
-			m_Face[i].m_sid = 0;
 		}
 	}
 }
@@ -219,15 +218,7 @@ void FSSurfaceMesh::AutoPartition(double smoothingAngle)
 	// auto-smooth the surface
 	if (smoothingAngle > 0.0)
 	{
-		AutoSmooth(smoothingAngle);
-
-		// now, assign face groupd IDs from the smoothing IDs
-		int NF = Faces();
-		for (int i = 0; i < NF; ++i)
-		{
-			FSFace& face = Face(i);
-			face.m_gid = face.m_sid;
-		}
+		AutoPartitionFaces(smoothingAngle);
 	}
 
 	// -- Build edge data ---
@@ -245,6 +236,96 @@ void FSSurfaceMesh::AutoPartition(double smoothingAngle)
 	AutoPartitionNodes();
 
 	// update other mesh data
+	UpdateNormals();
+}
+
+
+//-----------------------------------------------------------------------------
+// This function assignes group ID's to the mesh' faces based on a smoothing
+// angle.
+//
+void FSSurfaceMesh::AutoPartitionFaces(double angleDegrees, bool creaseInternal)
+{
+	int NF = Faces();
+
+	// smoothing threshold
+	double eps = (double)cos(angleDegrees * DEG2RAD);
+
+	// clear face group ID's
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace* pf = FacePtr(i);
+		pf->m_gid = -1;
+	}
+
+	// calculate face normals
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace* pf = FacePtr(i);
+
+		// calculate the face normals
+		vec3d& r0 = Node(pf->n[0]).r;
+		vec3d& r1 = Node(pf->n[1]).r;
+		vec3d& r2 = Node(pf->n[2]).r;
+
+		pf->m_fn = to_vec3f((r1 - r0) ^ (r2 - r0));
+		pf->m_fn.Normalize();
+	}
+
+
+	// stack for tracking unprocessed faces
+	vector<FSFace*> stack(NF);
+	int ns = 0;
+
+	// process all faces
+	int nsg = 0;
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace* pf = FacePtr(i);
+		if (pf->m_gid == -1)
+		{
+			stack[ns++] = pf;
+			while (ns > 0)
+			{
+				// pop a face
+				pf = stack[--ns];
+
+				// mark as processed
+				pf->m_gid = nsg;
+
+				// loop over neighbors
+				int n = pf->Edges();
+				for (int j = 0; j < n; ++j)
+				{
+					FSFace* pf2 = FacePtr(pf->m_nbr[j]);
+
+					// push unprocessed neighbour
+					if (pf2 && (pf2->m_gid == -1))
+					{
+						bool badd = false;
+						if ((pf->IsExternal() == false) && (pf2->IsExternal() == false))
+						{
+							if ((creaseInternal == false) || (pf->m_fn * pf2->m_fn >= eps))
+								badd = true;
+						}
+						else if (pf->m_fn * pf2->m_fn >= eps)
+						{
+							badd = true;
+						}
+
+						if (badd)
+						{
+							pf2->m_gid = -2;
+							stack[ns++] = pf2;
+						}
+					}
+				}
+			}
+			++nsg;
+		}
+	}
+
+	// update the normals
 	UpdateNormals();
 }
 
@@ -625,18 +706,6 @@ int FSSurfaceMesh::CountFacePartitions() const
 }
 
 //-----------------------------------------------------------------------------
-int FSSurfaceMesh::CountSmoothingGroups() const
-{
-	int max_sg = -1;
-	for (int i = 0; i<Faces(); ++i)
-	{
-		const FSFace& face = Face(i);
-		if (face.m_sid > max_sg) max_sg = face.m_sid;
-	}
-	return max_sg + 1;
-}
-
-//-----------------------------------------------------------------------------
 // This functions update the node GIds to make sure that no indices are skipped.
 // This needs to be called after the number of nodes changes.
 void FSSurfaceMesh::UpdateNodePartitions()
@@ -761,49 +830,6 @@ void FSSurfaceMesh::UpdateFacePartitions()
 		}
 	}
 }
-
-//-----------------------------------------------------------------------------
-// This functions update the face smoothing Ids to make sure that no indices are skipped.
-// This needs to be called after the number of faces changes.
-void FSSurfaceMesh::UpdateSmoothingGroups()
-{
-	// find the largest SG
-	int max_sg = -1;
-	for (int i = 0; i<Faces(); ++i)
-	{
-		FSFace& face = Face(i);
-		if (face.m_sid > max_sg) max_sg = face.m_sid;
-	}
-
-	// if no face has a GID we are done
-	if (max_sg < 0) return;
-
-	// build a SID lookup table
-	vector<int> sg(max_sg + 1, -1);
-	for (int i = 0; i<Faces(); ++i)
-	{
-		FSFace& face = Face(i);
-		if (face.m_sid >= 0) sg[face.m_sid] = 1;
-	}
-
-	// assign new SIDs
-	int n = 0;
-	for (int i = 0; i<sg.size(); ++i)
-	{
-		if (sg[i] != -1) sg[i] = n++;
-	}
-
-	// only update node GIDs when necessary
-	if (n < sg.size())
-	{
-		for (int i = 0; i<Faces(); ++i)
-		{
-			FSFace& face = Face(i);
-			if (face.m_sid >= 0) face.m_sid = sg[face.m_sid];
-		}
-	}
-}
-
 
 //-----------------------------------------------------------------------------
 // Delete selected nodes
@@ -968,7 +994,6 @@ void FSSurfaceMesh::DeleteTaggedFaces(int tag)
 
 	// update faces
 	UpdateFacePartitions();
-	UpdateSmoothingGroups();
 	AutoPartitionEdges();
 	UpdateEdgeNeighbors();
 	AutoPartitionNodes();
@@ -1273,8 +1298,6 @@ void FSSurfaceMesh::Attach(const FSSurfaceMesh& mesh)
 		// find the largest GID
 		int ng = CountFacePartitions();
 
-		int nsg = CountSmoothingGroups();
-
 		// add new faces
 		// TODO: Do we need to update the smoothing IDs as well?
 		m_Face.resize(faces);
@@ -1284,7 +1307,6 @@ void FSSurfaceMesh::Attach(const FSSurfaceMesh& mesh)
 			const FSFace& f1 = mesh.m_Face[i];
 			f0 = f1;
 			f0.m_gid = f1.m_gid + ng;
-			f0.m_sid = f1.m_sid + nsg;
 
 			for (int j = 0; j<f0.Nodes(); ++j) f0.n[j] = f1.n[j] + nn0;
 
@@ -1541,7 +1563,6 @@ void FSSurfaceMesh::AttachAndWeld(const FSSurfaceMesh& mesh, double weldToleranc
 
 	// find the largest GID
 	ng = CountFacePartitions();
-	int nsg = CountSmoothingGroups();
 	// allocate faces
 	Create(0, 0, NF0 + NF1);
 	for (int i=0; i<NF1; ++i)
@@ -1551,7 +1572,6 @@ void FSSurfaceMesh::AttachAndWeld(const FSSurfaceMesh& mesh, double weldToleranc
 		face0 = face1;
 
 		face0.m_gid = face1.m_gid + ng;
-		face0.m_sid = face1.m_sid + nsg;
 
 		for (int j = 0; j<face0.Nodes(); ++j) face0.n[j] = tag[face1.n[j]];
 	}
@@ -1622,7 +1642,6 @@ void FSSurfaceMesh::Save(OArchive& ar)
 				ar.WriteChunk(CID_MESH_FACE_GID, pf->m_gid);
 				ar.WriteChunk(CID_MESH_FACE_NODES, pf->n, pf->Nodes());
 				ar.WriteChunk(CID_MESH_FACE_EDGES, pf->m_edge, pf->Edges());
-				ar.WriteChunk(CID_MESH_FACE_SMOOTHID, pf->m_sid);
 			}
 			ar.EndChunk();
 		}
@@ -1745,7 +1764,6 @@ void FSSurfaceMesh::Load(IArchive& ar)
 					case CID_MESH_FACE_GID     : ar.read(pf->m_gid); break;
 					case CID_MESH_FACE_NODES   : ar.read(pf->n, pf->Nodes()); break;
 					case CID_MESH_FACE_EDGES   : ar.read(pf->m_edge, pf->Edges()); break;
-					case CID_MESH_FACE_SMOOTHID: ar.read(pf->m_sid); break;
 					}
 					ar.CloseChunk();
 				}

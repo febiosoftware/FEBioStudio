@@ -124,7 +124,7 @@ private:
 	void BuildFaces();
 	void BuildEdges();
 	void AutoPartitionElements();
-	void AutoPartitionSurface();
+	void AutoPartitionSurface(double smoothingAngle, bool creaseInternal);
 	void AutoPartitionEdges();
 	void AutoPartitionNodes();
 	FSMesh* DeleteTaggedParts(FSMesh& mesh, int tag);

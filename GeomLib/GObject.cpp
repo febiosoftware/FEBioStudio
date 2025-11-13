@@ -268,7 +268,7 @@ void GObject::BuildFERenderMesh()
 					int mid = -1;
 					if (eid >= 0) mid = pm->Element(eid).m_MatID;
 
-					gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), n, eid, mid);
+					gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_gid, face.IsExterior(), n, eid, mid);
 
 					int ne = face.Edges();
 					int n[FSEdge::MAX_NODES] = { -1 };

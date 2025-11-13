@@ -465,7 +465,6 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 		f.n[2] = el.m_node[2];
 		f.n[3] = el.m_node[3];
 		f.m_gid = 0;
-		f.m_sid = 0;
 	}
 
 	// clean up
@@ -743,7 +742,6 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 		f.n[1] = el.m_node[1];
 		f.n[2] = el.m_node[2];
 		f.m_gid = 0;
-		f.m_sid = 0;
 	}
 */
 	// update the new mesh

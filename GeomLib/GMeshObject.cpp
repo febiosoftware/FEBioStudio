@@ -874,7 +874,7 @@ void GMeshObject::BuildGMesh()
 			FSFace& fs = pm->Face(l);
 			int nf = fs.Nodes();
 			for (int j = 0; j < nf; ++j) n[j] = pm->Node(fs.n[j]).m_ntag;
-			gmesh->AddFace(n, nf, fs.m_gid, fs.m_sid, fs.IsExternal());
+			gmesh->AddFace(n, nf, fs.m_gid, fs.m_gid, fs.IsExternal());
 		}
 	}
 

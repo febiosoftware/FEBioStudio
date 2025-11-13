@@ -500,7 +500,6 @@ FSMesh* FEHexSplitModifier::RefineSelection(FSMesh* pm)
 				FSFace& facej = pmnew->Face(n++);
 				facej.SetType(FE_FACE_QUAD4);
 				facej.m_gid = face0.m_gid;
-				facej.m_sid = face0.m_sid;
 				for (int k = 0; k < 4; ++k) facej.n[k] = m[FLUT[j][k]];
 			}
 		}

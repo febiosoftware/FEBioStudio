@@ -171,8 +171,6 @@ public:
 	vec3f	m_fn;
 	//! node normals
 	vec3f	m_nn[MAX_NODES];
-	//! smoothing ID
-	int		m_sid;
 
 	// TODO: move texture coordinates elsewhere
 	//! nodal 1D-texture coordinates

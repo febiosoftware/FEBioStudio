@@ -161,7 +161,6 @@ FSMesh* FEHex2Tet::Apply(FSMesh* pm)
 			// split at this lowest vertex
 			FSFace& f0 = mesh->Face(fc++);
 			f0.m_gid = fs.m_gid;
-			f0.m_sid = fs.m_sid;
 			f0.SetType(FE_FACE_TRI3);
 			f0.n[0] = fs.n[(l + 0) % 4];
 			f0.n[1] = fs.n[(l + 1) % 4];
@@ -170,7 +169,6 @@ FSMesh* FEHex2Tet::Apply(FSMesh* pm)
 			FSFace& f1 = mesh->Face(fc++);
 			f1.SetType(FE_FACE_TRI3);
 			f1.m_gid = fs.m_gid;
-			f1.m_sid = fs.m_sid;
 			f1.n[0] = fs.n[(l + 2) % 4];
 			f1.n[1] = fs.n[(l + 3) % 4];
 			f1.n[2] = fs.n[(l + 0) % 4];

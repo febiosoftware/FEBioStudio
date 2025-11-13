@@ -229,7 +229,6 @@ FSMesh* FEHex8ToHex20::Apply(FSMesh* pm)
 
 		f1.SetType(FE_FACE_QUAD8);
 		f1.m_gid = f0.m_gid;
-		f1.m_sid = f0.m_sid;
 		f1.n[0] = f0.n[0];
 		f1.n[1] = f0.n[1];
 		f1.n[2] = f0.n[2];
@@ -594,7 +593,6 @@ FSMesh* FEHex20ToHex8::Apply(FSMesh* pm)
 
 		f1.SetType(FE_FACE_QUAD4);
 		f1.m_gid = f0.m_gid;
-		f1.m_sid = f0.m_sid;
 		f1.n[0] = pm->Node(f0.n[0]).m_ntag;
 		f1.n[1] = pm->Node(f0.n[1]).m_ntag;
 		f1.n[2] = pm->Node(f0.n[2]).m_ntag;

@@ -297,12 +297,6 @@ FSMesh* FECone::BuildMesh()
 	{
 		// update the mesh
 		pm->UpdateMesh();
-
-		// the Multi-block mesher will assign a different smoothing ID
-		// to each face, but we don't want that here. 
-		// For now, we autosmooth the mesh although we should think of a 
-		// better way
-		pm->AutoSmooth(60);
 	}
 
 	return pm;

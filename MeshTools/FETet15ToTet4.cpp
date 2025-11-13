@@ -98,7 +98,6 @@ FSMesh* FETet15ToTet4::Apply(FSMesh* pm)
 
 		f1.SetType(FE_FACE_TRI3);
 		f1.m_gid = f0.m_gid;
-		f1.m_sid = f0.m_sid;
 		f1.n[0] = pm->Node(f0.n[0]).m_ntag;
 		f1.n[1] = pm->Node(f0.n[1]).m_ntag;
 		f1.n[2] = pm->Node(f0.n[2]).m_ntag;

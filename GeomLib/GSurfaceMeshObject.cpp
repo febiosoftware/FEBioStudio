@@ -426,7 +426,7 @@ void GSurfaceMeshObject::BuildGMesh()
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
 		FSFace& fs = pm->Face(i);
-		gmesh->AddFace(fs.n, fs.Nodes(), fs.m_gid, fs.m_sid, true, i);
+		gmesh->AddFace(fs.n, fs.Nodes(), fs.m_gid, fs.m_gid, true, i);
 
 		// add additional edges for rendering meshlines
 		int ne = fs.Edges();

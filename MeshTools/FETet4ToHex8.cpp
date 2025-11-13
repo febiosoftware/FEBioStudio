@@ -106,7 +106,6 @@ FSMesh* FETet4ToHex8::Apply(FSMesh* pm)
 
 			f1.SetType(FE_FACE_QUAD4);
 			f1.m_gid = f0.m_gid;
-			f1.m_sid = f0.m_sid;
 
 			for (int k = 0; k < 4; ++k) f1.n[k] = f0.n[FLT[j][k]];
 		}

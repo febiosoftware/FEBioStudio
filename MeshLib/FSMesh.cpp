@@ -349,48 +349,6 @@ void FSMesh::UpdateFacePartitions()
 }
 
 //-----------------------------------------------------------------------------
-// This functions update the face smoothing Ids to make sure that no indices are skipped.
-// This needs to be called after the number of faces changes.
-void FSMesh::UpdateSmoothingGroups()
-{
-	// find the largest SG
-	int max_sg = -1;
-	for (int i = 0; i<Faces(); ++i)
-	{
-		FSFace& face = Face(i);
-		if (face.m_sid > max_sg) max_sg = face.m_sid;
-	}
-
-	// if no face has a GID we are done
-	if (max_sg < 0) return;
-
-	// build a SID lookup table
-	vector<int> sg(max_sg + 1, -1);
-	for (int i = 0; i<Faces(); ++i)
-	{
-		FSFace& face = Face(i);
-		if (face.m_sid >= 0) sg[face.m_sid] = 1;
-	}
-
-	// assign new SIDs
-	int n = 0;
-	for (int i = 0; i<sg.size(); ++i)
-	{
-		if (sg[i] != -1) sg[i] = n++;
-	}
-
-	// only update node GIDs when necessary
-	if (n < sg.size())
-	{
-		for (int i = 0; i<Faces(); ++i)
-		{
-			FSFace& face = Face(i);
-			if (face.m_sid >= 0) face.m_sid = sg[face.m_sid];
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
 // This functions update the node GIds to make sure that no indices are skipped.
 // This needs to be called after the number of elements changes.
 void FSMesh::UpdateElementPartitions()
@@ -1491,7 +1449,6 @@ void FSMesh::Save(OArchive &ar)
 					ar.WriteChunk(CID_MESH_FACE_TYPE, ntype);
 					ar.WriteChunk(CID_MESH_FACE_GID, pf->m_gid);
 					ar.WriteChunk(CID_MESH_FACE_NODES, pf->n, pf->Nodes());
-					ar.WriteChunk(CID_MESH_FACE_SMOOTHID, pf->m_sid);
 				}
 				ar.EndChunk();
 			}
@@ -1613,20 +1570,17 @@ void FSMesh::Save(OArchive &ar)
 
 				vector<int> type(faces);
 				vector<int> gid(faces);
-				vector<int> sid(faces);
 				vector<int> fnode(fnodes);
 				FSFace* pf = FacePtr();
 				for (int i = 0, n = 0; i < faces; ++i, ++pf)
 				{
 					type[i] = pf->Type();
 					gid[i] = pf->m_gid;
-					sid[i] = pf->m_sid;
 					for (int j = 0; j < pf->Nodes(); ++j) fnode[n++] = pf->n[j];
 				}
 
 				ar.WriteChunk(CID_MESH_FACE_TYPE, type);
 				ar.WriteChunk(CID_MESH_FACE_GID, gid);
-				ar.WriteChunk(CID_MESH_FACE_SMOOTHID, sid);
 				ar.WriteChunk(CID_MESH_FACE_NODES, fnode);
 			}
 			ar.EndChunk();
@@ -2011,7 +1965,6 @@ void FSMesh::Load(IArchive& ar)
 						break;
 						case CID_MESH_FACE_GID: ar.read(pf->m_gid); break;
 						case CID_MESH_FACE_NODES: ar.read(pf->n, pf->Nodes()); break;
-						case CID_MESH_FACE_SMOOTHID: ar.read(pf->m_sid); break;
 						}
 						ar.CloseChunk();
 					}
@@ -2254,7 +2207,6 @@ void FSMesh::Load(IArchive& ar)
 					}
 					break;
 					case CID_MESH_FACE_GID: ar.read(gid); break;
-					case CID_MESH_FACE_SMOOTHID: ar.read(sid); break;
 					case CID_MESH_FACE_NODES:
 					{
 						assert(fnodes > 0);
@@ -2264,7 +2216,6 @@ void FSMesh::Load(IArchive& ar)
 						for (int i = 0; i < faces; ++i, ++pf)
 						{
 							pf->m_gid = gid[i];
-							pf->m_sid = sid[i];
 							for (int j = 0; j < pf->Nodes(); ++j) pf->n[j] = fnode[fnodes++];
 						}
 					}

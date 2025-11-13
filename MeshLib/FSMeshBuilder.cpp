@@ -619,7 +619,6 @@ void FSMeshBuilder::Attach(FSMesh& fem)
 		{
 			FSFace& f = m_mesh.m_Face[i];
 			if (f.m_gid > ng) ng = f.m_gid;
-			if (f.m_sid > sg) sg = f.m_gid;
 		}
 		++ng; ++sg;
 
@@ -630,7 +629,6 @@ void FSMeshBuilder::Attach(FSMesh& fem)
 			FSFace& f1 = fem.m_Face[i];
 			f0 = f1;
 			f0.m_gid = f1.m_gid + ng;
-			f0.m_sid = f1.m_sid + sg;
 
 			f0.m_elem[0].eid = f1.m_elem[0].eid + ne0;
 			f0.m_elem[0].lid = f1.m_elem[0].lid;
@@ -1761,11 +1759,8 @@ bool FSMeshBuilder::AutoPartitionFaces(double w, FSSurface* pg)
 //-----------------------------------------------------------------------------
 void FSMeshBuilder::AutoPartition(double smoothingAngle)
 {
-	// calculate smoothing IDs
-	m_mesh.AutoSmooth(smoothingAngle);
-
 	// partition the surface based on connectivity and smoothing IDs
-	AutoPartitionSurface();
+	AutoPartitionSurface(smoothingAngle, true);
 
 	// we need to rebuild the edges
 	BuildEdges();
@@ -1777,23 +1772,40 @@ void FSMeshBuilder::AutoPartition(double smoothingAngle)
 }
 
 //-----------------------------------------------------------------------------
-void FSMeshBuilder::AutoPartitionSurface()
+void FSMeshBuilder::AutoPartitionSurface(double angleDegrees, bool creaseInternal)
 {
-	// Get the mesh and number of faces
-	int NF = m_mesh.Faces();
+	// smoothing threshold
+	double eps = (double)cos(angleDegrees * DEG2RAD);
 
-	// face that still require processing 
-	// will be placed on a stack
-	// The partitioning is done when the stack is empty
+	// clear face group ID's
+	int NF = m_mesh.Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace* pf = m_mesh.FacePtr(i);
+		pf->m_gid = -1;
+	}
+
+	// calculate face normals
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace* pf = m_mesh.FacePtr(i);
+
+		// calculate the face normals
+		vec3d& r0 = m_mesh.Node(pf->n[0]).r;
+		vec3d& r1 = m_mesh.Node(pf->n[1]).r;
+		vec3d& r2 = m_mesh.Node(pf->n[2]).r;
+
+		pf->m_fn = to_vec3f((r1 - r0) ^ (r2 - r0));
+		pf->m_fn.Normalize();
+	}
+
+	// stack for tracking unprocessed faces
 	vector<FSFace*> stack(NF);
 	int ns = 0;
 
-	// reset face ID's 
-	for (int i = 0; i<NF; ++i) m_mesh.Face(i).m_gid = -1;
-
-	// let's get to work
+	// process all faces
 	int ngid = 0;
-	for (int i = 0; i<NF; ++i)
+	for (int i = 0; i < NF; ++i)
 	{
 		FSFace* pf = m_mesh.FacePtr(i);
 		if (pf->m_gid == -1)
@@ -1814,28 +1826,45 @@ void FSMeshBuilder::AutoPartitionSurface()
 				int gid11 = (pe11 ? pe11->m_gid : -1);
 				int gid12 = (pe12 ? pe12->m_gid : -1);
 
+				// loop over neighbors
 				int n = pf->Edges();
-				for (int j = 0; j<n; ++j)
+				for (int j = 0; j < n; ++j)
 				{
 					FSFace* pf2 = m_mesh.FacePtr(pf->m_nbr[j]);
-					if (pf2)
+
+					// push unprocessed neighbour
+					if (pf2 && (pf2->m_gid == -1))
 					{
+						bool badd = false;
+						if ((pf->IsExternal() == false) && (pf2->IsExternal() == false))
+						{
+							if ((creaseInternal == false) || (pf->m_fn * pf2->m_fn >= eps))
+								badd = true;
+						}
+						else if (pf->m_fn * pf2->m_fn >= eps)
+						{
+							badd = true;
+						}
+
 						assert(pf2->m_elem[0].eid >= 0);
 						FSElement_* pe21 = m_mesh.ElementPtr(pf2->m_elem[0].eid);
 						FSElement_* pe22 = m_mesh.ElementPtr(pf2->m_elem[1].eid);
-
-						int gid21 = (pe21 ? pe21->m_gid : -1);
-						int gid22 = (pe22 ? pe22->m_gid : -1);
-
-						if ((pf2->m_gid == -1) && (pf->m_sid == pf2->m_sid) && (gid11 == gid21) && (gid12 == gid22))
 						{
-							pf2->m_gid = -2;
-							stack[ns++] = pf2;
+							int gid21 = (pe21 ? pe21->m_gid : -1);
+							int gid22 = (pe22 ? pe22->m_gid : -1);
+
+							if ((gid11 != gid21) || (gid12 != gid22)) badd = false;
+
+							if (badd)
+							{
+								pf2->m_gid = -2;
+								stack[ns++] = pf2;
+							}
 						}
 					}
 				}
+				++ngid;
 			}
-			++ngid;
 		}
 	}
 }
@@ -1860,11 +1889,8 @@ void FSMeshBuilder::RebuildMesh(double smoothingAngle, bool partitionMesh, bool 
 	// build the faces
 	BuildFaces();
 
-	// calculate auto GID's
-	m_mesh.AutoSmooth(smoothingAngle, creaseInternal);
-
 	// partition the surface based on the smoothing
-	AutoPartitionSurface();
+	AutoPartitionSurface(smoothingAngle, creaseInternal);
 
 	// build the edges
 	BuildEdges();

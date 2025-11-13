@@ -2213,8 +2213,7 @@ GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newOb
 		}
 	}
 
-	// TODO: Figure out a way to retain the original smoothing groups during merge.
-	newObject->GetEditableMesh()->SmoothByPartition();
+	newObject->GetEditableMesh()->UpdateNormals();
 
 	return newObject;
 }

@@ -56,12 +56,6 @@ public:
 	void FaceNodeLocalPositions(const FSFace& f, vec3d* r) const;
 
 public:
-	//! Calculate smoothing IDs based on face normals
-	void AutoSmooth(double angleDegrees, bool creaseInternal = true);
-
-	//! Assign smoothing IDs based on surface partition
-	void SmoothByPartition();
-
 	//! Update the normals
 	void UpdateNormals();
 
