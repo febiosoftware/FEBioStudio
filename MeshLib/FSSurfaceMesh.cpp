@@ -121,7 +121,6 @@ FSSurfaceMesh::FSSurfaceMesh(TriMesh& dyna)
 	UpdateFaceNeighbors();
 	UpdateEdgeNeighbors();
 	UpdateFaceEdges();
-	UpdateNormals();
 	UpdateBoundingBox();
 
 	// let's update the new nodes
@@ -166,7 +165,6 @@ void FSSurfaceMesh::Update()
 {
 	UpdateFaceNeighbors();
 	UpdateEdgeNeighbors();
-	UpdateNormals();
 	UpdateBoundingBox();
 }
 
@@ -194,7 +192,6 @@ void FSSurfaceMesh::BuildMesh()
 	AutoPartitionNodes();
 
 	// update other mesh data
-	UpdateNormals();
 	UpdateBoundingBox();
 }
 
@@ -234,11 +231,7 @@ void FSSurfaceMesh::AutoPartition(double smoothingAngle)
 	// -- Build node data ---
 	// partitioned the nodes (Depends on edge partitioning)
 	AutoPartitionNodes();
-
-	// update other mesh data
-	UpdateNormals();
 }
-
 
 //-----------------------------------------------------------------------------
 // This function assignes group ID's to the mesh' faces based on a smoothing
@@ -258,21 +251,6 @@ void FSSurfaceMesh::AutoPartitionFaces(double angleDegrees, bool creaseInternal)
 		pf->m_gid = -1;
 	}
 
-	// calculate face normals
-	for (int i = 0; i < NF; ++i)
-	{
-		FSFace* pf = FacePtr(i);
-
-		// calculate the face normals
-		vec3d& r0 = Node(pf->n[0]).r;
-		vec3d& r1 = Node(pf->n[1]).r;
-		vec3d& r2 = Node(pf->n[2]).r;
-
-		pf->m_fn = to_vec3f((r1 - r0) ^ (r2 - r0));
-		pf->m_fn.Normalize();
-	}
-
-
 	// stack for tracking unprocessed faces
 	vector<FSFace*> stack(NF);
 	int ns = 0;
@@ -287,6 +265,7 @@ void FSSurfaceMesh::AutoPartitionFaces(double angleDegrees, bool creaseInternal)
 			stack[ns++] = pf;
 			while (ns > 0)
 			{
+				vec3d Nf = FaceNormal(*pf);
 				// pop a face
 				pf = stack[--ns];
 
@@ -305,10 +284,10 @@ void FSSurfaceMesh::AutoPartitionFaces(double angleDegrees, bool creaseInternal)
 						bool badd = false;
 						if ((pf->IsExternal() == false) && (pf2->IsExternal() == false))
 						{
-							if ((creaseInternal == false) || (pf->m_fn * pf2->m_fn >= eps))
+							if ((creaseInternal == false) || (Nf * FaceNormal(*pf2) >= eps))
 								badd = true;
 						}
-						else if (pf->m_fn * pf2->m_fn >= eps)
+						else if (Nf * FaceNormal(*pf2) >= eps)
 						{
 							badd = true;
 						}
@@ -324,9 +303,6 @@ void FSSurfaceMesh::AutoPartitionFaces(double angleDegrees, bool creaseInternal)
 			++nsg;
 		}
 	}
-
-	// update the normals
-	UpdateNormals();
 }
 
 //-----------------------------------------------------------------------------

@@ -1178,7 +1178,6 @@ void FSMeshBuilder::InvertTaggedFaces(int ntag)
 	m_mesh.UpdateElementNeighbors();
 	m_mesh.UpdateFaceElementTable();
 	m_mesh.UpdateFaceNeighbors();
-	m_mesh.UpdateNormals();
 }
 
 //-----------------------------------------------------------------------------
@@ -1454,7 +1453,6 @@ void FSMeshBuilder::PartitionElementSelection(int gid)
 	m_mesh.UpdateFacePartitions();
 	m_mesh.UpdateFaceElementTable();
 	m_mesh.UpdateFaceNeighbors();
-	m_mesh.UpdateNormals();
 
 	// assign new face partitions where necessary
 	nfp = m_mesh.CountFacePartitions();
@@ -1712,6 +1710,7 @@ bool FSMeshBuilder::AutoPartitionFaces(double w, FSSurface* pg)
 		FSFace* pf = m_mesh.FacePtr(*it);
 		if (pf->m_ntag == 1)
 		{
+			vec3d Nf = m_mesh.FaceNormal(*pf);
 			FSElement_* pe = m_mesh.ElementPtr(pf->m_elem[0].eid);
 			int pid = (pe == nullptr ? -1 : pe->m_gid);
 			pg->m_ntag = 0;
@@ -1733,7 +1732,7 @@ bool FSMeshBuilder::AutoPartitionFaces(double w, FSSurface* pg)
 					int pid2 = (pe2 == nullptr ? -1 : pe2->m_gid);
 
 					// push unprocessed neighbour
-					if (pf2 && (pf2->m_ntag == 1) && (pf->m_fn * pf2->m_fn >= eps) && (pid == pid2))
+					if (pf2 && (pf2->m_ntag == 1) && (Nf * m_mesh.FaceNormal(*pf2) >= eps) && (pid == pid2))
 					{
 						pf2->m_ntag = 0;
 						stack[ns++] = pf2;
@@ -1785,20 +1784,6 @@ void FSMeshBuilder::AutoPartitionSurface(double angleDegrees, bool creaseInterna
 		pf->m_gid = -1;
 	}
 
-	// calculate face normals
-	for (int i = 0; i < NF; ++i)
-	{
-		FSFace* pf = m_mesh.FacePtr(i);
-
-		// calculate the face normals
-		vec3d& r0 = m_mesh.Node(pf->n[0]).r;
-		vec3d& r1 = m_mesh.Node(pf->n[1]).r;
-		vec3d& r2 = m_mesh.Node(pf->n[2]).r;
-
-		pf->m_fn = to_vec3f((r1 - r0) ^ (r2 - r0));
-		pf->m_fn.Normalize();
-	}
-
 	// stack for tracking unprocessed faces
 	vector<FSFace*> stack(NF);
 	int ns = 0;
@@ -1810,6 +1795,7 @@ void FSMeshBuilder::AutoPartitionSurface(double angleDegrees, bool creaseInterna
 		FSFace* pf = m_mesh.FacePtr(i);
 		if (pf->m_gid == -1)
 		{
+			vec3d Nf = m_mesh.FaceNormal(*pf);
 			stack[ns++] = pf;
 			while (ns > 0)
 			{
@@ -1838,10 +1824,10 @@ void FSMeshBuilder::AutoPartitionSurface(double angleDegrees, bool creaseInterna
 						bool badd = false;
 						if ((pf->IsExternal() == false) && (pf2->IsExternal() == false))
 						{
-							if ((creaseInternal == false) || (pf->m_fn * pf2->m_fn >= eps))
+							if ((creaseInternal == false) || (Nf * m_mesh.FaceNormal(*pf2) >= eps))
 								badd = true;
 						}
-						else if (pf->m_fn * pf2->m_fn >= eps)
+						else if (Nf * m_mesh.FaceNormal(*pf2) >= eps)
 						{
 							badd = true;
 						}
@@ -1863,8 +1849,8 @@ void FSMeshBuilder::AutoPartitionSurface(double angleDegrees, bool creaseInterna
 						}
 					}
 				}
-				++ngid;
 			}
+			++ngid;
 		}
 	}
 }

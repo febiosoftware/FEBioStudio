@@ -357,11 +357,6 @@ FSMesh* FESphere::BuildMesh()
 
 	// create the MB
 	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
-	if (pm)
-	{
-		// finally, we update the normals and we are good to go
-		pm->UpdateNormals();
-	}
 
 	return pm;
 }

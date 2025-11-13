@@ -304,7 +304,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 		vf /= nf;
 
 		// see if this is a valid candidate for a seed
-		vec3f fn = f.m_fn;
+		vec3f fn = to_vec3f(mesh.FaceNormal(f));
 		if ((fn*vf < -vtol) && (m_prob[i] <= m_density))
 		{
 			// calculate the face center, this will be the seed

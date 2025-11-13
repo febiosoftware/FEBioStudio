@@ -3075,7 +3075,6 @@ void CCmdChangeFENodes::Execute()
 	m_newPos = oldPos;
 
 	pm->UpdateBoundingBox();
-	pm->UpdateNormals();
 	m_po->Update();
 }
 

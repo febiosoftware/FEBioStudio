@@ -171,7 +171,6 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 		}
 		m_surfmesh->UpdateFacePartitions();
 		m_surfmesh->UpdateFaceNeighbors();
-		m_surfmesh->UpdateNormals();
 		m_surfmesh->UpdateBoundingBox();
 
 		// copy edges

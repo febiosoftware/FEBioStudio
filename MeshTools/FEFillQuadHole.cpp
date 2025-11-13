@@ -184,9 +184,10 @@ void FEFillQuadHole::BuildNodalNormals(FSSurfaceMesh& mesh)
 	for (int i = 0; i < mesh.Faces(); i++)
 	{
 		FSFace& Face = mesh.Face(i);
+		vec3d Nf = mesh.FaceNormal(i);
 		for (int j = 0; j < Face.Nodes(); j++)
 		{
-			m_node_normals[Face.n[j]] += to_vec3d(Face.m_nn[j]);
+			m_node_normals[Face.n[j]] += Nf;
 		}
 	}
 	for (int i = 0; i < m_node_normals.size(); ++i) m_node_normals[i].Normalize();

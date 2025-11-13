@@ -55,10 +55,14 @@ public:
 	//! Get the local positions of a face
 	void FaceNodeLocalPositions(const FSFace& f, vec3d* r) const;
 
-public:
-	//! Update the normals
-	void UpdateNormals();
+	//! Get the approximate normal of face
+	vec3d FaceNormal(const FSFace& f) const;
+	vec3d FaceNormal(int faceIndex) const;
 
+	// Calculate averaged node normals
+	std::vector<vec3d> NodeNormals() const;
+
+public:
 	//! Update item visibility
 	virtual void UpdateItemVisibility() {}
 
@@ -72,8 +76,7 @@ public:
 
 	//! Get the world positions of face nodes
 	void FaceNodePosition(const FSFace& f, vec3d* r) const;
-	//! Get the normals of face nodes
-	void FaceNodeNormals(const FSFace& f, vec3f* n) const;
+
 	//! Get the texture coordinates of face nodes
 	void FaceNodeTexCoords(const FSFace& f, float* t) const;
 

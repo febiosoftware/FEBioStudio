@@ -215,13 +215,13 @@ FSSurfaceMesh* FEExtrudeEdges::Apply(FSSurfaceMesh* pm)
             vt = v01 + v12; vt.unit();
             // get node normal at n1
             FSFace& face = mesh->Face(edge[i].m_face[0]);
-            vn1 = to_vec3d(face.m_nn[face.FindNode(edge[i-1].n[1])]);
+            vn1 = mesh->FaceNormal(face);
         }
         // process first edge
         else if (i == 0) {
             // get node normal at n0
             FSFace& face = mesh->Face(edge[0].m_face[0]);
-            vn1 = to_vec3d(face.m_nn[face.FindNode(edge[0].n[0])]);
+            vn1 = mesh->FaceNormal(face);
             // if curve is closed
             if (first_node == -1) {
                 FSNode& n0 = mesh->Node(edge[NE-1].n[0]);
@@ -262,7 +262,7 @@ FSSurfaceMesh* FEExtrudeEdges::Apply(FSSurfaceMesh* pm)
                 vt = v01 + v12; vt.unit();
                 // get node normal at n0
                 FSFace& face = mesh->Face(edge[i].m_face[0]);
-                vn1 = to_vec3d(face.m_nn[face.FindNode(edge[i].n[0])]);
+                vn1 = mesh->FaceNormal(face);
             }
             // if the curve is open
             else {
@@ -275,7 +275,7 @@ FSSurfaceMesh* FEExtrudeEdges::Apply(FSSurfaceMesh* pm)
                 vt = v01; vt.unit();
                 // get node normal at n0
                 FSFace& face = mesh->Face(edge[i].m_face[0]);
-                vn1 = to_vec3d(face.m_nn[face.FindNode(edge[i].n[0])]);
+                vn1 = mesh->FaceNormal(face);
             }
         }
         // get the extrusion direction
@@ -295,7 +295,7 @@ FSSurfaceMesh* FEExtrudeEdges::Apply(FSSurfaceMesh* pm)
         vec3d vt = v01; vt.unit();
         // get node normal at n0
         FSFace& face = mesh->Face(edge[NE-1].m_face[0]);
-        vec3d vn1 = to_vec3d(face.m_nn[face.FindNode(edge[NE-1].n[1])]);
+        vec3d vn1 = mesh->FaceNormal(face);
         // get the extrusion direction
         vec3d ve = vt ^ vn1; ve.unit();
         // store the vertex coordinates and extrusion direction

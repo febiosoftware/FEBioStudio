@@ -89,7 +89,7 @@ void CFaceMetricsTool::Update()
 		{
 			m_nsel++;
 
-			vec3d Ni = to_vec3d(face.m_fn);
+			vec3d Ni = mesh->FaceNormal(face);
 			N += Ni;
 
 			double Ai = mesh->FaceArea(face);

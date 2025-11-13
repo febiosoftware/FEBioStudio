@@ -48,6 +48,50 @@ void FSMeshBase::FaceNodeLocalPositions(const FSFace& f, vec3d* r) const
 	for (int i = 0; i<nf; ++i) r[i] = m_Node[f.n[i]].r;
 }
 
+vec3d FSMeshBase::FaceNormal(const FSFace& f) const
+{
+	vec3d r0 = Node(f.n[0]).r;
+	vec3d r1 = Node(f.n[1]).r;
+	vec3d r2 = Node(f.n[2]).r;
+
+	vec3d N = (r1 - r0) ^ (r2 - r0);
+	N.Normalize();
+	return N;
+}
+
+vec3d FSMeshBase::FaceNormal(int faceIndex) const
+{
+	assert((faceIndex >= 0) && (faceIndex < Faces()));
+	if ((faceIndex < 0) || (faceIndex >= Faces())) return vec3d(0, 0, 0);
+	const FSFace& f = Face(faceIndex);
+	return FaceNormal(f);
+}
+
+std::vector<vec3d> FSMeshBase::NodeNormals() const
+{
+	int NN = Nodes();
+	int NF = Faces();
+
+	// calculate face normals
+	vector<vec3d> nodeNormals(NN, vec3d(0,0,0));
+	for (int i = 0; i < NF; ++i)
+	{
+		const FSFace& pf = Face(i);
+		vec3d Nf = FaceNormal(pf);
+
+		for (int j=0; j < pf.Nodes(); ++j)
+			nodeNormals[pf.n[j]] += Nf;
+	}
+
+	// normalize face normals
+	for (int i = 0; i < NN; ++i)
+	{
+		nodeNormals[i].Normalize();
+	}
+
+	return nodeNormals;
+}
+
 //-----------------------------------------------------------------------------
 // Tag all faces
 void FSMeshBase::TagAllFaces(int ntag)
@@ -143,115 +187,8 @@ void FSMeshBase::RemoveEdges(int ntag)
 }
 
 //-----------------------------------------------------------------------------
-// Calculate normals of the mesh' faces based on smoothing groups
-//
-void FSMeshBase::UpdateNormals()
-{
-	int NN = Nodes();
-	int NF = Faces();
-
-	// calculate face normals
-	for (int i = 0; i<NF; ++i)
-	{
-		FSFace* pf = FacePtr(i);
-
-		// reset smoothing id
-		pf->m_ntag = -1;
-
-		// calculate the face normals
-		vec3d& r0 = Node(pf->n[0]).r;
-		vec3d& r1 = Node(pf->n[1]).r;
-		vec3d& r2 = Node(pf->n[2]).r;
-
-		pf->m_fn = to_vec3f((r1 - r0) ^ (r2 - r0));
-
-		int nf = pf->Nodes();
-		for (int j = 0; j<nf; ++j) pf->m_nn[j] = pf->m_fn;
-	}
-
-	// buffer for storing node normals
-	vector<vec3f> norm(NN, vec3f(0.f, 0.f, 0.f));
-
-	// this array keeps track of all faces in a smoothing group
-	vector<FSFace*> F(NF);
-	int FC = 0;
-
-	// this array is used as a stack when processing neighbors
-	vector<FSFace*> stack(NF);
-	int ns = 0;
-
-	// loop over all faces
-	int nsg = 0;
-	for (int i = 0; i<NF; ++i)
-	{
-		FSFace* pf = FacePtr(i);
-		if (pf->m_ntag == -1)
-		{
-			// clear normals
-			for (int j = 0; j < FC; ++j)
-			{
-				pf = F[j];
-				int nf = pf->Nodes();
-				for (int k = 0; k < nf; ++k) norm[pf->n[k]] = vec3f(0.f, 0.f, 0.f);
-			}
-			FC = 0;
-
-			// find all connected faces
-			stack[ns++] = pf;
-			while (ns > 0)
-			{
-				// pop a face
-				pf = stack[--ns];
-
-				// mark as processed
-				pf->m_ntag = nsg;
-				F[FC++] = pf;
-
-				// add face normal to node normal
-				int n = pf->Nodes();
-				for (int j = 0; j<n; ++j) norm[pf->n[j]] += pf->m_fn;
-
-				// process neighbors
-				n = pf->Edges();
-				for (int j = 0; j<n; ++j)
-				{
-					FSFace* pf2 = FacePtr(pf->m_nbr[j]);
-					// push unprocessed neighbor
-					if (pf2 && (pf2->m_ntag == -1) && (pf->m_gid == pf2->m_gid))
-					{
-						pf2->m_ntag = -2;
-						stack[ns++] = pf2;
-					}
-				}
-			}
-
-			// assign node normals
-			for (int j = 0; j<FC; ++j)
-			{
-				pf = F[j];
-				assert(pf->m_ntag == nsg);
-				int nf = pf->Nodes();
-				for (int k = 0; k<nf; ++k) pf->m_nn[k] = norm[pf->n[k]];
-			}
-
-			++nsg;
-		}
-	}
-
-	// normalize face normals
-	FSFace* pf = FacePtr();
-	for (int i = 0; i<NF; ++i, ++pf)
-	{
-		pf->m_fn.Normalize();
-		int n = pf->Nodes();
-		for (int j = 0; j<n; ++j) pf->m_nn[j].Normalize();
-	}
-}
-
-//-----------------------------------------------------------------------------
 void FSMeshBase::UpdateMesh()
 {
-	UpdateNormals();
 	UpdateBoundingBox();
 }
 
@@ -453,35 +390,6 @@ void FSMeshBase::FaceNodePosition(const FSFace& f, vec3d* r) const
 	}
 }
 
-//-----------------------------------------------------------------------------
-void FSMeshBase::FaceNodeNormals(const FSFace& f, vec3f* n) const
-{
-	switch (f.m_type)
-	{
-	case FE_FACE_TRI10:
-		n[9] = f.m_nn[9];
-	case FE_FACE_QUAD9:
-		n[8] = f.m_nn[8];
-	case FE_FACE_QUAD8:
-		n[7] = f.m_nn[7];
-	case FE_FACE_TRI7:
-		n[6] = f.m_nn[6];
-	case FE_FACE_TRI6:
-		n[5] = f.m_nn[5];
-		n[4] = f.m_nn[4];
-	case FE_FACE_QUAD4:
-		n[3] = f.m_nn[3];
-	case FE_FACE_TRI3:
-		n[2] = f.m_nn[2];
-		n[1] = f.m_nn[1];
-		n[0] = f.m_nn[0];
-		break;
-	default:
-		assert(false);
-	}
-}
-
-//-----------------------------------------------------------------------------
 void FSMeshBase::FaceNodeTexCoords(const FSFace& f, float* t) const
 {
 	for (int i = 0; i<f.Nodes(); ++i) t[i] = f.m_tex[i];
@@ -502,7 +410,7 @@ std::vector<int> MeshTools::GetConnectedFaces(FSMeshBase* pm, int nface, double 
 	pf->m_ntag = -1;
 	stack.push(pf);
 
-	vec3f Nf = pf->m_fn;
+	vec3f Nf = to_vec3f(pm->FaceNormal(*pf));
 	double wtol = 1.000001*cos(PI*tolAngleDeg / 180.0); // scale factor to address some numerical round-off issue when selecting 180 degrees
 	bool bmax = (tolAngleDeg != 0.0);
 
@@ -538,10 +446,12 @@ std::vector<int> MeshTools::GetConnectedFaces(FSMeshBase* pm, int nface, double 
 
 				FSFace* pf2 = pm->FacePtr(pf->m_nbr[i]);
 
+				vec3f N2 = to_vec3f(pm->FaceNormal(*pf2));
+
 				bool bpush = true;
 				if (pf2->m_ntag < 0) bpush = false;
 				else if (pf2->IsVisible() == false) bpush = false;
-				else if (bmax && (pf2->m_fn*Nf < wtol)) bpush = false;
+				else if (bmax && (N2*Nf < wtol)) bpush = false;
 				else if (respectPartitions && ((pf2->m_gid != gid) || ((m0 == 1) && (m1 == 1) && pm->IsCreaseEdge(n0, n1)))) bpush = false;
 
 				if (bpush)
@@ -818,7 +728,7 @@ void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, b
 				int m = pf->FindNode(num);
 				if (m >= 0)
 				{
-					t += to_vec3d(pf->m_fn);
+					t += pm->FaceNormal(*pf);
 					stack.push(pf);
 					pf->m_ntag = -1;
 				}
@@ -848,7 +758,7 @@ void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, b
 						FSFace* pf2 = pm->FacePtr(pf->m_nbr[i]);
 						if (pf2->m_ntag >= 0 && pf2->IsVisible() && 
 							((pf2->m_gid == pf->m_gid) || !respectPartitions ) &&
-							((pf2->m_fn * to_vec3f(t) >= tr) || (bangle == false)))
+							((pm->FaceNormal(*pf2) * t >= tr) || (bangle == false)))
 						{
 							pf2->m_ntag = -1;
 							stack.push(pf2);

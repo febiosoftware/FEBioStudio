@@ -174,12 +174,6 @@ void flipTri3(FSFace& f)
 	ntmp = f.m_edge[0];
 	f.m_edge[0] = f.m_edge[3];
 	f.m_edge[2] = ntmp;
-
-	// flip normals
-	f.m_fn = -f.m_fn;
-	f.m_nn[0] = -f.m_nn[0];
-	f.m_nn[1] = -f.m_nn[1];
-	f.m_nn[2] = -f.m_nn[2];
 }
 
 //-----------------------------------------------------------------------------
@@ -207,13 +201,6 @@ void flipQuad4(FSFace& f)
 	ntmp = f.m_edge[1];
 	f.m_edge[1] = f.m_edge[2];
 	f.m_edge[2] = ntmp;
-
-	// flip normals
-	f.m_fn = -f.m_fn;
-	f.m_nn[0] = -f.m_nn[0];
-	f.m_nn[1] = -f.m_nn[1];
-	f.m_nn[2] = -f.m_nn[2];
-	f.m_nn[3] = -f.m_nn[3];
 }
 
 //-----------------------------------------------------------------------------

@@ -354,9 +354,6 @@ void CGLModel::ResetMesh()
 		FSNode& node = mesh.Node(i);
 		node.r = to_vec3d(ref.m_Node[i].m_rt);
 	}
-
-	// reevaluate normals
-	mesh.UpdateNormals();
 }
 
 //-----------------------------------------------------------------------------

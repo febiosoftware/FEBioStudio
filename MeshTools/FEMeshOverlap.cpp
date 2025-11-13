@@ -38,17 +38,17 @@ std::vector<int> MeshTools::FindSurfaceOverlap(FSMesh* mesh, FSMeshBase* trg)
 	mesh->TagAllNodes(0);
 	int NN = mesh->Nodes();
 	int NF = mesh->Faces();
-	vector<vec3d> normalList(NN, vec3d(0, 0, 0));
 	for (int i = 0; i < NF; ++i)
 	{
 		FSFace& f = mesh->Face(i);
 		int nf = f.Nodes();
 		for (int j = 0; j < nf; ++j)
 		{
-			normalList[f.n[j]] += to_vec3d(f.m_nn[j]);
 			mesh->Node(f.n[j]).m_ntag = 1;
 		}
 	}
+
+	vector<vec3d> normalList = mesh->NodeNormals();
 
 	for (int i = 0; i < mesh->Nodes(); ++i)
 	{
@@ -92,7 +92,8 @@ std::vector<int> MeshTools::FindSurfaceOverlap(FSMesh* mesh, FSMeshBase* trg)
 							q = p;
 							Dmin = D;
 							bfound = true;
-							backFacing = (Nf*ft.m_fn < 0.f);
+							vec3f faceNormal = to_vec3f(trg->FaceNormal(ft));
+							backFacing = (Nf*faceNormal < 0.f);
 						}
 					}
 				}

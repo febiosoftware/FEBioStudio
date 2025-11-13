@@ -51,7 +51,7 @@ void stl_write_solid(FILE* fp, FSMeshBase* pm, const char* solidName)
 	{
 		FSFace& face = pm->Face(i);
 
-		vec3d fn = to_vec3d(face.m_fn);
+		vec3d fn = pm->FaceNormal(face);
 
 		for (int j = 0; j < face.Nodes(); ++j)
 		{
@@ -94,7 +94,7 @@ bool stl_write_surface(FILE* fp, FSSurface* surf)
 	{
 		FSFace& face = *surf->GetFace(i);
 
-		vec3d fn = to_vec3d(face.m_fn);
+		vec3d fn = pm->FaceNormal(face);
 
 		for (int j = 0; j < face.Nodes(); ++j)
 		{

@@ -185,10 +185,11 @@ bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 	{
 		FSFace& face = pm->Face(faceList[i]);
 		int n = face.Nodes();
+		vec3d Nf = pm->FaceNormal(face);
 		for (int j = 0; j<n; ++j)
 		{
 			int n1 = pm->Node(face.n[j]).m_ntag;
-			ed[n1] += to_vec3d(face.m_nn[j]);
+			ed[n1] += Nf;
 		}
 	}
 

@@ -553,7 +553,7 @@ void GLPostModelItem::RenderNormals(GLRenderEngine& re)
 		{
 			vec3f p[2];
 			p[0] = vec3f(0, 0, 0);
-			vec3f fn = face.m_fn;
+			vec3f fn = to_vec3f(pm->FaceNormal(face));
 
 			vec3d c(0, 0, 0);
 			int nf = face.Nodes();
@@ -598,6 +598,7 @@ void GLPostModelItem::RenderGhost(GLRenderEngine& re)
 		FSFace& f = pm->Face(i);
 		if (f.IsVisible())
 		{
+			vec3d N1 = pm->FaceNormal(f);
 			int n = f.Edges();
 			for (int j = 0; j < n; ++j)
 			{
@@ -610,19 +611,18 @@ void GLPostModelItem::RenderGhost(GLRenderEngine& re)
 				else
 				{
 					FSFace& f2 = pm->Face(f.m_nbr[j]);
+					vec3d N2 = pm->FaceNormal(f2);
 					if (f.m_gid != f2.m_gid)
 					{
 						bdraw = true;
 					}
-					else if (f.m_fn * f2.m_fn <= eps)
+					else if (N1 * N2 <= eps)
 					{
 						bdraw = true;
 					}
 					else
 					{
-						vec3d n1 = to_vec3d(f.m_fn);
-						vec3d n2 = to_vec3d(f2.m_fn);
-						if (n1.z * n2.z <= 0)
+						if (N1.z * N2.z <= 0)
 						{
 							bdraw = true;
 						}

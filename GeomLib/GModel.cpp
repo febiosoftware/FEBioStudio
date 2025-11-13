@@ -2213,8 +2213,6 @@ GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newOb
 		}
 	}
 
-	newObject->GetEditableMesh()->UpdateNormals();
-
 	return newObject;
 }
 

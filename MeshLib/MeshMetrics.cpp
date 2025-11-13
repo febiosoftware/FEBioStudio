@@ -272,7 +272,8 @@ double ShellJacobian(const FSMesh& mesh, const FSElement& el, int flag)
 	if (el.m_face[0] >= 0)
 	{
 		const FSFace& face = mesh.Face(el.m_face[0]);
-		for (i = 0; i < n; ++i) D[i] = to_vec3d(face.m_nn[i]);//normal node
+		vec3d Nf = mesh.FaceNormal(face); // TODO: use actual shell directors
+		for (i = 0; i < n; ++i) D[i] = Nf;
 	}
 	for (i = 0; i < n; ++i) h[i] = el.m_h[i];//shell thickness
 
@@ -545,13 +546,16 @@ double TriMaxDihedralAngle(const FSMesh& mesh, const FSElement& el)
 	if (el.m_face[0] < 0) return 0;
 	const FSFace& f = mesh.Face(el.m_face[0]);
 
+	vec3d N1 = mesh.FaceNormal(f);
+
 	double maxAngle = 0;
 	for (int i = 0; i < 3; ++i)
 	{
 		if (f.m_nbr[i] >= 0)
 		{
 			const FSFace& fi = mesh.Face(f.m_nbr[i]);
-			double a = acos(f.m_fn * fi.m_fn);
+			vec3d N2 = mesh.FaceNormal(fi);
+			double a = acos(N1 * N2);
 			if (a > maxAngle) maxAngle = a;
 		}
 	}
@@ -1206,7 +1210,7 @@ double Curvature(FSMesh& mesh, int node, int measure, int levels, int maxIters, 
 	for (int i = 0; i < NF; ++i)
 	{
 		const FSFace& f = *NFL.Face(node, i);
-		sn += f.m_fn;
+		sn += to_vec3f(mesh.FaceNormal(f));
 	}
 	sn.Normalize();
 

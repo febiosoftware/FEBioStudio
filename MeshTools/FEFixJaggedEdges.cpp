@@ -181,7 +181,7 @@ FSSurfaceMesh* FEFixJaggedEdges::Apply(FSSurfaceMesh* pm)
         vec3d v12 = n2.pos() - n1.pos(); v12.unit();
         // get node normal at n1
         FSFace& face = mesh->Face(edge[i].m_face[0]);
-        vec3d vn1 = to_vec3d(face.m_nn[face.FindNode(edge[i].n[1])]);
+        vec3d vn1 = mesh->FaceNormal(face);
         // get the angle between these vectors
         double sa = (v01 ^ v12)*vn1;
         double ca = v01*v12;

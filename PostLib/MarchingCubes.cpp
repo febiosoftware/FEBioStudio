@@ -592,8 +592,6 @@ bool CMarchingCubes::GetMesh(FSMesh& mesh)
 		face.n[2] = 3 * i + 2;
 	}
 
-	mesh.UpdateNormals();
-
 	return true;
 }
 

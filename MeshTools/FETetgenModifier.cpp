@@ -277,9 +277,6 @@ FSMesh* FETetGenModifier::CreateMesh(FSMesh* pm)
 	// update the element neighbours
 	pmesh->BuildMesh();
 
-	// update faces
-	pmesh->UpdateNormals();
-
 	// associate the FE nodes with the GNodes
 	GObject* po = pm->GetGObject();
 	if (po)
@@ -433,7 +430,6 @@ FSMesh* FETetGenModifier::RefineMesh(FSMesh* pm)
 
 	// update faces
 	pmesh->UpdateFaces();
-	pmesh->UpdateNormals();
 
 	pmesh->UpdateEdgeNeighbors();
 

@@ -69,10 +69,11 @@ FSMesh* FEShellToSolid::Apply(FSMesh* pm)
 		FSFace& f = pm->Face(i);
 		if (pm->Element(f.m_elem[0].eid).IsSelected())
 		{
+			vec3d Nf = pm->FaceNormal(i);
 			int nf = f.Nodes();
 			for (int j=0; j<nf; ++j)
 			{
-				if (tag[f.n[j]] != 0) normals[f.n[j]] += to_vec3d(f.m_nn[j]);
+				if (tag[f.n[j]] != 0) normals[f.n[j]] += Nf;
 			}
 		}
 	}

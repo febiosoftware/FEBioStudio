@@ -138,10 +138,11 @@ bool FEPointCongruency::Project(int nid, int& nface, vec3f& q, double rs[2], vec
 	for (int i=0; i<pm->Faces(); ++i)
 	{
 		FSFace& face = pm->Face(i);
+		vec3f Nf = to_vec3f(pm->FaceNormal(face));
 		int nf = face.Nodes();
 		for (int j=0; j<nf; ++j)
 		{
-			if (face.n[j] == nid) sn += face.m_nn[j];
+			if (face.n[j] == nid) sn += Nf;
 		}
 	}
 	sn.Normalize();
@@ -218,10 +219,7 @@ bool FEPointCongruency::IntersectQuad4(const Ray& ray, FSFace& face, vec3f& q, d
 	const double tol = 0.01;
 	FSFace tri1,tri2;
 	tri1.n[0] = face.n[0]; tri1.n[1] = face.n[1]; tri1.n[2] = face.n[2];
-	tri1.m_nn[0] = face.m_nn[0]; tri1.m_nn[1] = face.m_nn[1]; tri1.m_nn[2] = face.m_nn[2];
-
 	tri2.n[0] = face.n[2]; tri2.n[1] = face.n[3]; tri2.n[2] = face.n[0];
-	tri2.m_nn[0] = face.m_nn[2]; tri2.m_nn[1] = face.m_nn[3]; tri2.m_nn[2] = face.m_nn[0];
 
 	if (IntersectTri3(ray, tri1, q, rs) ||
 		IntersectTri3(ray, tri2, q, rs))

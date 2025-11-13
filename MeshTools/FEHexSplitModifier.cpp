@@ -233,8 +233,6 @@ FSMesh* FEHexSplitModifier::RefineMesh(FSMesh* pm)
 				pmnew->Node(NN0 + i).r *= 0.5;
 			}
 		}
-
-		pmnew->UpdateNormals();
 	}
 
 	return pmnew;
@@ -790,8 +788,6 @@ FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 				pmnew->Node(NN0 + i).r *= 0.5;
 			}
 		}
-
-		pmnew->UpdateNormals();
 	}
 */
 	return pmnew;

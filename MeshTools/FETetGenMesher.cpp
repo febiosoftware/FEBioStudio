@@ -610,8 +610,6 @@ FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 		if (el.m_gid < 0) el.m_gid = 0;
 	}
 
-	pmesh->UpdateNormals();
-
 	// associate the FE nodes with the GNodes
 	double R2 = pmesh->GetBoundingBox().GetMaxExtent();
 	if (R2 == 0) R2 = 1.0; else R2 *= R2;	
@@ -1630,9 +1628,6 @@ FSMesh* FETetGenMesher::CreateMesh(GSurfaceMeshObject* surfObj)
 	{
 		UpdateElementPartitioning(surfObj, pmesh);
 	}
-
-	// update faces
-	pmesh->UpdateNormals();
 
 	// associate the FE nodes with the GNodes
 	/*	GObject* po = pm->GetGObject();

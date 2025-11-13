@@ -569,8 +569,6 @@ void CGLMonitorScene::UpdateScene()
 		ps->GetFEMesh()->Node(i).r = to_vec3d(ps->m_NODE[i].m_rt);
 	}
 	m_postModel->UpdateMeshState(m_postModel->CurrentTimeIndex());
-	ps->GetFEMesh()->UpdateNormals();
-
 	m_postModel->UpdateBoundingBox();
 	m_glm->Update(true);
 }

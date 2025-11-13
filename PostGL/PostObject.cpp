@@ -244,17 +244,7 @@ void CPostObject::BuildInternalSurfaces()
 						el.GetFace(j, face);
 						face.m_elem[0].eid = el.m_lid; // store the element ID. This is used for selection ???
 						face.m_elem[1].eid = pen->m_lid;
-
-						// calculate the face normals
-						vec3f r0 = to_vec3f(mesh.Node(face.n[0]).r);
-						vec3f r1 = to_vec3f(mesh.Node(face.n[1]).r);
-						vec3f r2 = to_vec3f(mesh.Node(face.n[2]).r);
-
-						face.m_fn = (r1 - r0) ^ (r2 - r0);
-						for (int k = 0; k < face.Nodes(); ++k) face.m_nn[k] = face.m_fn;
-						face.m_fn.Normalize();
 						face.m_gid = nsurf + m;
-
 						m_innerSurface[m]->add(face);
 					}
 				}

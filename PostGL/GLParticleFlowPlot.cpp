@@ -525,8 +525,8 @@ void CGLParticleFlowPlot::SeedParticles()
 		float w = frand();
 
 		// see if this is a valid candidate for a seed
-		vec3f fn = f.m_fn;
-		if ((fn*vf < -vtol) && (w <= m_density))
+		vec3f fn = to_vec3f(mesh.FaceNormal(f));
+		if ((w <= m_density) && (fn*vf < -vtol))
 		{
 			// calculate the face center, this will be the seed
 			// NOTE: We are using reference coordinates, therefore we assume that the mesh is not deforming!!

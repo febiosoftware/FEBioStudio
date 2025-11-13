@@ -915,13 +915,14 @@ double FSCoreMesh::QuadVolume(const FSElement_& el)
     assert(el.Type() == FE_QUAD4);
 
     FSFace& face = Face(el.m_face[0]);
+	vec3d Nf = FaceNormal(face);
 
     vec3d rt[FSElement::MAX_NODES];
     vec3d Dt[FSElement::MAX_NODES];
     for (int i = 0; i < el.Nodes(); ++i)
     {
         rt[i] = m_Node[el.m_node[i]].r;
-        Dt[i] = to_vec3d(face.m_nn[i]*el.m_h[i]);
+        Dt[i] = Nf*el.m_h[i];
     }
 
     switch (el.Type())

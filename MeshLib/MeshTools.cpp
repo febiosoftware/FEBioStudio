@@ -235,7 +235,7 @@ vec3d ClosestNodeOnSurface(FSMesh& mesh, const vec3d& r, const vec3d& t)
 	{
 		// only pick faces that are facing r
 		FSFace& f = mesh.Face(i);
-		if (t* to_vec3d(f.m_fn) < 0)
+		if (t* mesh.FaceNormal(f) < 0)
 		{
 			int n = f.Nodes();
 			for (int j = 0; j<n; ++j) mesh.Node(f.n[j]).m_ntag = 1;
@@ -1088,7 +1088,9 @@ double TriangleQuality(vec3d r[3])
 //-----------------------------------------------------------------------------
 double TriMaxDihedralAngle(const FSMeshBase& mesh, const FSFace& face)
 {
-	if (face.Type() != FE_FACE_TRI3) return 0.;
+	if (face.Type() != FE_FACE_TRI3) return 0.0;
+
+	vec3d N1 = mesh.FaceNormal(face);
 
 	double maxAngle = 0;
 	for (int i = 0; i < 3; ++i)
@@ -1096,7 +1098,8 @@ double TriMaxDihedralAngle(const FSMeshBase& mesh, const FSFace& face)
 		if (face.m_nbr[i] >= 0)
 		{
 			const FSFace& fi = mesh.Face(face.m_nbr[i]);
-			double a = acos(face.m_fn * fi.m_fn);
+			vec3d N2 = mesh.FaceNormal(fi);
+			double a = acos(N1 * N2);
 			if (a > maxAngle) maxAngle = a;
 		}
 	}

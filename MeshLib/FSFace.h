@@ -167,11 +167,6 @@ public:
 	//! neighbour faces
 	int		m_nbr[4];
 
-	//! face normal
-	vec3f	m_fn;
-	//! node normals
-	vec3f	m_nn[MAX_NODES];
-
 	// TODO: move texture coordinates elsewhere
 	//! nodal 1D-texture coordinates
 	float	m_tex[MAX_NODES];

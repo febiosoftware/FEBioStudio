@@ -2155,7 +2155,7 @@ void GLObjectItem::RenderNormals(GLRenderEngine& re, double scale)
 		{
 			vec3f p[2];
 			p[0] = vec3f(0, 0, 0);
-			vec3f fn = face.m_fn;
+			vec3f fn = to_vec3f(pm->FaceNormal(face));
 
 			vec3d c(0, 0, 0);
 			int nf = face.Nodes();

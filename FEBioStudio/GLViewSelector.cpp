@@ -865,11 +865,10 @@ void GLViewSelector::BrushSelectFaces(int x, int y, bool badd, bool binit)
 					if (f.m_nbr[j] >= 0)
 					{
 						FSFace& fj = pm->Face(f.m_nbr[j]);
-						vec3d fnj = to_vec3d(fj.m_fn);
 						if ((fj.m_ntag == 0))
 						{
 							bool baddFace = false;
-							if ((fj.IsVisible()) && (fnj * ray.direction < 0))
+							if ((fj.IsVisible()) && (pm->FaceNormal(fj) * ray.direction < 0))
 							{
 								for (int k = 0; k < fj.Nodes(); ++k)
 								{
@@ -898,8 +897,7 @@ void GLViewSelector::BrushSelectFaces(int x, int y, bool badd, bool binit)
 		for (int i = 0; i < faces; ++i)
 		{
 			const FSFace& face = mesh.Face(i);
-			vec3d fn = to_vec3d(face.m_fn);
-			if (face.IsVisible() && (fn * ray.direction < 0))
+			if (face.IsVisible() && (mesh.FaceNormal(face) * ray.direction < 0))
 			{
 				bool baddFace = false;
 				for (int j = 0; j < face.Nodes(); ++j)

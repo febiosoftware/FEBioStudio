@@ -92,7 +92,7 @@ bool CMeasureVolumeTool::OnApply()
 			// get the average position, area and normal
 			double area = mesh->FaceArea(rt, f.Nodes());
 			vec3d r = T.LocalToGlobal(mesh->FaceCenter(f));
-			vec3d N = T.LocalToGlobalNormal(to_vec3d(f.m_fn));
+			vec3d N = T.LocalToGlobalNormal(mesh->FaceNormal(f));
 
 			if (i == 0) z[0] = z[1] = r.z;
 			else

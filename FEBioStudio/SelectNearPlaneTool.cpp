@@ -112,7 +112,7 @@ bool CSelectNearPlaneTool::OnApply()
         auto it = selection->begin();
         for(int index = 0; index < selection->Count(); index++, ++it)
         {
-            normals.push_back(to_vec3d(it->m_fn));
+            normals.push_back(mesh->FaceNormal(*it));
             positions.push_back(mesh->FaceCenter(*it));
         }
 

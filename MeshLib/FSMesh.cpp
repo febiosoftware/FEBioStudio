@@ -2745,7 +2745,7 @@ std::vector<int> MeshTools::GetConnectedElements(FSMesh* pm, int startIndex, dou
 	if (pe->IsShell())
 	{
 		assert(pe->m_face[0] >= 0);
-		t = to_vec3d(pm->Face(pe->m_face[0]).m_fn); tr = cos(PI * fconn / 180.0);
+		t = pm->FaceNormal(pe->m_face[0]); tr = cos(PI * fconn / 180.0);
 	}
 
 	// get the respect partition boundary flag
@@ -2795,7 +2795,7 @@ std::vector<int> MeshTools::GetConnectedElements(FSMesh* pm, int startIndex, dou
 					int eface = pe2->m_face[0]; assert(eface >= 0);
 					if (eface >= 0)
 					{
-						if ((bmax == false) || (pm->Face(eface).m_fn * to_vec3f(t) >= tr))
+						if ((bmax == false) || (pm->FaceNormal(eface) * t >= tr))
 						{
 							if ((bpart == false) || (pe2->m_gid == gid))
 							{
