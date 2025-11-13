@@ -45,7 +45,7 @@ void GTranslator::Render(GLRenderEngine& re, int npivot, bool bactive)
 	double l = 0.1*d;
 	double r = 0.3*d;
 
-	re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::White(), GLMaterial::VERTEX_COLOR);
 
 	GLColor g(128, 128, 128);
 
@@ -218,7 +218,7 @@ void GRotator::Render(GLRenderEngine& re, int npivot, bool bactive)
 
 	re.beginShape();
 
-	re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::White(), GLMaterial::VERTEX_COLOR);
 
 	// X-axis
 	re.pushTransform();
@@ -409,7 +409,7 @@ void GScalor::Render(GLRenderEngine& re, int npivot, bool bactive)
 	double l = 0.1*d;
 	double r = 0.3*d;
 
-	re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::White(), GLMaterial::VERTEX_COLOR);
 
 	GLColor g(128, 128, 128);
 
