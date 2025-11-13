@@ -77,9 +77,6 @@ public:
 	//! Get the world positions of face nodes
 	void FaceNodePosition(const FSFace& f, vec3d* r) const;
 
-	//! Get the texture coordinates of face nodes
-	void FaceNodeTexCoords(const FSFace& f, float* t) const;
-
 	//! Clear the selection of all faces
 	void ClearFaceSelection();
 

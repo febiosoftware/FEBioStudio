@@ -170,8 +170,6 @@ public:
 	// TODO: move texture coordinates elsewhere
 	//! nodal 1D-texture coordinates
 	float	m_tex[MAX_NODES];
-	//! element texture coordinate
-	float	m_texe;
 
 	//! the elements to which this face belongs
 	ELEM_REF	m_elem[3];

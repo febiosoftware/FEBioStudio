@@ -390,16 +390,14 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		{
 			for (int j = 0; j<face.Nodes(); ++j) face.m_tex[j] = (face.m_tex[j] - min)*dti;
 			if (fd.m_ntag > 0) face.Activate(); else face.Deactivate();
-			face.m_texe = 0;
 		}
 		else
 		{
 			for (int j = 0; j<face.Nodes(); ++j) face.m_tex[j] = 0;
-			face.m_texe = 0;
 		}
 	}
 
-	// update element textures
+	// update elements
 	for (int i = 0; i<pm->Elements(); ++i)
 	{
 		FSElement_& el = pm->ElementRef(i);
@@ -407,11 +405,6 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		ELEMDATA& d1 = s1.m_ELEM[i];
 		if ((d0.m_state & StatusFlags::ACTIVE) && (d1.m_state & StatusFlags::ACTIVE))
 		{
-			float f0 = d0.m_val;
-			float f1 = d1.m_val;
-			float f = f0 + (f1 - f0)*w;
-			el.m_tex = (f - min) / (max - min);
-
 			el.Activate();
 		}
 		else el.Deactivate();
@@ -459,8 +452,6 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 						float v = v0 + (v1 - v0)*w;
 
 						float tex = (v - min) / (max - min);
-
-						face.m_texe = tex;
 
 						int nf = face.Nodes();
 						for (int k = 0; k < nf; ++k)

@@ -49,7 +49,6 @@ FSElement_::FSElement_()
 
 	m_lid = 0;
 	m_MatID = 0;
-	m_tex = 0.0f;
 
 	m_Q.unit(); m_Qactive = false;
 	m_a0 = 0;

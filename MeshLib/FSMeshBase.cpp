@@ -390,11 +390,6 @@ void FSMeshBase::FaceNodePosition(const FSFace& f, vec3d* r) const
 	}
 }
 
-void FSMeshBase::FaceNodeTexCoords(const FSFace& f, float* t) const
-{
-	for (int i = 0; i<f.Nodes(); ++i) t[i] = f.m_tex[i];
-}
-
 //==============================================================================
 std::vector<int> MeshTools::GetConnectedFaces(FSMeshBase* pm, int nface, double tolAngleDeg, bool respectPartitions)
 {
