@@ -508,6 +508,8 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 		return;
 	}
 
+	mouseIsPressed = true;
+
 	GLScene* scene = pdoc->GetScene();
 
 	GLCamera& cam = scene->GetCamera();
@@ -643,20 +645,23 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			}
 			else if (viewMode == VIEW_USER)
 			{
-				if (balt)
+				if (mouseIsPressed)
 				{
-					quatd qz = quatd((y - m_y1)*0.01f, vec3d(0, 0, 1));
-					cam.Orbit(qz);
-				}
-				else
-				{
-					quatd qx = quatd((y - m_y1)*0.01f, vec3d(1, 0, 0));
-					quatd qy = quatd((x - m_x1)*0.01f, vec3d(0, 1, 0));
+					if (balt)
+					{
+						quatd qz = quatd((y - m_y1) * 0.01f, vec3d(0, 0, 1));
+						cam.Orbit(qz);
+					}
+					else
+					{
+						quatd qx = quatd((y - m_y1) * 0.01f, vec3d(1, 0, 0));
+						quatd qy = quatd((x - m_x1) * 0.01f, vec3d(0, 1, 0));
 
-					cam.Orbit(qx);
-					cam.Orbit(qy);
+						cam.Orbit(qx);
+						cam.Orbit(qy);
+					}
+					update();
 				}
-				update();
 			}
 			else SetViewMode(VIEW_USER);
 		}
@@ -844,6 +849,9 @@ void CGLView::mouseDoubleClickEvent(QMouseEvent* ev)
 
 void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 {
+	bool mouseWasPressed = mouseIsPressed;
+	mouseIsPressed = false;
+
 	int x = (int)ev->position().x();
 	int y = (int)ev->position().y();
 
@@ -1004,7 +1012,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 				emit selectionChanged();
 				m_pWnd->Update(0, false);
 			}
-			else
+			else if (mouseWasPressed)
 			{
 				CCmdChangeView* pcmd = new CCmdChangeView(&cam, cam);
 				cam = m_oldCam;

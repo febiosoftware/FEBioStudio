@@ -328,6 +328,8 @@ private:
 
 	bool renderOverlay = false;
 
+	bool mouseIsPressed = false;
+
 	int frameCapturesRequested = 0;
 
 	static GLViewSettings	m_view;
