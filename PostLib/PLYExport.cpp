@@ -103,7 +103,7 @@ bool PLYFile::Write(FEPostModel& fem, const CColorMap& tex)
 			FSFace& f = pm->Face(i);
 			for (int j = 0; j < f.Nodes(); ++j)
 			{
-				col[f.n[j]] = tex.map(f.m_tex[j]);
+				col[f.n[j]] = GLColor::White(); // TODO: This used to map the face texture values to colors
 			}
 		}
 	}

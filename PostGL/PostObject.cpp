@@ -72,33 +72,6 @@ void CPostObject::UpdateMesh()
 	}
 	mesh->Update();
 
-	vector<double> buf(pm->Nodes());
-	for (int i = 0; i < mesh->Faces(); ++i)
-	{
-		GLMesh::FACE& face = mesh->Face(i);
-		if (face.pid < Faces())
-		{
-			assert(face.fid >= 0);
-			FSFace& f = pm->Face(face.fid);
-			for (int j = 0; j < f.Nodes(); ++j) buf[f.n[j]] = f.m_tex[j];
-			
-			face.t[0].x = buf[face.n[0]];
-			face.t[1].x = buf[face.n[1]];
-			face.t[2].x = buf[face.n[2]];
-		}
-		else
-		{
-			Post::GLSurface& surf = InteralSurface(face.pid - Faces());
-			FSFace& f = surf.Face(face.fid);
-			FSElement& e = pm->Element(face.eid);
-			for (int j = 0; j < f.Nodes(); ++j) buf[f.n[j]] = f.m_tex[j];
-
-			face.t[0].x = buf[face.n[0]];
-			face.t[1].x = buf[face.n[1]];
-			face.t[2].x = buf[face.n[2]];
-		}
-	}
-
 	mesh->setModified(true);
 
 	GLMesh* renderMesh = GetRenderMesh();

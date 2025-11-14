@@ -167,12 +167,9 @@ public:
 	//! neighbour faces
 	int		m_nbr[4];
 
-	// TODO: move texture coordinates elsewhere
-	//! nodal 1D-texture coordinates
-	float	m_tex[MAX_NODES];
-
 	//! the elements to which this face belongs
 	ELEM_REF	m_elem[3];
+
 	//! the edges (interior faces don't have edges!)
 	int			m_edge[4];
 };
