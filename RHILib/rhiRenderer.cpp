@@ -32,6 +32,7 @@ SOFTWARE.*/
 void GlobalUniformBlock::create(QRhi* rhi)
 {
 	m_ub.create({
+		{ rhi::UniformBlock::MAT4, "projectionMatrix" },
 		{ rhi::UniformBlock::VEC4, "lightPos" },
 		{ rhi::UniformBlock::VEC4, "ambient"},
 		{ rhi::UniformBlock::VEC4, "diffuse"},
@@ -48,6 +49,8 @@ void GlobalUniformBlock::create(QRhi* rhi)
 	m_ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, m_ub.size()));
 	m_ubuf->create();
 }
+
+void GlobalUniformBlock::setProjectionMatrix(const QMatrix4x4& pm) { m_ub.setMat4(PROJMATRIX, pm); }
 
 void GlobalUniformBlock::setLightPosition(const vec3f& lp) { m_ub.setVec4(LIGHTPOS, lp); }
 
@@ -103,7 +106,7 @@ void CanvasUniformBlock::update(QRhiResourceUpdateBatch* u)
 	u->updateDynamicBuffer(m_ubuf.get(), 0, m_ub.size(), m_ub.data());
 }
 
-rhiRenderer::rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp) : m_rhi(rhi), m_sc(sc), m_rp(rp), m_tex1D(rhi), m_envTex(rhi)
+rhiRenderer::rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp) : m_rhi(rhi), m_sc(sc), m_rp(rp)
 {
 }
 
@@ -119,47 +122,33 @@ void rhiRenderer::init()
 	// create global uniform (used by several shaders)
 	m_global.create(m_rhi);
 
-	// prep 1D texture
-	QImage img(QSize(1024, 1), QImage::Format_RGBA8888);
-	img.fill(Qt::white);
-	m_tex1D.create(img);
-	m_tex1D.upload(m_initialUpdates);
-
-	// create with dummy image
-	QImage envImg(QSize(100, 100), QImage::Format_RGB32);
-	envImg.fill(Qt::black);
-	m_envTex.create(envImg);
-
-	// convenience class for passing around all the resources that are shared between shaders
-	m_sharedResources = { m_global.get(), m_tex1D.texture.get(), m_tex1D.sampler.get(), m_envTex.texture.get(), m_envTex.sampler.get()};
-
 	// create all render passes
 	m_solidPass.reset(new TwoPassSolidRenderPass(m_rhi));
-	m_solidPass->create(m_sc, &m_sharedResources);
+	m_solidPass->create(m_sc, m_global.get());
 
 	m_solidOverlayPass.reset(new SolidRenderPass(m_rhi));
 	m_solidOverlayPass->setDepthTest(false);
-	m_solidOverlayPass->create(m_sc, &m_sharedResources);
+	m_solidOverlayPass->create(m_sc, m_global.get());
 
 	m_volumeRenderPass.reset(new VolumeRenderPass(m_rhi));
-	m_volumeRenderPass->create(m_sc);
+	m_volumeRenderPass->create(m_sc, m_global.get());
 
 	m_linePass.reset(new LineRenderPass(m_rhi));
-	m_linePass->create(m_sc, &m_sharedResources);
+	m_linePass->create(m_sc, m_global.get());
 
 	m_lineOverlayPass.reset(new LineRenderPass(m_rhi));
 	m_lineOverlayPass->setDepthTest(false);
-	m_lineOverlayPass->create(m_sc, &m_sharedResources);
+	m_lineOverlayPass->create(m_sc, m_global.get());
 
 	m_pointPass.reset(new PointRenderPass(m_rhi));
-	m_pointPass->create(m_sc, &m_sharedResources);
+	m_pointPass->create(m_sc, m_global.get());
 
 	m_pointOverlayPass.reset(new PointRenderPass(m_rhi));
 	m_pointOverlayPass->setDepthTest(false);
-	m_pointOverlayPass->create(m_sc, &m_sharedResources);
+	m_pointOverlayPass->create(m_sc, m_global.get());
 
 	m_overlay2DPass.reset(new OverlayRenderPass(m_rhi));
-	m_overlay2DPass->create(m_sc, &m_sharedResources);
+	m_overlay2DPass->create(m_sc);
 
 	// create the canvas pass (for rendering fps)
 	m_canvasPass.reset(new CanvasRenderPass(m_rhi));
@@ -335,21 +324,24 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 	rhi::SubMesh* pm = nullptr;
 	if (m_currentMat.diffuseMap == GLMaterial::TEXTURE_3D)
 	{
-		pm = m_volumeRenderPass->addGLMesh(mesh, -1, cacheMesh);
+		rhi::Mesh* rm = m_volumeRenderPass->addGLMesh(mesh, cacheMesh);
+		if (rm) pm = m_volumeRenderPass->getSubMesh(*rm, -1);
 	}
 	else if (m_currentMat.type == GLMaterial::OVERLAY)
 	{
-		pm = m_solidOverlayPass->addGLMesh(mesh, -1, cacheMesh);
+		rhi::Mesh* rm = m_solidOverlayPass->addGLMesh(mesh, cacheMesh);
+		if (rm) pm = m_solidOverlayPass->getSubMesh(*rm, -1);
 	}
 	else
 	{
-		pm = m_solidPass->addGLMesh(mesh, -1, cacheMesh);
+		rhi::Mesh* rm = m_solidPass->addGLMesh(mesh, cacheMesh);
+		if (rm) pm = m_solidPass->getSubMesh(*rm, -1);
 	}
 
 	if (pm)
 	{
 		pm->SetMaterial(m_currentMat);
-		pm->SetMatrices(modelViewMatrix(), m_projMatrix);
+		pm->SetModelView(modelViewMatrix());
 		pm->doClipping = m_clipEnabled;
 
 		m_stats.triangles += (pm->vertexCount / 3); // 3 vertices per triangle
@@ -365,13 +357,14 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 	}
 	else
 	{
-		pm = m_solidPass->addGLMesh(mesh, surfId, cacheMesh);
+		rhi::Mesh* rm = m_solidPass->addGLMesh(mesh, cacheMesh);
+		if (rm) pm = m_solidPass->getSubMesh(*rm, surfId);
 	}
 
 	if (pm)
 	{
 		pm->SetMaterial(m_currentMat);
-		pm->SetMatrices(modelViewMatrix(), m_projMatrix);
+		pm->SetModelView(modelViewMatrix());
 		pm->doClipping = m_clipEnabled;
 
 		m_stats.triangles += (pm->vertexCount / 3); // 3 vertices per triangle
@@ -382,14 +375,20 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 {
 	rhi::SubMesh* lineMesh = nullptr;
 	if (m_currentMat.type == GLMaterial::OVERLAY)
-		lineMesh = m_lineOverlayPass->addGLMesh(mesh, -1, cacheMesh);
+	{
+		rhi::Mesh* rm = m_lineOverlayPass->addGLMesh(mesh, cacheMesh);
+		if (rm) lineMesh = m_lineOverlayPass->getSubMesh(*rm, -1);
+	}
 	else
-		lineMesh = m_linePass->addGLMesh(mesh, -1, cacheMesh);
+	{
+		rhi::Mesh* rm = m_linePass->addGLMesh(mesh, cacheMesh);
+		if (rm) lineMesh = m_linePass->getSubMesh(*rm, -1);
+	}
 
 	if (lineMesh)
 	{
 		lineMesh->SetMaterial(m_currentMat);
-		lineMesh->SetMatrices(modelViewMatrix(), m_projMatrix);
+		lineMesh->SetModelView(modelViewMatrix());
 		lineMesh->doClipping = m_clipEnabled;
 
 		m_stats.lines += (lineMesh->vertexCount / 2); // 2 vertices per edge
@@ -400,14 +399,20 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cache
 {
 	rhi::SubMesh* lineMesh = nullptr;
 	if (m_currentMat.type == GLMaterial::OVERLAY)
-		lineMesh = m_lineOverlayPass->addGLMesh(mesh, partition, cacheMesh);
+	{
+		rhi::Mesh* rm = m_lineOverlayPass->addGLMesh(mesh, cacheMesh);
+		if (rm) lineMesh = m_lineOverlayPass->getSubMesh(*rm, partition);
+	}
 	else
-		lineMesh = m_linePass->addGLMesh(mesh, partition, cacheMesh);
+	{
+		rhi::Mesh* rm = m_linePass->addGLMesh(mesh, cacheMesh);
+		if (rm) lineMesh = m_linePass->getSubMesh(*rm, partition);
+	}
 
 	if (lineMesh)
 	{
 		lineMesh->SetMaterial(m_currentMat);
-		lineMesh->SetMatrices(modelViewMatrix(), m_projMatrix);
+		lineMesh->SetModelView(modelViewMatrix());
 		lineMesh->doClipping = m_clipEnabled;
 
 		m_stats.lines += (lineMesh->vertexCount / 2); // 2 vertices per edge
@@ -418,14 +423,20 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 {
 	rhi::SubMesh* pointMesh = nullptr;
 	if (m_currentMat.type == GLMaterial::OVERLAY)
-		pointMesh = m_pointOverlayPass->addGLMesh(mesh, -1, cacheMesh);
+	{
+		rhi::Mesh* rm = m_pointOverlayPass->addGLMesh(mesh, cacheMesh);
+		if (rm) pointMesh = m_pointOverlayPass->getSubMesh(*rm, -1);
+	}
 	else
-		pointMesh = m_pointPass->addGLMesh(mesh, -1, cacheMesh);
+	{
+		rhi::Mesh* rm = m_pointPass->addGLMesh(mesh, cacheMesh);
+		if (rm) pointMesh = m_pointPass->getSubMesh(*rm, -1);
+	}
 
 	if (pointMesh)
 	{
 		pointMesh->SetMaterial(m_currentMat);
-		pointMesh->SetMatrices(modelViewMatrix(), m_projMatrix);
+		pointMesh->SetModelView(modelViewMatrix());
 		pointMesh->DoClipping(m_clipEnabled);
 
 		m_stats.points += pointMesh->vertexCount;
@@ -434,19 +445,7 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 
 void rhiRenderer::setTexture(GLTexture1D& tex)
 {
-	if (tex.DoUpdate())
-	{
-		// update texture data
-		QImage img(tex.Size(), 1, QImage::Format_RGBA8888);
-		for (int i = 0; i < tex.Size(); ++i)
-		{
-			GLColor c = tex.sample((float)i / (tex.Size() - 1.f));
-			img.setPixelColor(i, 0, QColor(c.r, c.g, c.b, c.a));
-		}
-		m_tex1D.image = img;
-		m_tex1D.needsUpload = true;
-		tex.Update(false);
-	}
+	m_solidPass->setTexture1D(tex);
 }
 
 void rhiRenderer::setTexture(GLTexture3D& tex)
@@ -490,20 +489,7 @@ void rhiRenderer::disableClipPlane(unsigned int n)
 
 unsigned int rhiRenderer::SetEnvironmentMap(const CRGBAImage& img)
 {
-	if (img.isNull()) return 0;
-
-	if (envImg == nullptr)
-	{
-		QImage map(img.GetBytes(), img.Width(), img.Height(), QImage::Format::Format_RGBA8888_Premultiplied);
-		if (!map.isNull())
-		{
-			m_envTex.setImage(map);
-			envImg = &img;
-			return 1;
-		}
-		else return 0;
-	}
-	else return 1;
+	return m_solidPass->setEnvironmentMap(img);
 }
 
 void rhiRenderer::ActivateEnvironmentMap(unsigned int mapid)
@@ -603,19 +589,8 @@ void rhiRenderer::finish()
 	// set global properties
 	m_global.setLightPosition(m_light);
 	m_global.setClipPlane(clipPlane);
+	m_global.setProjectionMatrix(m_projMatrix);
 	m_global.update(resourceUpdates);
-
-	if (m_tex1D.needsUpload)
-	{
-		m_tex1D.upload(resourceUpdates);
-		m_tex1D.needsUpload = false;
-	}
-
-	if (m_envTex.needsUpload)
-	{
-		m_envTex.upload(resourceUpdates);
-		m_envTex.needsUpload = false;
-	}
 
 	// update solid mesh data
 	m_solidPass->update(resourceUpdates);
@@ -645,6 +620,7 @@ void rhiRenderer::finish()
 	// overlay stuff
 	if (m_useOverlay)
 	{
+		m_overlay2DPass->setLightPosition(m_light);
 		m_overlay2DPass->update(resourceUpdates);
 
 		// render into overlay

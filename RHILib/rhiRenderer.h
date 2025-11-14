@@ -42,7 +42,7 @@ using dseconds = duration<double>;
 class GlobalUniformBlock
 {
 public:
-	enum {LIGHTPOS, LIGHTAMB, LIGHTDIFF, LIGHTSPEC, CLIPPLANE, LIGHTON};
+	enum { PROJMATRIX, LIGHTPOS, LIGHTAMB, LIGHTDIFF, LIGHTSPEC, CLIPPLANE, LIGHTON};
 
 public:
 	GlobalUniformBlock() {}
@@ -53,6 +53,7 @@ public:
 	void update(QRhiResourceUpdateBatch* u);
 
 public:
+	void setProjectionMatrix(const QMatrix4x4& pm);
 	void setLightPosition(const vec3f& lp);
 	void setAmbientColor(GLColor c);
 	void setDiffuseColor(GLColor c);
@@ -132,8 +133,8 @@ public:
 
 	void renderGMeshNodes(const GLMesh& mesh, bool cacheMesh = true) override;
 
-	void setTexture(GLTexture1D& tex);
-	void setTexture(GLTexture3D& tex);
+	void setTexture(GLTexture1D& tex) override;
+	void setTexture(GLTexture3D& tex) override;
 
 	void setClipPlane(unsigned int n, const double* v) override;
 	void enableClipPlane(unsigned int n) override;
@@ -187,10 +188,6 @@ private:
 
 	// global resources
 	GlobalUniformBlock m_global;
-	rhi::Texture m_tex1D;
-	rhi::SharedResources m_sharedResources;
-	rhi::Texture m_envTex;
-	const CRGBAImage* envImg = nullptr;
 
 	// used for submitting updates in init.
 	QRhiResourceUpdateBatch* m_initialUpdates = nullptr;

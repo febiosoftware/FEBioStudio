@@ -8,18 +8,13 @@ layout(location = 1) in vec3 v_color;
 layout(location = 0) out vec4 fragColor;
 
 // global (shared) block
-layout(std140, binding = 0) uniform GlobalBlock {
+layout(std140, binding = 0) uniform Globals {
+    mat4 projectionMatrix;
     vec4 lightPos;
-    vec4 ambient;
-    vec4 diffuse;
-    vec4 specColor;
-    vec4 clipPlane;
-    int lightEnabled;
 } glob;
 
 // mesh-specific block
 layout(std140, binding = 1) uniform MeshBlock {
-    mat4 mvp;
     mat4 mv;
 } mesh;
 

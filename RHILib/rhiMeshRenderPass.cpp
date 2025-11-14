@@ -71,7 +71,7 @@ void rhi::MeshRenderPass::removeCachedMesh(const GLMesh* mesh)
 	}
 }
 
-rhi::SubMesh* rhi::MeshRenderPass::addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh)
+rhi::Mesh* rhi::MeshRenderPass::addGLMesh(const GLMesh& mesh, bool cacheMesh)
 {
 	if (mesh.Nodes() == 0) return nullptr;
 
@@ -95,8 +95,13 @@ rhi::SubMesh* rhi::MeshRenderPass::addGLMesh(const GLMesh& mesh, int partition, 
 	// since we need the mesh, mark it as active so we don't delete it during a clearUnusedCache call
 	it->mesh->setActive(true);
 
+	return it->mesh;
+}
+
+rhi::SubMesh* rhi::MeshRenderPass::getSubMesh(rhi::Mesh& mesh, int subMeshIndex)
+{
 	// get the partition's submesh
-	rhi::SubMesh* subMesh = it->mesh->getSubMesh(partition + 1); assert(subMesh);
+	rhi::SubMesh* subMesh = mesh.getSubMesh(subMeshIndex + 1); assert(subMesh);
 	if (subMesh)
 	{
 		// make sure the submesh has a shader resource

@@ -27,8 +27,10 @@ SOFTWARE.*/
 #include "rhiShader.h"
 #include "rhiTriMesh.h"
 
-void VolumeRenderPass::create(QRhiSwapChain* sc)
+void VolumeRenderPass::create(QRhiSwapChain* sc, QRhiBuffer* global)
 {
+	m_globalBuf = global;
+
 	settings.create({
 		{ rhi::UniformBlock::VEC4 , "col1" },
 		{ rhi::UniformBlock::VEC4 , "col2" },
@@ -52,7 +54,7 @@ void VolumeRenderPass::create(QRhiSwapChain* sc)
 	QRhiRenderPassDescriptor* rp = sc->renderPassDescriptor();
 	int sampleCount = sc->sampleCount();
 
-	m_sr.reset(shader.createShaderResource(m_rhi, m_tex, ubuf.get()));
+	m_sr.reset(shader.createShaderResource(m_rhi, m_tex, global, ubuf.get()));
 
 	m_pl.reset(m_rhi->newGraphicsPipeline());
 	m_pl->setRenderPassDescriptor(rp);
@@ -98,7 +100,7 @@ rhi::Mesh* VolumeRenderPass::newMesh(const GLMesh* mesh)
 
 rhi::MeshShaderResource* VolumeRenderPass::createShaderResource()
 {
-	return VolumeShader::createShaderResource(m_rhi, m_tex, ubuf.get());
+	return VolumeShader::createShaderResource(m_rhi, m_tex, m_globalBuf, ubuf.get());
 }
 
 void VolumeRenderPass::update(QRhiResourceUpdateBatch* u)
@@ -135,7 +137,7 @@ void VolumeRenderPass::setTexture3D(GLTexture3D& tex)
 		m_tex.needsUpload = true;
 
 		// recreate shader resource for pipeline
-		m_sr.reset(VolumeShader::createShaderResource(m_rhi, m_tex, ubuf.get()));
+		m_sr.reset(VolumeShader::createShaderResource(m_rhi, m_tex, m_globalBuf, ubuf.get()));
 		m_pl->setShaderResourceBindings(m_sr->get());
 
 		// delete all cached meshes since the shader resoures are no longer valid

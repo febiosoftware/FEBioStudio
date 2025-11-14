@@ -33,7 +33,7 @@ class TriadRenderPass : public rhi::RenderPass
 public:
 	TriadRenderPass(QRhi* rhi) : rhi::RenderPass(rhi) {}
 
-	void create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::SharedResources* sr);
+	void create(QRhiRenderPassDescriptor* rp, int sampleCount, QRhiBuffer* globalBuf);
 
 	QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
 
@@ -53,7 +53,7 @@ class OverlayRenderPass : public rhi::RenderPass
 {
 public:
 	OverlayRenderPass(QRhi* rhi) : rhi::RenderPass(rhi), m_overlayTex(rhi) {}
-	void create(QRhiSwapChain* sc, rhi::SharedResources* sharedResources);
+	void create(QRhiSwapChain* sc);
 	QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
 
 	void update(QRhiResourceUpdateBatch* u) override;
@@ -69,6 +69,12 @@ public:
 	void drawTriad(QRhiCommandBuffer* cb);
 
 public:
+	void setLightPosition(const vec3f& lp);
+
+public:
+	rhi::UniformBlock m_glob;
+	std::unique_ptr<QRhiBuffer> m_globalBuf;
+
 	QRhiViewport m_overlayVP = { 0,0,100,100 };
 	QMatrix4x4 m_overlayVM;
 

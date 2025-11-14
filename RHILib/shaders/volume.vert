@@ -7,8 +7,19 @@ layout(location = 1) in vec3 tex;
 // output
 layout(location = 0) out vec3 v_tex;
 
+// global (shared) block
+layout(std140, binding = 0) uniform GlobalBlock {
+    mat4 projectionMatrix;
+    vec4 lightPos;
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specColor;
+    vec4 clipPlane;
+    int lightEnabled;
+} glob;
+
 // volume render settings
-layout(std140, binding = 0) uniform settings {
+layout(std140, binding = 1) uniform settings {
     vec4 col1;
     vec4 col2;
     vec4 col3;
@@ -23,16 +34,16 @@ layout(std140, binding = 0) uniform settings {
 } ops;
 
 // mesh-specific block
-layout(std140, binding = 1) uniform MeshBlock {
-    mat4 mvp;
+layout(std140, binding = 2) uniform MeshBlock {
+    mat4 mv;
     vec4 col;
 } mesh;
 
 // texture sampler
-layout(binding = 2) uniform sampler3D smp;
+layout(binding = 3) uniform sampler3D smp;
 
 void main()
 {
     v_tex = tex;
-    gl_Position = mesh.mvp * vec4(pos, 1);
+    gl_Position = glob.projectionMatrix * (mesh.mv * vec4(pos, 1));
 }

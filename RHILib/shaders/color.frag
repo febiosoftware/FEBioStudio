@@ -11,6 +11,7 @@ layout(location = 0) out vec4 fragColor;
 
 // global (shared) block
 layout(std140, binding = 0) uniform GlobalBlock {
+    mat4 projectionMatrix;
     vec4 lightPos;
     vec4 ambient;
     vec4 diffuse;
@@ -21,7 +22,6 @@ layout(std140, binding = 0) uniform GlobalBlock {
 
 // mesh-specific block
 layout(std140, binding = 1) uniform MeshBlock {
-    mat4 mvp;
     mat4 mv;
     vec4 ambient;
     vec4 diffuse;

@@ -75,7 +75,7 @@ public:
 
 	QRhiVertexInputLayout meshLayout() override;
 
-	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, rhi::SharedResources* sharedResource);
+	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf);
 };
 
 class LineShader : public rhi::Shader
@@ -97,7 +97,7 @@ public:
 
 	QRhiVertexInputLayout meshLayout() override;
 
-	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, rhi::SharedResources* sharedResource);
+	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf);
 };
 
 class SolidShader : public rhi::Shader
@@ -123,7 +123,7 @@ public:
 
 	QRhiVertexInputLayout meshLayout() override;
 
-	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, rhi::SharedResources* sharedResource);
+	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D, rhi::Texture& envTex);
 };
 
 class CanvasShader : public rhi::Shader 
@@ -168,7 +168,7 @@ public:
 
 	QRhiVertexInputLayout meshLayout() override;
 
-	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, rhi::SharedResources* sharedResource);
+	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf);
 };
 
 class VolumeShader : public rhi::Shader
@@ -190,7 +190,7 @@ public:
 
 	QRhiVertexInputLayout meshLayout() override;
 
-	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, rhi::Texture3D& tex, QRhiBuffer* buf);
+	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, rhi::Texture3D& tex, QRhiBuffer* global, QRhiBuffer* vrSettings);
 };
 
 class GradientShader : public rhi::Shader
@@ -199,4 +199,27 @@ public:
 	GradientShader(QRhi* rhi);
 
 	QRhiVertexInputLayout meshLayout() override;
+};
+
+class DiffuseShader : public rhi::Shader
+{
+public:
+	struct Vertex {
+		vec3f r; // coordinate
+		vec3f n; // normal
+		float c[4]; // color
+
+		void operator = (const GLMesh::NODE& nd) {
+			r = nd.r;
+			n = nd.n;
+			nd.c.toFloat(c);
+		}
+	};
+
+public:
+	DiffuseShader(QRhi* rhi);
+
+	QRhiVertexInputLayout meshLayout() override;
+
+	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, QRhiBuffer* global);
 };

@@ -28,16 +28,16 @@ SOFTWARE.*/
 #include "rhiShader.h"
 #include "rhiLineMesh.h"
 
-void LineRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
+void LineRenderPass::create(QRhiSwapChain* sc, QRhiBuffer* globalBuf)
 {
-	m_sharedResource = sr;
+	m_globalBuf = globalBuf;
 
 	QRhiRenderPassDescriptor* rp = sc->renderPassDescriptor();
 	int sampleCount = sc->sampleCount();
 
 	LineShader lineShader(m_rhi);
 
-	m_sr.reset(lineShader.createShaderResource(m_rhi, sr));
+	m_sr.reset(lineShader.createShaderResource(m_rhi, m_globalBuf));
 
 	m_pl.reset(m_rhi->newGraphicsPipeline());
 	m_pl->setRenderPassDescriptor(rp);
@@ -70,5 +70,5 @@ rhi::Mesh* LineRenderPass::newMesh(const GLMesh* mesh)
 
 rhi::MeshShaderResource* LineRenderPass::createShaderResource()
 {
-	return LineShader::createShaderResource(m_rhi, m_sharedResource);
+	return LineShader::createShaderResource(m_rhi, m_globalBuf);
 }

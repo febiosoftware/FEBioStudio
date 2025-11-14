@@ -10,6 +10,7 @@ layout(location = 1) out vec3 v_col;
 
 // global (shared) block
 layout(std140, binding = 0) uniform GlobalBlock {
+    mat4 projectionMatrix;
     vec4 lightPos;
     vec4 ambient;
     vec4 diffuse;
@@ -20,7 +21,6 @@ layout(std140, binding = 0) uniform GlobalBlock {
 
 // mesh-specific block
 layout(std140, binding = 1) uniform MeshBlock {
-    mat4 mvp;
     mat4 mv;
     vec4 col;
     int useClipping;
@@ -29,7 +29,7 @@ layout(std140, binding = 1) uniform MeshBlock {
 
 void main()
 {
-    vec4 r = mesh.mvp * vec4(pos, 1);
+    vec4 r = glob.projectionMatrix*(mesh.mv * vec4(pos, 1));
     r.z -= 1.0e-4;
     v_pos = (mesh.mv*vec4(pos,1)).xyz;
     v_col = col;

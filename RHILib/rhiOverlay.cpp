@@ -70,11 +70,11 @@ static GLMesh* buildTriadMesh()
 	return mb.takeMesh();
 }
 
-void TriadRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::SharedResources* sr)
+void TriadRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, QRhiBuffer* globalBuf)
 {
 	TriadShader shader(m_rhi);
 
-	m_sr.reset(shader.createShaderResource(m_rhi, sr));
+	m_sr.reset(shader.createShaderResource(m_rhi, globalBuf));
 
 	m_pl.reset(m_rhi->newGraphicsPipeline());
 	m_pl->setRenderPassDescriptor(rp);
@@ -106,9 +106,17 @@ void OverlayShaderResource::create(QRhi* rhi, rhi::Texture& tex)
 	srb->create();
 }
 
-void OverlayRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sharedResources)
+void OverlayRenderPass::create(QRhiSwapChain* sc)
 {
 	m_sc = sc;
+
+	m_glob.create({
+		{ rhi::UniformBlock::MAT4, "projectionMatrix"},
+		{ rhi::UniformBlock::VEC4, "lightPosition" }
+		});
+
+	m_globalBuf.reset(m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, m_glob.size()));
+	m_globalBuf->create();
 
 	QRhiRenderPassDescriptor* rp = sc->renderPassDescriptor();
 	int sampleCount = sc->sampleCount();
@@ -161,13 +169,13 @@ void OverlayRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sharedRe
 
 	// create the triad stuff
 	m_triadPass.reset(new TriadRenderPass(m_rhi));
-	m_triadPass->create(renderPassDescriptor(), 1, sharedResources);
+	m_triadPass->create(renderPassDescriptor(), 1, m_globalBuf.get());
 
 	// create the triad pass
 	GLMesh* gltriad = buildTriadMesh();
 	triadMesh.reset(new rhi::TriMesh<TriadShader::Vertex>(m_rhi));
 	triadMesh->CreateFromGLMesh(gltriad);
-	triadMesh->setShaderResource(TriadShader::createShaderResource(m_rhi, sharedResources));
+	triadMesh->setShaderResource(TriadShader::createShaderResource(m_rhi, m_globalBuf.get()));
 	triadMesh->getSubMesh(0)->SetActive(true);
 
 	GLMaterial mat;
@@ -182,6 +190,11 @@ void OverlayRenderPass::setImage(const QImage& img)
 		m_overlayTex.image = img.mirrored();
 	else
 		m_overlayTex.image = img;
+}
+
+void OverlayRenderPass::setLightPosition(const vec3f& lp)
+{
+	m_glob.setVec4(1, lp);
 }
 
 void OverlayRenderPass::update(QRhiResourceUpdateBatch* u)
@@ -233,7 +246,10 @@ void OverlayRenderPass::update(QRhiResourceUpdateBatch* u)
 
 	proj.ortho(-dx, dx, -dy, dy, -1, 1);
 
-	triadMesh->setMatrices(m_overlayVM, proj);
+	m_glob.setMat4(0, proj);
+	u->updateDynamicBuffer(m_globalBuf.get(), 0, m_glob.size(), m_glob.data());
+
+	triadMesh->setModelView(m_overlayVM);
 	triadMesh->Update(u);
 }
 

@@ -37,13 +37,12 @@ void rhi::Shader::create(const QString& vertexShader, const QString& fragmentSha
 class PointShaderResource : public rhi::MeshShaderResource
 {
 public:
-	enum { MVP, MV, COL, CLIP, VCOL };
+	enum { MV, COL, CLIP, VCOL };
 
 public:
-	PointShaderResource(QRhi* rhi, rhi::SharedResources* sharedResources) : MeshShaderResource(rhi)
+	PointShaderResource(QRhi* rhi, QRhiBuffer* globalBuf) : MeshShaderResource(rhi)
 	{
 		m_data.create({
-			{rhi::UniformBlock::MAT4, "mvp"},
 			{rhi::UniformBlock::MAT4, "mv"},
 			{rhi::UniformBlock::VEC4, "col"},
 			{rhi::UniformBlock::INT , "useClipping"},
@@ -60,7 +59,7 @@ public:
 
 		srb.reset(rhi->newShaderResourceBindings());
 		srb->setBindings({
-				QRhiShaderResourceBinding::uniformBuffer(0, visibility, sharedResources->globalbuf),
+				QRhiShaderResourceBinding::uniformBuffer(0, visibility, globalBuf),
 				QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get())
 			});
 		srb->create();
@@ -71,9 +70,6 @@ public:
 		float diffuse[4] = { 0.f };
 		m.mat.diffuse.toFloat(diffuse);
 
-		QMatrix4x4 mvp = m.prMatrix * m.mvMatrix;
-
-		m_data.setMat4(MVP, mvp);
 		m_data.setMat4(MV, m.mvMatrix);
 		m_data.setVec4(COL, diffuse);
 		m_data.setInt (CLIP, (m.doClipping? 1 : 0));
@@ -102,22 +98,21 @@ QRhiVertexInputLayout PointShader::meshLayout()
 	return meshLayout;
 }
 
-rhi::MeshShaderResource* PointShader::createShaderResource(QRhi* rhi, rhi::SharedResources* sharedResource)
+rhi::MeshShaderResource* PointShader::createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf)
 {
-	return new PointShaderResource(rhi, sharedResource);
+	return new PointShaderResource(rhi, globalBuf);
 }
 
 
 class LineShaderResource : public rhi::MeshShaderResource
 {
 public:
-	enum { MVP, MV, COL, CLIP, VCOL };
+	enum { MV, COL, CLIP, VCOL };
 
 public:
-	LineShaderResource(QRhi* rhi, rhi::SharedResources* sharedResources) : rhi::MeshShaderResource(rhi)
+	LineShaderResource(QRhi* rhi, QRhiBuffer* globalBuf) : rhi::MeshShaderResource(rhi)
 	{
 		m_data.create({
-			{rhi::UniformBlock::MAT4, "mvp"},
 			{rhi::UniformBlock::MAT4, "mv"},
 			{rhi::UniformBlock::VEC4, "col"},
 			{rhi::UniformBlock::INT , "useClipping" },
@@ -134,7 +129,7 @@ public:
 
 		srb.reset(rhi->newShaderResourceBindings());
 		srb->setBindings({
-				QRhiShaderResourceBinding::uniformBuffer(0, visibility, sharedResources->globalbuf),
+				QRhiShaderResourceBinding::uniformBuffer(0, visibility, globalBuf),
 				QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get())
 			});
 		srb->create();
@@ -145,9 +140,6 @@ public:
 		float diffuse[4] = { 0.f };
 		m.mat.diffuse.toFloat(diffuse);
 
-		QMatrix4x4 mvp = m.prMatrix * m.mvMatrix;
-
-		m_data.setMat4(MVP, mvp);
 		m_data.setMat4(MV, m.mvMatrix);
 		m_data.setVec4(COL, diffuse);
 		m_data.setInt (CLIP, (m.doClipping ? 1 : 0));
@@ -176,18 +168,17 @@ QRhiVertexInputLayout LineShader::meshLayout()
 	return meshLayout;
 }
 
-rhi::MeshShaderResource* LineShader::createShaderResource(QRhi* rhi, rhi::SharedResources* sharedResource)
+rhi::MeshShaderResource* LineShader::createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf)
 {
-	return new LineShaderResource(rhi, sharedResource);
+	return new LineShaderResource(rhi, globalBuf);
 }
 
 class ColorShaderResource : public rhi::MeshShaderResource
 {
 public:
-	ColorShaderResource(QRhi* rhi, rhi::SharedResources* sharedResources) : MeshShaderResource(rhi)
+	ColorShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D, rhi::Texture& envTex) : MeshShaderResource(rhi)
 	{
 		m_data.create({
-			{rhi::UniformBlock::MAT4 , "mvp"},
 			{rhi::UniformBlock::MAT4 , "mv"},
 			{rhi::UniformBlock::VEC4 , "ambient"},
 			{rhi::UniformBlock::VEC4 , "diffuse"},
@@ -214,10 +205,10 @@ public:
 
 		srb.reset(rhi->newShaderResourceBindings());
 		srb->setBindings({
-				QRhiShaderResourceBinding::uniformBuffer(0, visibility, sharedResources->globalbuf),
+				QRhiShaderResourceBinding::uniformBuffer(0, visibility, globalBuf),
 				QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get()),
-				QRhiShaderResourceBinding::sampledTexture(2, visibility, sharedResources->tex1D, sharedResources->sampler1D),
-				QRhiShaderResourceBinding::sampledTexture(3, visibility, sharedResources->envTex, sharedResources->envSmplr)
+				QRhiShaderResourceBinding::sampledTexture(2, visibility, tex1D.texture.get(), tex1D.sampler.get()),
+				QRhiShaderResourceBinding::sampledTexture(3, visibility, envTex.texture.get(), envTex.sampler.get())
 			});
 		srb->create();
 	}
@@ -229,23 +220,20 @@ public:
 		m.mat.diffuse.toFloat(diffuse);
 		m.mat.specular.toFloat(spec);
 
-		QMatrix4x4 mvp = m.prMatrix * m.mvMatrix;
-
-		m_data.setMat4 ( 0, mvp);
-		m_data.setMat4 ( 1, m.mvMatrix);
-		m_data.setVec4 ( 2, amb);
-		m_data.setVec4 ( 3, diffuse);
-		m_data.setVec4 ( 4, spec);
-		m_data.setFloat( 5, m.mat.shininess);
-		m_data.setFloat( 6, m.mat.opacity);
-		m_data.setFloat( 7, m.mat.reflection);
-		m_data.setInt  ( 8, (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 1 : 0));
-		m_data.setInt  ( 9, ((m.mat.type == GLMaterial::HIGHLIGHT) || (m.mat.type == GLMaterial::GLASS) ? 1 : 0));
-		m_data.setInt  (10, (m.doClipping ? 1 : 0));
-		m_data.setInt  (11, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
-		m_data.setInt  (12, (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0 : 1);
-		m_data.setInt  (13, (m.mat.frontOnly ? 1 : 0));
-		m_data.setInt  (14, (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 0 : 1));
+		m_data.setMat4 ( 0, m.mvMatrix);
+		m_data.setVec4 ( 1, amb);
+		m_data.setVec4 ( 2, diffuse);
+		m_data.setVec4 ( 3, spec);
+		m_data.setFloat( 4, m.mat.shininess);
+		m_data.setFloat( 5, m.mat.opacity);
+		m_data.setFloat( 6, m.mat.reflection);
+		m_data.setInt  ( 7, (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 1 : 0));
+		m_data.setInt  ( 8, ((m.mat.type == GLMaterial::HIGHLIGHT) || (m.mat.type == GLMaterial::GLASS) ? 1 : 0));
+		m_data.setInt  ( 9, (m.doClipping ? 1 : 0));
+		m_data.setInt  (10, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
+		m_data.setInt  (11, (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0 : 1);
+		m_data.setInt  (12, (m.mat.frontOnly ? 1 : 0));
+		m_data.setInt  (13, (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 0 : 1));
 	}
 };
 
@@ -272,9 +260,9 @@ QRhiVertexInputLayout SolidShader::meshLayout()
 	return meshLayout;
 }
 
-rhi::MeshShaderResource* SolidShader::createShaderResource(QRhi* rhi, rhi::SharedResources* sharedResource)
+rhi::MeshShaderResource* SolidShader::createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D, rhi::Texture& envTex)
 {
-	return new ColorShaderResource(rhi, sharedResource);
+	return new ColorShaderResource(rhi, globalBuf, tex1D, envTex);
 }
 
 class CanvasShaderResource : public rhi::MeshShaderResource
@@ -335,10 +323,9 @@ QRhiVertexInputLayout OverlayShader::meshLayout()
 class TriadShaderResource : public rhi::MeshShaderResource
 {
 public:
-	TriadShaderResource(QRhi* rhi, rhi::SharedResources* sharedResources) : rhi::MeshShaderResource(rhi)
+	TriadShaderResource(QRhi* rhi, QRhiBuffer* global) : rhi::MeshShaderResource(rhi)
 	{
 		m_data.create({
-			{rhi::UniformBlock::MAT4, "mvp"},
 			{rhi::UniformBlock::MAT4, "mv"}
 			});
 
@@ -352,7 +339,7 @@ public:
 
 		srb.reset(rhi->newShaderResourceBindings());
 		srb->setBindings({
-				QRhiShaderResourceBinding::uniformBuffer(0, visibility, sharedResources->globalbuf),
+				QRhiShaderResourceBinding::uniformBuffer(0, visibility, global),
 				QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get()),
 			});
 		srb->create();
@@ -360,9 +347,7 @@ public:
 
 	void setData(const rhi::SubMesh& m) override
 	{
-		QMatrix4x4 mvp = m.prMatrix * m.mvMatrix;
-		m_data.setMat4(0, mvp);
-		m_data.setMat4(1, m.mvMatrix);
+		m_data.setMat4(0, m.mvMatrix);
 	}
 };
 
@@ -388,19 +373,19 @@ QRhiVertexInputLayout TriadShader::meshLayout()
 	return meshLayout;
 }
 
-rhi::MeshShaderResource* TriadShader::createShaderResource(QRhi* rhi, rhi::SharedResources* sharedResource)
+rhi::MeshShaderResource* TriadShader::createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf)
 {
-	return new TriadShaderResource(rhi, sharedResource);
+	return new TriadShaderResource(rhi, globalBuf);
 }
 
 //=============================================================================
 class VolumeShaderResource : public rhi::MeshShaderResource
 {
 public:
-	VolumeShaderResource(QRhi* rhi, rhi::Texture3D& tex, QRhiBuffer* sharedBuf) : MeshShaderResource(rhi)
+	VolumeShaderResource(QRhi* rhi, rhi::Texture3D& tex, QRhiBuffer* globalBuf, QRhiBuffer* vrSettings) : MeshShaderResource(rhi)
 	{
 		m_data.create({
-			{rhi::UniformBlock::MAT4, "mvp"},
+			{rhi::UniformBlock::MAT4, "mv"},
 			{rhi::UniformBlock::VEC4, "col"},
 			});
 
@@ -414,17 +399,17 @@ public:
 
 		srb.reset(rhi->newShaderResourceBindings());
 		srb->setBindings({
-				QRhiShaderResourceBinding::uniformBuffer(0, visibility, sharedBuf),
-				QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get()),
-				QRhiShaderResourceBinding::sampledTexture(2, visibility, tex.texture.get(), tex.sampler.get())
+				QRhiShaderResourceBinding::uniformBuffer(0, visibility, globalBuf),
+				QRhiShaderResourceBinding::uniformBuffer(1, visibility, vrSettings),
+				QRhiShaderResourceBinding::uniformBuffer(2, visibility, ubuf.get()),
+				QRhiShaderResourceBinding::sampledTexture(3, visibility, tex.texture.get(), tex.sampler.get())
 			});
 		srb->create();
 	}
 
 	void setData(const rhi::SubMesh& m) override
 	{
-		QMatrix4x4 mvp = m.prMatrix * m.mvMatrix;
-		m_data.setMat4(0, mvp);
+		m_data.setMat4(0, m.mvMatrix);
 		m_data.setVec4(1, m.mat.diffuse);
 	}
 };
@@ -450,9 +435,9 @@ QRhiVertexInputLayout VolumeShader::meshLayout()
 	return meshLayout;
 }
 
-rhi::MeshShaderResource* VolumeShader::createShaderResource(QRhi* rhi, rhi::Texture3D& tex, QRhiBuffer* buf)
+rhi::MeshShaderResource* VolumeShader::createShaderResource(QRhi* rhi, rhi::Texture3D& tex, QRhiBuffer* global, QRhiBuffer* vrSettings)
 {
-	return new VolumeShaderResource(rhi, tex, buf);
+	return new VolumeShaderResource(rhi, tex, global, vrSettings);
 }
 
 //=============================================================================
@@ -467,4 +452,69 @@ GradientShader::GradientShader(QRhi* rhi) : rhi::Shader(rhi)
 QRhiVertexInputLayout GradientShader::meshLayout()
 {
 	return QRhiVertexInputLayout();
+}
+
+//=============================================================================
+class DiffuseShaderResource : public rhi::MeshShaderResource
+{
+public:
+	DiffuseShaderResource(QRhi* rhi, QRhiBuffer* global) : rhi::MeshShaderResource(rhi)
+	{
+		m_data.create({
+			{rhi::UniformBlock::MAT4, "mv"},
+			{rhi::UniformBlock::INT, "useStipple"},
+			{rhi::UniformBlock::INT, "useClipping"},
+			{rhi::UniformBlock::INT, "useLighting"},
+			});
+
+		// create the buffer
+		ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, m_data.size()));
+		ubuf->create();
+
+		// create resource binding
+		const QRhiShaderResourceBinding::StageFlags visibility =
+			QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage;
+
+		srb.reset(rhi->newShaderResourceBindings());
+		srb->setBindings({
+				QRhiShaderResourceBinding::uniformBuffer(0, visibility, global),
+				QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get()),
+			});
+		srb->create();
+	}
+
+	void setData(const rhi::SubMesh& m) override
+	{
+		m_data.setMat4(0, m.mvMatrix);
+		m_data.setInt(1, (m.mat.type == GLMaterial::HIGHLIGHT) || (m.mat.type == GLMaterial::GLASS) ? 1 : 0);
+		m_data.setInt(2, (m.doClipping ? 1 : 0));
+		m_data.setInt(3, (m.mat.type == GLMaterial::HIGHLIGHT) || (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0 : 1);
+	}
+};
+
+DiffuseShader::DiffuseShader(QRhi* rhi) : rhi::Shader(rhi)
+{
+	rhi::Shader::create(
+		QLatin1String(":/RHILib/shaders/diffuse.vert.qsb"),
+		QLatin1String(":/RHILib/shaders/diffuse.frag.qsb")
+	);
+}
+
+QRhiVertexInputLayout DiffuseShader::meshLayout()
+{
+	QRhiVertexInputLayout meshLayout;
+	meshLayout.setBindings({
+		{ 10 * sizeof(float) }
+		});
+	meshLayout.setAttributes({
+		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
+		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // normal
+		{ 0, 2, QRhiVertexInputAttribute::Float4, 6 * sizeof(float) }, // color
+		});
+	return meshLayout;
+}
+
+rhi::MeshShaderResource* DiffuseShader::createShaderResource(QRhi* rhi, QRhiBuffer* global)
+{
+	return new DiffuseShaderResource(rhi, global);
 }

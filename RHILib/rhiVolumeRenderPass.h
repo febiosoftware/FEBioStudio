@@ -32,7 +32,7 @@ class VolumeRenderPass : public rhi::MeshRenderPass
 public:
 	VolumeRenderPass(QRhi* rhi) : rhi::MeshRenderPass(rhi), m_tex(rhi) {}
 
-	void create(QRhiSwapChain* sc);
+	void create(QRhiSwapChain* sc, QRhiBuffer* global);
 
 	QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
 
@@ -50,6 +50,7 @@ private:
 	std::unique_ptr<rhi::MeshShaderResource> m_sr;
 	rhi::Texture3D m_tex;
 
+	QRhiBuffer* m_globalBuf = nullptr;
 	rhi::UniformBlock settings; // volume render settings
 	std::unique_ptr<QRhiBuffer> ubuf;
 };

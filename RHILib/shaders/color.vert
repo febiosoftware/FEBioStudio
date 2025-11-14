@@ -14,6 +14,7 @@ layout(location = 3) out vec4 v_color;
 
 // global (shared) block
 layout(std140, binding = 0) uniform GlobalBlock {
+    mat4 projectionMatrix;
     vec4 lightPos;
     vec4 ambient;
     vec4 diffuse;
@@ -24,7 +25,6 @@ layout(std140, binding = 0) uniform GlobalBlock {
 
 // mesh-specific block
 layout(std140, binding = 1) uniform MeshBlock {
-    mat4 mvp;
     mat4 mv;
     vec4 ambient;
     vec4 diffuse;
@@ -58,5 +58,5 @@ void main()
     v_normal = normalize((mesh.mv*vec4(normal, 0)).xyz);
     v_pos = (mesh.mv*vec4(position,1)).xyz;
     v_tex = tex;
-    gl_Position = mesh.mvp * vec4(position, 1);
+    gl_Position = glob.projectionMatrix*(mesh.mv * vec4(position, 1));
 }

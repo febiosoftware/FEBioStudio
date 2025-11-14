@@ -27,12 +27,13 @@ SOFTWARE.*/
 #include "rhiUtil.h"
 #include "rhiShader.h"
 #include "rhiTriMesh.h"
+#include <GLLib/GLTexture2D.h>
 
-void FaceRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::SharedResources* sr)
+void FaceRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, SolidResources sr)
 {
 	SolidShader shader(m_rhi);
 
-	m_sr.reset(shader.createShaderResource(m_rhi, sr));
+	m_sr.reset(shader.createShaderResource(m_rhi, sr.globalBuf, *sr.tex1D, *sr.envTex));
 
 	m_pl.reset(m_rhi->newGraphicsPipeline());
 	m_pl->setRenderPassDescriptor(rp);
@@ -54,9 +55,21 @@ void FaceRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::
 	m_pl->create();
 }
 
-void TwoPassSolidRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
+void TwoPassSolidRenderPass::create(QRhiSwapChain* sc, QRhiBuffer* globalBuf)
 {
-	sharedResource = sr;
+	m_globalBuf = globalBuf;
+
+	// prep 1D texture
+	QImage img(QSize(1024, 1), QImage::Format_RGBA8888);
+	img.fill(Qt::white);
+	m_tex1D.create(img);
+
+	SolidResources sr = { globalBuf, &m_tex1D, &m_envTex };
+
+	// create with dummy image
+	QImage envImg(QSize(100, 100), QImage::Format_RGB32);
+	envImg.fill(Qt::black);
+	m_envTex.create(envImg);
 
 	m_frontPass.reset(new FaceRenderPass(m_rhi));
 	m_frontPass->setCullMode(QRhiGraphicsPipeline::Back);
@@ -65,6 +78,23 @@ void TwoPassSolidRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
 	m_backPass.reset(new FaceRenderPass(m_rhi));
 	m_backPass->setCullMode(QRhiGraphicsPipeline::Front);
 	m_backPass->create(sc->renderPassDescriptor(), sc->sampleCount(), sr);
+}
+
+void TwoPassSolidRenderPass::update(QRhiResourceUpdateBatch* u)
+{
+	if (m_tex1D.needsUpload)
+	{
+		m_tex1D.upload(u);
+		m_tex1D.needsUpload = false;
+	}
+
+	if (m_envTex.needsUpload)
+	{
+		m_envTex.upload(u);
+		m_envTex.needsUpload = false;
+	}
+
+	rhi::MeshRenderPass::update(u);
 }
 
 void TwoPassSolidRenderPass::draw(QRhiCommandBuffer* cb)
@@ -105,18 +135,54 @@ rhi::Mesh* TwoPassSolidRenderPass::newMesh(const GLMesh* mesh)
 
 rhi::MeshShaderResource* TwoPassSolidRenderPass::createShaderResource()
 {
-	return SolidShader::createShaderResource(m_rhi, sharedResource);
+	return SolidShader::createShaderResource(m_rhi, m_globalBuf, m_tex1D, m_envTex);
 }
 
-void SolidRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
+void TwoPassSolidRenderPass::setTexture1D(GLTexture1D& tex)
 {
-	SolidShader shader(m_rhi);
+	if (tex.DoUpdate())
+	{
+		// update texture data
+		QImage img(tex.Size(), 1, QImage::Format_RGBA8888);
+		for (int i = 0; i < tex.Size(); ++i)
+		{
+			GLColor c = tex.sample((float)i / (tex.Size() - 1.f));
+			img.setPixelColor(i, 0, QColor(c.r, c.g, c.b, c.a));
+		}
+		m_tex1D.image = img;
+		m_tex1D.needsUpload = true;
+		tex.Update(false);
+	}
+}
+
+unsigned int TwoPassSolidRenderPass::setEnvironmentMap(const CRGBAImage& img)
+{
+	if (img.isNull()) return 0;
+
+	if (envImg == nullptr)
+	{
+		QImage map(img.GetBytes(), img.Width(), img.Height(), QImage::Format::Format_RGBA8888_Premultiplied);
+		if (!map.isNull())
+		{
+			m_envTex.setImage(map);
+			envImg = &img;
+			return 1;
+		}
+		else return 0;
+	}
+	else return 1;
+}
+
+void SolidRenderPass::create(QRhiSwapChain* sc, QRhiBuffer* globalBuf)
+{
+	m_globalBuf = globalBuf;
+
+	DiffuseShader shader(m_rhi);
 
 	QRhiRenderPassDescriptor* rp = sc->renderPassDescriptor();
 	int sampleCount = sc->sampleCount();
 
-	sharedResource = sr;
-	m_sr.reset(shader.createShaderResource(m_rhi, sr));
+	m_sr.reset(shader.createShaderResource(m_rhi, globalBuf));
 
 	m_pl.reset(m_rhi->newGraphicsPipeline());
 	m_pl->setRenderPassDescriptor(rp);
@@ -141,7 +207,7 @@ void SolidRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
 rhi::Mesh* SolidRenderPass::newMesh(const GLMesh* mesh)
 {
 	if (mesh == nullptr) return nullptr;
-	rhi::Mesh* rm = new rhi::TriMesh<SolidShader::Vertex>(m_rhi);
+	rhi::Mesh* rm = new rhi::TriMesh<DiffuseShader::Vertex>(m_rhi);
 	if (!rm->CreateFromGLMesh(mesh))
 	{
 		delete rm;
@@ -152,5 +218,5 @@ rhi::Mesh* SolidRenderPass::newMesh(const GLMesh* mesh)
 
 rhi::MeshShaderResource* SolidRenderPass::createShaderResource()
 {
-	return SolidShader::createShaderResource(m_rhi, sharedResource);
+	return DiffuseShader::createShaderResource(m_rhi, m_globalBuf);
 }

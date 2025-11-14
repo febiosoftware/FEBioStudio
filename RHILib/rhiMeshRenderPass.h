@@ -87,7 +87,9 @@ namespace rhi {
 		size_t cachedMeshes() const { return m_meshList.size(); }
 
 	public:
-		rhi::SubMesh* addGLMesh(const GLMesh& mesh, int partition, bool cacheMesh);
+		rhi::Mesh* addGLMesh(const GLMesh& mesh, bool cacheMesh);
+
+		rhi::SubMesh* getSubMesh(rhi::Mesh& mesh, int subMeshIndex = -1);
 
 		void update(QRhiResourceUpdateBatch* u) override;
 

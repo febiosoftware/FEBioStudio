@@ -78,10 +78,9 @@ namespace rhi {
 
 		void SetMaterial(const GLMaterial& material) { mat = material; }
 
-		void SetMatrices(const QMatrix4x4& mv, const QMatrix4x4& pr)
+		void SetModelView(const QMatrix4x4& mv)
 		{
 			mvMatrix = mv;
-			prMatrix = pr;
 		}
 
 		void SetActive(bool b) { isActive = b; }
@@ -106,7 +105,6 @@ namespace rhi {
 		GLMaterial mat;
 		bool doClipping = false;
 		QMatrix4x4 mvMatrix; // model view
-		QMatrix4x4 prMatrix; // projection
 
 	public:
 		std::unique_ptr<MeshShaderResource> sr; // shader resources
@@ -155,13 +153,13 @@ namespace rhi {
 			}
 		}
 
-		void setMatrices(const QMatrix4x4& mv, const QMatrix4x4& pr, int subMeshIndex = -1)
+		void setModelView(const QMatrix4x4& mv, int subMeshIndex = -1)
 		{
 			subMeshIndex += 1;
 			if ((subMeshIndex >= 0) && (subMeshIndex <= (int)submeshes.size()))
 			{
 				if (subMeshIndex >= (int)submeshes.size()) return;
-				submeshes[subMeshIndex]->SetMatrices(mv, pr);
+				submeshes[subMeshIndex]->SetModelView(mv);
 			}
 		}
 

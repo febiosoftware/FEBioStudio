@@ -26,13 +26,22 @@ SOFTWARE.*/
 #pragma once
 #include "rhiMeshRenderPass.h"
 #include "rhiMesh.h"
+#include <GLLib/GLTexture1D.h>
+
+class CRGBAImage;
+
+struct SolidResources {
+	QRhiBuffer* globalBuf = nullptr;
+	rhi::Texture* tex1D = nullptr;
+	rhi::Texture* envTex = nullptr;
+};
 
 class FaceRenderPass : public rhi::RenderPass
 {
 public:
 	FaceRenderPass(QRhi* rhi) : rhi::RenderPass(rhi) {}
 
-	void create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::SharedResources* sr);
+	void create(QRhiRenderPassDescriptor* rp, int sampleCount, SolidResources sr);
 
 	QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
 
@@ -48,20 +57,33 @@ private:
 class TwoPassSolidRenderPass : public rhi::MeshRenderPass
 {
 public:
-	TwoPassSolidRenderPass(QRhi* rhi) : rhi::MeshRenderPass(rhi) {}
+	TwoPassSolidRenderPass(QRhi* rhi) : rhi::MeshRenderPass(rhi), m_tex1D(rhi), m_envTex(rhi) {}
 
-	void create(QRhiSwapChain* sc, rhi::SharedResources* sr);
+	void create(QRhiSwapChain* sc, QRhiBuffer* globalBuf);
 
 	void draw(QRhiCommandBuffer* cb) override;
+
+	void update(QRhiResourceUpdateBatch* u) override;
 
 	rhi::Mesh* newMesh(const GLMesh* mesh) override;
 
 	rhi::MeshShaderResource* createShaderResource() override;
 
+public:
+	void setTexture1D(GLTexture1D& tex1D);
+
+	unsigned int setEnvironmentMap(const CRGBAImage& img);
+
 private:
 	std::unique_ptr<FaceRenderPass> m_backPass;
 	std::unique_ptr<FaceRenderPass> m_frontPass;
-	rhi::SharedResources* sharedResource = nullptr;
+
+	QRhiBuffer* m_globalBuf = nullptr;
+
+	rhi::Texture m_tex1D;
+
+	rhi::Texture m_envTex;
+	const CRGBAImage* envImg = nullptr;
 };
 
 class SolidRenderPass : public rhi::MeshRenderPass
@@ -69,7 +91,7 @@ class SolidRenderPass : public rhi::MeshRenderPass
 public:
 	SolidRenderPass(QRhi* rhi) : rhi::MeshRenderPass(rhi) {}
 
-	void create(QRhiSwapChain* sc, rhi::SharedResources* sr);
+	void create(QRhiSwapChain* sc, QRhiBuffer* globalBuf);
 
 	rhi::Mesh* newMesh(const GLMesh* mesh) override;
 
@@ -77,5 +99,5 @@ public:
 
 private:
 	std::unique_ptr<rhi::MeshShaderResource> m_sr;
-	rhi::SharedResources* sharedResource = nullptr;
+	QRhiBuffer* m_globalBuf = nullptr;
 };

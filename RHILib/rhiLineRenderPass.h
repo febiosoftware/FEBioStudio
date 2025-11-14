@@ -32,7 +32,7 @@ class LineRenderPass : public rhi::MeshRenderPass
 public:
 	LineRenderPass(QRhi* rhi) : MeshRenderPass(rhi) {}
 
-	void create(QRhiSwapChain* sc, rhi::SharedResources* sr);
+	void create(QRhiSwapChain* sc, QRhiBuffer* globalBuf);
 
 	rhi::Mesh* newMesh(const GLMesh* mesh) override;
 
@@ -40,5 +40,5 @@ public:
 
 private:
 	std::unique_ptr<rhi::MeshShaderResource> m_sr;
-	rhi::SharedResources* m_sharedResource = nullptr;
+	QRhiBuffer* m_globalBuf = nullptr;
 };

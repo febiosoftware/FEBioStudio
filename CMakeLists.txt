@@ -642,6 +642,8 @@ set(SHADER_FILES
     RHILib/shaders/volume.frag
     RHILib/shaders/grad.vert
     RHILib/shaders/grad.frag
+    RHILib/shaders/diffuse.vert
+    RHILib/shaders/diffuse.frag
 )
 
 qt_add_shaders(${FBS_BIN_NAME} "rhi_shaders"
