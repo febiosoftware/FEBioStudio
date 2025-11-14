@@ -1302,6 +1302,17 @@ void CGLView::customInit()
 		m_menu = new GVContextMenu(this);
 		m_menu->align(GLW_ALIGN_RIGHT | GLW_ALIGN_TOP);
 		m_Widget->AddWidget(m_menu);
+
+		// scale widgets according to device pixel ratio
+		double dpr = devicePixelRatio();
+		if (dpr != 1)
+		{
+			for (int i = 0; i < m_Widget->Widgets(); ++i)
+			{
+				GLWidget* pw = m_Widget->get(i);
+				pw->scale(dpr);
+			}
+		}
 	}
 
 	// initialize clipping planes

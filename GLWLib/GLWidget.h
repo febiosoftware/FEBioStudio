@@ -112,6 +112,16 @@ public:
 		if (m_h < m_minh) m_h = m_minh;
 	}
 
+	void scale(double s)
+	{
+		m_w = (int)(s * m_w);
+		m_h = (int)(s * m_h);
+		if (m_w < m_minw) m_w = m_minw;
+		if (m_h < m_minh) m_h = m_minh;
+
+		m_font.setPixelSize((int)(s * m_font.pixelSize()));
+	}
+
 	void show() { m_bshow = true; }
 	void hide() { m_bshow = false; if (this == m_pfocus) m_pfocus = 0; }
 	bool visible() { return m_bshow; }
