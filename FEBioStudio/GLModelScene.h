@@ -174,8 +174,20 @@ private:
 	void RenderRigidJoints(GLRenderEngine& re, double scale) const;
 	void RenderRigidConnectors(GLRenderEngine& re, double scale) const;
 	void RenderRigidWalls(GLRenderEngine& re) const;
-	void RenderMaterialFibers(GLRenderEngine& re, GLContext& rc) const;
 	void RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc) const;
+};
+
+class GLFiberVizItem : public GLModelSceneItem
+{
+public:
+	GLFiberVizItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
+	void render(GLRenderEngine& re, GLContext& rc) override;
+
+private:
+	void BuildFiberViz(GLContext& rc);
+
+private:
+	GLFiberRenderer* m_fiberViz = nullptr;
 };
 
 class GLSelectionItem : public GLModelSceneItem
@@ -243,8 +255,6 @@ public:
 
 	void Update() override;
 
-	void UpdateFiberViz();
-
 	GLMesh& GetSelectionMesh() { return m_selectionMesh; }
 
 	void UpdateSelectionMesh(FESelection* sel);
@@ -263,8 +273,6 @@ public:
 
 	GObject* GetActiveObject() const;
 
-	GLFiberRenderer* GetFiberRenderer();
-
 	FESelection* GetCurrentSelection();
 
 private:
@@ -278,8 +286,6 @@ public:
 public:
 	GLMaterial GetPartMaterial(GPart* pg);
 	GLMaterial GetFaceMaterial(GFace& face);
-
-	void BuildFiberViz(GLContext& rc);
 
 	void UpdateRenderTransforms(GLContext& rc);
 
@@ -300,6 +306,4 @@ private:
 	OBJECT_COLOR_MODE	m_objectColor;
 
 	bool m_buildScene;
-
-	GLFiberRenderer* m_fiberViz;
 };

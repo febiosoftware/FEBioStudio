@@ -184,12 +184,6 @@ void CDlgFiberViz::onDataChanged()
 
 	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
 
-	// see if we need to recalculate the fiber visualization
-	bool breset = false;
-	if (view.m_fibColor != ncol) breset = true;
-	if (view.m_showSelectFibersOnly != selonly) breset = true;
-	if (view.m_showHiddenFibers != hiddenFibers) breset = true;
-
 	view.m_fibColor = ncol;
 	view.m_fiber_scale = v;
 	view.m_fiber_width = w;
@@ -197,12 +191,6 @@ void CDlgFiberViz::onDataChanged()
 	view.m_fibLineStyle = nstyle;
 	view.m_showSelectFibersOnly = selonly;
 	view.m_showHiddenFibers = hiddenFibers;
-
-	if (breset)
-	{
-		CGLModelScene* scene = dynamic_cast<CGLModelScene*>(ui->m_wnd->GetGLView()->GetActiveScene());
-		if (scene) scene->UpdateFiberViz();
-	}
 
 	ui->m_wnd->RedrawGL();
 }

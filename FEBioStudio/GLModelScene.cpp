@@ -167,7 +167,6 @@ const GLCamera& GLModelSceneItem::GetCamera() const { return m_scene->GetCamera(
 CGLModelScene::CGLModelScene(CModelDocument* doc) : m_doc(doc)
 {
 	m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
-	m_fiberViz = nullptr;
 	m_buildScene = true;
 }
 
@@ -277,23 +276,9 @@ void CGLModelScene::BuildScene(GLContext& rc)
 	planeCut->addItem(new GLFeatureEdgesItem(this));
 
 	planeCut->addItem(new GLMeshLinesItem(this));
-/*
-	if (vs.m_bfiber == false)
-	{
-		if (m_fiberViz)
-		{
-			delete m_fiberViz;
-			m_fiberViz = nullptr;
-		}
-	}
-	else
-	{
-		if (m_fiberViz == nullptr)
-		{
-			BuildFiberViz(rc);
-		}
-	}
-*/
+
+	planeCut->addItem(new GLFiberVizItem(this));
+
 	planeCut->addItem(new GLPhysicsItem(this));
 
 	planeCut->addItem(new GLSelectionItem(this));
@@ -513,82 +498,6 @@ void GLFiberRenderer::BuildFiberVectors(
 				{
 					if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % MAX_FIBER_COLORS];
 					BuildFiberVectors(po, matProp, rel, c, Q);
-				}
-			}
-		}
-	}
-}
-
-void CGLModelScene::UpdateFiberViz()
-{
-	delete m_fiberViz;
-	m_fiberViz = nullptr;
-}
-
-void CGLModelScene::BuildFiberViz(GLContext& rc)
-{
-	if (m_fiberViz == nullptr) m_fiberViz = new GLFiberRenderer();
-	else m_fiberViz->Clear();
-
-	// get the model
-	FSModel* ps = m_doc->GetFSModel();
-	GModel& model = ps->GetModel();
-
-	FEElementRef rel;
-
-	GLViewSettings& view = rc.m_settings;
-	m_fiberViz->m_colorOption = view.m_fibColor;
-
-	GMaterial* pgm = nullptr;
-	int matId = -1;
-	int index = 0;
-	for (int i = 0; i < model.Objects(); ++i)
-	{
-		GObject* po = model.Object(i);
-		if (po->IsVisible() && po->IsValid() && (po->IsSelected() || (view.m_showSelectFibersOnly == false)))
-		{
-			FSMesh* pm = po->GetFEMesh();
-			if (pm)
-			{
-				rel.m_pmesh = pm;
-				for (int j = 0; j < pm->Elements(); ++j)
-				{
-					FSElement& el = pm->Element(j);
-					GPart* pg = po->Part(el.m_gid);
-
-					bool showFiber = (pg->IsVisible() && el.IsVisible()) || view.m_showHiddenFibers;
-
-					if (showFiber)
-					{
-						int partMatID = po->Part(el.m_gid)->GetMaterialID();
-						if (partMatID != matId)
-						{
-							matId = partMatID;
-							pgm = ps->GetMaterialFromID(matId);
-						}
-						FSMaterial* pmat = 0;
-						if (pgm)
-						{
-							pmat = pgm->GetMaterialProperties();
-							GLMaterial& glm = pgm->GetGLMaterial();
-							m_fiberViz->m_defaultCol = glm.diffuse;
-						}
-
-						rel.m_nelem = j;
-						if (pmat)
-						{
-							// element center
-							vec3d c(0, 0, 0);
-							for (int k = 0; k < el.Nodes(); ++k) c += pm->Node(el.m_node[k]).r;
-							c /= el.Nodes();
-
-							// to global coordinates
-							c = po->GetRenderTransform().LocalToGlobal(c);
-
-							// add it to the pile
-							m_fiberViz->BuildFiberVectors(po, pmat, rel, c, mat3d::identity());
-						}
-					}
 				}
 			}
 		}
@@ -1216,11 +1125,6 @@ int CGLModelScene::GetObjectColorMode() const
 GObject* CGLModelScene::GetActiveObject() const
 {
 	return m_doc->GetActiveObject();
-}
-
-GLFiberRenderer* CGLModelScene::GetFiberRenderer()
-{
-	return m_fiberViz;
 }
 
 FESelection* CGLModelScene::GetCurrentSelection()
@@ -2638,7 +2542,6 @@ void GLPhysicsItem::render(GLRenderEngine& re, GLContext& rc)
 	if (vs.m_brigid) RenderRigidBodies(re, rc);
 	if (vs.m_bjoint) { RenderRigidJoints(re, scale); RenderRigidConnectors(re, scale); }
 	if (vs.m_bwall) RenderRigidWalls(re);
-	if (vs.m_bfiber) RenderMaterialFibers(re, rc);
 	if (vs.m_blma) RenderLocalMaterialAxes(re, rc);
 }
 
@@ -2945,27 +2848,6 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, double scale) cons
 	}
 }
 
-void GLPhysicsItem::RenderMaterialFibers(GLRenderEngine& re, GLContext& rc) const
-{
-	GLFiberRenderer* fiberRender = m_scene->GetFiberRenderer();
-	if (fiberRender == nullptr) return;
-
-	FSModel* ps = m_scene->GetFSModel();
-	GModel& model = ps->GetModel();
-
-	BOX box = model.GetBoundingBox();
-	double h = 0.05 * box.GetMaxExtent();
-
-	GLViewSettings& vs = rc.m_settings;
-
-	fiberRender->SetScaleFactor(h * vs.m_fiber_scale);
-	fiberRender->SetLineWidth(h * vs.m_fiber_width * 0.1);
-	fiberRender->SetLineStyle(vs.m_fibLineStyle);
-	fiberRender->SetDensity(vs.m_fiber_density);
-
-	fiberRender->RenderVectors(re);
-}
-
 void GLPhysicsItem::RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc) const
 {
 	// get the model
@@ -3038,6 +2920,117 @@ void GLPhysicsItem::RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc) c
 								re.setColor(rgb[k]);
 								re.renderLine(c, c + q * h);
 							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void GLFiberVizItem::render(GLRenderEngine& re, GLContext& rc)
+{
+	GLViewSettings& vs = rc.m_settings;
+	if (vs.m_bfiber == false)
+	{
+		if (m_fiberViz)
+		{
+			delete m_fiberViz;
+			m_fiberViz = nullptr;
+		}
+	}
+	else
+	{
+		if (m_fiberViz == nullptr)
+		{
+			BuildFiberViz(rc);
+		}
+	}
+
+	if (m_fiberViz)
+	{
+		FSModel* ps = m_scene->GetFSModel();
+		GModel& model = ps->GetModel();
+
+		BOX box = model.GetBoundingBox();
+		double h = 0.05 * box.GetMaxExtent();
+
+		GLViewSettings& vs = rc.m_settings;
+
+		m_fiberViz->SetScaleFactor(h * vs.m_fiber_scale);
+		m_fiberViz->SetLineWidth(h * vs.m_fiber_width * 0.1);
+		m_fiberViz->SetLineStyle(vs.m_fibLineStyle);
+		m_fiberViz->SetDensity(vs.m_fiber_density);
+
+		m_fiberViz->RenderVectors(re);
+	}
+}
+
+void GLFiberVizItem::BuildFiberViz(GLContext& rc)
+{
+	if (m_fiberViz == nullptr) m_fiberViz = new GLFiberRenderer();
+	else m_fiberViz->Clear();
+
+	// get the model
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(m_scene);
+	if (scene == nullptr) return;
+
+	FSModel* ps = scene->GetFSModel();
+	GModel& model = ps->GetModel();
+
+	FEElementRef rel;
+
+	GLViewSettings& view = rc.m_settings;
+	m_fiberViz->m_colorOption = view.m_fibColor;
+
+	GMaterial* pgm = nullptr;
+	int matId = -1;
+	int index = 0;
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+		if (po->IsVisible() && po->IsValid() && (po->IsSelected() || (view.m_showSelectFibersOnly == false)))
+		{
+			FSMesh* pm = po->GetFEMesh();
+			if (pm)
+			{
+				rel.m_pmesh = pm;
+				for (int j = 0; j < pm->Elements(); ++j)
+				{
+					FSElement& el = pm->Element(j);
+					GPart* pg = po->Part(el.m_gid);
+
+					bool showFiber = (pg->IsVisible() && el.IsVisible()) || view.m_showHiddenFibers;
+
+					if (showFiber)
+					{
+						int partMatID = po->Part(el.m_gid)->GetMaterialID();
+						if (partMatID != matId)
+						{
+							matId = partMatID;
+							pgm = ps->GetMaterialFromID(matId);
+						}
+						FSMaterial* pmat = 0;
+						if (pgm)
+						{
+							pmat = pgm->GetMaterialProperties();
+							GLMaterial& glm = pgm->GetGLMaterial();
+							m_fiberViz->m_defaultCol = glm.diffuse;
+						}
+
+						rel.m_nelem = j;
+						if (pmat)
+						{
+							// element center
+							vec3d c(0, 0, 0);
+							for (int k = 0; k < el.Nodes(); ++k) c += pm->Node(el.m_node[k]).r;
+							c /= el.Nodes();
+
+							// to global coordinates
+							c = po->GetRenderTransform().LocalToGlobal(c);
+
+							// add it to the pile
+							m_fiberViz->BuildFiberVectors(po, pmat, rel, c, mat3d::identity());
 						}
 					}
 				}

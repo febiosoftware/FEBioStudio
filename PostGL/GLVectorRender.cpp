@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "GLVectorRender.h"
 #include <GLLib/glx.h>
 #include <GLLib/GLRenderEngine.h>
+#include <GLLib/GLMeshBuilder.h>
 
 class GLVectorRenderer::Imp
 {
@@ -35,6 +36,8 @@ public:
 	double	lineWidth = 1.0;
 	double	scale = 1.0;
 	double	density = 1.0;
+
+	GLMesh* mesh = nullptr; // the mesh that will be used to render the vectors
 
 	std::vector<VECTOR>	vectors;
 };
@@ -50,35 +53,95 @@ void GLVectorRenderer::AddVector(const GLVectorRenderer::VECTOR& vector)
 
 void GLVectorRenderer::Clear() { m.vectors.clear(); }
 
-void GLVectorRenderer::SetScaleFactor(double s) { m.scale = s; }
-void GLVectorRenderer::SetLineStyle(int n) { m.lineStyle = n; }
-void GLVectorRenderer::SetLineWidth(double l) { m.lineWidth = l; }
-void GLVectorRenderer::SetDensity(double d) { m.density = d; }
+void GLVectorRenderer::SetScaleFactor(double s) 
+{ 
+	if (s != m.scale)
+	{
+		delete m.mesh;
+		m.mesh = nullptr;
+		m.scale = s;
+	}
+}
+
+void GLVectorRenderer::SetLineStyle(int n) 
+{ 
+	if (n != m.lineStyle)
+	{
+		delete m.mesh;
+		m.mesh = nullptr;
+		m.lineStyle = n;
+	}
+}
+void GLVectorRenderer::SetLineWidth(double l) 
+{ 
+	if (l != m.lineWidth)
+	{
+		delete m.mesh;
+		m.mesh = nullptr;
+		m.lineWidth = l;
+	}
+}
+void GLVectorRenderer::SetDensity(double d) 
+{ 
+	if (d != m.density)
+	{
+		delete m.mesh;
+		m.mesh = nullptr;
+		m.density = d;
+	}
+}
 
 void GLVectorRenderer::Init(GLRenderEngine& re)
 {
+	re.beginShape();
 	if (m.lineStyle == 0)
 	{
-		re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
+		re.setMaterial(GLMaterial::OVERLAY, GLColor::White(), GLMaterial::VERTEX_COLOR);
 		re.begin(GLRenderEngine::LINES);
 	}
 	else
 	{
-		re.setMaterial(GLMaterial::PLASTIC, GLColor::White());
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
 	}
 }
 
 void GLVectorRenderer::RenderVectors(GLRenderEngine& re)
 {
-	Init(re);
-	srand(0);
-	for (auto& vector : m.vectors)
+	if (m.mesh == nullptr)
 	{
-		double r = (double)rand() / (double)RAND_MAX;
-		if (r < m.density)
-			RenderVector(re, vector);
+		GLMeshBuilder mb;
+		Init(mb);
+		srand(0);
+		for (auto& vector : m.vectors)
+		{
+			double r = (double)rand() / (double)RAND_MAX;
+			if (r < m.density)
+				RenderVector(mb, vector);
+		}
+		Finish(mb);
+
+		m.mesh = mb.takeMesh();
+
+		// just to be sure in case m.mesh was allocated at the same address as the last one
+		if (m.mesh) re.deleteCachedMesh(m.mesh);
 	}
-	Finish(re);
+
+	if (m.mesh)
+	{
+		re.pushTransform();
+		if (m.lineStyle == 0)
+		{
+			re.setMaterial(GLMaterial::OVERLAY, GLColor::White(), GLMaterial::VERTEX_COLOR);
+			re.renderGMeshEdges(*m.mesh);
+		}
+		else
+		{
+			re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
+			re.renderGMesh(*m.mesh);
+		}
+
+		re.popTransform();
+	}
 }
 
 void GLVectorRenderer::RenderVector(GLRenderEngine& re, const GLVectorRenderer::VECTOR& vector)
@@ -108,4 +171,5 @@ void GLVectorRenderer::Finish(GLRenderEngine& re)
 	{
 		re.end(); // LINES
 	}
+	re.endShape();
 }
