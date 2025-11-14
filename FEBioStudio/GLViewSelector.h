@@ -90,9 +90,16 @@ private:
 class GLViewSelector
 {
 public:
+	enum SelectionMode {
+		SELECT_REPLACE,
+		SELECT_ADD,
+		SELECT_SUBTRACT
+	};
+
+public:
 	GLViewSelector(CGLView* glview);
 
-	void SetStateModifiers(bool shift, bool ctrl);
+	void SetSelectionMode(SelectionMode selectionMode);
 
 	// select geometry items
 	void SelectParts(int x, int y);
@@ -144,8 +151,7 @@ private:
 private:
 	CGLView* m_glv;
 
-	bool	m_bshift;
-	bool	m_bctrl;
+	SelectionMode m_selectionMode;
 
 	std::vector<int>	m_selFaces0;	// selected faces (before brush selection)
 };

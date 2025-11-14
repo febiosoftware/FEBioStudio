@@ -155,15 +155,13 @@ bool FreeRegion::IsInside(int x, int y) const
 //-----------------------------------------------------------------------------
 GLViewSelector::GLViewSelector(CGLView* glview) : m_glv(glview) 
 {
-	m_bshift = false;
-	m_bctrl = false;
+	m_selectionMode = SELECT_REPLACE;
 }
 
 //-----------------------------------------------------------------------------
-void GLViewSelector::SetStateModifiers(bool shift, bool ctrl)
+void GLViewSelector::SetSelectionMode(SelectionMode selectionMode)
 {
-	m_bshift = shift;
-	m_bctrl = ctrl;
+	m_selectionMode = selectionMode;
 }
 
 //-----------------------------------------------------------------------------
@@ -323,8 +321,8 @@ void GLViewSelector::RegionSelectFENodes(const SelectRegion& region)
 	}
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, selectedNodes);
-	else pcmd = new CCmdSelectFENodes(pm, selectedNodes, m_bshift);
+	if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectNodes(pm, selectedNodes);
+	else pcmd = new CCmdSelectFENodes(pm, selectedNodes, (m_selectionMode == SELECT_ADD));
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
 
@@ -556,8 +554,8 @@ void GLViewSelector::RegionSelectFEElems(const SelectRegion& region)
 	}
 	else
 	{
-		if (m_bctrl) pcmd = new CCmdUnselectElements(pm, selectedElements);
-		else pcmd = new CCmdSelectElements(pm, selectedElements, m_bshift);
+		if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectElements(pm, selectedElements);
+		else pcmd = new CCmdSelectElements(pm, selectedElements, (m_selectionMode == SELECT_ADD));
 	}
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
@@ -696,8 +694,8 @@ void GLViewSelector::RegionSelectFEFaces(const SelectRegion& region)
 	}
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, selectedFaces);
-	else pcmd = new CCmdSelectFaces(pm, selectedFaces, m_bshift);
+	if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectFaces(pm, selectedFaces);
+	else pcmd = new CCmdSelectFaces(pm, selectedFaces, (m_selectionMode == SELECT_ADD));
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
 
@@ -780,8 +778,8 @@ void GLViewSelector::RegionSelectFEEdges(const SelectRegion& region)
 	}
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, selectedEdges);
-	else pcmd = new CCmdSelectFEEdges(pm, selectedEdges, m_bshift);
+	if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectFEEdges(pm, selectedEdges);
+	else pcmd = new CCmdSelectFEEdges(pm, selectedEdges, (m_selectionMode == SELECT_ADD));
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
 
@@ -1048,7 +1046,7 @@ void GLViewSelector::SelectFEElements(int x, int y)
 
 	// find the intersection
 	Intersection q;
-	bool bfound = FindElementIntersection(localRay, *pm, q, m_bctrl);
+	bool bfound = FindElementIntersection(localRay, *pm, q, m_selectionMode == SELECT_SUBTRACT);
 
 	// see if the intersection with the plane cut is closer
 /*
@@ -1072,8 +1070,8 @@ void GLViewSelector::SelectFEElements(int x, int y)
 	{
 		if (index >= 0)
 		{
-			if (m_bctrl) pcmd = new CCmdUnselectElements(pm, &index, 1);
-			else pcmd = new CCmdSelectElements(pm, &index, 1, m_bshift);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectElements(pm, &index, 1);
+			else pcmd = new CCmdSelectElements(pm, &index, 1, (m_selectionMode == SELECT_ADD));
 			bfound = false;
 		}
 	}
@@ -1093,8 +1091,8 @@ void GLViewSelector::SelectFEElements(int x, int y)
 				}
 				else
 				{
-					if (m_bctrl) pcmd = new CCmdUnselectElements(pm, elemList);
-					else pcmd = new CCmdSelectElements(pm, elemList, m_bshift);
+					if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectElements(pm, elemList);
+					else pcmd = new CCmdSelectElements(pm, elemList, (m_selectionMode == SELECT_ADD));
 				}
 			}
 		}
@@ -1107,11 +1105,11 @@ void GLViewSelector::SelectFEElements(int x, int y)
 			}
 			else
 			{
-				if (m_bctrl)
+				if (m_selectionMode == SELECT_SUBTRACT)
 					pcmd = new CCmdUnselectElements(pm, &num, 1);
 				else
 				{
-					pcmd = new CCmdSelectElements(pm, &num, 1, m_bshift);
+					pcmd = new CCmdSelectElements(pm, &num, 1, (m_selectionMode == SELECT_ADD));
 
 					// print value of currently selected element
 					CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
@@ -1125,7 +1123,7 @@ void GLViewSelector::SelectFEElements(int x, int y)
 							double val = state->m_ELEM[num].m_val;
 							FSElement& el = pm->Element(num);
 							QString txt = QString("Element %1 : %2\n").arg(el.m_nid).arg(val);
-                            
+
 							FBS::getMainWindow()->AddLogEntry(txt);
 						}
 					}
@@ -1134,7 +1132,7 @@ void GLViewSelector::SelectFEElements(int x, int y)
 		}
 	}
 
-	if ((pcmd == nullptr) && (!m_bshift) && (!m_bctrl))
+	if ((pcmd == nullptr) && (!(m_selectionMode == SELECT_ADD)) && (!m_selectionMode == SELECT_SUBTRACT))
 	{
 		// clear selection
 		int nsel = pm->CountSelectedElements();
@@ -1198,8 +1196,8 @@ void GLViewSelector::SelectFEFaces(int x, int y)
 			// get the list of connected faces
 			vector<int> faceList = MeshTools::GetConnectedFaces(pm, index, (view.m_bmax ? view.m_fconn : 0.0), view.m_bpart);
 
-			if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, faceList);
-			else pcmd = new CCmdSelectFaces(pm, faceList, m_bshift);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectFaces(pm, faceList);
+			else pcmd = new CCmdSelectFaces(pm, faceList, (m_selectionMode == SELECT_ADD));
 
 			lastIndex = -1;
 		}
@@ -1209,22 +1207,22 @@ void GLViewSelector::SelectFEFaces(int x, int y)
 			{
 				vector<int> faceList = MeshTools::GetConnectedFacesByPath(pm, lastIndex, index);
 
-				if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, faceList);
-				else pcmd = new CCmdSelectFaces(pm, faceList, m_bshift);
+				if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectFaces(pm, faceList);
+				else pcmd = new CCmdSelectFaces(pm, faceList, (m_selectionMode == SELECT_ADD));
 			}
 			else
 			{
-				if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, &index, 1);
-				else pcmd = new CCmdSelectFaces(pm, &index, 1, m_bshift);
+				if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectFaces(pm, &index, 1);
+				else pcmd = new CCmdSelectFaces(pm, &index, 1, (m_selectionMode == SELECT_ADD));
 			}
 			lastIndex = index;
 		}
 		else
 		{
-			if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, &index, 1);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectFaces(pm, &index, 1);
 			else
 			{
-				pcmd = new CCmdSelectFaces(pm, &index, 1, m_bshift);
+				pcmd = new CCmdSelectFaces(pm, &index, 1, (m_selectionMode == SELECT_ADD));
 
 				// print value of currently selected face
 				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
@@ -1244,7 +1242,7 @@ void GLViewSelector::SelectFEFaces(int x, int y)
 			}
 		}
 	}
-	else if (!m_bshift)
+	else if (!(m_selectionMode == SELECT_ADD))
 	{
 		int nsel = pm->CountSelectedFaces();
 		if (nsel > 0)
@@ -1332,8 +1330,8 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 			vector<int> edgeList = MeshTools::GetConnectedEdges(pm, index, view.m_fconn, view.m_bmax);
 			if (!edgeList.empty())
 			{
-				if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, edgeList);
-				else pcmd = new CCmdSelectFEEdges(pm, edgeList, m_bshift);
+				if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectFEEdges(pm, edgeList);
+				else pcmd = new CCmdSelectFEEdges(pm, edgeList, (m_selectionMode == SELECT_ADD));
 			}
 			lastIndex = -1;
 		}
@@ -1352,17 +1350,17 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 			}
 			if (!edgeList.empty())
 			{
-				if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, edgeList);
-				else pcmd = new CCmdSelectFEEdges(pm, edgeList, m_bshift);
+				if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectFEEdges(pm, edgeList);
+				else pcmd = new CCmdSelectFEEdges(pm, edgeList, (m_selectionMode == SELECT_ADD));
 			}
 		}
 		else
 		{
 			int num = (int)index;
-			if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, &num, 1);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectFEEdges(pm, &num, 1);
 			else
 			{
-				pcmd = new CCmdSelectFEEdges(pm, &num, 1, m_bshift);
+				pcmd = new CCmdSelectFEEdges(pm, &num, 1, (m_selectionMode == SELECT_ADD));
 
 				// print value of currently selected edge
 				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
@@ -1382,7 +1380,7 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 			}
 		}
 	}
-	else if (!m_bshift)
+	else if (!(m_selectionMode == SELECT_ADD))
 	{
 		int nsel = pm->CountSelectedEdges();
 		if (nsel)
@@ -1534,11 +1532,11 @@ void GLViewSelector::SelectObjects(int x, int y)
 		}
 		else
 		{
-			if (m_bctrl) pcmd = new CCmdUnselectObject(&model, closestObject);
-			else pcmd = new CCmdSelectObject(&model, closestObject, m_bshift);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectObject(&model, closestObject);
+			else pcmd = new CCmdSelectObject(&model, closestObject, (m_selectionMode == SELECT_ADD));
 		}
 	}
-	else if ((m_bctrl == false) && (m_bshift == false))
+	else if ((m_selectionMode == SELECT_SUBTRACT == false) && ((m_selectionMode == SELECT_ADD) == false))
 	{
 		// this clears the selection, but we only do this when there is an object currently selected
 		FESelection* sel = pdoc->GetCurrentSelection();
@@ -1603,7 +1601,7 @@ void GLViewSelector::SelectParts(int x, int y)
 								GFace* gface = po->Face(face.pid);
 								int pid = gface->m_nPID[0];
 								GPart* part = po->Part(pid);
-								if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+								if (part->IsVisible() && ((part->IsSelected() == false) || (m_selectionMode == SELECT_SUBTRACT)))
 								{
 									closestPart = part;
 									minDist = distance;
@@ -1612,7 +1610,7 @@ void GLViewSelector::SelectParts(int x, int y)
 								{
 									pid = gface->m_nPID[1];
 									part = po->Part(pid);
-									if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+									if (part->IsVisible() && ((part->IsSelected() == false) || (m_selectionMode == SELECT_SUBTRACT)))
 									{
 										closestPart = part;
 										minDist = distance;
@@ -1622,7 +1620,7 @@ void GLViewSelector::SelectParts(int x, int y)
 								{
 									pid = gface->m_nPID[2];
 									part = po->Part(pid);
-									if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+									if (part->IsVisible() && ((part->IsSelected() == false) || (m_selectionMode == SELECT_SUBTRACT)))
 									{
 										closestPart = part;
 										minDist = distance;
@@ -1648,11 +1646,11 @@ void GLViewSelector::SelectParts(int x, int y)
 		}
 		else
 		{
-			if (m_bctrl) pcmd = new CCmdUnSelectPart(&model, &index, 1);
-			else pcmd = new CCmdSelectPart(&model, &index, 1, m_bshift);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnSelectPart(&model, &index, 1);
+			else pcmd = new CCmdSelectPart(&model, &index, 1, (m_selectionMode == SELECT_ADD));
 		}
 	}
-	else if ((m_bctrl == false) && (m_bshift == false))
+	else if ((m_selectionMode == SELECT_SUBTRACT == false) && ((m_selectionMode == SELECT_ADD) == false))
 	{
 		pcmd = new CCmdSelectPart(&model, 0, 0, false);
 		partName = "<Empty>";
@@ -1717,7 +1715,7 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 								double distance = ray.direction * (q.point - ray.origin);
 								if ((closestSurface == 0) || ((distance >= 0.0) && (distance < minDist)))
 								{
-									if ((gface->IsSelected() == false) || (m_bctrl))
+									if ((gface->IsSelected() == false) || (m_selectionMode == SELECT_SUBTRACT))
 									{
 										closestSurface = po->Face(face.pid);
 										minDist = distance;
@@ -1736,11 +1734,11 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 	if (closestSurface != 0)
 	{
 		int index = closestSurface->GetID();
-		if (m_bctrl) pcmd = new CCmdUnSelectSurface(&model, &index, 1);
-		else pcmd = new CCmdSelectSurface(&model, &index, 1, m_bshift);
+		if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnSelectSurface(&model, &index, 1);
+		else pcmd = new CCmdSelectSurface(&model, &index, 1, (m_selectionMode == SELECT_ADD));
 		surfName = closestSurface->GetName();
 	}
-	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectSurface(&model, 0, 0, false);
+	else if ((m_selectionMode == SELECT_SUBTRACT == false) && ((m_selectionMode == SELECT_ADD) == false)) pcmd = new CCmdSelectSurface(&model, 0, 0, false);
 
 	// execute command
 	GLHighlighter::ClearHighlights();
@@ -1839,11 +1837,11 @@ void GLViewSelector::SelectEdges(int x, int y)
 	if (closestEdge != nullptr)
 	{
 		int index = closestEdge->GetID();
-		if (m_bctrl) pcmd = new CCmdUnSelectEdge(&model, &index, 1);
-		else pcmd = new CCmdSelectEdge(&model, &index, 1, m_bshift);
+		if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnSelectEdge(&model, &index, 1);
+		else pcmd = new CCmdSelectEdge(&model, &index, 1, (m_selectionMode == SELECT_ADD));
 		edgeName = closestEdge->GetName();
 	}
-	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectEdge(&model, 0, 0, false);
+	else if ((m_selectionMode == SELECT_SUBTRACT == false) && ((m_selectionMode == SELECT_ADD) == false)) pcmd = new CCmdSelectEdge(&model, 0, 0, false);
 
 	// execute command
 	GLHighlighter::ClearHighlights();
@@ -1916,11 +1914,11 @@ void GLViewSelector::SelectNodes(int x, int y)
 	{
 		int index = closestNode->GetID();
 		assert(closestNode->Type() != NODE_SHAPE);
-		if (m_bctrl) pcmd = new CCmdUnSelectNode(&model, &index, 1);
-		else pcmd = new CCmdSelectNode(&model, &index, 1, m_bshift);
+		if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnSelectNode(&model, &index, 1);
+		else pcmd = new CCmdSelectNode(&model, &index, 1, (m_selectionMode == SELECT_ADD));
 		nodeName = closestNode->GetName();
 	}
-	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectNode(&model, 0, 0, false);
+	else if ((m_selectionMode == SELECT_SUBTRACT == false) && ((m_selectionMode == SELECT_ADD) == false)) pcmd = new CCmdSelectNode(&model, 0, 0, false);
 
 	// execute command
 	GLHighlighter::ClearHighlights();
@@ -2043,7 +2041,7 @@ void GLViewSelector::SelectDiscrete(int x, int y)
 		if (pds)
 		{
 			// TODO: Turn this into a command
-			if (m_bctrl)
+			if (m_selectionMode == SELECT_SUBTRACT)
 			{
 				vector<int> elemList{ comp };
 				pcmd = new CCmdUnSelectDiscreteElements(pds, elemList);
@@ -2051,16 +2049,16 @@ void GLViewSelector::SelectDiscrete(int x, int y)
 			else
 			{
 				vector<int> elemList{ comp };
-				pcmd = new CCmdSelectDiscreteElements(pds, elemList, m_bshift);
+				pcmd = new CCmdSelectDiscreteElements(pds, elemList, (m_selectionMode == SELECT_ADD));
 			}
 		}
 		else
 		{
-			if (m_bctrl) pcmd = new CCmdUnSelectDiscrete(&model, &index, 1);
-			else pcmd = new CCmdSelectDiscrete(&model, &index, 1, m_bshift);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnSelectDiscrete(&model, &index, 1);
+			else pcmd = new CCmdSelectDiscrete(&model, &index, 1, (m_selectionMode == SELECT_ADD));
 		}
 	}
-	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectDiscrete(&model, 0, 0, false);
+	else if ((m_selectionMode == SELECT_SUBTRACT == false) && ((m_selectionMode == SELECT_ADD) == false)) pcmd = new CCmdSelectDiscrete(&model, 0, 0, false);
 
 	// execute command
 	if (pcmd) pdoc->DoCommand(pcmd);
@@ -2102,16 +2100,16 @@ void GLViewSelector::SelectSurfaceFaces(int x, int y)
 			// get the list of connected faces
 			vector<int> faceList = MeshTools::GetConnectedFaces(pm, index, (view.m_bmax ? view.m_fconn : 0.0), view.m_bpart);
 
-			if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, faceList);
-			else pcmd = new CCmdSelectFaces(pm, faceList, m_bshift);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectFaces(pm, faceList);
+			else pcmd = new CCmdSelectFaces(pm, faceList, (m_selectionMode == SELECT_ADD));
 		}
 		else
 		{
-			if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, &index, 1);
-			else pcmd = new CCmdSelectFaces(pm, &index, 1, m_bshift);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectFaces(pm, &index, 1);
+			else pcmd = new CCmdSelectFaces(pm, &index, 1, (m_selectionMode == SELECT_ADD));
 		}
 	}
-	else if (!m_bshift) pcmd = new CCmdSelectFaces(pm, 0, 0, false);
+	else if (!(m_selectionMode == SELECT_ADD)) pcmd = new CCmdSelectFaces(pm, 0, 0, false);
 
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
@@ -2178,8 +2176,8 @@ void GLViewSelector::SelectSurfaceEdges(int x, int y)
 		if (view.m_bconn)
 		{
 			vector<int> edgeList = MeshTools::GetConnectedEdgesOnLineMesh(pm, index, view.m_fconn, view.m_bmax);
-			if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, edgeList);
-			else pcmd = new CCmdSelectFEEdges(pm, edgeList, m_bshift);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectFEEdges(pm, edgeList);
+			else pcmd = new CCmdSelectFEEdges(pm, edgeList, (m_selectionMode == SELECT_ADD));
 		}
 		else if (view.m_bselpath)
 		{
@@ -2197,18 +2195,18 @@ void GLViewSelector::SelectSurfaceEdges(int x, int y)
 			}
 			if (!edgeList.empty())
 			{
-				if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, edgeList);
-				else pcmd = new CCmdSelectFEEdges(pm, edgeList, m_bshift);
+				if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectFEEdges(pm, edgeList);
+				else pcmd = new CCmdSelectFEEdges(pm, edgeList, (m_selectionMode == SELECT_ADD));
 			}
 		}
 		else
 		{
 			int num = (int)index;
-			if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, &num, 1);
-			else pcmd = new CCmdSelectFEEdges(pm, &num, 1, m_bshift);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectFEEdges(pm, &num, 1);
+			else pcmd = new CCmdSelectFEEdges(pm, &num, 1, (m_selectionMode == SELECT_ADD));
 		}
 	}
-	else if (!m_bshift) pcmd = new CCmdSelectFEEdges(pm, 0, 0, false);
+	else if (!(m_selectionMode == SELECT_ADD)) pcmd = new CCmdSelectFEEdges(pm, 0, 0, false);
 
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
@@ -2278,8 +2276,8 @@ void GLViewSelector::SelectSurfaceNodes(int x, int y)
 			for (int i = 0; i < pm->Nodes(); ++i)
 				if (pm->Node(i).m_ntag == 1) pint[m++] = i;
 
-			if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, &pint[0], m);
-			else pcmd = new CCmdSelectFENodes(pm, &pint[0], m, m_bshift);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectNodes(pm, &pint[0], m);
+			else pcmd = new CCmdSelectFENodes(pm, &pint[0], m, (m_selectionMode == SELECT_ADD));
 		}
 		else if (view.m_bselpath && pm)
 		{
@@ -2296,17 +2294,17 @@ void GLViewSelector::SelectSurfaceNodes(int x, int y)
 			}
 
 			// fill the pint array
-			if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, nodeList);
-			else pcmd = new CCmdSelectFENodes(pm, nodeList, m_bshift);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectNodes(pm, nodeList);
+			else pcmd = new CCmdSelectFENodes(pm, nodeList, (m_selectionMode == SELECT_ADD));
 		}
 		else
 		{
-			if (m_bctrl) pcmd = new CCmdUnselectNodes(lineMesh, &index, 1);
-			else pcmd = new CCmdSelectFENodes(lineMesh, &index, 1, m_bshift);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectNodes(lineMesh, &index, 1);
+			else pcmd = new CCmdSelectFENodes(lineMesh, &index, 1, (m_selectionMode == SELECT_ADD));
 			lastIndex = -1;
 		}
 	}
-	else if (!m_bshift)
+	else if (!(m_selectionMode == SELECT_ADD))
 	{
 		pcmd = new CCmdSelectFENodes(lineMesh, 0, 0, false);
 		lastIndex = -1;
@@ -2382,8 +2380,8 @@ void GLViewSelector::RegionSelectObjects(const SelectRegion& region)
 	}
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnselectObject(&model, selectedObjects);
-	else pcmd = new CCmdSelectObject(&model, selectedObjects, m_bshift);
+	if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectObject(&model, selectedObjects);
+	else pcmd = new CCmdSelectObject(&model, selectedObjects, (m_selectionMode == SELECT_ADD));
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
 
@@ -2466,8 +2464,8 @@ void GLViewSelector::RegionSelectParts(const SelectRegion& region)
 		}
 		else
 		{
-			if (m_bctrl) pcmd = new CCmdUnSelectPart(&model, selectedPartIds);
-			else pcmd = new CCmdSelectPart(&model, selectedPartIds, m_bshift);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnSelectPart(&model, selectedPartIds);
+			else pcmd = new CCmdSelectPart(&model, selectedPartIds, (m_selectionMode == SELECT_ADD));
 		}
 		if (pcmd) pdoc->DoCommand(pcmd);
 	}
@@ -2535,8 +2533,8 @@ void GLViewSelector::RegionSelectSurfaces(const SelectRegion& region)
 	}
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnSelectSurface(&model, selectedSurfaces);
-	else pcmd = new CCmdSelectSurface(&model, selectedSurfaces, m_bshift);
+	if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnSelectSurface(&model, selectedSurfaces);
+	else pcmd = new CCmdSelectSurface(&model, selectedSurfaces, (m_selectionMode == SELECT_ADD));
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
 
@@ -2593,8 +2591,8 @@ void GLViewSelector::RegionSelectEdges(const SelectRegion& region)
 
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnSelectEdge(&model, selectedEdges);
-	else pcmd = new CCmdSelectEdge(&model, selectedEdges, m_bshift);
+	if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnSelectEdge(&model, selectedEdges);
+	else pcmd = new CCmdSelectEdge(&model, selectedEdges, (m_selectionMode == SELECT_ADD));
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
 
@@ -2645,8 +2643,8 @@ void GLViewSelector::RegionSelectNodes(const SelectRegion& region)
 	}
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnSelectNode(&model, selectedNodes);
-	else pcmd = new CCmdSelectNode(&model, selectedNodes, m_bshift);
+	if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnSelectNode(&model, selectedNodes);
+	else pcmd = new CCmdSelectNode(&model, selectedNodes, (m_selectionMode == SELECT_ADD));
 	if (pcmd) doc->DoCommand(pcmd);
 }
 
@@ -2717,8 +2715,8 @@ void GLViewSelector::RegionSelectDiscrete(const SelectRegion& region)
 	}
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnSelectDiscrete(&model, selectedObjects);
-	else pcmd = new CCmdSelectDiscrete(&model, selectedObjects, m_bshift);
+	if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnSelectDiscrete(&model, selectedObjects);
+	else pcmd = new CCmdSelectDiscrete(&model, selectedObjects, (m_selectionMode == SELECT_ADD));
 	if (pcmd) doc->DoCommand(pcmd);
 }
 
@@ -2788,8 +2786,8 @@ void GLViewSelector::SelectFENodes(int x, int y)
 			lastIndex = -1;
 			if (!nodeList.empty())
 			{
-				if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, nodeList);
-				else pcmd = new CCmdSelectFENodes(pm, nodeList, m_bshift);
+				if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectNodes(pm, nodeList);
+				else pcmd = new CCmdSelectFENodes(pm, nodeList, (m_selectionMode == SELECT_ADD));
 			}
 		}
 		else if (view.m_bselpath && pm)
@@ -2807,19 +2805,19 @@ void GLViewSelector::SelectFENodes(int x, int y)
 			}
 			if (!nodeList.empty())
 			{
-				if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, nodeList);
+				if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectNodes(pm, nodeList);
 				else
 				{
-					pcmd = new CCmdSelectFENodes(pm, nodeList, m_bshift);
+					pcmd = new CCmdSelectFENodes(pm, nodeList, (m_selectionMode == SELECT_ADD));
 				}
 			}
 		}
 		else
 		{
-			if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, &index, 1);
+			if (m_selectionMode == SELECT_SUBTRACT) pcmd = new CCmdUnselectNodes(pm, &index, 1);
 			else
 			{
-				pcmd = new CCmdSelectFENodes(pm, &index, 1, m_bshift);
+				pcmd = new CCmdSelectFENodes(pm, &index, 1, (m_selectionMode == SELECT_ADD));
 
 				// print value of currently selected node
 				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
@@ -2844,7 +2842,7 @@ void GLViewSelector::SelectFENodes(int x, int y)
 			lastIndex = -1;
 		}
 	}
-	else if (!m_bshift)
+	else if (!(m_selectionMode == SELECT_ADD))
 	{
 		int nsel = pm->CountSelectedNodes();
 		if (nsel > 0)

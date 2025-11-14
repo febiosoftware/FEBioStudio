@@ -465,7 +465,10 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 	m_bshift = (ev->modifiers() & Qt::ShiftModifier   ? true : false);
 	m_bctrl  = (ev->modifiers() & Qt::ControlModifier ? true : false);
 
-	m_select.SetStateModifiers(m_bshift, m_bctrl);
+	GLViewSelector::SelectionMode mode = GLViewSelector::SELECT_REPLACE;
+	if (m_bctrl) mode = GLViewSelector::SELECT_SUBTRACT;
+	else if (m_bshift) mode = GLViewSelector::SELECT_ADD;
+	m_select.SetSelectionMode(mode);
 
 	Qt::MouseButton but = ev->button();
 
@@ -571,8 +574,6 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	bool but1 = (ev->buttons() & Qt::LeftButton);
 	bool but2 = (ev->buttons() & Qt::MiddleButton);
 	bool but3 = (ev->buttons() & Qt::RightButton);
-
-	m_select.SetStateModifiers(bshift, bctrl);
 
 	GLViewSettings& vs = GetViewSettings();
 
