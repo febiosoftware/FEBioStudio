@@ -1287,7 +1287,7 @@ void CMainWindow::on_actionPasteObject_triggered()
 
 		cam.SetTarget(box.Center());
 		cam.SetTargetDistance(2.0 * f);
-		cam.SetOrientation(copyObject->GetRenderTransform().GetRotationInverse());
+		cam.SetOrientation(copyObject->GetTransform().GetRotationInverse());
 	}
 	copyObject = nullptr;
 

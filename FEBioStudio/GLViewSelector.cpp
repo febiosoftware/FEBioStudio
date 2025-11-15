@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <MeshLib/FSNodeEdgeList.h>
 #include <PostGL/GLModel.h>
 #include "GLHighlighter.h"
+#include "GLModelScene.h"
 
 //=============================================================================
 bool SelectRegion::LineIntersects(int x0, int y0, int x1, int y1) const
@@ -250,7 +251,23 @@ void GLViewSelector::TagBackfacingFaces(FSMeshBase& mesh)
 	}
 }
 
-//-----------------------------------------------------------------------------
+Transform GLViewSelector::GetCurrentTransform()
+{
+	Transform T;
+	
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(m_glv->GetActiveScene());
+	if (scene)
+	{
+		GLObjectItem* objItem = scene->GetActiveGLObjectItem();
+		if (objItem)
+		{
+			T = objItem->GetTransform();
+		}
+	}
+
+	return T;
+}
+
 void GLViewSelector::RegionSelectFENodes(const SelectRegion& region)
 {
 	// get the document
@@ -264,7 +281,7 @@ void GLViewSelector::RegionSelectFENodes(const SelectRegion& region)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
-	Transform& T = po->GetRenderTransform();
+	Transform T = GetCurrentTransform();
 
 	FSMeshBase* pm = nullptr;
 	switch (pdoc->GetMeshMode())
@@ -478,7 +495,7 @@ void GLViewSelector::RegionSelectFEElems(const SelectRegion& region)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
-	Transform& T = po->GetRenderTransform();
+	Transform T = GetCurrentTransform();
 
 	FSMesh* pm = po->GetFEMesh();
 
@@ -728,7 +745,7 @@ void GLViewSelector::RegionSelectFEEdges(const SelectRegion& region)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
-	Transform& T = po->GetRenderTransform();
+	Transform T = GetCurrentTransform();
 
 	FSMeshBase* pm = nullptr;
 	switch (pdoc->GetMeshMode())
@@ -806,7 +823,7 @@ void GLViewSelector::BrushSelectFaces(int x, int y, bool badd, bool binit)
 	Ray ray = transform.PointToRay(x, y);
 
 	// convert ray to local coordinates
-	Transform& T = po->GetRenderTransform();
+	Transform T = GetCurrentTransform();
 	ray.origin = T.GlobalToLocal(ray.origin);
 	ray.direction = T.GlobalToLocalNormal(ray.direction);
 
@@ -969,7 +986,7 @@ void GLViewSelector::Finish()
 }
 
 //-----------------------------------------------------------------------------
-int FindBeamIntersection(int x, int y, GObject* po, GLViewTransform& transform, Intersection& q)
+int FindBeamIntersection(int x, int y, GObject* po, Transform& objTransform, GLViewTransform& viewTransform, Intersection& q)
 {
 	FSMesh* pm = po->GetFEMesh();
 
@@ -980,9 +997,9 @@ int FindBeamIntersection(int x, int y, GObject* po, GLViewTransform& transform, 
 
 	// try to select discrete elements
 	vec3d o(0, 0, 0);
-	vec3d O = transform.WorldToScreen(o);
+	vec3d O = viewTransform.WorldToScreen(o);
 
-	Transform& T = po->GetRenderTransform();
+	Transform T = objTransform;
 
 	int index = -1;
 	float zmin = 0.f;
@@ -995,8 +1012,8 @@ int FindBeamIntersection(int x, int y, GObject* po, GLViewTransform& transform, 
 			vec3d r0 = T.LocalToGlobal(pm->Node(del.m_node[0]).r);
 			vec3d r1 = T.LocalToGlobal(pm->Node(del.m_node[1]).r);
 
-			vec3d p0 = transform.WorldToScreen(r0);
-			vec3d p1 = transform.WorldToScreen(r1);
+			vec3d p0 = viewTransform.WorldToScreen(r0);
+			vec3d p1 = viewTransform.WorldToScreen(r1);
 
 			// make sure p0, p1 are in front of the camera
 			if (((p0.x >= 0) || (p1.x >= 0)) && ((p0.y >= 0) || (p1.y >= 0)) &&
@@ -1037,7 +1054,7 @@ void GLViewSelector::SelectFEElements(int x, int y)
 	GLViewTransform transform(m_glv);
 	Ray ray = transform.PointToRay(x, y);
 
-	Transform& T = po->GetRenderTransform();
+	Transform T = GetCurrentTransform();
 
 	// convert ray to local coordinates
 	Ray localRay;
@@ -1065,7 +1082,7 @@ void GLViewSelector::SelectFEElements(int x, int y)
 	// see if there is a beam element that is closer
 	vec3d p = transform.WorldToScreen(q.point);
 	Intersection q2;
-	int index = FindBeamIntersection(x, y, po, transform, q2);
+	int index = FindBeamIntersection(x, y, po, T, transform, q2);
 	if ((index >= 0) && ((bfound == false) || (q2.point.z < p.z)))
 	{
 		if (index >= 0)
@@ -1164,7 +1181,8 @@ void GLViewSelector::SelectFEFaces(int x, int y)
 	Ray ray = transform.PointToRay(x, y);
 
 	// convert ray to local coordinates
-	Transform& T = po->GetRenderTransform();
+	Transform T = GetCurrentTransform();
+
 	ray.origin = T.GlobalToLocal(ray.origin);
 	ray.direction = T.GlobalToLocalNormal(ray.direction);
 
@@ -1266,7 +1284,7 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
-	Transform& T = po->GetRenderTransform();
+	Transform T = GetCurrentTransform();
 
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
@@ -1422,12 +1440,13 @@ void GLViewSelector::SelectPostObject(int x, int y)
 }
 
 //-----------------------------------------------------------------------------
-bool IntersectObject(GObject* po, const Ray& ray, Intersection& q)
+bool IntersectObject(GLObjectItem* objItem, const Ray& ray, Intersection& q)
 {
+	GObject* po = objItem->GetGObject();
 	GLMesh* mesh = po->GetRenderMesh();
 	if (mesh == nullptr) return false;
 
-	Transform& T = po->GetRenderTransform();
+	Transform T = objItem->GetTransform();
 
 	Intersection qtmp;
 	double distance = 0.0, minDist = 1e34;
@@ -1489,12 +1508,17 @@ void GLViewSelector::SelectObjects(int x, int y)
 	GObject* closestObject = 0;
 	Intersection q;
 	double minDist = 0;
-	for (int i = 0; i < model.Objects(); ++i)
+
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(m_glv->GetActiveScene());
+	if (scene == nullptr) return;
+
+	std::vector<GLObjectItem*> items = scene->GetGLObjectItems();
+	for (auto item : items)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		if (po->IsVisible())
 		{
-			if (IntersectObject(po, ray, q))
+			if (IntersectObject(item, ray, q))
 			{
 				double distance = ray.direction * (q.point - ray.origin);
 				if ((closestObject == 0) || ((distance >= 0.0) && (distance < minDist)))
@@ -1507,7 +1531,7 @@ void GLViewSelector::SelectObjects(int x, int y)
 			{
 				// if this is a line object, we'll need to use a different strategy
 				double zmin;
-				if (SelectClosestEdge(po, transform, rt, zmin))
+				if (SelectClosestEdge(item, transform, rt, zmin))
 				{
 					if ((closestObject == nullptr) || (zmin < minDist))
 					{
@@ -1570,13 +1594,17 @@ void GLViewSelector::SelectParts(int x, int y)
 	GPart* closestPart = 0;
 	Intersection q;
 	double minDist = 0;
-//	double* a = m_glv->PlaneCoordinates();
-	for (int i = 0; i < model.Objects(); ++i)
+
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(m_glv->GetActiveScene());
+	if (scene == nullptr) return;
+
+	std::vector<GLObjectItem*> items = scene->GetGLObjectItems();
+	for (auto item : items)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		if (po->IsVisible())
 		{
-			Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 
 			GLMesh* mesh = po->GetRenderMesh();
 			if (mesh)
@@ -1684,12 +1712,17 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 	GFace* closestSurface = 0;
 	Intersection q;
 	double minDist = 0;
-	for (int i = 0; i < model.Objects(); ++i)
+
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(m_glv->GetActiveScene());
+	if (scene == nullptr) return;
+
+	std::vector<GLObjectItem*> items = scene->GetGLObjectItems();
+	for (auto item : items)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		if (po->IsVisible())
 		{
-			Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 
 			GLMesh* mesh = po->GetRenderMesh();
 			if (mesh)
@@ -1745,12 +1778,13 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 	if (pcmd) pdoc->DoCommand(pcmd, surfName);
 }
 
-GEdge* GLViewSelector::SelectClosestEdge(GObject* po, GLViewTransform& transform, QRect& rt, double& zmin)
+GEdge* GLViewSelector::SelectClosestEdge(GLObjectItem* objItem, GLViewTransform& transform, QRect& rt, double& zmin)
 {
+	GObject* po = objItem->GetGObject();
 	GLMesh* mesh = po->GetRenderMesh(); assert(mesh);
 	if (mesh == nullptr) return nullptr;
 
-	Transform& T = po->GetRenderTransform();
+	Transform T = objItem->GetTransform();
 
 //	double* a = m_glv->PlaneCoordinates();
 
@@ -1811,16 +1845,20 @@ void GLViewSelector::SelectEdges(int x, int y)
 
 //	double* a = m_glv->PlaneCoordinates();
 
-	int Objects = model.Objects();
 	GEdge* closestEdge = 0;
 	double zmin = 0.0;
-	for (int i = 0; i < Objects; ++i)
+
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(m_glv->GetActiveScene());
+	if (scene == nullptr) return;
+
+	std::vector<GLObjectItem*> items = scene->GetGLObjectItems();
+	for (auto item : items)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		if (po->IsVisible())
 		{
 			double z;
-			GEdge* pe = SelectClosestEdge(po, transform, rt, z);
+			GEdge* pe = SelectClosestEdge(item, transform, rt, z);
 			if (pe)
 			{
 				if ((closestEdge == nullptr) || (z < zmin))
@@ -1872,13 +1910,17 @@ void GLViewSelector::SelectNodes(int x, int y)
 	if (NN == 0) return;
 	GNode* closestNode = 0;
 	double zmin = 0.0;
-//	double* a = m_glv->PlaneCoordinates();
-	for (int i = 0; i < model.Objects(); ++i)
+
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(m_glv->GetActiveScene());
+	if (scene == nullptr) return;
+
+	std::vector<GLObjectItem*> items = scene->GetGLObjectItems();
+	for (auto item : items)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		if (po->IsVisible())
 		{
-			Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 
 			int nodes = po->Nodes();
 			for (int j = 0; j < nodes; ++j)
@@ -2085,7 +2127,7 @@ void GLViewSelector::SelectSurfaceFaces(int x, int y)
 	Ray ray = transform.PointToRay(x, y);
 
 	// convert ray to local coordinates
-	Transform& T = po->GetRenderTransform();
+	Transform T = GetCurrentTransform();
 	ray.origin = T.GlobalToLocal(ray.origin);
 	ray.direction = T.GlobalToLocalNormal(ray.direction);
 
@@ -2126,7 +2168,7 @@ void GLViewSelector::SelectSurfaceEdges(int x, int y)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
-	Transform& T = po->GetRenderTransform();
+	Transform T = GetCurrentTransform();
 
 	FSMeshBase* pmesh = po->GetEditableMesh();
 	FSLineMesh* pm = po->GetEditableLineMesh();
@@ -2226,7 +2268,7 @@ void GLViewSelector::SelectSurfaceNodes(int x, int y)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
-	Transform& T = po->GetRenderTransform();
+	Transform T = GetCurrentTransform();
 
 	FSMeshBase* pm = po->GetEditableMesh();
 	FSLineMesh* lineMesh = po->GetEditableLineMesh();
@@ -2331,13 +2373,18 @@ void GLViewSelector::RegionSelectObjects(const SelectRegion& region)
 	GLViewTransform transform(m_glv);
 
 	vector<GObject*> selectedObjects;
-	for (int i = 0; i < model.Objects(); ++i)
+
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(m_glv->GetActiveScene());
+	if (scene == nullptr) return;
+
+	std::vector<GLObjectItem*> items = scene->GetGLObjectItems();
+	for (auto item : items)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		GLMesh* mesh = po->GetRenderMesh();
 		if (po->IsVisible() && mesh)
 		{
-			Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 			bool intersect = false;
 			for (int j = 0; j < mesh->Faces(); ++j)
 			{
@@ -2405,13 +2452,18 @@ void GLViewSelector::RegionSelectParts(const SelectRegion& region)
 
 	std::list<GPart*> selectedParts;
 	vector<int> selectedPartIds;
-	for (int i = 0; i < model.Objects(); ++i)
+
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(m_glv->GetActiveScene());
+	if (scene == nullptr) return;
+
+	std::vector<GLObjectItem*> items = scene->GetGLObjectItems();
+	for (auto item : items)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		GLMesh* mesh = po->GetRenderMesh();
 		if (po->IsVisible() && mesh)
 		{
-			Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 
 			for (int j = 0; j < mesh->Faces(); ++j)
 			{
@@ -2491,13 +2543,18 @@ void GLViewSelector::RegionSelectSurfaces(const SelectRegion& region)
 	GLViewTransform transform(m_glv);
 
 	vector<int> selectedSurfaces;
-	for (int i = 0; i < model.Objects(); ++i)
+
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(m_glv->GetActiveScene());
+	if (scene == nullptr) return;
+
+	std::vector<GLObjectItem*> items = scene->GetGLObjectItems();
+	for (auto item : items)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		GLMesh* mesh = po->GetRenderMesh();
 		if (po->IsVisible() && mesh)
 		{
-			Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 
 			for (int j = 0; j < mesh->Faces(); ++j)
 			{
@@ -2555,12 +2612,17 @@ void GLViewSelector::RegionSelectEdges(const SelectRegion& region)
 	GLViewTransform transform(m_glv);
 
 	vector<int> selectedEdges;
-	for (int i = 0; i < model.Objects(); ++i)
+
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(m_glv->GetActiveScene());
+	if (scene == nullptr) return;
+
+	std::vector<GLObjectItem*> items = scene->GetGLObjectItems();
+	for (auto item : items)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		if (po->IsVisible())
 		{
-			Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 
 			for (int j = 0; j < po->Edges(); ++j)
 			{
@@ -2613,12 +2675,17 @@ void GLViewSelector::RegionSelectNodes(const SelectRegion& region)
 //	double* a = m_glv->PlaneCoordinates();
 
 	vector<int> selectedNodes;
-	for (int i = 0; i < model.Objects(); ++i)
+
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(m_glv->GetActiveScene());
+	if (scene == nullptr) return;
+
+	std::vector<GLObjectItem*> items = scene->GetGLObjectItems();
+	for (auto item : items)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		if (po->IsVisible())
 		{
-			Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 			for (int j = 0; j < po->Nodes(); ++j)
 			{
 				GNode* node = po->Node(j);
@@ -2734,7 +2801,7 @@ void GLViewSelector::SelectFENodes(int x, int y)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
-	Transform& T = po->GetRenderTransform();
+	Transform T = GetCurrentTransform();
 
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;

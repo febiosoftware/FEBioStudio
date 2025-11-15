@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <MeshLib/Intersect.h>
 #include <FSCore/ColorMap.h>
 
-class FSModel;
+class CGLModelScene;
 class GLMesh;
 class GLRenderEngine;
 
@@ -42,7 +42,7 @@ public:
 
 	bool IsValid() const;
 
-	void Create(FSModel& fem, bool showMeshData, int mode);
+	void Create(CGLModelScene& scene, bool showMeshData, int mode);
 
 	void SetPlaneCoordinates(double d0, double d1, double d2, double d3)
 	{
@@ -65,8 +65,8 @@ public:
 	void RenderMesh(bool b) { m_renderMesh = b; }
 
 private:
-	void CreatePlaneCut(FSModel& fem, bool showMeshData);
-	void CreateHideElements(FSModel& fem, bool showMeshData);
+	void CreatePlaneCut(CGLModelScene& scene, bool showMeshData);
+	void CreateHideElements(CGLModelScene& scene, bool showMeshData);
 
 private:
 	GLMesh* m_planeCut = nullptr;

@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "GLGrid.h"
 #include "GLCamera.h"
 #include "GLRenderEngine.h"
+#include <vector>
 
 class GLContext;
 class GLScene;
@@ -43,32 +44,41 @@ struct GLTAG
 	GLColor	c;			// tag color
 };
 
+class GLSceneItem;
+
+typedef std::vector<GLSceneItem*> GLItemList;
+typedef std::vector<GLSceneItem*>::const_iterator ConstGLItemIterator;
+typedef std::vector<GLSceneItem*>::iterator GLItemIterator;
+
 class GLSceneItem
 {
 public:
 	GLSceneItem() {}
 	virtual ~GLSceneItem() {}
 
-	virtual void render(GLRenderEngine& re, GLContext& rc) = 0;
-};
+	virtual void clear();
 
-typedef std::vector<GLSceneItem*> GLItemList;
-typedef std::vector<GLSceneItem*>::const_iterator ConstGLItemIterator;
-typedef std::vector<GLSceneItem*>::iterator GLItemIterator;
-
-class GLCompositeSceneItem : public GLSceneItem
-{
-public:
-	GLCompositeSceneItem();
-	virtual ~GLCompositeSceneItem();
-
-	void render(GLRenderEngine& re, GLContext& rc) override;
+	virtual void render(GLRenderEngine& re, GLContext& rc);
 
 public:
-	void addItem(GLSceneItem* item) { if (item) m_items.push_back(item); }
+	size_t children() const { return m_children.size(); }
+
+	GLSceneItem* child(size_t i) { return m_children[i]; }
+
+	void addChild(GLSceneItem* item) { if (item) m_children.push_back(item); }
+
+	GLItemIterator begin() { return m_children.begin(); }
+	GLItemIterator end() { return m_children.end(); }
+
+	ConstGLItemIterator begin() const { return m_children.begin(); }
+	ConstGLItemIterator end() const { return m_children.end(); }
 
 private:
-	GLItemList m_items;
+	GLSceneItem(const GLSceneItem&) = delete;
+	GLSceneItem& operator = (const GLSceneItem&) = delete;
+
+private:
+	GLItemList m_children;
 };
 
 class GLScene
@@ -81,9 +91,6 @@ public:
 
 	// Render the 3D scene
 	virtual void Render(GLRenderEngine& engine, GLContext& rc);
-
-	// Render on the 2D canvas
-//	virtual void RenderCanvas(QPainter& painter, GLContext& rc) {}
 
 	virtual BOX GetBoundingBox() { return BOX(); }
 
@@ -111,17 +118,38 @@ public:
 	GLTAG& Tag(size_t i) { return m_tags[i]; }
 
 public:
-	GLItemIterator begin() { return m_Items.begin(); }
-	GLItemIterator end() { return m_Items.end(); }
+	GLItemIterator begin() { return m_root.begin(); }
+	GLItemIterator end() { return m_root.end(); }
 
-	ConstGLItemIterator begin() const { return m_Items.begin(); }
-	ConstGLItemIterator end() const { return m_Items.end(); }
+	ConstGLItemIterator begin() const { return m_root.begin(); }
+	ConstGLItemIterator end() const { return m_root.end(); }
 
-	void addItem(GLSceneItem* item) { if (item) m_Items.push_back(item); }
+	void addItem(GLSceneItem* item) { if (item) m_root.addChild(item); }
 
-	size_t items() const { return m_Items.size(); }
+	size_t items() const { return m_root.children(); }
 
 	void clear();
+
+	template <typename T>
+	std::vector<T*> GetItemsOfType()
+	{
+		std::vector<T*> items;
+
+		std::stack<GLSceneItem*> s;
+		s.push(&m_root);
+		while (!s.empty()) {
+			GLSceneItem* item = s.top(); s.pop();
+
+			if (T* casted = dynamic_cast<T*>(item)) {
+				items.push_back(casted);
+			}
+
+			for (GLSceneItem* child : *item) {
+				s.push(child);
+			}
+		}
+		return items;
+	}
 
 protected:
 	GLCamera m_cam;	//!< camera
@@ -133,5 +161,5 @@ protected:
 
 	std::vector<GLTAG> m_tags;
 
-	GLItemList m_Items;
+	GLSceneItem m_root;
 };

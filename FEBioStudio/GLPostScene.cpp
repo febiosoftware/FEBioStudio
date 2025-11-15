@@ -56,7 +56,7 @@ void GLPostPlaneCutItem::render(GLRenderEngine& re, GLContext& rc)
 
 	Post::CGLPlaneCutPlot::EnableClipPlanes(re);
 
-	GLCompositeSceneItem::render(re, rc);
+	GLPostSceneItem::render(re, rc);
 
 	Post::CGLPlaneCutPlot::DisableClipPlanes(re);
 }
@@ -75,7 +75,7 @@ void GLPostMirrorItem::render(GLRenderEngine& re, GLContext& rc)
 void GLPostMirrorItem::renderMirror(GLRenderEngine& re, GLContext& rc, int start, int end)
 {
 	// pass one
-	GLCompositeSceneItem::render(re, rc);
+	GLPostSceneItem::render(re, rc);
 
 	for (int i = start; i < end; ++i)
 	{
@@ -527,7 +527,8 @@ void GLPostModelItem::RenderSelection(GLRenderEngine& re)
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
 	// render the selection surface
-	re.setMaterial(GLMaterial::OVERLAY, glm.m_sel_col);
+	GLColor c = glm.m_sel_col; c.a = 128;
+	re.setMaterial(GLMaterial::OVERLAY, c);
 	re.renderGMesh(glm.m_selectionMesh, false);
 
 	// render the selection outlines
@@ -1250,8 +1251,8 @@ void CGLPostScene::Render(GLRenderEngine& engine, GLContext& rc)
 		glx::renderAxes(engine, m_trackScale, m_trgPos, m_trgRot);
 	}
 
-//	ClearTags();
-//	if (rc.m_settings.m_bTags) CreateTags(rc);
+	ClearTags();
+	if (rc.m_settings.m_bTags) CreateTags(rc);
 }
 
 void CGLPostScene::BuildScene()
@@ -1264,20 +1265,20 @@ void CGLPostScene::BuildScene()
 	GLPostPlaneCutItem* root = new GLPostPlaneCutItem(this);
 
 	GLPostMirrorItem* mirror = new GLPostMirrorItem(this);
-	root->addItem(mirror);
+	root->addChild(mirror);
 
-	mirror->addItem(new GLPostPlotItem(this));
+	mirror->addChild(new GLPostPlotItem(this));
 
-	mirror->addItem(new GLPostModelItem(this));
+	mirror->addChild(new GLPostModelItem(this));
 
-	mirror->addItem(new GLPostObjectItem(this));
-/*
+	mirror->addChild(new GLPostObjectItem(this));
+
 	for (int i = 0; i < m_doc->ImageModels(); ++i)
 	{
 		CImageModel* img = m_doc->GetImageModel(i);
-		root->addItem(new GLPost3DImageItem(img, this));
+		root->addChild(new GLPost3DImageItem(img, this));
 	}
-*/
+
 	addItem(root);
 }
 

@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <vector>
+#include <FECore/FETransform.h>
 
 class CGLView;
 class FSMeshBase;
@@ -33,6 +34,7 @@ class GObject;
 class GLViewTransform;
 class QRect;
 class GEdge;
+class GLObjectItem;
 
 //-----------------------------------------------------------------------------
 class SelectRegion
@@ -146,7 +148,9 @@ private:
 	void TagBackfacingFaces(FSMeshBase& mesh);
 	void TagBackfacingElements(FSMesh& mesh);
 
-	GEdge* SelectClosestEdge(GObject* po, GLViewTransform& transform, QRect& rt, double& zmin);
+	GEdge* SelectClosestEdge(GLObjectItem* po, GLViewTransform& transform, QRect& rt, double& zmin);
+
+	Transform GetCurrentTransform();
 
 private:
 	CGLView* m_glv;

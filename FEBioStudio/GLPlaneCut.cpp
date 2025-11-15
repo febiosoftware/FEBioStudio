@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <GLLib/GLViewSettings.h>
 #include <GLLib/GLRenderEngine.h>
 #include <FSCore/ColorMap.h>
+#include "GLModelScene.h"
 
 const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
@@ -61,24 +62,24 @@ bool GLPlaneCut::IsValid() const
 	return (m_planeCut != nullptr); 
 }
 
-void GLPlaneCut::Create(FSModel& fem, bool showMeshData, int mode)
+void GLPlaneCut::Create(CGLModelScene& scene, bool showMeshData, int mode)
 {
 	switch (mode)
 	{
-	case Planecut_Mode::PLANECUT     : CreatePlaneCut(fem, showMeshData); break;
-	case Planecut_Mode::HIDE_ELEMENTS: CreateHideElements(fem, showMeshData); break;
+	case Planecut_Mode::PLANECUT     : CreatePlaneCut(scene, showMeshData); break;
+	case Planecut_Mode::HIDE_ELEMENTS: CreateHideElements(scene, showMeshData); break;
 	default:
 		break;
 	}
 }
 
-void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
+void GLPlaneCut::CreatePlaneCut(CGLModelScene& scene, bool showMeshData)
 {
-	GModel& mdl = fem.GetModel();
-	GObject* poa = mdl.GetActiveObject();
+	GObject* poa = scene.GetActiveObject();
 	double vmin, vmax;
 
-	if (mdl.Objects() == 0) return;
+	std::vector<GLObjectItem*> objItems = scene.GetGLObjectItems();
+	if (objItems.empty()) return;
 
 	int edge[15][2], edgeNode[15][2], etag[15];
 
@@ -86,9 +87,11 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 	m_planeCut = new GLMesh;
 	GLMesh* planeCut = m_planeCut;
 
-	for (int i = 0; i < mdl.Objects(); ++i)
+	FSModel& fem = *scene.GetFSModel();
+
+	for (auto item : objItems)
 	{
-		GObject* po = mdl.Object(i);
+		GObject* po = item->GetGObject();
 		if (po->GetFEMesh())
 		{
 			FSMesh* mesh = po->GetFEMesh();
@@ -97,7 +100,7 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 			int en[8];
 			GLColor ec[8];
 
-			const Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 
 			// set the plane normal
 			vec3d norm(m_plane[0], m_plane[1], m_plane[2]);
@@ -303,13 +306,12 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 	planeCut->Update();
 }
 
-void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
+void GLPlaneCut::CreateHideElements(CGLModelScene& scene, bool showMeshData)
 {
-	GModel& mdl = fem.GetModel();
-	GObject* poa = mdl.GetActiveObject();
-	double vmin, vmax;
+	FSModel& fem = *scene.GetFSModel();
 
-	if (mdl.Objects() == 0) return;
+	GObject* poa = scene.GetActiveObject();
+	double vmin, vmax;
 
 	if (m_planeCut) delete m_planeCut;
 	m_planeCut = new GLMesh;
@@ -318,9 +320,10 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 	// TODO: swith to texture
 	CColorMap colormap;
 
-	for (int n = 0; n < mdl.Objects(); ++n)
+	std::vector<GLObjectItem*> objItems = scene.GetGLObjectItems();
+	for (auto item : objItems)
 	{
-		GObject* po = mdl.Object(n);
+		GObject* po = item->GetGObject();
 		if (po->GetFEMesh())
 		{
 			FSMesh* mesh = po->GetFEMesh();
@@ -330,7 +333,7 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 			double ev[8] = { 0 };
 			GLColor ec[8];
 
-			const Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 
 			// set the plane normal
 			vec3d norm(m_plane[0], m_plane[1], m_plane[2]);

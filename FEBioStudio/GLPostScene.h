@@ -88,29 +88,23 @@ public:
 	void render(GLRenderEngine& re, GLContext& rc) override;
 };
 
-class GLPostPlaneCutItem : public GLCompositeSceneItem
+class GLPostPlaneCutItem : public GLPostSceneItem
 {
 public:
-	GLPostPlaneCutItem(CGLPostScene* scene) : m_scene(scene) {}
+	GLPostPlaneCutItem(CGLPostScene* scene) : GLPostSceneItem(scene) {}
 
 	void render(GLRenderEngine& re, GLContext& rc) override;
-
-private:
-	CGLPostScene* m_scene;
 };
 
-class GLPostMirrorItem : public GLCompositeSceneItem
+class GLPostMirrorItem : public GLPostSceneItem
 {
 public:
-	GLPostMirrorItem(CGLPostScene* scene) : m_scene(scene) {}
+	GLPostMirrorItem(CGLPostScene* scene) : GLPostSceneItem(scene) {}
 
 	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
 	void renderMirror(GLRenderEngine& re, GLContext& rc, int start, int end);
-
-private:
-	CGLPostScene* m_scene;
 };
 
 class GLPostObjectItem : public GLPostSceneItem

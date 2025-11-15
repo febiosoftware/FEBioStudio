@@ -59,7 +59,7 @@ protected:
 	CGLModelScene* m_scene;
 };
 
-class GLPlaneCutItem : public GLCompositeSceneItem
+class GLPlaneCutItem : public GLModelSceneItem
 {
 public:
 	GLPlaneCutItem(CGLModelScene* scene);
@@ -70,7 +70,6 @@ private:
 	void RenderBoxCut(GLRenderEngine& re, const BOX& box);
 
 private:
-	CGLModelScene* m_scene;
 	GLPlaneCut	m_planeCut;
 };
 
@@ -79,6 +78,11 @@ class GLObjectItem : public GLModelSceneItem
 public:
 	GLObjectItem(CGLModelScene* scene, GObject* po);
 	void render(GLRenderEngine& re, GLContext& rc) override;
+
+	GObject* GetGObject() const { return m_po; }
+
+	Transform GetTransform() const;
+	void SetTransform(const Transform& T);
 
 private:
 	void RenderGObject(GLRenderEngine& re, GLContext& rc);
@@ -123,6 +127,7 @@ private:
 
 private:
 	GObject* m_po;
+	Transform m_renderTransform;
 	std::vector<GLMaterial> m_mat; // material per face
 	bool	m_clearCache;
 };
@@ -197,10 +202,10 @@ public:
 	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
-	void RenderSelectedParts(GLRenderEngine& re, GLContext& rc, GObject* po) const;
-	void RenderSelectedSurfaces(GLRenderEngine& re, GLContext& rc, GObject* po) const;
-	void RenderSelectedEdges(GLRenderEngine& re, GLContext& rc, GObject* po) const;
-	void RenderSelectedNodes(GLRenderEngine& re, GLContext& rc, GObject* po) const;
+	void RenderSelectedParts   (GLRenderEngine& re, GLContext& rc, GLObjectItem* po) const;
+	void RenderSelectedSurfaces(GLRenderEngine& re, GLContext& rc, GLObjectItem* po) const;
+	void RenderSelectedEdges   (GLRenderEngine& re, GLContext& rc, GLObjectItem* po) const;
+	void RenderSelectedNodes   (GLRenderEngine& re, GLContext& rc, GLObjectItem* po) const;
 };
 
 class GLHighlighterItem : public GLModelSceneItem
@@ -275,6 +280,11 @@ public:
 
 	FESelection* GetCurrentSelection();
 
+public:
+	GLObjectItem* FindGLObjectItem(GObject* po);
+	GLObjectItem* GetActiveGLObjectItem() const { return m_activeObjectItem; }
+	std::vector<GLObjectItem*> GetGLObjectItems() const { return m_glObjectList; }
+
 private:
 	void BuildScene(GLContext& rc);
 
@@ -299,6 +309,9 @@ public:
 private:
 	CModelDocument* m_doc;
 	GLMesh			m_selectionMesh;
+
+	std::vector<GLObjectItem*> m_glObjectList;
+	GLObjectItem* m_activeObjectItem = nullptr;
 
 	int m_colormap = 6; // = JET
 	bool m_showLegend = false;

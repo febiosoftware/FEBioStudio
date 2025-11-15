@@ -175,6 +175,22 @@ void GLRenderEngine::rotate(const vec3d& r, vec3d ref)
 	}
 }
 
+void GLRenderEngine::transform(const Transform& T)
+{
+	vec3d r = T.GetPosition();
+	vec3d s = T.GetScale();
+	quatd q = T.GetRotation();
+
+	// translate mesh
+	translate(r);
+
+	// orient mesh
+	rotate(q);
+
+	// scale the mesh
+	scale(s.x, s.y, s.z);
+}
+
 void GLRenderEngine::renderPoint(const vec3d& r)
 {
 	begin(POINTS);
@@ -301,6 +317,7 @@ void GLRenderEngine::renderGMeshOutline(const GLCamera& cam, const GLMesh& gmsh,
 	renderGMeshEdges(mesh, false);
 }
 
+// TODO: Do I really need to pass the transform? Can't I just use the modelview matrix?
 void GLRenderEngine::renderGMeshOutline(const GLCamera& cam, const GLMesh& gmsh, const Transform& T, int surfID)
 {
 	// get some settings

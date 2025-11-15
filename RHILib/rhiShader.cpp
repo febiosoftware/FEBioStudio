@@ -462,9 +462,11 @@ public:
 	{
 		m_data.create({
 			{rhi::UniformBlock::MAT4, "mv"},
+			{rhi::UniformBlock::VEC4, "col"},
 			{rhi::UniformBlock::INT, "useStipple"},
 			{rhi::UniformBlock::INT, "useClipping"},
 			{rhi::UniformBlock::INT, "useLighting"},
+			{rhi::UniformBlock::INT, "useVertexColor"},
 			});
 
 		// create the buffer
@@ -486,9 +488,11 @@ public:
 	void setData(const rhi::SubMesh& m) override
 	{
 		m_data.setMat4(0, m.mvMatrix);
-		m_data.setInt(1, (m.mat.type == GLMaterial::HIGHLIGHT) || (m.mat.type == GLMaterial::GLASS) ? 1 : 0);
-		m_data.setInt(2, (m.doClipping ? 1 : 0));
-		m_data.setInt(3, (m.mat.type == GLMaterial::HIGHLIGHT) || (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0 : 1);
+		m_data.setVec4(1, m.mat.diffuse);
+		m_data.setInt(2, (m.mat.type == GLMaterial::HIGHLIGHT) || (m.mat.type == GLMaterial::GLASS) ? 1 : 0);
+		m_data.setInt(3, (m.doClipping ? 1 : 0));
+		m_data.setInt(4, (m.mat.type == GLMaterial::HIGHLIGHT) || (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0 : 1);
+		m_data.setInt(5, (m.mat.type == GLMaterial::VERTEX_COLOR) ? 1 : 0);
 	}
 };
 

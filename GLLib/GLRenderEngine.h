@@ -103,6 +103,8 @@ public:
 	void transform(const vec3d& r0, const vec3d& r1);
 	void rotate(const vec3d& r, vec3d ref = vec3d(0, 0, 1));
 
+	void transform(const Transform& T);
+
 public:
 	virtual void setColor(GLColor c);
 	virtual void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = false) {}

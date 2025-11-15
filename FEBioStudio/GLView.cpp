@@ -2220,15 +2220,18 @@ void CGLView::HighlightEdge(int x, int y)
 	int S = 4;
 	QRect rt(X - S, Y - S, 2 * S, 2 * S);
 
-	int Objects = model.Objects();
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(GetActiveScene());
+	if (scene == nullptr) return;
+
 	GEdge* closestEdge = 0;
 	double zmin = 0.0;
-	for (int i = 0; i<Objects; ++i)
+	std::vector<GLObjectItem*> objItems = scene->GetGLObjectItems();
+	for (auto item : objItems)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		if (po->IsVisible())
 		{
-			Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 			GLMesh* mesh = po->GetRenderMesh(); assert(mesh);
 			if (mesh)
 			{
@@ -2344,17 +2347,21 @@ void CGLView::HighlightSurface(int x, int y)
 	Ray ray = transform.PointToRay(x, y);
 
 //	double* a = PlaneCoordinates();
-	int Objects = model.Objects();
 	GFace* closestSurface = nullptr;
 	double minDist = 0;
 	Intersection q;
-	for (int i = 0; i < Objects; ++i)
+
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(GetActiveScene());
+	if (scene == nullptr) return;
+
+	std::vector<GLObjectItem*> objItems = scene->GetGLObjectItems();
+	for (auto item : objItems)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		if (po->IsVisible())
 		{
 			Ray localRay;
-			Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 			localRay.origin = T.GlobalToLocal(ray.origin);
 			localRay.direction = T.GlobalToLocalNormal(ray.direction);
 			GLMesh* mesh = po->GetRenderMesh(); assert(mesh);
@@ -2423,12 +2430,17 @@ GPart* CGLView::PickPart(int x, int y)
 	Intersection q;
 	double minDist = 0;
 //	double* a = PlaneCoordinates();
-	for (int i = 0; i < model.Objects(); ++i)
+
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(GetActiveScene());
+	if (scene == nullptr) return nullptr;
+
+	std::vector<GLObjectItem*> objItems = scene->GetGLObjectItems();
+	for (auto item : objItems)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		if (po->IsVisible())
 		{
-			Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 			GLMesh* mesh = po->GetRenderMesh();
 			if (mesh)
 			{
@@ -2529,7 +2541,7 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return vec3d(0,0,0);
 
-	GLScene* scene = GetActiveScene();
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(GetActiveScene());
 	if (scene == nullptr) return vec3d(0, 0, 0);
 
 	GLViewSettings& view = GetViewSettings();
@@ -2559,12 +2571,14 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 	// convert the point to a ray
 	Ray ray = transform.PointToRay(x, y);
 
+
 	// get the active object
-	GObject* po = doc->GetActiveObject();
+	GLObjectItem* item = scene->GetActiveGLObjectItem();
+	GObject* po = (item ? item->GetGObject() : nullptr);
 	if (po && po->GetEditableMesh())
 	{
 		// convert to local coordinates
-		Transform& T = po->GetRenderTransform();
+		Transform T = item->GetTransform();
 		vec3d rl = T.GlobalToLocal(ray.origin);
 		vec3d nl = T.GlobalToLocalNormal(ray.direction);
 
@@ -2573,7 +2587,7 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 		if (FindIntersection(*mesh, rl, nl, q, view.m_snapToNode))
 		{
 			if (success) *success = true;
-			q = po->GetRenderTransform().LocalToGlobal(q);
+			q = T.LocalToGlobal(q);
 			return q;
 		}
 	}

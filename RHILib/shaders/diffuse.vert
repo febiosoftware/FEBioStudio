@@ -24,9 +24,11 @@ layout(std140, binding = 0) uniform GlobalBlock {
 // mesh-specific block
 layout(std140, binding = 1) uniform MeshBlock {
     mat4 mv;
+    vec4 col;
     int useStipple;
     int useClipping;
     int useLighting;
+    int useVertexColor;
 } mesh;
 
 void main()

@@ -22,21 +22,28 @@ layout(std140, binding = 0) uniform GlobalBlock {
 // mesh-specific block
 layout(std140, binding = 1) uniform MeshBlock {
     mat4 mv;
+    vec4 col;
     int useStipple;
     int useClipping;
     int useLighting;
+    int useVertexColor;
 } mesh;
 
 void main()
 {
+    vec4 col = mesh.col;
+    if (mesh.useVertexColor > 0)
+        col = v_color;
+
     // check stippling
-    if ((mesh.useStipple > 0) || (v_color.a < 0.95))
+    if ((mesh.useStipple > 0) || (col.a < 0.95))
     {
         ivec2 p = ivec2(mod(gl_FragCoord.xy, 8.0)); // 8x8 pattern
         bool visible = ((p.x + p.y) % 2) == 0;  // checker pattern
         if (!visible)
             discard;
     }
+    col.a = 1;
 
     // clip-plane
     if (mesh.useClipping > 0)
@@ -51,9 +58,6 @@ void main()
     vec3 N = normalize(v_normal);
 
     vec4 f_col = vec4(0,0,0,1);
-
-    vec4 col = v_color;
-    col.a = 1;
 
     if (mesh.useLighting > 0)
     {

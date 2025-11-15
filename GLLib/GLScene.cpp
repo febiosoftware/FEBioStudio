@@ -27,6 +27,23 @@ SOFTWARE.*/
 #include "GLScene.h"
 #include "GLCamera.h"
 
+void GLSceneItem::clear()
+{
+	for (GLSceneItem* item : m_children)
+	{
+		delete item;
+	}
+	m_children.clear();
+}
+
+void GLSceneItem::render(GLRenderEngine& re, GLContext& rc)
+{
+	for (GLSceneItem* item : m_children)
+	{
+		item->render(re, rc);
+	}
+}
+
 GLScene::GLScene() 
 {
 	m_envtex = 0;
@@ -133,23 +150,5 @@ void GLScene::DeactivateEnvironmentMap(GLRenderEngine& re)
 
 void GLScene::clear()
 {
-	for (GLSceneItem* item : m_Items) delete item;
-	m_Items.clear();
-}
-
-GLCompositeSceneItem::GLCompositeSceneItem() {}
-GLCompositeSceneItem::~GLCompositeSceneItem()
-{
-	for (auto item : m_items)
-	{
-		delete item;
-	}
-}
-
-void GLCompositeSceneItem::render(GLRenderEngine& re, GLContext& rc)
-{
-	for (auto item : m_items)
-	{
-		item->render(re, rc);
-	}
+	m_root.clear();
 }
