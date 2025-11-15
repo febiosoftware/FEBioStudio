@@ -2373,7 +2373,7 @@ void CGLView::HighlightSurface(int x, int y)
 					GFace* gface = po->Face(k);
 					if (gface->IsVisible() && !gface->IsSelected())
 					{
-						const GLMesh::PARTITION& pk = mesh->Partition(k);
+						const GLMesh::SURFACE_PARTITION& pk = mesh->SurfacePartition(k);
 						int NF = pk.nf;
 						int N0 = pk.n0;
 						for (int j = 0; j < NF; ++j)

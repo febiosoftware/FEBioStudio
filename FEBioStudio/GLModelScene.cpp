@@ -970,7 +970,7 @@ bool BuildSelectionMesh(FESelection* sel, GLMesh& mesh)
 	FEElementSelection* esel = dynamic_cast<FEElementSelection*>(sel);
 	if (esel && esel->Count())
 	{
-		mesh.NewPartition();
+		mesh.NewSurfacePartition();
 		FSMesh* pm = esel->GetMesh();
 		int NE = esel->Count();
 		int n[FSFace::MAX_NODES];
@@ -1046,7 +1046,7 @@ bool BuildSelectionMesh(FESelection* sel, GLMesh& mesh)
 	FEFaceSelection* fsel = dynamic_cast<FEFaceSelection*>(sel);
 	if (fsel && fsel->Count())
 	{
-		mesh.NewPartition();
+		mesh.NewSurfacePartition();
 		FSMeshBase* pm = fsel->GetMesh();
 		int NF = fsel->Count();
 		int n[FSFace::MAX_NODES];
@@ -1276,9 +1276,9 @@ void GLObjectItem::UpdateGMeshColor(GLMesh& msh)
 void GLObjectItem::ColorByDefault(GLMesh& msh)
 {
 	GLMaterial mat = m_po->GetMaterial();
-	for (int n = 0; n < msh.Partitions(); ++n)
+	for (int n = 0; n < msh.SurfacePartitions(); ++n)
 	{
-		const GLMesh::PARTITION& p = msh.Partition(n);
+		const GLMesh::SURFACE_PARTITION& p = msh.SurfacePartition(n);
 		GFace* pf = m_po->Face(n);
 		mat = m_scene->GetFaceMaterial(*pf);
 
@@ -1303,9 +1303,9 @@ void GLObjectItem::ColorByObject(GLMesh& msh)
 void GLObjectItem::ColorByMaterialType(GLMesh& msh)
 {
 	GLMaterial mat = m_po->GetMaterial();
-	for (int n = 0; n < msh.Partitions(); ++n)
+	for (int n = 0; n < msh.SurfacePartitions(); ++n)
 	{
-		const GLMesh::PARTITION& p = msh.Partition(n);
+		const GLMesh::SURFACE_PARTITION& p = msh.SurfacePartition(n);
 		GFace* pf = m_po->Face(n);
 		mat = m_scene->GetFaceMaterial(*pf);
 
@@ -1374,9 +1374,9 @@ void GLObjectItem::ColorByElementType(GLMesh& msh)
 
 void GLObjectItem::ColorByPhysics(GLMesh& msh)
 {
-	for (int n = 0; n < msh.Partitions(); ++n)
+	for (int n = 0; n < msh.SurfacePartitions(); ++n)
 	{
-		const GLMesh::PARTITION& p = msh.Partition(n);
+		const GLMesh::SURFACE_PARTITION& p = msh.SurfacePartition(n);
 		GFace* pf = m_po->Face(n);
 		GLColor c = m_scene->GetFaceMaterial(*pf).diffuse;
 
@@ -2221,6 +2221,7 @@ void GLObjectItem::RenderObject(GLRenderEngine& re, GLContext& rc)
 			re.renderGMesh(*mesh, i);
 		}
 	}
+
 /*
 	if (NF == 0)
 	{
@@ -3555,7 +3556,7 @@ void GLHighlighterItem::drawFESurface(GLRenderEngine& re, FSSurface* surf, GLCol
 		re.transform(objItem->GetTransform());
 
 		GLMesh gmesh;
-		gmesh.NewPartition();
+		gmesh.NewSurfacePartition();
 		int m[FSFace::MAX_NODES];
 		for (int n : faceList)
 		{

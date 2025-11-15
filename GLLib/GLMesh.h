@@ -76,10 +76,17 @@ public:
 		vec3f	t[3];	// texture coordinates
 	};
 
-	struct PARTITION
+	struct SURFACE_PARTITION
 	{
 		int n0 = 0; // start index into face list
 		int nf = 0; // nr of faces in partition
+		int tag = 0; // used to define partition attributes such as whether it's internal/external
+	};
+
+	struct EDGE_PARTITION
+	{
+		int n0 = 0; // start index into edge list
+		int ne = 0; // nr of edges in partition
 		int tag = 0; // used to define partition attributes such as whether it's internal/external
 	};
 
@@ -90,7 +97,7 @@ public:
 	void Create(int nodes, int faces, int edges = 0);
 	void Clear();
 
-	void NewPartition(int tag = 0);
+	void NewSurfacePartition(int tag = 0);
 
 	void AutoPartition();
 
@@ -119,11 +126,11 @@ public:
 	void AutoSmooth(double angleDegrees);
 
 public:
-	size_t Partitions() const { return m_FIL.size(); }
-	const PARTITION& Partition(size_t n) const { return m_FIL[n]; }
+	size_t SurfacePartitions() const { return m_FIL.size(); }
+	const SURFACE_PARTITION& SurfacePartition(size_t n) const { return m_FIL[n]; }
 
-	size_t EILs() const { return m_EIL.size(); }
-	const std::pair<int, int>& EIL(size_t n) const { return m_EIL[n]; }
+	size_t EdgePartitions() const { return m_EIL.size(); }
+	const EDGE_PARTITION& EdgePartition(size_t n) const { return m_EIL[n]; }
 
 public:
 	int	AddNode(const vec3f& r, int groupID = 0);
@@ -178,8 +185,8 @@ protected:
 	vector<FACE>	m_Face;
 
 private:
-	vector<PARTITION>		m_FIL;
-	vector<pair<int, int> >	m_EIL;
+	vector<SURFACE_PARTITION>	m_FIL;
+	vector<EDGE_PARTITION>		m_EIL;
 
 	bool m_isModified = false;
 	bool m_hasNeighborList = false;

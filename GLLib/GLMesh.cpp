@@ -293,7 +293,7 @@ void GLMesh::AddEdge(const vec3f& a, const vec3f& b)
 
 int GLMesh::AddFace(const GLMesh::FACE& face)
 {
-	if (m_FIL.empty()) NewPartition();
+	if (m_FIL.empty()) NewSurfacePartition();
 	auto& fil = m_FIL.back();
 	fil.nf++;
 	m_Face.push_back(face);
@@ -302,9 +302,9 @@ int GLMesh::AddFace(const GLMesh::FACE& face)
 	return ((int)m_Face.size() - 1);
 }
 
-void GLMesh::NewPartition(int tag)
+void GLMesh::NewSurfacePartition(int tag)
 {
-	PARTITION p;
+	SURFACE_PARTITION p;
 	p.n0 = m_Face.size();
 	p.nf = 0;
 	p.tag = tag;
@@ -849,14 +849,14 @@ void GLMesh::Update(bool updateNormals)
 		m_EIL.resize(EID);
 		if (EID > 0)
 		{
-			for (int i=0; i<EID; ++i) m_EIL[i].second = 0;
+			for (int i=0; i<EID; ++i) m_EIL[i].ne = 0;
 			for (int i=0; i<NE; ++i)
 			{
 				EDGE& e = m_Edge[i];
-				if (e.pid >= 0) m_EIL[e.pid].second += 1;
+				if (e.pid >= 0) m_EIL[e.pid].ne += 1;
 			}
-			m_EIL[0].first = 0;
-			for (int i=1; i<EID; ++i) m_EIL[i].first = m_EIL[i-1].first + m_EIL[i-1].second;
+			m_EIL[0].n0 = 0;
+			for (int i=1; i<EID; ++i) m_EIL[i].n0 = m_EIL[i-1].n0 + m_EIL[i-1].ne;
 		}
 
 		for (int i = 0; i < NE; ++i)
@@ -871,115 +871,6 @@ void GLMesh::Update(bool updateNormals)
 	if (!m_hasNeighborList) FindNeighbors();
 	if (updateNormals) UpdateNormals();
 }
-
-/*
-void GLMesh::Extrude(double d, vec3d t)
-{
-	int i;
-
-	int N = Nodes();
-	int E = Edges();
-	int F = Faces();
-
-	// find max node ID
-	int NID = -1;
-	for (i=0; i<N; ++i) if (m_Node[i].pid > NID) NID = m_Node[i].pid;
-
-	int m = 0;
-	for (i=0; i<N; ++i) m_Node[i].tag = -1;
-	for (i=0; i<E; ++i)
-	{
-		EDGE& e = m_Edge[i];
-		m_Node[e.n[0]].tag = 1;
-		m_Node[e.n[1]].tag = 1;
-	}
-	for (i=0; i<N; ++i)
-	{
-		NODE& ni = m_Node[i];
-		if ((ni.tag != -1)&&(ni.pid != -1)) ni.tag = m++;
-	}
-
-	// copy nodes
-	m_Node.reserve(2*N);
-	for (i=0; i<N; ++i)
-	{
-		NODE n = m_Node[i];
-		n.r += t*d;
-		if (n.pid != -1) n.pid += NID;
-		m_Node.push_back(n);
-	}
-
-	// find max edge ID
-	int EID = -1;
-	for (i=0; i<E; ++i) if (m_Edge[i].pid > EID) EID = m_Edge[i].pid;
-
-	// copy edges
-	m_Edge.reserve(2*E+N);
-	for (i=0; i<E; ++i)
-	{
-		EDGE e = m_Edge[i];
-		e.n[0] += N;
-		e.n[1] += N;
-		e.pid += EID+1;
-		m_Edge.push_back(e);
-	}
-
-	for (i=0; i<N; ++i)
-	{
-		NODE& n = m_Node[i];
-		if ((n.pid != -1) && (n.tag != -1))
-		{
-			EDGE e = m_Edge[i];
-			e.n[1] = e.n[0] + N;
-			e.pid = 2*(EID+1) + n.tag;
-			m_Edge.push_back(e);
-		}
-	}
-
-	// find max face ID
-	int FID = -1;
-	for (i=0; i<F; ++i) if (m_Face[i].pid > FID) FID = m_Face[i].pid;
-
-	// create new top-surfaces
-	m_Face.reserve(2*F + 2*E);
-
-	for (i=0; i<F; ++i)
-	{
-		FACE f = m_Face[i];
-		f.pid += FID+1;
-		f.sid += 1;
-		f.n[0] += N;
-		f.n[1] += N;
-		f.n[2] += N;
-		m_Face.push_back(f);
-	}
-
-	for (i=F; i<2*F; ++i) if (m_Face[i].pid > FID) FID = m_Face[i].pid;
-
-	// create new side-faces
-	for (i=0; i<E; ++i)
-	{
-		EDGE& e = m_Edge[i];
-
-		FACE f;
-		f.pid = e.pid + FID + 1;
-		f.sid = f.pid;
-		f.n[0] = e.n[0];
-		f.n[1] = e.n[1];
-		f.n[2] = e.n[1] + N;
-		m_Face.push_back(f);
-
-		f.sid = f.pid;
-		f.n[0] = e.n[1] + N;
-		f.n[1] = e.n[0] + N;
-		f.n[2] = e.n[0];
-		m_Face.push_back(f);
-	}
-
-	Update();
-	UpdateNormals();
-}
-*/
 
 void GLMesh::UpdateBoundingBox()
 {

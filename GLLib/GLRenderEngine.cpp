@@ -327,7 +327,7 @@ void GLRenderEngine::renderGMeshOutline(const GLCamera& cam, const GLMesh& gmsh,
 	// this array will collect all points to render
 	vector<vec3f> points; points.reserve(1024);
 
-	const GLMesh::PARTITION& part = gmsh.Partition(surfID);
+	const GLMesh::SURFACE_PARTITION& part = gmsh.SurfacePartition(surfID);
 	int NF = part.nf;
 	if (NF > 0)
 	{

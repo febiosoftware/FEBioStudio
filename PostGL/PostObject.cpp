@@ -119,7 +119,7 @@ void CPostObject::BuildFERenderMesh()
 	{
 		std::deque<int>::iterator it = faceList[i].begin();
 		GFace* pf = Face(i);
-		gm.NewPartition(pf->m_nPID[1] == -1 ? 0 : 1);
+		gm.NewSurfacePartition(pf->m_nPID[1] == -1 ? 0 : 1);
 		for (auto n : faceList[i])
 		{
 			const FSFace& face = pm->Face(n);
@@ -154,7 +154,7 @@ void CPostObject::BuildFERenderMesh()
 	for (int i = 0; i < nsurf; ++i)
 	{
 		Post::GLSurface& surf = InteralSurface(i);
-		gm.NewPartition();
+		gm.NewSurfacePartition();
 		for (int j = 0; j < surf.Faces(); ++j)
 		{
 			FSFace& face = surf.Face(j);

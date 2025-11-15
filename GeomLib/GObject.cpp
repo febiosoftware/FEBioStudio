@@ -253,7 +253,7 @@ void GObject::BuildFERenderMesh()
 		for (int i = 0; i < nsurf; i++)
 		{
 			std::deque<int>::iterator it = faceList[i].begin();
-			gm.NewPartition();
+			gm.NewSurfacePartition();
 			for (auto n : faceList[i])
 			{
 				const FSFace& face = pm->Face(n);
@@ -316,7 +316,7 @@ void GObject::BuildFERenderMesh()
 	for (int i = 0; i < nparts; ++i)
 	{
 		int ne = (int)partElems[i].size();
-		gm.NewPartition();
+		gm.NewSurfacePartition();
 		for (auto it = partElems[i].begin(); it != partElems[i].end(); ++it)
 		{
 			FSElement& el = pm->Element(*it); assert(el.IsVisible());

@@ -42,8 +42,8 @@ namespace rhi {
 			assert(gmsh);
 			if (gmsh == nullptr) return false;
 
-			assert(gmsh->Partitions() > 0);
-			if (gmsh->Partitions() == 0) return false;
+			assert(gmsh->SurfacePartitions() > 0);
+			if (gmsh->SurfacePartitions() == 0) return false;
 
 			int NF = gmsh->Faces();
 			if (NF == 0) return false;
@@ -58,9 +58,9 @@ namespace rhi {
 			submeshes.emplace_back(std::make_unique<SubMesh>(this, 0, NV));
 
 			// add all the partitions
-			for (size_t partition = 0; partition < gmsh->Partitions(); ++partition)
+			for (size_t partition = 0; partition < gmsh->SurfacePartitions(); ++partition)
 			{
-				const GLMesh::PARTITION& part = gmsh->Partition(partition);
+				const GLMesh::SURFACE_PARTITION& part = gmsh->SurfacePartition(partition);
 				for (int i = 0; i < part.nf; ++i)
 				{
 					const GLMesh::FACE& f = gmsh->Face(i + part.n0);

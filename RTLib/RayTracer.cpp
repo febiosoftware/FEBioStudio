@@ -412,10 +412,10 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, bool cacheMesh)
 
 void RayTracer::renderGMesh(const GLMesh& gmesh, int surfId, bool cacheMesh)
 {
-	if ((surfId < 0) || (surfId >= gmesh.Partitions())) return;
+	if ((surfId < 0) || (surfId >= gmesh.SurfacePartitions())) return;
 	gl::Matrix4 mv = currentTransform();
 
-	const GLMesh::PARTITION& p = gmesh.Partition(surfId);
+	const GLMesh::SURFACE_PARTITION& p = gmesh.SurfacePartition(surfId);
 	for (int i = 0; i < p.nf; ++i)
 	{
 		const GLMesh::FACE& face = gmesh.Face(p.n0 + i);
@@ -464,14 +464,14 @@ void RayTracer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 
 void RayTracer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cacheMesh)
 {
-	if ((partition < 0) || (partition >= mesh.EILs())) return;
+	if ((partition < 0) || (partition >= mesh.EdgePartitions())) return;
 
 	gl::Matrix4 mv = currentTransform();
-	const std::pair<int, int> p = mesh.EIL(partition);
-	int NE = p.second;
+	const GLMesh::EDGE_PARTITION& p = mesh.EdgePartition(partition);
+	int NE = p.ne;
 	for (int i = 0; i < NE; ++i)
 	{
-		const GLMesh::EDGE& edge = mesh.Edge(i + p.first);
+		const GLMesh::EDGE& edge = mesh.Edge(i + p.n0);
 		rt::Line line;
 		for (int j = 0; j < 2; ++j)
 		{

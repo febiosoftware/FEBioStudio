@@ -48,7 +48,7 @@ namespace rhi {
 			Vertex* v = vertexData.data();
 			unsigned int vertexCount = 0;
 
-			if (gmsh->EILs() == 0)
+			if (gmsh->EdgePartitions() == 0)
 			{ 
 				for (int i = 0; i < NE; ++i)
 				{
@@ -64,11 +64,11 @@ namespace rhi {
 			else
 			{
 				unsigned int vertexCount = 0;
-				for (int n = 0; n < gmsh->EILs(); ++n)
+				for (int n = 0; n < gmsh->EdgePartitions(); ++n)
 				{
-					const std::pair<int, int>& edge = gmsh->EIL(n);
-					for (int i = 0; i < edge.second; ++i) {
-						const GLMesh::EDGE& e = gmsh->Edge(i + edge.first);
+					const GLMesh::EDGE_PARTITION& edge = gmsh->EdgePartition(n);
+					for (int i = 0; i < edge.ne; ++i) {
+						const GLMesh::EDGE& e = gmsh->Edge(i + edge.n0);
 						for (int j = 0; j < 2; ++j, ++v) {
 							GLMesh::NODE nd;
 							nd.r = e.vr[j];
@@ -76,8 +76,8 @@ namespace rhi {
 							(*v) = nd;
 						}
 					}
-					submeshes.emplace_back(new SubMesh(this, vertexCount, (unsigned int)edge.second*2));
-					vertexCount += (unsigned int)edge.second*2;
+					submeshes.emplace_back(new SubMesh(this, vertexCount, (unsigned int)edge.ne*2));
+					vertexCount += (unsigned int)edge.ne*2;
 				}
 			}
 			create(NV, sizeof(Vertex), vertexData.data());

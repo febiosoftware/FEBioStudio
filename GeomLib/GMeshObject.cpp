@@ -868,7 +868,7 @@ void GMeshObject::BuildGMesh()
 
 	for (int i = 0; i < Faces(); ++i)
 	{
-		gmesh->NewPartition();
+		gmesh->NewSurfacePartition();
 		for (int l : faceList[i])
 		{
 			FSFace& fs = pm->Face(l);

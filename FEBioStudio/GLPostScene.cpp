@@ -385,7 +385,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 	std::deque<int> visibleSurfaces;
 	for (int i = 0; i < po->Faces(); ++i)
 	{
-		const GLMesh::PARTITION& p = mesh->Partition(i);
+		const GLMesh::SURFACE_PARTITION& p = mesh->SurfacePartition(i);
 		if (p.nf > 0)
 		{
 			int n0 = p.n0;
@@ -407,7 +407,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 
 	for (int i : visibleSurfaces)
 	{
-		const GLMesh::PARTITION& p = mesh->Partition(i);
+		const GLMesh::SURFACE_PARTITION& p = mesh->SurfacePartition(i);
 		int n0 = p.n0;
 		int matID = mesh->Face(n0).mid;
 		Post::Material& mat = *ps->GetMaterial(matID);
@@ -463,9 +463,9 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 
 	// find the visible surfaces and sort them so that transparent surfaces are rendered last.
 	std::deque<int> visibleSurfaces;
-	for (int i = 0; i < mesh->Partitions(); ++i)
+	for (int i = 0; i < mesh->SurfacePartitions(); ++i)
 	{
-		const GLMesh::PARTITION& p = mesh->Partition(i);
+		const GLMesh::SURFACE_PARTITION& p = mesh->SurfacePartition(i);
 		if ((p.nf > 0) && (renderInnerSurfaces || (p.tag == 0)))
 		{
 			int n0 = p.n0;
@@ -487,7 +487,7 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 
 	for (int i : visibleSurfaces)
 	{
-		const GLMesh::PARTITION& p = mesh->Partition(i);
+		const GLMesh::SURFACE_PARTITION& p = mesh->SurfacePartition(i);
 		int n0 = p.n0;
 		int matID = mesh->Face(n0).mid;
 		Post::Material& mat = *ps->GetMaterial(matID);
