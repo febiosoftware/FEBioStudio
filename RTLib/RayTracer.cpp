@@ -150,6 +150,7 @@ RayTracer::RayTracer()
 	AddIntParam(0, "Width");
 	AddIntParam(0, "Height");
 	AddBoolParam(true, "Shadows");
+	AddDoubleParam(0.8, "Shadow strength");
 	AddChoiceParam(0, "Multisample")->SetEnumNames(" Off\0 2x2\0 3x3\0 4x4\0");
 	AddChoiceParam(0, "Background")->SetEnumNames("Default\0Transparent\0");
 #ifndef NDEBUG
@@ -877,6 +878,9 @@ rt::Fragment RayTracer::castRay(Ray& ray)
 	}
 	bool intersectMesh = intersect(ray, q);
 	bool renderShadows = GetBoolValue(SHADOWS);
+	double shadowFactor = 1 - GetFloatValue(SHADOW_STRENGTH);
+	if (shadowFactor < 0) shadowFactor = 0;
+	else if (shadowFactor > 1) shadowFactor = 1;
 
 	if (intersectMesh)
 	{
@@ -966,14 +970,12 @@ rt::Fragment RayTracer::castRay(Ray& ray)
 				if (intersect(ray2, q2)) isOccluded = true;
 			}
 
-			if (!isOccluded)
-			{
-				// diffuse component
-				double f = N * L;
-				if (f < 0) f = 0;
-				Color diffuse = c * f;
-				frag.color += diffuse*lightDiffuse;
-			}
+			// diffuse component
+			f = N * L;
+			if (f < 0) f = 0;
+			if (isOccluded) f *= shadowFactor;
+			Color diffuse = c * f;
+			frag.color += diffuse*lightDiffuse;
 		}
 		else frag.color = c;
 
