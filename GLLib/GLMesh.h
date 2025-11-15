@@ -99,7 +99,11 @@ public:
 
 	void NewSurfacePartition(int tag = 0);
 
-	void AutoPartition();
+	void NewEdgePartition(int tag = 0);
+
+	void AutoSurfacePartition();
+
+	void AutoEdgePartition();
 
 	void Update(bool updateNormals = true);
 
@@ -169,6 +173,8 @@ public:
 protected:
 	void FindNeighbors();
 
+	bool ValidatePartitions();
+
 public:
 	void UpdateBoundingBox();
 	void UpdateNormals();
@@ -177,6 +183,7 @@ public:
 
 private:
 	int AddFace(const FACE& face);
+	int AddEdge(const EDGE& edge);
 
 protected:
 	BOX				m_box;

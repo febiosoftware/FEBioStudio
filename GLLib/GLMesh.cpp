@@ -117,7 +117,7 @@ void GLMesh::AddEdge(int n0, int n1, int groupID)
 	e.c[0] = Node(n0).c;
 	e.c[1] = Node(n1).c;
 	e.pid = groupID;
-	m_Edge.push_back(e);
+	AddEdge(e);
 }
 
 void GLMesh::AddEdge(int* n, int nodes, int gid)
@@ -133,7 +133,7 @@ void GLMesh::AddEdge(int* n, int nodes, int gid)
 		e.c[1] = Node(n[1]).c;
 
 		e.pid = gid;
-		m_Edge.push_back(e);
+		AddEdge(e);
 	}
 	else if (nodes == 3)
 	{
@@ -144,7 +144,7 @@ void GLMesh::AddEdge(int* n, int nodes, int gid)
 		e.c[0] = Node(n[0]).c;
 		e.c[1] = Node(n[2]).c;
 		e.pid = gid;
-		m_Edge.push_back(e);
+		AddEdge(e);
 
 		e.n[0] = n[2];
 		e.n[1] = n[1];
@@ -154,7 +154,7 @@ void GLMesh::AddEdge(int* n, int nodes, int gid)
 		e.c[1] = Node(n[1]).c;
 
 		e.pid = gid;
-		m_Edge.push_back(e);
+		AddEdge(e);
 	}
 	else if (nodes == 4)
 	{
@@ -166,7 +166,7 @@ void GLMesh::AddEdge(int* n, int nodes, int gid)
 		e.c[1] = Node(n[2]).c;
 
 		e.pid = gid;
-		m_Edge.push_back(e);
+		AddEdge(e);
 
 		e.n[0] = n[2];
 		e.n[1] = n[3];
@@ -176,7 +176,7 @@ void GLMesh::AddEdge(int* n, int nodes, int gid)
 		e.c[1] = Node(n[3]).c;
 
 		e.pid = gid;
-		m_Edge.push_back(e);
+		AddEdge(e);
 
 		e.n[0] = n[3];
 		e.n[1] = n[1];
@@ -186,7 +186,7 @@ void GLMesh::AddEdge(int* n, int nodes, int gid)
 		e.c[1] = Node(n[1]).c;
 
 		e.pid = gid;
-		m_Edge.push_back(e);
+		AddEdge(e);
 	}
 	else assert(false);
 	setModified(true);
@@ -203,7 +203,7 @@ void GLMesh::AddEdge(vec3f* r, int nodes, int gid)
 		e.vr[0] = r[0];
 		e.vr[1] = r[1];
 		e.pid = gid;
-		m_Edge.push_back(e);
+		AddEdge(e);
 	}
 	else if (nodes == 3)
 	{
@@ -212,14 +212,14 @@ void GLMesh::AddEdge(vec3f* r, int nodes, int gid)
 		e.vr[0] = r[0];
 		e.vr[1] = r[2];
 		e.pid = gid;
-		m_Edge.push_back(e);
+		AddEdge(e);
 
 		e.n[0] = AddNode(r[2]);
 		e.n[1] = AddNode(r[1]);
 		e.vr[0] = r[2];
 		e.vr[1] = r[1];
 		e.pid = gid;
-		m_Edge.push_back(e);
+		AddEdge(e);
 	}
 	else if (nodes == 4)
 	{
@@ -228,21 +228,21 @@ void GLMesh::AddEdge(vec3f* r, int nodes, int gid)
 		e.vr[0] = r[0];
 		e.vr[1] = r[2];
 		e.pid = gid;
-		m_Edge.push_back(e);
+		AddEdge(e);
 
 		e.n[0] = AddNode(r[2]);
 		e.n[1] = AddNode(r[3]);
 		e.vr[0] = r[2];
 		e.vr[1] = r[3];
 		e.pid = gid;
-		m_Edge.push_back(e);
+		AddEdge(e);
 
 		e.n[0] = AddNode(r[3]);
 		e.n[1] = AddNode(r[1]);
 		e.vr[0] = r[3];
 		e.vr[1] = r[1];
 		e.pid = gid;
-		m_Edge.push_back(e);
+		AddEdge(e);
 	}
 	else assert(false);
 	setModified(true);
@@ -258,7 +258,7 @@ void GLMesh::AddEdge(vec3f r[2], GLColor c)
 	e.vr[1] = r[1];
 	e.c[0] = e.c[1] = c;
 	e.pid = 0;
-	m_Edge.push_back(e);
+	AddEdge(e);
 	setModified(true);
 	m_hasNeighborList = false;
 }
@@ -273,7 +273,7 @@ void GLMesh::AddEdge(vec3f r[2], GLColor c[2])
 	e.c[0] = c[0];
 	e.c[1] = c[1];
 	e.pid = 0;
-	m_Edge.push_back(e);
+	AddEdge(e);
 	setModified(true);
 	m_hasNeighborList = false;
 }
@@ -286,7 +286,7 @@ void GLMesh::AddEdge(const vec3f& a, const vec3f& b)
 	e.vr[0] = a;
 	e.vr[1] = b;
 	e.pid = 0;
-	m_Edge.push_back(e);
+	AddEdge(e);
 	setModified(true);
 	m_hasNeighborList = false;
 }
@@ -302,6 +302,17 @@ int GLMesh::AddFace(const GLMesh::FACE& face)
 	return ((int)m_Face.size() - 1);
 }
 
+int GLMesh::AddEdge(const EDGE& edge)
+{
+	if (m_EIL.empty()) NewEdgePartition();
+	auto& eil = m_EIL.back();
+	eil.ne++;
+	m_Edge.push_back(edge);
+	setModified(true);
+	m_hasNeighborList = false;
+	return ((int)m_Edge.size() - 1);
+}
+
 void GLMesh::NewSurfacePartition(int tag)
 {
 	SURFACE_PARTITION p;
@@ -309,6 +320,15 @@ void GLMesh::NewSurfacePartition(int tag)
 	p.nf = 0;
 	p.tag = tag;
 	m_FIL.push_back(p);
+}
+
+void GLMesh::NewEdgePartition(int tag)
+{
+	EDGE_PARTITION p;
+	p.n0 = m_Edge.size();
+	p.ne = 0;
+	p.tag = tag;
+	m_EIL.push_back(p);
 }
 
 int GLMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext, int faceId, int elemId, int mat)
@@ -792,17 +812,17 @@ bool CmpEdge(GLMesh::EDGE e1, GLMesh::EDGE e2)
 	return (e1.pid < e2.pid);
 }
 
-void GLMesh::AutoPartition()
+void GLMesh::AutoSurfacePartition()
 {
-	int NF = m_Face.size();
 	m_FIL.clear();
-	if (NF == 0) return;
+	if (m_Face.empty()) return;
 
 	// sort the face list by pid
 	stable_sort(m_Face.begin(), m_Face.end(), CmpFace);
 
 	// find the largest PID value
 	// since the faces are sorted, this is the last one
+	int NF = m_Face.size();
 	int FID = m_Face[NF-1].pid + 1;
 
 	// find the start index and length of each surface
@@ -819,9 +839,58 @@ void GLMesh::AutoPartition()
 	setModified(true);
 }
 
+void GLMesh::AutoEdgePartition()
+{
+	m_EIL.clear();
+	if (m_Edge.empty()) return;
+
+	// sort the edge list by pid
+	stable_sort(m_Edge.begin(), m_Edge.end(), CmpEdge);
+
+	// find the largest PID value
+	// since the edges are sorted, this is the last one
+	int NE = (int)m_Edge.size();
+	int EID = m_Edge[NE - 1].pid + 1;
+
+	// find the start index and length of each edge
+	m_EIL.resize(EID);
+	if (EID > 0)
+	{
+		for (int i = 0; i < EID; ++i) m_EIL[i].ne = 0;
+		for (int i = 0; i < NE; ++i)
+		{
+			EDGE& e = m_Edge[i];
+			if (e.pid >= 0) m_EIL[e.pid].ne += 1;
+		}
+		m_EIL[0].n0 = 0;
+		for (int i = 1; i < EID; ++i) m_EIL[i].n0 = m_EIL[i - 1].n0 + m_EIL[i - 1].ne;
+	}
+}
+
+bool GLMesh::ValidatePartitions()
+{
+	if (m_FIL.empty()) return false;
+	for (int i=0; i<m_FIL.size(); ++i)
+	{ 
+		int n0 = m_FIL[i].n0;
+		int nf = m_FIL[i].nf;
+		if ((n0 < 0) || (n0 + nf > m_Face.size())) return false;
+	}
+
+	if (m_EIL.empty()) return false;
+	for (int i = 0; i < m_EIL.size(); ++i)
+	{
+		int n0 = m_EIL[i].n0;
+		int ne = m_EIL[i].ne;
+		if ((n0 < 0) || (n0 + ne > m_Edge.size())) return false;
+	}
+
+	return true;
+}
+
 void GLMesh::Update(bool updateNormals)
 {
-	if (m_FIL.empty()) AutoPartition();
+	if (m_FIL.empty()) AutoSurfacePartition();
 
 	int NF = (int) m_Face.size();
 	if (NF)
@@ -835,30 +904,11 @@ void GLMesh::Update(bool updateNormals)
 		}
 	}
 
+	if (m_EIL.empty()) AutoEdgePartition();
+
 	int NE = (int)m_Edge.size();
 	if (NE)
 	{
-		// sort the edge list by pid
-		stable_sort(m_Edge.begin(), m_Edge.end(), CmpEdge);
-
-		// find the largest PID value
-		// since the edges are sorted, this is the last one
-		int EID = m_Edge[NE-1].pid + 1;
-
-		// find the start index and length of each edge
-		m_EIL.resize(EID);
-		if (EID > 0)
-		{
-			for (int i=0; i<EID; ++i) m_EIL[i].ne = 0;
-			for (int i=0; i<NE; ++i)
-			{
-				EDGE& e = m_Edge[i];
-				if (e.pid >= 0) m_EIL[e.pid].ne += 1;
-			}
-			m_EIL[0].n0 = 0;
-			for (int i=1; i<EID; ++i) m_EIL[i].n0 = m_EIL[i-1].n0 + m_EIL[i-1].ne;
-		}
-
 		for (int i = 0; i < NE; ++i)
 		{
 			EDGE& edge = m_Edge[i];
@@ -867,6 +917,8 @@ void GLMesh::Update(bool updateNormals)
 		}
 	}
 
+	assert(ValidatePartitions());
+
 	UpdateBoundingBox();
 	if (!m_hasNeighborList) FindNeighbors();
 	if (updateNormals) UpdateNormals();
@@ -874,15 +926,9 @@ void GLMesh::Update(bool updateNormals)
 
 void GLMesh::UpdateBoundingBox()
 {
-	m_box.x0 = m_box.y0 = m_box.z0 = 0.0;
-	m_box.x1 = m_box.y1 = m_box.z1 = 0.0;
-
+	m_box.m_valid = false;
 	if (Nodes() > 0)
 	{
-		m_box.x0 = m_box.x1 = m_Node[0].r.x;
-		m_box.y0 = m_box.y1 = m_Node[0].r.y;
-		m_box.z0 = m_box.z1 = m_Node[0].r.z;
-
 		int N = (int) m_Node.size();
 		for (int i=0; i<N; ++i) m_box += to_vec3d(m_Node[i].r);
 	}
