@@ -691,8 +691,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			}
 			else
 			{
-				if (m_y1 > y) cam.Zoom(0.95f);
-				if (m_y1 < y) cam.Zoom(1.0f / 0.95f);
+				double f = 1.0 + 0.003 * (y - m_y1);
+				cam.Zoom(f);
 			}
 
 			update();
