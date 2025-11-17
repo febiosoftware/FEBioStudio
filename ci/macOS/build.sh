@@ -23,7 +23,8 @@ main() {
     git clone --depth 1 https://github.com/febiosoftware/FEBio.git
     cmake -L . -B cmbuild \
         -DFEBioDir=FEBio \
-        -DOMP_INC=/Users/gitRunner/local/x86_64/homebrew/opt/libomp/include
+        -DOMP_INC=/Users/gitRunner/local/x86_64/homebrew/opt/libomp/include \
+        -DCMAKE_OSX_ARCHITECTURES=x86_64
     pushd cmbuild
     make -j $(sysctl -n hw.ncpu)
     popd
