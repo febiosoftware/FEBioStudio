@@ -1427,7 +1427,7 @@ void FSMeshBuilder::PartitionElementSelection(int gid)
 						{
 							FSFace fj = el.GetFace(j);
 							fj.m_gid = -1;
-							m_mesh.m_Face.push_back(fj);
+							m_mesh.AddFace(fj);
 							newFaces++;
 						}
 					}

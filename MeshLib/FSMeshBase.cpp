@@ -146,7 +146,12 @@ FSNodeFaceList& FSMeshBase::NodeFaceList()
 	return m_NFL; 
 }
 
-//-----------------------------------------------------------------------------
+void FSMeshBase::AddFace(const FSFace& face)
+{
+	m_Face.push_back(face);
+	m_NFL.Clear();
+}
+
 // Remove faces with tag ntag
 void FSMeshBase::RemoveFaces(int ntag)
 {

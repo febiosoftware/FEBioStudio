@@ -415,6 +415,8 @@ void FSElement_::GetFace(int i, FSFace& f) const
 		case 3: n[0] = m[2]; n[1] = m[1]; n[2] = m[0]; n[3] = m[7]; n[4] = m[6]; n[5] = m[ 5]; n[6] = m[ 4]; n[7] = m[ 9]; n[8] = m[ 8]; n[9] = m[19]; break;
 		}
 		break;
+	default:
+		assert(false);
 	}
 }
 

@@ -131,6 +131,8 @@ protected:
 	//! Remove faces with specified tag
 	void RemoveFaces(int ntag);
 
+	void AddFace(const FSFace& face);
+
 protected:
 	//! Vector of FE faces
 	std::vector<FSFace>		m_Face;
