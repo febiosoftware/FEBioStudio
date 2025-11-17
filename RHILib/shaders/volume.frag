@@ -15,6 +15,7 @@ layout(std140, binding = 0) uniform GlobalBlock {
     vec4 specColor;
     vec4 clipPlane;
     int lightEnabled;
+    float pointSize;
 } glob;
 
 // volume render settings

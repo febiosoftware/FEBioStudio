@@ -492,7 +492,7 @@ public:
 		m_data.setInt(2, (m.mat.type == GLMaterial::HIGHLIGHT) || (m.mat.type == GLMaterial::GLASS) ? 1 : 0);
 		m_data.setInt(3, (m.doClipping ? 1 : 0));
 		m_data.setInt(4, (m.mat.type == GLMaterial::HIGHLIGHT) || (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0 : 1);
-		m_data.setInt(5, (m.mat.type == GLMaterial::VERTEX_COLOR) ? 1 : 0);
+		m_data.setInt(5, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR) ? 1 : 0);
 	}
 };
 

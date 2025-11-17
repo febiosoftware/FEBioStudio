@@ -38,7 +38,8 @@ void GlobalUniformBlock::create(QRhi* rhi)
 		{ rhi::UniformBlock::VEC4, "diffuse"},
 		{ rhi::UniformBlock::VEC4, "specColor"},
 		{ rhi::UniformBlock::VEC4, "clipPlane"},
-		{ rhi::UniformBlock::INT , "lightEnabled"}
+		{ rhi::UniformBlock::INT , "lightEnabled"},
+		{ rhi::UniformBlock::FLOAT, "pointSize"}
 	});
 
 	m_ub.setVec4(LIGHTSPEC, GLColor::White());
@@ -79,6 +80,12 @@ void GlobalUniformBlock::setClipPlane(const float f[4]) { m_ub.setVec4(CLIPPLANE
 void GlobalUniformBlock::setLightEnabled(bool b)
 {
 	m_ub.setInt(LIGHTON, b ? 1 : 0);
+}
+
+void GlobalUniformBlock::setPointSize(float s)
+{
+	if (s < 1.0f) s = 1.0f;
+	m_ub.setFloat(POINTSIZE, s);
 }
 
 void GlobalUniformBlock::update(QRhiResourceUpdateBatch* u)
@@ -277,6 +284,11 @@ void rhiRenderer::setLightEnabled(unsigned int lightIndex, bool b)
 	m_global.setLightEnabled(b);
 }
 
+void rhiRenderer::setPointSize(float s)
+{
+	m_global.setPointSize(s);
+}
+
 void rhiRenderer::setProjection(double fov, double fnear, double far)
 {
 	m_projMatrix = m_rhi->clipSpaceCorrMatrix();
@@ -351,9 +363,10 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 void rhiRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 {
 	rhi::SubMesh* pm = nullptr;
-	if (m_currentMat.type == GLMaterial::OVERLAY)
+	if ((m_currentMat.type == GLMaterial::OVERLAY) || ((m_currentMat.type == GLMaterial::HIGHLIGHT)))
 	{
-		// TODO: implement this
+		rhi::Mesh* rm = m_solidOverlayPass->addGLMesh(mesh, cacheMesh);
+		if (rm) pm = m_solidOverlayPass->getSubMesh(*rm, surfId);
 	}
 	else
 	{

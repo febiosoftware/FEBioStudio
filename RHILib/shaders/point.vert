@@ -17,6 +17,7 @@ layout(std140, binding = 0) uniform GlobalBlock {
     vec4 specColor;
     vec4 clipPlane;
     int lightEnabled;
+    float pointSize;
 } glob;
 
 // mesh-specific block
@@ -34,5 +35,5 @@ void main()
     v_pos = (mesh.mv*vec4(pos,1)).xyz;
     v_col = col;
     gl_Position = r;
-    gl_PointSize = 3.f;
+    gl_PointSize = glob.pointSize;
 }

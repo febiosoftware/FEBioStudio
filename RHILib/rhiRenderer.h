@@ -42,7 +42,7 @@ using dseconds = duration<double>;
 class GlobalUniformBlock
 {
 public:
-	enum { PROJMATRIX, LIGHTPOS, LIGHTAMB, LIGHTDIFF, LIGHTSPEC, CLIPPLANE, LIGHTON};
+	enum { PROJMATRIX, LIGHTPOS, LIGHTAMB, LIGHTDIFF, LIGHTSPEC, CLIPPLANE, LIGHTON, POINTSIZE};
 
 public:
 	GlobalUniformBlock() {}
@@ -60,6 +60,7 @@ public:
 	void setSpecularColor(GLColor c);
 	void setClipPlane(const float f[4]);
 	void setLightEnabled(bool b);
+	void setPointSize(float s);
 
 private:
 	rhi::UniformBlock m_ub;
@@ -115,6 +116,8 @@ public:
 	void setLightDiffuseColor(unsigned int lightIndex, const GLColor& col) override;
 	void setLightSpecularColor(unsigned int lightIndex, const GLColor& col) override;
 	void setLightEnabled(unsigned int lightIndex, bool b) override;
+
+	void setPointSize(float s) override;
 
 	void setClearColor(const GLColor& c) override;
 
