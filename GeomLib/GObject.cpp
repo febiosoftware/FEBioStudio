@@ -780,9 +780,22 @@ void GObject::Show()
 
 	// show all the parts
 	for (int i=0; i<Parts(); ++i) Part(i)->ShowItem();
+	for (int i=0; i<Faces(); ++i) Face(i)->ShowItem();
+	for (int i=0; i<Edges(); ++i) Edge(i)->ShowItem();
+	for (int i=0; i<Nodes(); ++i) Node(i)->ShowItem();
 
-	// Update visibility of child items
-	UpdateItemVisibility();
+	// Update visibility of mesh
+	FSMesh* mesh = GetFEMesh();
+	if (mesh)
+	{
+		int NE = mesh->Elements();
+		for (int i = 0; i < NE; ++i)
+		{
+			FSElement& el = mesh->Element(i);
+			el.Show();
+		}
+		mesh->UpdateItemVisibility();
+	}
 }
 
 //-----------------------------------------------------------------------------

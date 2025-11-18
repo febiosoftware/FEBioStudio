@@ -610,7 +610,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				{
 				case SELECT_EDGE: HighlightEdge(x, y); break;
 				case SELECT_NODE: HighlightNode(x, y); break;
-				case SELECT_FACE: HighlightSurface(x, y); break;
+				case SELECT_SURF: HighlightSurface(x, y); break;
 				case SELECT_PART: HighlightPart(x, y); break;
 				}
 			}
@@ -691,7 +691,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			}
 			else
 			{
-				double f = 1.0 + 0.003 * (y - m_y1);
+				double f = 1.0 + 0.004 * (y - m_y1);
 				cam.Zoom(f);
 			}
 
@@ -920,7 +920,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 						{
 						case SELECT_OBJECT  : m_select.SelectObjects (m_x0, m_y0); break;
 						case SELECT_PART    : m_select.SelectParts   (m_x0, m_y0); break;
-						case SELECT_FACE    : m_select.SelectSurfaces(m_x0, m_y0); break;
+						case SELECT_SURF    : m_select.SelectSurfaces(m_x0, m_y0); break;
 						case SELECT_EDGE    : m_select.SelectEdges   (m_x0, m_y0); break;
 						case SELECT_NODE    : m_select.SelectNodes   (m_x0, m_y0); break;
 						case SELECT_DISCRETE: m_select.SelectDiscrete(m_x0, m_y0); break;
@@ -993,7 +993,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 						{
 						case SELECT_OBJECT  : m_select.RegionSelectObjects (*preg); break;
 						case SELECT_PART    : m_select.RegionSelectParts   (*preg); break;
-						case SELECT_FACE    : m_select.RegionSelectSurfaces(*preg); break;
+						case SELECT_SURF    : m_select.RegionSelectSurfaces(*preg); break;
 						case SELECT_EDGE    : m_select.RegionSelectEdges   (*preg); break;
 						case SELECT_NODE    : m_select.RegionSelectNodes   (*preg); break;
 						case SELECT_DISCRETE: m_select.RegionSelectDiscrete(*preg); break;

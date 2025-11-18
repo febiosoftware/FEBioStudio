@@ -364,7 +364,7 @@ void Ui::CMainWindow::SetSelectionMode(int nselect)
 	{
 	case SELECT_OBJECT  : mainMenu->actionSelectObjects->trigger(); break;
 	case SELECT_PART    : mainMenu->actionSelectParts->trigger(); break;
-	case SELECT_FACE    : mainMenu->actionSelectSurfaces->trigger(); break;
+	case SELECT_SURF    : mainMenu->actionSelectSurfaces->trigger(); break;
 	case SELECT_EDGE    : mainMenu->actionSelectCurves->trigger(); break;
 	case SELECT_NODE    : mainMenu->actionSelectNodes->trigger(); break;
 	case SELECT_DISCRETE: mainMenu->actionSelectDiscrete->trigger(); break;

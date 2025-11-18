@@ -77,6 +77,7 @@ class GLObjectItem : public GLModelSceneItem
 {
 public:
 	GLObjectItem(CGLModelScene* scene, GObject* po);
+	~GLObjectItem();
 	void render(GLRenderEngine& re, GLContext& rc) override;
 
 	GObject* GetGObject() const { return m_po; }
@@ -87,49 +88,75 @@ public:
 private:
 	void RenderGObject(GLRenderEngine& re, GLContext& rc);
 
-	void RenderObject(GLRenderEngine& re, GLContext& rc);
+	void RenderNormals(GLRenderEngine& re, double scale);
+	void RenderSelection(GLRenderEngine& re);
+
+private:
+	GObject* m_po;
+	Transform m_renderTransform;
+};
+
+class GLObjectSurfaceItem : public GLModelSceneItem
+{
+public:
+	GLObjectSurfaceItem(CGLModelScene* scene, GObject* po) : GLModelSceneItem(scene), m_po(po) {}
+	~GLObjectSurfaceItem() {}
+
+	void BuildSurfaceMesh();
+	void BuildSurfaceFEMesh();
+
+	void render(GLRenderEngine& re, GLContext& rc) override;
+
+private:
+	void RenderGeomSurface(GLRenderEngine& re, GLContext& rc);
+	void RenderFEMeshSurface(GLRenderEngine& re, GLContext& rc);
+
 	void RenderSurfaceMeshFaces(GLRenderEngine& re, GLContext& rc);
-
-	void RenderParts(GLRenderEngine& re, GLContext& rc);
-	void RenderSurfaces(GLRenderEngine& re, GLContext& rc);
-	void RenderEdges(GLRenderEngine& re);
-	void RenderNodes(GLRenderEngine& re);
-	void RenderBeamParts(GLRenderEngine& re);
-	void RenderSurfaceMeshEdges(GLRenderEngine& re);
-
-	void RenderFEFacesFromGMesh(GLRenderEngine& re, GLContext& rc);
-	void RenderFEMeshByDefault(GLRenderEngine& re, GLContext& rc);
-	void RenderFEMeshByObjectColor(GLRenderEngine& re, GLContext& rc);
-	void RenderFEMeshByElementType(GLRenderEngine& re, GLContext& rc, GLMesh& mesh);
 
 	void RenderUnselectedBeamElements(GLRenderEngine& re);
 	void RenderSelectedFEElements(GLRenderEngine& re);
+
+	void RenderBeamParts(GLRenderEngine& re);
+	void RenderNodes(GLRenderEngine& re);
+
+	void RenderSurfaceMeshEdges(GLRenderEngine& re);
 	void RenderAllBeamElements(GLRenderEngine& re);
 	void RenderSelectedFEFaces(GLRenderEngine& re);
 	void RenderFEEdges(GLRenderEngine& re);
 	void RenderFENodes(GLRenderEngine& re, GLContext& rc);
 	void RenderSurfaceMeshNodes(GLRenderEngine& re, GLContext& rc);
-	void RenderNormals(GLRenderEngine& re, double scale);
 	void renderTaggedGMeshNodes(GLRenderEngine& re, const GLMesh& mesh, int tag);
 
-	void RenderSelection(GLRenderEngine& re);
-
 private:
-	void UpdateGMeshColor(GLMesh& msh);
-
-	void ColorByDefault     (GLMesh& msh);
-	void ColorByObject      (GLMesh& msh);
-	void ColorByMaterialType(GLMesh& msh);
-	void ColorByElementType (GLMesh& msh);
-	void ColorByPhysics     (GLMesh& msh);
-
-	void UpdateGFaceMaterials();
-
-private:
-	GObject* m_po;
-	Transform m_renderTransform;
 	std::vector<GLMaterial> m_mat; // material per face
-	bool	m_clearCache;
+	GObject* m_po = nullptr;
+	std::unique_ptr<GLMesh> m_surfMesh;
+	std::unique_ptr<GLMesh> m_surfFEMesh;
+};
+
+class GLMeshLinesItem : public GLModelSceneItem
+{
+public:
+	GLMeshLinesItem(CGLModelScene* scene, GObject* po) : GLModelSceneItem(scene), m_po(po) {}
+	void render(GLRenderEngine& re, GLContext& rc) override;
+
+private:
+	GObject* m_po = nullptr;
+};
+
+class GLFeatureEdgesItem : public GLModelSceneItem
+{
+public:
+	GLFeatureEdgesItem(CGLModelScene* scene, GObject* po);
+	~GLFeatureEdgesItem();
+	void render(GLRenderEngine& re, GLContext& rc) override;
+
+private:
+	void BuildRenderMesh();
+
+private:
+	GObject* m_po = nullptr;
+	std::unique_ptr<GLMesh> m_edgeMesh;
 };
 
 class GLDiscreteItem : public GLModelSceneItem
@@ -151,20 +178,6 @@ class GLSelectionBox : public GLModelSceneItem
 {
 public:
 	GLSelectionBox(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, GLContext& rc) override;
-};
-
-class GLMeshLinesItem : public GLModelSceneItem
-{
-public:
-	GLMeshLinesItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, GLContext& rc) override;
-};
-
-class GLFeatureEdgesItem : public GLModelSceneItem
-{
-public:
-	GLFeatureEdgesItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
 	void render(GLRenderEngine& re, GLContext& rc) override;
 };
 

@@ -47,7 +47,7 @@ enum TransformMode
 enum SelectionMode {
 	SELECT_OBJECT = 1,
 	SELECT_PART = 2,
-	SELECT_FACE = 3,
+	SELECT_SURF = 3,
 	SELECT_EDGE = 4,
 	SELECT_NODE = 5,
 	SELECT_DISCRETE = 6

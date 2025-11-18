@@ -520,6 +520,32 @@ void GLMesh::AddFace(vec3f r[3], vec3f n[3], float tex[3], GLColor c)
 	AddFace(face);
 }
 
+void GLMesh::AddFace(vec3f r[3], vec3f n[3], vec3f tex[3], GLColor c[3], int tag)
+{
+	int n0 = AddNode(r[0]);
+	int n1 = AddNode(r[1]);
+	int n2 = AddNode(r[2]);
+
+	FACE face;
+	face.n[0] = n0;
+	face.n[1] = n1;
+	face.n[2] = n2;
+	face.vn[0] = n[0];
+	face.vn[1] = n[1];
+	face.vn[2] = n[2];
+	face.vr[0] = r[0];
+	face.vr[1] = r[1];
+	face.vr[2] = r[2];
+	face.t[0] = tex[0];
+	face.t[1] = tex[1];
+	face.t[2] = tex[2];
+	face.c[0] = c[0];
+	face.c[1] = c[1];
+	face.c[2] = c[2];
+	face.tag = tag;
+	AddFace(face);
+}
+
 void GLMesh::AddFace(vec3f r[3], float t[3], GLColor c[3])
 {
 	int n0 = AddNode(r[0]);
@@ -802,12 +828,17 @@ void GLMesh::UpdateNormals()
 	setModified(true);
 }
 
-bool CmpFace(GLMesh::FACE f1, GLMesh::FACE f2)
+bool CmpFace(const GLMesh::FACE& f1, const GLMesh::FACE& f2)
 {
 	return (f1.pid < f2.pid);
 }
 
-bool CmpEdge(GLMesh::EDGE e1, GLMesh::EDGE e2)
+bool CmpFaceTag(const GLMesh::FACE& f1, const GLMesh::FACE& f2)
+{
+	return (f1.tag < f2.tag);
+}
+
+bool CmpEdge(const GLMesh::EDGE& e1, const GLMesh::EDGE& e2)
 {
 	return (e1.pid < e2.pid);
 }
@@ -835,6 +866,35 @@ void GLMesh::AutoSurfacePartition()
 	}
 	m_FIL[0].n0 = 0;
 	for (int i=1; i<FID; ++i) m_FIL[i].n0 = m_FIL[i-1].n0 + m_FIL[i-1].nf;
+
+	setModified(true);
+}
+
+// NOTE: This currently assumes that the face tags are contiguous integers starting from 0!
+void GLMesh::PartitionSurfaceByTags()
+{
+	m_FIL.clear();
+	if (m_Face.empty()) return;
+
+	// sort the face list by pid
+	stable_sort(m_Face.begin(), m_Face.end(), CmpFaceTag);
+
+	// find the largest PID value
+	// since the faces are sorted, this is the last one
+	int NF = m_Face.size();
+	int FID = m_Face[NF - 1].tag + 1;
+
+	// find the start index and length of each surface
+	m_FIL.resize(FID);
+	for (int i = 0; i < FID; ++i) m_FIL[i].nf = 0; 
+	for (int i = 0; i < NF; ++i)
+	{
+		FACE& f = m_Face[i];
+		m_FIL[f.tag].nf += 1;
+		m_FIL[f.tag].tag = f.tag;
+	}
+	m_FIL[0].n0 = 0;
+	for (int i = 1; i < FID; ++i) m_FIL[i].n0 = m_FIL[i - 1].n0 + m_FIL[i - 1].nf;
 
 	setModified(true);
 }
@@ -869,23 +929,33 @@ void GLMesh::AutoEdgePartition()
 
 bool GLMesh::ValidatePartitions()
 {
-	if (m_FIL.empty()) return false;
+	bool validated = true;
+	if (m_FIL.empty() && (!m_Face.empty())) validated = false;
 	for (int i=0; i<m_FIL.size(); ++i)
 	{ 
 		int n0 = m_FIL[i].n0;
 		int nf = m_FIL[i].nf;
-		if ((n0 < 0) || (n0 + nf > m_Face.size())) return false;
+		if ((n0 < 0) || (n0 + nf > m_Face.size()))
+		{
+			validated = false;
+			break;
+		}
 	}
 
-	if (m_EIL.empty()) return false;
+	if (m_EIL.empty() && (!m_Edge.empty())) validated = false;
 	for (int i = 0; i < m_EIL.size(); ++i)
 	{
 		int n0 = m_EIL[i].n0;
 		int ne = m_EIL[i].ne;
-		if ((n0 < 0) || (n0 + ne > m_Edge.size())) return false;
+		if ((n0 < 0) || (n0 + ne > m_Edge.size()))
+		{
+			validated = false;
+			break;
+		}
 	}
 
-	return true;
+	assert(validated);
+	return validated;
 }
 
 void GLMesh::Update(bool updateNormals)

@@ -918,7 +918,7 @@ void CModelDocument::UpdateSelection()
 		{
 		case SELECT_OBJECT: m_psel = new GObjectSelection(gm); break;
 		case SELECT_PART: m_psel = new GPartSelection(gm); break;
-		case SELECT_FACE: m_psel = new GFaceSelection(gm); break;
+		case SELECT_SURF: m_psel = new GFaceSelection(gm); break;
 		case SELECT_EDGE: m_psel = new GEdgeSelection(gm); break;
 		case SELECT_NODE: m_psel = new GNodeSelection(gm); break;
 		case SELECT_DISCRETE: m_psel = new GDiscreteSelection(gm); break;
@@ -1073,7 +1073,7 @@ void CModelDocument::SelectItems(FSObject* po, const std::vector<int>& l, int n)
 		{
 		case GO_NODE: SetSelectionMode(SELECT_NODE); pcmd = new CCmdSelectNode(mdl, l, false); break;
 		case GO_EDGE: SetSelectionMode(SELECT_EDGE); pcmd = new CCmdSelectEdge(mdl, l, false); break;
-		case GO_FACE: SetSelectionMode(SELECT_FACE); pcmd = new CCmdSelectSurface(mdl, l, false); break;
+		case GO_FACE: SetSelectionMode(SELECT_SURF); pcmd = new CCmdSelectSurface(mdl, l, false); break;
 		case GO_PART: SetSelectionMode(SELECT_PART); pcmd = new CCmdSelectPart(mdl, l, false); break;
 		default:
 			if (dynamic_cast<FSGroup*>(pl))
@@ -1245,7 +1245,7 @@ bool CModelDocument::SelectHighlightedItems()
 		}
 		else return false;
 	}
-	else if (selectMode == SelectionMode::SELECT_FACE)
+	else if (selectMode == SelectionMode::SELECT_SURF)
 	{
 		std::vector<GFace*> faceList = itemlist_cast<GFace>(items);
 		if (!faceList.empty())

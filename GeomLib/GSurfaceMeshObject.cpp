@@ -408,19 +408,18 @@ void GSurfaceMeshObject::BuildGMesh()
 	}
 
 	// create edges
-	int max_gid = -1;
+	gmesh->NewEdgePartition(0);
 	for (int i = 0; i<pm->Edges(); ++i)
 	{
 		FSEdge& es = pm->Edge(i);
 		if (es.m_gid >= 0)
 		{
-			if (es.m_gid > max_gid) max_gid = es.m_gid;
 			gmesh->AddEdge(es.n, es.Nodes(), es.m_gid);
 		}
 	}
-	max_gid++;
 
 	// create face data
+	gmesh->NewEdgePartition(1);
 	for (int i = 0; i < pm->Faces(); ++i) pm->Face(i).m_ntag = i;
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
@@ -435,22 +434,13 @@ void GSurfaceMeshObject::BuildGMesh()
 			if ((pf == nullptr) || !pf->IsVisible() || (fs.m_ntag < pf->m_ntag))
 			{
 				FSEdge e = fs.GetEdge(j);
-				gmesh->AddEdge(e.n, e.Nodes(), max_gid);
+				gmesh->AddEdge(e.n, e.Nodes(), -1);
 			}
 		}
 	}
 
-	gmesh->AutoPartition();
+	gmesh->AutoSurfacePartition();
 	gmesh->Update();
-
-	// The update sorted the edges, so the edges for rendering meshlines will
-	// be at the back. However, they still have a pid set which will causes these
-	// edges to render as feature edges. So, we need to set them to -1
-	for (int i = 0; i < gmesh->Edges(); ++i)
-	{
-		GLMesh::EDGE& edge = gmesh->Edge(i);
-		if (edge.pid == max_gid) edge.pid = -1;
-	}
 
 	SetRenderMesh(gmesh);
 }

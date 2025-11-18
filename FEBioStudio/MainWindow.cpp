@@ -2591,7 +2591,7 @@ void CMainWindow::on_actionSelectSurfaces_toggled(bool b)
 	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
-	if (b) doc->SetSelectionMode(SELECT_FACE);
+	if (b) doc->SetSelectionMode(SELECT_SURF);
 	Update();
 }
 

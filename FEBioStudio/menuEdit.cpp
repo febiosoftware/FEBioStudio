@@ -240,7 +240,7 @@ void CMainWindow::on_actionClearSelection_triggered()
 			{
 			case SELECT_OBJECT  : doc->DoCommand(new CCmdSelectObject  (mdl, 0,    false), "<empty>"); break;
 			case SELECT_PART    : doc->DoCommand(new CCmdSelectPart    (mdl, 0, 0, false), "<empty>"); break;
-			case SELECT_FACE    : doc->DoCommand(new CCmdSelectSurface (mdl, 0, 0, false), "<empty>"); break;
+			case SELECT_SURF    : doc->DoCommand(new CCmdSelectSurface (mdl, 0, 0, false), "<empty>"); break;
 			case SELECT_EDGE    : doc->DoCommand(new CCmdSelectEdge    (mdl, 0, 0, false), "<empty>"); break;
 			case SELECT_NODE    : doc->DoCommand(new CCmdSelectNode    (mdl, 0, 0, false), "<empty>"); break;
 			case SELECT_DISCRETE: doc->DoCommand(new CCmdSelectDiscrete(mdl, 0, 0, false), "<empty>"); break;
@@ -929,7 +929,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 		switch (nsel)
 		{
 		case SELECT_PART: snprintf(szname, sizeof szname, "Part%02d", nparts); break;
-		case SELECT_FACE: snprintf(szname, sizeof szname, "Surface%02d", nsurfs); break;
+		case SELECT_SURF: snprintf(szname, sizeof szname, "Surface%02d", nsurfs); break;
 		case SELECT_EDGE: snprintf(szname, sizeof szname, "EdgeSet%02d", nedges); break;
 		case SELECT_NODE: snprintf(szname, sizeof szname, "Nodeset%02d", nnodes); break;
 		default:
@@ -1028,7 +1028,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 				UpdateModel(pg);
 			}
 			break;
-			case SELECT_FACE:
+			case SELECT_SURF:
 			{
 				GFaceList* pg = new GFaceList(mdl, dynamic_cast<GFaceSelection*>(psel));
 				pg->SetName(szname);
@@ -1584,7 +1584,7 @@ void CMainWindow::on_actionSurfaceToFaces_triggered()
 	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	if (doc->GetSelectionMode() != SELECT_FACE) return;
+	if (doc->GetSelectionMode() != SELECT_SURF) return;
 
 	GObject* po = doc->GetActiveObject();
 	if (po == nullptr) return;

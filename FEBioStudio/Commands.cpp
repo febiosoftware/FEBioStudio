@@ -2757,7 +2757,7 @@ CCmdUnhideAll::CCmdUnhideAll(CModelDocument* doc) : CCommand("Unhide all")
 		}
 		break;
 		case SELECT_PART:
-		case SELECT_FACE:
+		case SELECT_SURF:
 		case SELECT_EDGE:
 		case SELECT_NODE:
 		{
@@ -2823,7 +2823,7 @@ void CCmdUnhideAll::Execute()
 		}
 		break;
 		case SELECT_PART:
-		case SELECT_FACE:
+		case SELECT_SURF:
 		case SELECT_EDGE:
 		case SELECT_NODE:
 		{
