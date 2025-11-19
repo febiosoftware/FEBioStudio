@@ -1242,6 +1242,7 @@ GLObjectItem::GLObjectItem(CGLModelScene* scene, GObject* po) : GLModelSceneItem
 	addChild(new GLObjectSurfaceItem(scene, po));
 	addChild(new GLFeatureEdgesItem(scene, po));
 	addChild(new GLMeshLinesItem(scene, po));
+	addChild(new GLObjectNormalsItem(scene, po));
 }
 
 GLObjectItem::~GLObjectItem() {}
@@ -1288,9 +1289,6 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 	// render the selection mesh 
 	RenderSelection(re);
 
-	// render normals if requested
-	if (rc.m_settings.m_bnorm) RenderNormals(re, rc.m_settings.m_scaleNormals);
-
 	// render mesh outline in wireframe mode
 	if ((rc.m_settings.m_nrender == RENDER_WIREFRAME) && (rc.m_settings.m_bmesh == false))
 	{
@@ -1301,48 +1299,6 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 			re.renderGMeshOutline(GetCamera(), *renderMesh, GetTransform());
 		}
 	}
-}
-
-void GLObjectItem::RenderNormals(GLRenderEngine& re, double scale)
-{
-	if (m_po->IsVisible() == false) return;
-
-	FSMeshBase* pm = m_po->GetEditableMesh();
-	if (pm == 0) return;
-	double R = 0.05 * pm->GetBoundingBox().GetMaxExtent() * scale;
-
-	GLMesh lineMesh;
-	for (int i = 0; i < pm->Faces(); ++i)
-	{
-		const FSFace& face = pm->Face(i);
-		if (face.IsVisible())
-		{
-			vec3f p[2];
-			p[0] = vec3f(0, 0, 0);
-			vec3f fn = to_vec3f(pm->FaceNormal(face));
-
-			vec3d c(0, 0, 0);
-			int nf = face.Nodes();
-			for (int j = 0; j < nf; ++j) c += pm->Node(face.n[j]).r;
-			c /= nf;
-
-			p[0] = to_vec3f(c);
-			p[1] = p[0] + fn * R;
-
-			lineMesh.AddEdge(p, 2);
-
-			float r = fabs(fn.x);
-			float g = fabs(fn.y);
-			float b = fabs(fn.z);
-
-			GLMesh::EDGE& edge = lineMesh.Edge(lineMesh.Edges() - 1);
-			edge.c[0] = GLColor::White();
-			edge.c[1] = GLColor::FromRGBf(r, g, b);
-		}
-	}
-
-	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
-	re.renderGMeshEdges(lineMesh, false);
 }
 
 void GLObjectItem::RenderSelection(GLRenderEngine& re)
@@ -2313,6 +2269,68 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, GLContext& rc)
 
 			re.renderGMeshEdges(*m_edgeMesh);
 		}
+	}
+}
+
+void GLObjectNormalsItem::render(GLRenderEngine& re, GLContext& rc)
+{
+	if (m_po == nullptr) return;
+	if (!m_po->IsVisible() || !m_po->IsValid()) return;
+
+	if (!rc.m_settings.m_bnorm)
+	{
+		if (m_normalMesh)
+		{
+			re.deleteCachedMesh(m_normalMesh.get());
+			m_normalMesh.reset();
+		}
+		return;
+	}
+
+	if (m_normalMesh == nullptr)
+	{
+		double scale = rc.m_settings.m_scaleNormals;
+
+		FSMeshBase* pm = m_po->GetEditableMesh();
+		if (pm == 0) return;
+		double R = 0.05 * pm->GetBoundingBox().GetMaxExtent() * scale;
+
+		m_normalMesh.reset(new GLMesh);
+		GLMesh& lineMesh = *m_normalMesh;
+		for (int i = 0; i < pm->Faces(); ++i)
+		{
+			const FSFace& face = pm->Face(i);
+			if (face.IsVisible())
+			{
+				vec3f p[2];
+				p[0] = vec3f(0, 0, 0);
+				vec3f fn = to_vec3f(pm->FaceNormal(face));
+
+				vec3d c(0, 0, 0);
+				int nf = face.Nodes();
+				for (int j = 0; j < nf; ++j) c += pm->Node(face.n[j]).r;
+				c /= nf;
+
+				p[0] = to_vec3f(c);
+				p[1] = p[0] + fn * R;
+
+				lineMesh.AddEdge(p, 2);
+
+				float r = fabs(fn.x);
+				float g = fabs(fn.y);
+				float b = fabs(fn.z);
+
+				GLMesh::EDGE& edge = lineMesh.Edge(lineMesh.Edges() - 1);
+				edge.c[0] = GLColor::White();
+				edge.c[1] = GLColor::FromRGBf(r, g, b);
+			}
+		}
+	}
+
+	if (m_normalMesh)
+	{
+		re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
+		re.renderGMeshEdges(*m_normalMesh);
 	}
 }
 

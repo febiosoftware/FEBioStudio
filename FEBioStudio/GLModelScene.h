@@ -88,7 +88,6 @@ public:
 private:
 	void RenderGObject(GLRenderEngine& re, GLContext& rc);
 
-	void RenderNormals(GLRenderEngine& re, double scale);
 	void RenderSelection(GLRenderEngine& re);
 
 private:
@@ -158,6 +157,17 @@ private:
 private:
 	GObject* m_po = nullptr;
 	std::unique_ptr<GLMesh> m_edgeMesh;
+};
+
+class GLObjectNormalsItem : public GLModelSceneItem
+{
+public:
+	GLObjectNormalsItem(CGLModelScene* scene, GObject* po) : GLModelSceneItem(scene), m_po(po) {}
+	void render(GLRenderEngine& re, GLContext& rc) override;
+
+private:
+	GObject* m_po = nullptr;
+	std::unique_ptr<GLMesh> m_normalMesh;
 };
 
 class GLDiscreteItem : public GLModelSceneItem
