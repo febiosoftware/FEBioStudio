@@ -598,10 +598,11 @@ void CPostDocument::ApplyPalette(const CPalette& pal)
 
 		Post::Material& m = *m_fem->GetMaterial(i);
 		m.diffuse = c;
-		m.specular = GLColor(128, 128, 128);
+		m.specular = GLColor(0, 0, 0);
 		m.emission = GLColor(0, 0, 0);
 		m.shininess = 0.5f;
 		m.transparency = 1.f;
+		m.reflectivity = 0.f;
 	}
 }
 

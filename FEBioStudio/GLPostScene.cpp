@@ -435,7 +435,16 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 			float alpha = mat.transparency;
 			GLColor c = mat.diffuse;
 			c.a = (uint8_t)(255.f * alpha);
-			re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
+
+			GLMaterial gmat;
+			gmat.type = GLMaterial::PLASTIC;
+			gmat.diffuse = gmat.ambient = c;
+			gmat.specular = mat.specular;
+			gmat.frontOnly = frontOnly;
+			gmat.opacity = alpha;
+			gmat.shininess = mat.shininess;
+			gmat.reflection = mat.reflectivity;
+			re.setMaterial(gmat);
 		}
 
 		RenderMesh(re, *mesh, i);
@@ -515,7 +524,16 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 			float alpha = mat.transparency;
 			GLColor c = mat.diffuse;
 			c.a = (uint8_t)(255.f * alpha);
-			re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
+
+			GLMaterial gmat;
+			gmat.type = GLMaterial::PLASTIC;
+			gmat.diffuse = gmat.ambient = c;
+			gmat.specular = mat.specular;
+			gmat.frontOnly = frontOnly;
+			gmat.opacity = alpha;
+			gmat.shininess = mat.shininess;
+			gmat.reflection = mat.reflectivity;
+			re.setMaterial(gmat);
 		}
 
 		RenderMesh(re, *mesh, i);
@@ -669,8 +687,7 @@ void GLPostModelItem::RenderOutline(GLRenderEngine& re, GLContext& rc)
 		pm->setModified(false);
 	}
 
-	for (int j = 0; j < po->Edges(); ++j)
-		re.renderGMeshEdges(*pm, j);
+	re.renderGMeshEdges(*pm);
 
 	if (rc.m_settings.m_nrender == RENDER_WIREFRAME)
 	{
@@ -1237,12 +1254,12 @@ void CGLPostScene::Render(GLRenderEngine& engine, GLContext& rc)
 	}
 	engine.setBackgroundGradient(c1, c2, orient);
 
-//	if (vs.m_use_environment_map) ActivateEnvironmentMap(engine);
+	if (vs.m_use_environment_map) ActivateEnvironmentMap(engine);
 
 	// now render it
 	GLScene::Render(engine, rc);
 
-//	if (vs.m_use_environment_map) DeactivateEnvironmentMap(engine);
+	if (vs.m_use_environment_map) DeactivateEnvironmentMap(engine);
 
 	// update and render the tracking
 	if (m_btrack)

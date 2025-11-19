@@ -913,7 +913,9 @@ rt::Fragment RayTracer::castRay(Ray& ray)
 				float v = 0.5 - asin(R.y()) / PI;
 
 				Color envCol = envTex.sample(u, v);
-				c = envCol * r + c * (1 - r);
+				float a = c.a();
+				c = c*(envCol * r + Color(1,1,1,1) * (1 - r));
+				c.a(a);
 			}
 
 			// reflection

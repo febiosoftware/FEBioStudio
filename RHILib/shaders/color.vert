@@ -50,7 +50,7 @@ void main()
 {
     float a = clamp(mesh.opacity, 0.0, 1.0);
 
-    if (mesh.useVertexColor > 0) v_color = color;
+    if (mesh.useVertexColor > 0) v_color = vec4(color.xyz, a);
     else {
         v_color = mesh.diffuse;
         v_color.a = mesh.opacity;

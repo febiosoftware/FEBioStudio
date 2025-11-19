@@ -97,11 +97,11 @@ void main()
             float u = atan(R.z, R.x) / (2.0 * PI) + 0.5;
             float v = 0.5 - asin(R.y) / PI;
             vec4 envCol = texture(envSmp, vec2(u,v));
-            col.xyz = envCol.xyz*r + col.xyz*(1-r);
+            col.xyz = col.xyz*(envCol.xyz*r + vec3(1,1,1)*(1-r));
         }
 
         // ambient value
-        f_col += glob.ambient*mesh.ambient;
+        f_col = glob.ambient*mesh.ambient;
 
         if (gl_FrontFacing || (mesh.frontOnly == 0)) {
 

@@ -41,6 +41,7 @@ Material::Material()
 
 	shininess = 0.f;
 	transparency = 1.f;
+	reflectivity = 0.f;
 
 	diffuse = GLColor(200, 200, 200);
 	ambient = GLColor(0,0,32);

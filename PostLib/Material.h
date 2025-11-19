@@ -72,6 +72,7 @@ public:
 	GLColor meshcol;		// mesh color
 	float	shininess;		// shininess [0..1]
 	float	transparency;	// transparency [0..1]
+	float	reflectivity;	// reflectivity [0..1]
 	bool	benable;		// material enabled or not
 	bool	bvisible;		// material visible or not
 	bool	bmesh;			// show mesh on model or not
