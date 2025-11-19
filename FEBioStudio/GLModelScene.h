@@ -103,7 +103,7 @@ public:
 	~GLObjectSurfaceItem() {}
 
 	void BuildSurfaceMesh();
-	void BuildSurfaceFEMesh();
+	void BuildSurfaceFEMesh(bool useContourMap);
 
 	void render(GLRenderEngine& re, GLContext& rc) override;
 
@@ -132,6 +132,7 @@ private:
 	GObject* m_po = nullptr;
 	std::unique_ptr<GLMesh> m_surfMesh;
 	std::unique_ptr<GLMesh> m_surfFEMesh;
+	std::unique_ptr<GLMesh> m_nodeFEMesh;
 };
 
 class GLMeshLinesItem : public GLModelSceneItem

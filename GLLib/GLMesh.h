@@ -165,7 +165,7 @@ public:
 	void AddFace(vec3f r[3], vec3f n[3], GLColor c);
 	void AddFace(vec3f r[3], vec3f n[3], float tex, GLColor c);
 	void AddFace(vec3f r[3], vec3f n[3], float tex[3], GLColor c);
-	void AddFace(vec3f r[3], vec3f n[3], vec3f tex[3], GLColor c[3], int tag = 0);
+	int AddFace(vec3f r[3], vec3f n[3], vec3f tex[3], GLColor c[3], int tag = 0);
 	void AddFace(vec3f r[3], GLColor c[3]);
 	void AddFace(vec3f r[3], float t[3]);
 	void AddFace(vec3f r[3], vec3f t[3]);

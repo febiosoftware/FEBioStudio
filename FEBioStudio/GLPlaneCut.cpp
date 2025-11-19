@@ -535,25 +535,25 @@ void GLPlaneCut::Render(GLRenderEngine& re)
 
 	// render the unselected faces
 	re.setMaterial(GLMaterial::PLASTIC, GLColor(200, 200, 200), GLMaterial::VERTEX_COLOR);
-	re.renderGMesh(*m_planeCut, 0, false);
+	re.renderGMesh(*m_planeCut, 0);
 
 	// render the selected faces
 	if (m_planeCut->SurfacePartitions() > 1)
 	{
 		re.setColor(GLColor(255, 64, 0));
-		re.renderGMesh(*m_planeCut, 1, false);
+		re.renderGMesh(*m_planeCut, 1);
 	}
 
 	if (m_renderMesh)
 	{
 		re.setMaterial(GLMaterial::CONSTANT, m_meshColor);
-		re.renderGMeshEdges(*m_planeCut, 0, false);
+		re.renderGMeshEdges(*m_planeCut, 0);
 
 		if (m_planeCut->SurfacePartitions() > 1)
 		{
 			// TODO: This used to be drawn with depthtest off
 			re.setColor(GLColor::Yellow());
-			re.renderGMeshEdges(*m_planeCut, 1, false);
+			re.renderGMeshEdges(*m_planeCut, 1);
 		}
 	}
 }

@@ -257,7 +257,6 @@ void CGLModelScene::BuildScene(GLContext& rc)
 		if (po == activeObject)
 		{
 			m_activeObjectItem = objItem;
-			if (vs.m_bcontour) ColorizeMesh(po);
 		}
 	}
 
@@ -1293,7 +1292,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 	if (rc.m_settings.m_bnorm) RenderNormals(re, rc.m_settings.m_scaleNormals);
 
 	// render mesh outline in wireframe mode
-	if (rc.m_settings.m_nrender == RENDER_WIREFRAME)
+	if ((rc.m_settings.m_nrender == RENDER_WIREFRAME) && (rc.m_settings.m_bmesh == false))
 	{
 		GLMesh* renderMesh = m_po->GetRenderMesh();
 		if (renderMesh)
@@ -1451,7 +1450,7 @@ void GLObjectSurfaceItem::BuildSurfaceMesh()
 	rm.PartitionSurfaceByTags();
 }
 
-void GLObjectSurfaceItem::BuildSurfaceFEMesh()
+void GLObjectSurfaceItem::BuildSurfaceFEMesh(bool useContourMap)
 {
 	m_surfFEMesh.reset();
 	if (m_po == nullptr) return;
@@ -1464,83 +1463,95 @@ void GLObjectSurfaceItem::BuildSurfaceFEMesh()
 	GObject& obj = *m_po;
 
 	m_mat.clear();
-	switch (objColorMode)
-	{
-	case DEFAULT_COLOR:
-	case MATERIAL_TYPE:
-	{
-		m_mat.resize(obj.Parts());
-		for (int i = 0; i < obj.Parts(); ++i) m_mat[i] = m_scene->GetPartMaterial(obj.Part(i));
-	}
-	break;
-	case OBJECT_COLOR: m_mat.push_back(obj.GetMaterial()); break;
-	case FSELEMENT_TYPE:
-	{
-		const int a = 212;
-		const int b = 106;
-		const int d = 53;
-		for (int i = 0; i < 23; ++i)
-		{
-			GLColor col;
-			switch (i)
-			{
-			case  0: col = GLColor(0, 0, 0); break; // invalid
-			case  1: col = GLColor(0, a, a); break; // FE_TRI3
-			case  2: col = GLColor(0, b, b); break; // FE_TRI6   
-			case  3: col = GLColor(0, b, d); break; // FE_TRI7   
-			case  4: col = GLColor(0, d, d); break; // FE_TRI10  
-			case  5: col = GLColor(a, a, 0); break; // FE_QUAD4  
-			case  6: col = GLColor(b, b, 0); break; // FE_QUAD8  
-			case  7: col = GLColor(d, d, 0); break; // FE_QUAD9  
-			case  8: col = GLColor(0, a, 0); break; // FE_TET4   
-			case  9: col = GLColor(0, a, 0); break; // FE_TET5   
-			case 10: col = GLColor(0, b, 0); break; // FE_TET10  
-			case 11: col = GLColor(0, b, 0); break; // FE_TET15  
-			case 12: col = GLColor(0, d, 0); break; // FE_TET20  
-			case 13: col = GLColor(a, 0, 0); break; // FE_HEX8   
-			case 14: col = GLColor(b, 0, 0); break; // FE_HEX20  
-			case 15: col = GLColor(b, 0, 0); break; // FE_HEX27  
-			case 16: col = GLColor(0, 0, a); break; // FE_PENTA6 
-			case 17: col = GLColor(0, 0, b); break; // FE_PENTA15
-			case 18: col = GLColor(0, 0, a); break; // FE_PYRA5  
-			case 19: col = GLColor(0, 0, b); break; // FE_PYRA13 
-			case 20: col = GLColor(a, a, a); break; // FE_BEAM2  
-			case 21: col = GLColor(b, b, b); break; // FE_BEAM3  
-			case 22: col = GLColor(255, 255, 255); break; // everything else
-			}
-			GLMaterial mat;
-			mat.diffuse = col;
-			m_mat.push_back(mat);
-		}
-	}
-	break;
-	case PHYSICS_TYPE:
-	{
-		for (int i = 0; i < 6; ++i)
-		{
-			GLColor c;
-			switch (i)
-			{
-			case 0: c = GLColor(200, 200, 200, 128); break;
-			case 1: c = GLColor(200, 200, 0); break;	// boundary conditions
-			case 2: c = GLColor(0, 100, 0); break;	// initial conditions
-			case 3: c = GLColor(0, 200, 200); break;	// loads
-			case 4: c = GLColor(200, 0, 200); break;	// contact primary
-			case 5: c = GLColor(100, 0, 100); break;	// contact secondary
-			default:
-				assert(false);
-			}
 
-			GLMaterial mat;
-			mat.type = GLMaterial::PLASTIC;
-			mat.diffuse = c;
-			m_mat.push_back(mat);
-		}
+	if (useContourMap)
+	{
+		GLMaterial mat;
+		mat.diffuse = GLMaterial::PLASTIC;
+		mat.diffuse = GLColor::White();
+		mat.diffuseMap = GLMaterial::VERTEX_COLOR;
+		m_mat.push_back(mat);
 	}
-	break;
-	default:
-		assert(false);
-		return;
+	else
+	{
+		switch (objColorMode)
+		{
+		case DEFAULT_COLOR:
+		case MATERIAL_TYPE:
+		{
+			m_mat.resize(obj.Parts());
+			for (int i = 0; i < obj.Parts(); ++i) m_mat[i] = m_scene->GetPartMaterial(obj.Part(i));
+		}
+		break;
+		case OBJECT_COLOR: m_mat.push_back(obj.GetMaterial()); break;
+		case FSELEMENT_TYPE:
+		{
+			const int a = 212;
+			const int b = 106;
+			const int d = 53;
+			for (int i = 0; i < 23; ++i)
+			{
+				GLColor col;
+				switch (i)
+				{
+				case  0: col = GLColor(0, 0, 0); break; // invalid
+				case  1: col = GLColor(0, a, a); break; // FE_TRI3
+				case  2: col = GLColor(0, b, b); break; // FE_TRI6   
+				case  3: col = GLColor(0, b, d); break; // FE_TRI7   
+				case  4: col = GLColor(0, d, d); break; // FE_TRI10  
+				case  5: col = GLColor(a, a, 0); break; // FE_QUAD4  
+				case  6: col = GLColor(b, b, 0); break; // FE_QUAD8  
+				case  7: col = GLColor(d, d, 0); break; // FE_QUAD9  
+				case  8: col = GLColor(0, a, 0); break; // FE_TET4   
+				case  9: col = GLColor(0, a, 0); break; // FE_TET5   
+				case 10: col = GLColor(0, b, 0); break; // FE_TET10  
+				case 11: col = GLColor(0, b, 0); break; // FE_TET15  
+				case 12: col = GLColor(0, d, 0); break; // FE_TET20  
+				case 13: col = GLColor(a, 0, 0); break; // FE_HEX8   
+				case 14: col = GLColor(b, 0, 0); break; // FE_HEX20  
+				case 15: col = GLColor(b, 0, 0); break; // FE_HEX27  
+				case 16: col = GLColor(0, 0, a); break; // FE_PENTA6 
+				case 17: col = GLColor(0, 0, b); break; // FE_PENTA15
+				case 18: col = GLColor(0, 0, a); break; // FE_PYRA5  
+				case 19: col = GLColor(0, 0, b); break; // FE_PYRA13 
+				case 20: col = GLColor(a, a, a); break; // FE_BEAM2  
+				case 21: col = GLColor(b, b, b); break; // FE_BEAM3  
+				case 22: col = GLColor(255, 255, 255); break; // everything else
+				}
+				GLMaterial mat;
+				mat.diffuse = col;
+				m_mat.push_back(mat);
+			}
+		}
+		break;
+		case PHYSICS_TYPE:
+		{
+			for (int i = 0; i < 6; ++i)
+			{
+				GLColor c;
+				switch (i)
+				{
+				case 0: c = GLColor(200, 200, 200, 128); break;
+				case 1: c = GLColor(200, 200, 0); break;	// boundary conditions
+				case 2: c = GLColor(0, 100, 0); break;	// initial conditions
+				case 3: c = GLColor(0, 200, 200); break;	// loads
+				case 4: c = GLColor(200, 0, 200); break;	// contact primary
+				case 5: c = GLColor(100, 0, 100); break;	// contact secondary
+				default:
+					assert(false);
+				}
+
+				GLMaterial mat;
+				mat.type = GLMaterial::PLASTIC;
+				mat.diffuse = c;
+				m_mat.push_back(mat);
+			}
+		}
+		break;
+		default:
+			assert(false);
+			return;
+		}
 	}
 
 	m_surfFEMesh.reset(new GLMesh);
@@ -1554,77 +1565,16 @@ void GLObjectSurfaceItem::BuildSurfaceFEMesh()
 			if (objFace->IsVisible())
 			{
 				int tag = 0;
-				switch (objColorMode)
+				if (!useContourMap)
 				{
-				case DEFAULT_COLOR:
-				case MATERIAL_TYPE:
-				{
-					tag = objFace->m_nPID[0];
-					if ((!obj.Part(tag)->IsVisible()) && (objFace->m_nPID[1] >= 0))
-						tag = objFace->m_nPID[1];
-				}
-				break;
-				case OBJECT_COLOR: tag = 0; break;
-				case FSELEMENT_TYPE:
-				{
-					tag = 0;
-					if ((face.eid >= 0) && (face.eid < pm->Elements()))
-					{
-						FSElement_* pe = pm->ElementPtr(face.eid);
-						if (pe)
-						{
-							switch (pe->Type())
-							{
-							case FE_INVALID_ELEMENT_TYPE: tag = 0; break;
-							case FE_TRI3   : tag = 1; break;
-							case FE_TRI6   : tag = 2; break;
-							case FE_TRI7   : tag = 3; break;
-							case FE_TRI10  : tag = 4; break;
-							case FE_QUAD4  : tag = 5; break;
-							case FE_QUAD8  : tag = 6; break;
-							case FE_QUAD9  : tag = 7; break;
-							case FE_TET4   : tag = 8; break;
-							case FE_TET5   : tag = 9; break;
-							case FE_TET10  : tag = 10; break;
-							case FE_TET15  : tag = 11; break;
-							case FE_TET20  : tag = 12; break;
-							case FE_HEX8   : tag = 13; break;
-							case FE_HEX20  : tag = 14; break;
-							case FE_HEX27  : tag = 15; break;
-							case FE_PENTA6 : tag = 16; break;
-							case FE_PENTA15: tag = 17; break;
-							case FE_PYRA5  : tag = 18; break;
-							case FE_PYRA13 : tag = 19; break;
-							case FE_BEAM2  : tag = 20; break;
-							case FE_BEAM3  : tag = 21; break;
-							default:
-								tag = 22; break;
-							}
-						}
-					}
-				}
-				break;
-				case PHYSICS_TYPE: tag = objFace->m_ntag;
-				}
-				assert((tag >= 0) && (tag < m_mat.size()));
-				rm.AddFace(face.vr, face.vn, face.t, face.c, tag);
-			}
-		}
-		else if (face.pid >= obj.Faces())
-		{
-			int eid = face.eid;
-			if ((eid >= 0) && (eid < pm->Elements()))
-			{
-				int pid = pm->Element(eid).m_gid; // the GPart local ID
-				if ((pid >= 0) && (pid < m_po->Parts()))
-				{
-					int tag = 0;
 					switch (objColorMode)
 					{
 					case DEFAULT_COLOR:
 					case MATERIAL_TYPE:
 					{
-						tag = pid;
+						tag = objFace->m_nPID[0];
+						if ((!obj.Part(tag)->IsVisible()) && (objFace->m_nPID[1] >= 0))
+							tag = objFace->m_nPID[1];
 					}
 					break;
 					case OBJECT_COLOR: tag = 0; break;
@@ -1667,15 +1617,85 @@ void GLObjectSurfaceItem::BuildSurfaceFEMesh()
 						}
 					}
 					break;
-					case PHYSICS_TYPE: 0;
+					case PHYSICS_TYPE: tag = objFace->m_ntag;
 					}
 					assert((tag >= 0) && (tag < m_mat.size()));
-					rm.AddFace(face.vr, face.vn, face.t, face.c, tag);
+				}
+				int newFaceId = rm.AddFace(face.vr, face.vn, face.t, face.c, tag);
+				GLMesh::FACE& newFace = rm.Face(newFaceId);
+				newFace.fid = face.fid;
+				newFace.eid = face.eid;
+			}
+		}
+		else if (face.pid >= obj.Faces())
+		{
+			int eid = face.eid;
+			if ((eid >= 0) && (eid < pm->Elements()))
+			{
+				int pid = pm->Element(eid).m_gid; // the GPart local ID
+				if ((pid >= 0) && (pid < m_po->Parts()))
+				{
+					int tag = 0;
+					if (!useContourMap)
+					{
+						switch (objColorMode)
+						{
+						case DEFAULT_COLOR:
+						case MATERIAL_TYPE:
+						{
+							tag = pid;
+						}
+						break;
+						case OBJECT_COLOR: tag = 0; break;
+						case FSELEMENT_TYPE:
+						{
+							tag = 0;
+							if ((face.eid >= 0) && (face.eid < pm->Elements()))
+							{
+								FSElement_* pe = pm->ElementPtr(face.eid);
+								if (pe)
+								{
+									switch (pe->Type())
+									{
+									case FE_INVALID_ELEMENT_TYPE: tag = 0; break;
+									case FE_TRI3: tag = 1; break;
+									case FE_TRI6: tag = 2; break;
+									case FE_TRI7: tag = 3; break;
+									case FE_TRI10: tag = 4; break;
+									case FE_QUAD4: tag = 5; break;
+									case FE_QUAD8: tag = 6; break;
+									case FE_QUAD9: tag = 7; break;
+									case FE_TET4: tag = 8; break;
+									case FE_TET5: tag = 9; break;
+									case FE_TET10: tag = 10; break;
+									case FE_TET15: tag = 11; break;
+									case FE_TET20: tag = 12; break;
+									case FE_HEX8: tag = 13; break;
+									case FE_HEX20: tag = 14; break;
+									case FE_HEX27: tag = 15; break;
+									case FE_PENTA6: tag = 16; break;
+									case FE_PENTA15: tag = 17; break;
+									case FE_PYRA5: tag = 18; break;
+									case FE_PYRA13: tag = 19; break;
+									case FE_BEAM2: tag = 20; break;
+									case FE_BEAM3: tag = 21; break;
+									default:
+										tag = 22; break;
+									}
+								}
+							}
+						}
+						break;
+						case PHYSICS_TYPE: 0;
+						}
+						assert((tag >= 0) && (tag < m_mat.size()));
+						rm.AddFace(face.vr, face.vn, face.t, face.c, tag);
+					}
 				}
 			}
 		}
 	}
-
+	
 	rm.PartitionSurfaceByTags();
 }
 
@@ -1860,51 +1880,47 @@ void GLObjectSurfaceItem::RenderGeomSurface(GLRenderEngine& re, GLContext& rc)
 
 void GLObjectSurfaceItem::RenderFEMeshSurface(GLRenderEngine& re, GLContext& rc)
 {
-	if (rc.m_settings.m_bcontour && (m_po == m_scene->GetActiveObject()))
+	if (m_surfFEMesh == nullptr)
 	{
-		if (m_po->GetFERenderMesh())
+		bool useContour = false;
+		if (rc.m_settings.m_bcontour && (m_po == m_scene->GetActiveObject()))
 		{
-			// We don't use the cached mesh, since it probably won't have the 
-			// vertex colors stored, which we need here. 
-			re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
-			re.renderGMesh(*m_po->GetFERenderMesh(), false);
+			m_scene->ColorizeMesh(m_po);
+			useContour = true;
+		}
+		BuildSurfaceFEMesh(useContour);
+	}
+	if (m_surfFEMesh == nullptr) return;
+
+	if (rc.m_settings.m_nrender == RENDER_WIREFRAME) return;
+
+	bool useStipple = false;
+	if (rc.m_settings.m_transparencyMode != 0)
+	{
+		switch (rc.m_settings.m_transparencyMode)
+		{
+		case 1: if (m_po->IsSelected()) useStipple = true; break;
+		case 2: if (!m_po->IsSelected()) useStipple = true; break;
 		}
 	}
-	else
+
+	bool frontOnly = rc.m_settings.m_identifyBackfacing;
+
+	GLMesh& rm = *m_surfFEMesh;
+	for (int i = 0; i < rm.SurfacePartitions(); ++i)
 	{
-		if (m_surfFEMesh == nullptr) BuildSurfaceFEMesh();
-		if (m_surfFEMesh == nullptr) return;
-
-		if (rc.m_settings.m_nrender == RENDER_WIREFRAME) return;
-
-		bool useStipple = false;
-		if (rc.m_settings.m_transparencyMode != 0)
+		const GLMesh::SURFACE_PARTITION& face = rm.SurfacePartition(i);
+		assert((face.tag >= 0) && (face.tag < m_mat.size()));
+		GLMaterial mat = m_mat[face.tag];
+		if (mat.diffuse.a != 255)
 		{
-			switch (rc.m_settings.m_transparencyMode)
-			{
-			case 1: if (m_po->IsSelected()) useStipple = true; break;
-			case 2: if (!m_po->IsSelected()) useStipple = true; break;
-			}
+			mat.diffuse.a = 255;
+			useStipple = true;
 		}
-
-		bool frontOnly = rc.m_settings.m_identifyBackfacing;
-
-		GLMesh& rm = *m_surfFEMesh;
-		for (int i = 0; i < rm.SurfacePartitions(); ++i)
-		{
-			const GLMesh::SURFACE_PARTITION& face = rm.SurfacePartition(i);
-			assert((face.tag >= 0) && (face.tag < m_mat.size()));
-			GLMaterial mat = m_mat[face.tag];
-			if (mat.diffuse.a != 255)
-			{
-				mat.diffuse.a = 255;
-				useStipple = true;
-			}
-			if (useStipple) mat.type = GLMaterial::GLASS;
-			mat.frontOnly = frontOnly;
-			re.setMaterial(mat);
-			re.renderGMesh(rm, i);
-		}
+		if (useStipple) mat.type = GLMaterial::GLASS;
+		mat.frontOnly = frontOnly;
+		re.setMaterial(mat);
+		re.renderGMesh(rm, i);
 	}
 }
 
@@ -2049,6 +2065,7 @@ void GLObjectSurfaceItem::RenderUnselectedBeamElements(GLRenderEngine& re)
 // Render the FE nodes
 void GLObjectSurfaceItem::RenderFENodes(GLRenderEngine& re, GLContext& rc)
 {
+	if (m_po == nullptr) return;
 	GObject* po = m_po;
 
 	FSMesh* pm = po->GetFEMesh();
@@ -2056,10 +2073,25 @@ void GLObjectSurfaceItem::RenderFENodes(GLRenderEngine& re, GLContext& rc)
 
 	GLMesh* gm = po->GetFERenderMesh(); assert(gm);
 	assert(gm->Nodes() == pm->Nodes());
+	if (gm == nullptr) return;
+
+	if ((m_nodeFEMesh == nullptr) || (gm->IsModified()))
+	{
+		// NOTE: This assumes that the external nodes are tagged with 1!
+		m_nodeFEMesh.reset(new GLMesh);
+		for (int i = 0; i < gm->Nodes(); ++i)
+		{
+			const GLMesh::NODE& node = gm->Node(i);
+			if (node.tag == 1) m_nodeFEMesh->AddNode(node.r);
+		}
+	}
 
 	// render the visible nodes
-	re.setMaterial(GLMaterial::CONSTANT, GLColor(0, 0, 255, 128));
-	renderTaggedGMeshNodes(re, *gm, 1);
+	if (m_nodeFEMesh)
+	{
+		re.setMaterial(GLMaterial::CONSTANT, GLColor(0, 0, 255, 128));
+		re.renderGMeshNodes(*m_nodeFEMesh);
+	}
 
 	// render selected nodes
 	// TODO: Shouldn't this be done in the GLSelectionItem?
