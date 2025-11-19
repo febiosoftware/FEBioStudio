@@ -56,6 +56,7 @@ void GLCheckBox::draw(GLPainter* painter)
 	const int checkSize = 2 * m_h / 3;
 	QPen pen = painter->pen();
 	pen.setColor(QColor(fc.r, fc.g, fc.b));
+	pen.setWidth(1);
 	painter->setPen(pen);
 	int xl = x0 + 2;
 	int yl = y0 + (h - checkSize) / 2;

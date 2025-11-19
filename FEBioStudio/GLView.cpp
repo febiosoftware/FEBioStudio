@@ -281,6 +281,14 @@ public:
 			vs.m_bnorm = b->m_checked;
 			});
 		add_widget(w);
+
+		m_toggleWireframe = w = new GLCheckBox(0, 0, 150, 25, "wireframe (w)");
+		w->add_event_handler([=](GLWidget* w, int nevent) {
+			GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
+			GLViewSettings& vs = glview->GetViewSettings();
+			vs.m_nrender = (b->m_checked ? RENDER_WIREFRAME : RENDER_SOLID);
+			});
+		add_widget(w);
 	}
 
 	void toggleMeshLines(bool b)
@@ -309,6 +317,7 @@ private:
 	GLCheckBox* m_gridLines;
 	GLCheckBox* m_featureEdges;
 	GLCheckBox* m_showNormals;
+	GLCheckBox* m_toggleWireframe;
 };
 
 void RenderBrush(QPainter& painter, int x, int y, double R)

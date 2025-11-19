@@ -239,7 +239,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	// --- View menu ---
 	actionUndoViewChange = createAction("Undo View Change", "actionUndoViewChange"); actionUndoViewChange->setShortcut(Qt::ControlModifier | Qt::Key_U);
 	actionRedoViewChange = createAction("Redo View Change", "actionRedoViewChange"); actionRedoViewChange->setShortcut(Qt::ControlModifier | Qt::Key_R);
-	actionShowGVContext = createAction("Show GV context menu", "actionShowGVContext");  actionShowGVContext->setShortcut(Qt::ControlModifier | Qt::Key_F4);
+	actionShowGVContext = createAction("Show GV context menu", "actionShowGVContext");  actionShowGVContext->setShortcut(Qt::Key_V);
 	actionZoomSelect = createAction("Zoom to Selection", "actionZoomSelect"); actionZoomSelect->setShortcut(Qt::Key_F);
 	actionZoomExtents = createAction("Zoom to Selection", "actionZoomExtents");
 	actionViewCapture = createAction("Show Capture Frame", "actionViewCapture"); actionViewCapture->setCheckable(true); actionViewCapture->setShortcut(Qt::Key_0);
