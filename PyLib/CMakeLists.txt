@@ -24,6 +24,11 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
+# OpenMP
+if(NOT WIN32)
+    find_package(OpenMP QUIET)
+endif()
+
 # Find pybind11
 if(WIN32)
 	find_path(PYBIND11_DIR include/pybind11/pybind11.h
