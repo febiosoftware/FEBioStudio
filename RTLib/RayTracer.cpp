@@ -152,7 +152,8 @@ RayTracer::RayTracer()
 	AddBoolParam(true, "Shadows");
 	AddDoubleParam(0.8, "Shadow strength");
 	AddChoiceParam(0, "Multisample")->SetEnumNames(" Off\0 2x2\0 3x3\0 4x4\0");
-	AddChoiceParam(0, "Background")->SetEnumNames("Default\0Transparent\0");
+	AddChoiceParam(0, "Background")->SetEnumNames("Default\0Transparent\0Background color\0");
+	AddColorParam(GLColor::White(), "Background color");
 #ifndef NDEBUG
 	Param* p = AddIntParam(-1, "BHV Levels");
 	p->SetIntRange(-1, 20);
@@ -751,7 +752,7 @@ void RayTracer::render()
 					v[0] = (float)f.color.r();
 					v[1] = (float)f.color.g();
 					v[2] = (float)f.color.b();
-					v[3] = (bgOption ? (float)f.color.a() : 1.f);
+					v[3] = (bgOption == 1 ? (float)f.color.a() : 1.f);
 					v[4] = f.depth;
 				}
 			}
@@ -772,7 +773,7 @@ void RayTracer::render()
 					v[0] = (float)f.color.r();
 					v[1] = (float)f.color.g();
 					v[2] = (float)f.color.b();
-					v[3] = (bgOption ? (float)f.color.a() : 1.f);
+					v[3] = (bgOption == 1 ? (float)f.color.a() : 1.f);
 					v[4] = f.depth;
 				}
 			}
@@ -870,6 +871,9 @@ GLColor RayTracer::backgroundColor(const Vec3& p)
 	break;
 	case 1: // transparent
 		c = GLColor(0, 0, 0, 0);
+		break;
+	case 2: // user color
+		c = GetColorValue(BGCOLOR);
 		break;
 	}
 	return c;
