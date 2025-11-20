@@ -422,8 +422,7 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
 
 void GLVolumeFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
-	re.pushState();
-	re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR, false);
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR, false);
 
 	// get view direction
 	vec3d view(0,0,1);
@@ -437,8 +436,6 @@ void GLVolumeFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 
 	// render the geometry
 	re.renderGMesh(m_mesh, false);
-
-	re.popState();
 }
 
 void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, GLMesh& mesh)

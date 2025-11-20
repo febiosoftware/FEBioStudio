@@ -154,7 +154,6 @@ FSMesh* FETet4ToTet20::Apply(FSMesh* pm)
 
 		f1.SetType(FE_FACE_TRI10);
 		f1.m_gid = f0.m_gid;
-		f1.m_sid = f0.m_sid;
 		f1.n[0] = f0.n[0];
 		f1.n[1] = f0.n[1];
 		f1.n[2] = f0.n[2];

@@ -41,6 +41,8 @@ public:
 
 	virtual Post::FEPostModel* GetFSModel() = 0;
 
+	BOX GetBoundingBox() override;
+
 public: // fields for displaying in GLView
 	float GetCurrentTimeValue();
 	std::string GetFieldString();

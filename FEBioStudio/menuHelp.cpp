@@ -102,9 +102,6 @@ void CMainWindow::on_actionAbout_triggered()
 	version = QString("Dev Version %1.%2.%3.%4").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION).arg(DEVCOMMIT);
 #endif
 
-	std::string oglVersion = GetGLView()->GetOGLVersionString();
-
-
 	QString txt = QString(\
 		"<h1>FEBio Studio</h1>\
 		<p><b>%1</b></p>\
@@ -114,10 +111,8 @@ void CMainWindow::on_actionAbout_triggered()
 		<hr>\
 		<p>When using FEBio or FEBioStudio in your publications, please cite:</p>\
 		<p><b>Maas SA, Ellis BJ, Ateshian GA, Weiss JA: FEBio: Finite Elements for Biomechanics. Journal of Biomechanical Engineering, 134(1):011005, 2012</b></p>\
-		<hr>\
-		<p><b>Information:<b/></p>\
-		<p>OPENGL Version: %2</p>"\
-	).arg(version).arg(QString::fromStdString(oglVersion));
+		<hr>"\
+	).arg(version);
 
 	QMessageBox about(this);
 	about.setWindowTitle("About FEBio Studio");

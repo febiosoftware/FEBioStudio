@@ -31,6 +31,7 @@ struct GLRenderStats
 	size_t lines = 0;
 	size_t points = 0;
 	size_t cachedObjects = 0;
+	size_t dataUploadSize = 0;
 
 	void clear()
 	{
@@ -38,5 +39,6 @@ struct GLRenderStats
 		lines = 0;
 		points = 0;
 		cachedObjects = 0;
+		dataUploadSize = 0;
 	}
 };

@@ -47,7 +47,7 @@ enum TransformMode
 enum SelectionMode {
 	SELECT_OBJECT = 1,
 	SELECT_PART = 2,
-	SELECT_FACE = 3,
+	SELECT_SURF = 3,
 	SELECT_EDGE = 4,
 	SELECT_NODE = 5,
 	SELECT_DISCRETE = 6
@@ -75,8 +75,25 @@ enum MeshSelectionMode {
 	MESH_MODE_SURFACE = 1
 };
 
+// Base class for documents that manage a GLScene
+class CGLSceneDocument : public CUndoDocument
+{
+public:
+	CGLSceneDocument(CMainWindow* wnd);
+
+	GLScene* GetScene();
+
+	CGView* GetView();
+
+	void Update() override;
+
+protected:
+	GLScene* m_scene = nullptr;
+	CGView m_view;
+};
+
 // Base class for documents that require visualization
-class CGLDocument : public CUndoDocument
+class CGLDocument : public CGLSceneDocument
 {
 public:
 	enum UI_VIEW_MODE
@@ -118,6 +135,8 @@ public:
 	int GetItemMode() { return m_vs.nitem; }
 	void SetItemMode(int mode) { m_vs.nitem = mode; UpdateSelection(); }
 
+	void ZoomSelection(bool forceZoom = true);
+
 	static std::string GetTypeString(FSObject* po);
 
 	UI_VIEW_MODE GetUIViewMode() { return m_uiMode; }
@@ -129,16 +148,15 @@ public:
 	FESelection* GetCurrentSelection();
 	void SetCurrentSelection(FESelection* psel);
 
+	// get the bounding box
+	virtual BOX GetBoundingBox() { return BOX(); }
+
 	// get the selection bounding box
 	BOX GetSelectionBox();
 
 	virtual void UpdateSelection();
 
 	virtual GObject* GetActiveObject();
-
-	CGView* GetView();
-
-	GLScene* GetScene();
 
 	void Update() override;
 
@@ -176,8 +194,6 @@ public:
 	int GetUnitSystem() const;
 
 protected:
-	GLScene* m_scene;
-
 	VIEW_STATE	m_vs;	// the view state
 
 	UI_VIEW_MODE m_uiMode;

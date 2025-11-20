@@ -48,13 +48,13 @@ public:
 
 public:
 	Type type = INVALID;
+	DiffuseMap	diffuseMap = NONE;
 	GLColor		diffuse;	// diffuse color of material
 	GLColor		ambient;	// ambient color of material
 	GLColor		specular;	// specular color of material
 	GLColor		emission;	// emission color of material
-	double		shininess = 0;	// shininess factor
+	double		shininess = 0;	// shininess factor (specular exponent)
 	double		reflection = 0; // reflection factor
-
-public:
-	void AmbientDiffuse(const GLColor& c) { ambient = diffuse = c; }
+	double		opacity = 1.0;	// opacity (1.0 = opaque, 0.0 = transparent)
+	bool		frontOnly = false;
 };

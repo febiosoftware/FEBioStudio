@@ -86,11 +86,17 @@ private:
 
 	void Update() override;
 
+	void UpdateRange(int n0, int n1, float dt, bool breset);
+
+	void UpdateRenderMesh(int n0, int n1, float dt);
+
 protected:
 	int		m_nfield;
 	bool	m_breset;	// reset the range when the field has changed
 	DATA_RANGE	m_range;	// range for legend
 	vec3d	m_rmin, m_rmax;	// global indicators of min, max
+
+	std::vector<float> m_nodeData;
 
 public:
 	bool	m_bDispNodeVals;	// render nodal values

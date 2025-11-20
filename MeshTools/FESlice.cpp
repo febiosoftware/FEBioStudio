@@ -249,7 +249,6 @@ FSMesh* FESlice::BuildMesh()
 		{
 			pf->SetType(FE_FACE_QUAD4);
 			pf->m_gid = 0;
-			pf->m_sid = 0;
 			pf->n[0] = NodeIndex(i  , k  , 0);
 			pf->n[1] = NodeIndex(i  , k+1, 0);
 			pf->n[2] = NodeIndex(i+1, k+1, 0);
@@ -263,7 +262,6 @@ FSMesh* FESlice::BuildMesh()
 		{
 			pf->SetType(FE_FACE_QUAD4);
 			pf->m_gid = 1;
-			pf->m_sid = 1;
 			pf->n[0] = NodeIndex(i  , m_ns, k  );
 			pf->n[1] = NodeIndex(i  , m_ns, k+1);
 			pf->n[2] = NodeIndex(i+1, m_ns, k+1);
@@ -277,7 +275,6 @@ FSMesh* FESlice::BuildMesh()
 		{
 			pf->SetType(FE_FACE_QUAD4);
 			pf->m_gid = 2;
-			pf->m_sid = 2;
 			pf->n[0] = NodeIndex(i+1, k  , m_nd);
 			pf->n[1] = NodeIndex(i+1, k+1, m_nd);
 			pf->n[2] = NodeIndex(i  , k+1, m_nd);
@@ -290,7 +287,6 @@ FSMesh* FESlice::BuildMesh()
 	{
 		pf->SetType(FE_FACE_TRI3);
 		pf->m_gid = 3;
-		pf->m_sid = 3;
 		pf->n[0] = NodeIndex(0, 0, 0);
 		pf->n[1] = NodeIndex(0, 1, k+1);
 		pf->n[2] = NodeIndex(0, 1, k);
@@ -301,7 +297,6 @@ FSMesh* FESlice::BuildMesh()
 		{
 			pf->SetType(FE_FACE_QUAD4);
 			pf->m_gid = 3;
-			pf->m_sid = 3;
 			pf->n[0] = NodeIndex(0,j  ,k+1);
 			pf->n[1] = NodeIndex(0,j+1,k+1);
 			pf->n[2] = NodeIndex(0,j+1,k  );
@@ -314,7 +309,6 @@ FSMesh* FESlice::BuildMesh()
 	{
 		pf->SetType(FE_FACE_TRI3);
 		pf->m_gid = 4;
-		pf->m_sid = 3;
 		pf->n[0] = NodeIndex(m_nz, 0, 0);
 		pf->n[1] = NodeIndex(m_nz, 1, k);
 		pf->n[2] = NodeIndex(m_nz, 1, k+1);
@@ -325,7 +319,6 @@ FSMesh* FESlice::BuildMesh()
 		{
 			pf->SetType(FE_FACE_QUAD4);
 			pf->m_gid = 4;
-			pf->m_sid = 3;
 			pf->n[0] = NodeIndex(m_nz,j  ,k  );
 			pf->n[1] = NodeIndex(m_nz,j+1,k  );
 			pf->n[2] = NodeIndex(m_nz,j+1,k+1);

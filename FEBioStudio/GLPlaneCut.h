@@ -28,12 +28,11 @@ SOFTWARE.*/
 #include <MeshLib/Intersect.h>
 #include <FSCore/ColorMap.h>
 
-class FSModel;
+class CGLModelScene;
 class GLMesh;
-class GLContext;
 class GLRenderEngine;
 
-// class that creates and renders the plane cut in the CGLView.
+// class that creates and renders the plane cut.
 class GLPlaneCut
 {
 public:
@@ -43,7 +42,7 @@ public:
 
 	bool IsValid() const;
 
-	void Create(FSModel& fem, bool showMeshData, int mode);
+	void Create(CGLModelScene& scene, bool showMeshData, int mode);
 
 	void SetPlaneCoordinates(double d0, double d1, double d2, double d3)
 	{
@@ -56,18 +55,23 @@ public:
 
 	double* GetPlaneCoordinates() { return m_plane; }
 
-	void Render(GLRenderEngine& re, GLContext& rc);
+	void Render(GLRenderEngine& re);
 
 	bool Intersect(const vec3d& p, const Ray& ray, Intersection& q);
 
 	void SetColorMap(const CColorMap& map) { m_col = map; }
 
+	void SetMeshColor(GLColor c) { m_meshColor = c; }
+	void RenderMesh(bool b) { m_renderMesh = b; }
+
 private:
-	void CreatePlaneCut(FSModel& fem, bool showMeshData);
-	void CreateHideElements(FSModel& fem, bool showMeshData);
+	void CreatePlaneCut(CGLModelScene& scene, bool showMeshData);
+	void CreateHideElements(CGLModelScene& scene, bool showMeshData);
 
 private:
 	GLMesh* m_planeCut = nullptr;
 	double	m_plane[4] = { 1.0, 0.0, 0.0, 0.0 };
 	CColorMap m_col;
+	bool m_renderMesh = false;
+	GLColor m_meshColor;
 };

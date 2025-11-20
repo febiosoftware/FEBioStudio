@@ -45,10 +45,10 @@ void GLCamera::Reset()
 	m_pos.Target(vec3d(0,0,0));
 	m_trg.Target(vec3d(0,0,0));
 	Update(true);
-
-	m_bdecal = false;
 	m_bortho = false;
-
+	m_fnear = 1.f;
+	m_ffar = 50000.f;
+	m_fov = 45.f;
 	m_isMoving = false;
 }
 
@@ -99,12 +99,6 @@ void GLCamera::Update(bool bhit)
 		m_trg.HitTarget();
 		m_rot.HitTarget();
 	}
-}
-
-// set line-draw or decal mode
-void GLCamera::LineDrawMode(bool b)
-{ 
-	m_bdecal = b;
 }
 
 void GLCamera::Pan(const quatd& q)
@@ -217,4 +211,19 @@ vec3d GLCamera::GlobalPosition() const
 	m_rot.Value().Inverse().RotateVector(r);
 	r += GetPosition();
 	return r;
+}
+
+void GLCamera::ZoomToBox(const BOX& box, bool forceZoom, bool animate)
+{
+	double f = box.GetMaxExtent();
+	if (f < 1.0e-8) f = 1.0;
+
+	double g = GetFinalTargetDistance();
+	if ((forceZoom == true) || (g < 2.0 * f))
+	{
+		SetTarget(box.Center());
+		SetTargetDistance(2.0 * f);
+	}
+
+	if (animate == false) Update(true);
 }

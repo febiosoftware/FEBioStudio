@@ -56,7 +56,8 @@ public:
 		m_glFaceMesh = nullptr;
 		m_objManip = nullptr;
 
-		m_col = GLColor(200, 200, 200);
+		m_mat.type = GLMaterial::PLASTIC;
+		m_mat.diffuse = GLColor(200, 200, 200);
 
 		m_bValid = true;
 	}
@@ -72,7 +73,7 @@ public:
 
 public:
 	int	m_ntype = -1;	//!< object type identifier
-	GLColor	m_col;	//!< color of object
+	GLMaterial m_mat;	//!< color of object
 	bool	m_bValid;
 
 	FSMesh*		m_pmesh;	//!< the mesh that this object manages
@@ -151,14 +152,24 @@ bool GObject::CanDeleteMesh() const
 // return type of Object
 int GObject::GetType() const { return imp->m_ntype; }
 
-//-----------------------------------------------------------------------------
 // get/set object color
-GLColor GObject::GetColor() const { return imp->m_col; }
+GLColor GObject::GetColor() const { return imp->m_mat.diffuse; }
 
-//-----------------------------------------------------------------------------
 void GObject::SetColor(const GLColor& c) 
 { 
-	imp->m_col = c; 
+	imp->m_mat.ambient = c; 
+	imp->m_mat.diffuse = c; 
+}
+
+GLMaterial GObject::GetMaterial() const
+{
+	return imp->m_mat;
+}
+
+void GObject::SetMaterial(GLMaterial mat)
+{
+	imp->m_mat = mat;
+	SetRenderMesh(nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -242,7 +253,7 @@ void GObject::BuildFERenderMesh()
 		for (int i = 0; i < nsurf; i++)
 		{
 			std::deque<int>::iterator it = faceList[i].begin();
-			gm.NewPartition();
+			gm.NewSurfacePartition();
 			for (auto n : faceList[i])
 			{
 				const FSFace& face = pm->Face(n);
@@ -257,7 +268,7 @@ void GObject::BuildFERenderMesh()
 					int mid = -1;
 					if (eid >= 0) mid = pm->Element(eid).m_MatID;
 
-					gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), n, eid, mid);
+					gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_gid, face.IsExterior(), n, eid, mid);
 
 					int ne = face.Edges();
 					int n[FSEdge::MAX_NODES] = { -1 };
@@ -305,7 +316,7 @@ void GObject::BuildFERenderMesh()
 	for (int i = 0; i < nparts; ++i)
 	{
 		int ne = (int)partElems[i].size();
-		gm.NewPartition();
+		gm.NewSurfacePartition();
 		for (auto it = partElems[i].begin(); it != partElems[i].end(); ++it)
 		{
 			FSElement& el = pm->Element(*it); assert(el.IsVisible());
@@ -769,9 +780,22 @@ void GObject::Show()
 
 	// show all the parts
 	for (int i=0; i<Parts(); ++i) Part(i)->ShowItem();
+	for (int i=0; i<Faces(); ++i) Face(i)->ShowItem();
+	for (int i=0; i<Edges(); ++i) Edge(i)->ShowItem();
+	for (int i=0; i<Nodes(); ++i) Node(i)->ShowItem();
 
-	// Update visibility of child items
-	UpdateItemVisibility();
+	// Update visibility of mesh
+	FSMesh* mesh = GetFEMesh();
+	if (mesh)
+	{
+		int NE = mesh->Elements();
+		for (int i = 0; i < NE; ++i)
+		{
+			FSElement& el = mesh->Element(i);
+			el.Show();
+		}
+		mesh->UpdateItemVisibility();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -923,7 +947,19 @@ void GObject::Save(OArchive &ar)
 		ar.WriteChunk(CID_OBJ_POS, GetTransform().GetPosition());
 		ar.WriteChunk(CID_OBJ_ROT, GetTransform().GetRotation());
 		ar.WriteChunk(CID_OBJ_SCALE, GetTransform().GetScale());
-		ar.WriteChunk(CID_OBJ_COLOR, GetColor());
+
+		// TODO: remove this line. Keeping this for now so files created with this version will still
+		// show up properly in slightly older builds
+		ar.WriteChunk(CID_OBJ_COLOR, GetColor()); 
+
+		GLMaterial mat = GetMaterial();
+		ar.WriteChunk(CID_MAT_AMBIENT   , mat.ambient);
+		ar.WriteChunk(CID_MAT_DIFFUSE   , mat.diffuse);
+		ar.WriteChunk(CID_MAT_SPECULAR  , mat.specular);
+		ar.WriteChunk(CID_MAT_EMISSION  , mat.emission);
+		ar.WriteChunk(CID_MAT_SHININESS , mat.shininess);
+		ar.WriteChunk(CID_MAT_OPACITY   , mat.opacity);
+		ar.WriteChunk(CID_MAT_REFLECTION, mat.reflection);
 
 		int nparts = Parts();
 		int nfaces = Faces();
@@ -1085,7 +1121,8 @@ void GObject::Load(IArchive& ar)
 		{
 			vec3d pos, scl;
 			quatd rot;
-			GLColor col;
+			GLMaterial mat;
+			mat.type = GLMaterial::PLASTIC;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
@@ -1096,16 +1133,23 @@ void GObject::Load(IArchive& ar)
 				case CID_OBJ_POS: ar.read(pos); break;
 				case CID_OBJ_ROT: ar.read(rot); break;
 				case CID_OBJ_SCALE: ar.read(scl); break;
-				case CID_OBJ_COLOR: ar.read(col); break;
+				case CID_OBJ_COLOR: { ar.read(mat.diffuse); mat.ambient = mat.diffuse; } break;
 				case CID_OBJ_PARTS: ar.read(nparts); break;
 				case CID_OBJ_FACES: ar.read(nfaces); break;
 				case CID_OBJ_EDGES: ar.read(nedges); break;
 				case CID_OBJ_NODES: ar.read(nnodes); break;
+				case CID_MAT_AMBIENT   : ar.read(mat.ambient); break;
+				case CID_MAT_DIFFUSE   : ar.read(mat.diffuse); break;
+				case CID_MAT_SPECULAR  : ar.read(mat.specular); break;
+				case CID_MAT_EMISSION  : ar.read(mat.emission); break;
+				case CID_MAT_SHININESS : ar.read(mat.shininess); break;
+				case CID_MAT_OPACITY   : ar.read(mat.opacity); break;
+				case CID_MAT_REFLECTION: ar.read(mat.reflection); break;
 				}
 				ar.CloseChunk();
 			}
 
-			SetColor(col);
+			SetMaterial(mat);
 
 			Transform& transform = GetTransform();
 			transform.SetPosition(pos);

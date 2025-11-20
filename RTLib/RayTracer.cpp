@@ -26,17 +26,122 @@ SOFTWARE.*/
 #include "RayTracer.h"
 #include <GLLib/GLMesh.h>
 #include <FSCore/FSLogger.h>
+#include "rasterize.h"
+
 using namespace rt;
+using namespace gl;
 
 #include <chrono>
 using namespace std::chrono;
 using dseconds = duration<double>;
 
+void rt::meshGeometry::start()
+{
+	mesh.clear();
+	bhv.clear();
+}
+
+void rt::meshGeometry::finish()
+{
+	size_t triangles = mesh.triangles();
+	for (size_t i = 0; i < triangles; ++i) mesh.triangle(i).id = (int)i;
+
+	int levels = bhv_levels;
+	if (levels < 0)
+	{
+		levels = (int)log2((double)triangles);
+	}
+	if (levels < 0) levels = 0;
+	if (levels > 20) levels = 20;
+
+	bhv.output = output;
+	bhv.Build(mesh, levels);
+}
+
+bool rt::meshGeometry::intersect(const Ray& ray, rt::Point& q)
+{
+	return bhv.intersect(ray, q);
+}
+
+bool rt::sphere::intersect(const Ray& ray, rt::Point& q)
+{
+	Vec3 z = ray.origin - o;
+	Vec3 t = ray.direction;
+	double a = t*t;
+	double b = 2.0 * (t*z);
+	double c = z*z - r*r;
+
+	double D2 = b * b - 4.0*a * c;
+	if (D2 >= 0)
+	{
+		double D = sqrt(D2);
+		double l1 = (-b - D) / (2.0 * a);
+		double l2 = (-b + D) / (2.0 * a);
+
+		if ((l1 > 0) && ((l2 <= 0) || (l1 < l2)))
+		{
+			q.r = ray.origin + t * l1;
+		}
+		else if ((l2 > 0) && ((l1 <= 0) || (l2 < l1)))
+		{
+			q.r = ray.origin + t * l2;
+		}
+		else return false;
+
+		q.n = q.r - o;
+		q.n.normalize();
+		q.c = col;
+		q.matid = matid;
+
+		return true;
+	}
+	else return false;
+}
+
+void rt::Geometry::finish()
+{
+	for (auto it : geom) it->finish();
+}
+
+bool rt::Geometry::intersect(const Ray& rt, rt::Point& q)
+{
+	if (geom.empty()) return false;
+	if (geom.size() == 1) return geom[0]->intersect(rt, q);
+
+	bool intersected = false;
+	double Dmin = 0;
+	for (auto g : geom)
+	{
+		rt::Point p;
+		bool b = g->intersect(rt, p);
+		if (b)
+		{
+			double D = (p.r - rt.origin) * rt.direction;
+			if (D > 0)
+			{
+				if (intersected == false)
+				{
+					q = p;
+					intersected = true;
+					Dmin = D;
+				}
+				else if (D < Dmin)
+				{
+					q = p;
+					Dmin = D;
+				}
+			}
+		}
+	}
+	return intersected;
+}
 
 RayTracer::RayTracer()
 {
 	fieldOfView = 60.0;
 	nearPlane = 0.01;
+	m_left = m_bottom = -1;
+	m_right = m_top = 1;
 	percentCompleted = 0.0;
 	renderStarted = false;
 	useVertexColor = false;
@@ -45,11 +150,12 @@ RayTracer::RayTracer()
 	AddIntParam(0, "Width");
 	AddIntParam(0, "Height");
 	AddBoolParam(true, "Shadows");
+	AddDoubleParam(0.8, "Shadow strength");
 	AddChoiceParam(0, "Multisample")->SetEnumNames(" Off\0 2x2\0 3x3\0 4x4\0");
 	AddChoiceParam(0, "Background")->SetEnumNames("Default\0Transparent\0");
 #ifndef NDEBUG
 	Param* p = AddIntParam(-1, "BHV Levels");
-	p->SetIntRange(-1, 32);
+	p->SetIntRange(-1, 20);
 	p->SetVisible(false);
 #endif
 }
@@ -61,17 +167,57 @@ RayTracer::~RayTracer()
 
 	for (rt::Texture3D* t : tex3d) delete t;
 	tex3d.clear();
+
+	geom.clear();
 }
 
-void RayTracer::setupProjection(double fov, double fnear)
+void RayTracer::setProjection(double fov, double fnear, double far)
 {
 	fieldOfView = fov;
 	nearPlane = fnear;
+	farPlane = far;
+	ortho = false;
+
+	double ar = (double)surfaceWidth() / (double)surfaceHeight();
+
+	projMatrix.perspective(fov, ar, fnear, far);
 }
 
-void RayTracer::setBackgroundColor(GLColor c)
+void RayTracer::setOrthoProjection(double left, double right, double bottom, double top, double near, double far)
+{
+	m_left = left;
+	m_right = right;
+	m_bottom = bottom;
+	m_top = top;
+	nearPlane = near;
+	farPlane = far;
+	ortho = true;
+
+	projMatrix.ortho(left, right, bottom, top, near, far);
+}
+
+void RayTracer::setClearColor(const GLColor& c)
 {
 	backgroundCol = c;
+}
+
+void RayTracer::setBackgroundGradient(const GLColor& c1, const GLColor& c2, GradientType orient)
+{
+	m_col1 = c1;
+	m_col2 = c2;
+	m_orient = orient;
+}
+
+void RayTracer::setSampleCount(int n)
+{
+	if (n < 1) n = 1;
+	if (n > 4) n = 4;
+	SetIntValue(MULTI_SAMPLE, n - 1);
+}
+
+void RayTracer::setRenderShadows(bool b)
+{
+	SetBoolValue(SHADOWS, b);
 }
 
 void RayTracer::start()
@@ -79,7 +225,19 @@ void RayTracer::start()
 	cancelled = false;
 	GLRenderEngine::start();
 	mesh.clear();
-	modelView.makeIdentity();
+	geom.clear();
+
+	// add the meshed geometry
+	meshGeometry* mg = new meshGeometry(mesh);
+	int levels = -1;
+#ifndef NDEBUG
+	levels = GetIntValue(BHV_LEVELS);
+#endif
+	mg->setBHVLevels(levels);
+	mg->setOutput(output);
+	geom.push_back(mg);
+
+	projMatrix.makeIdentity();
 }
 
 double RayTracer::progress()
@@ -104,53 +262,18 @@ void RayTracer::finish()
 	preprocess();
 	time_point<steady_clock> toc = steady_clock::now();
 	double sec1 = duration_cast<dseconds>(toc - tic).count();
-	FSLogger::Write("Preprocessing completed in %lg sec.\n", sec1);
+	if (output) FSLogger::Write("Preprocessing completed in %lg sec.\n", sec1);
 	tic = toc;
 	render();
 	toc = steady_clock::now();
 	double sec2 = duration_cast<dseconds>(toc - tic).count();
-	FSLogger::Write("Rendering completed in %lg sec.\n", sec2);
-	FSLogger::Write("Total elapsed time : %lg\n", sec1 + sec2);
+	if (output) FSLogger::Write("Rendering completed in %lg sec.\n", sec2);
+	if (output) FSLogger::Write("Total elapsed time : %lg\n", sec1 + sec2);
 
 	// clean up
 	mesh.clear();
+	geom.clear();
 	GLRenderEngine::finish();
-}
-
-void RayTracer::pushTransform()
-{
-	mvStack.push(modelView);
-}
-
-void RayTracer::popTransform()
-{
-	assert(!mvStack.empty());
-	modelView = mvStack.top();
-	mvStack.pop();
-}
-
-void RayTracer::translate(const vec3d& r)
-{
-	Matrix4 T = Matrix4::translate(Vec3(r));
-	modelView *= T;
-}
-
-void RayTracer::rotate(const quatd& rot)
-{
-	Matrix4 R = Matrix4::rotate(rot);
-	modelView *= R;
-}
-
-void RayTracer::rotate(double deg, double x, double y, double z)
-{
-	quatd q(deg * DEG2RAD, x, y, z);
-	rotate(q);
-}
-
-void RayTracer::scale(double x, double y, double z)
-{
-	Matrix4 S = Matrix4::scale(x, y, z);
-	modelView *= S;
 }
 
 GLRenderEngine::FrontFace RayTracer::frontFace() const
@@ -163,27 +286,10 @@ void RayTracer::setFrontFace(GLRenderEngine::FrontFace f)
 	front = f;
 }
 
-void RayTracer::positionCamera(const GLCamera& cam)
-{
-	// reset the modelview matrix mode
-	modelView.makeIdentity();
-
-	// target in camera coordinates
-	vec3d r = cam.Target();
-
-	// position the target in camera coordinates
-	translate(-r);
-
-	// orient the camera
-	rotate(cam.m_rot.Value());
-
-	// translate to world coordinates
-	translate(-cam.GetPosition());
-}
-
 void RayTracer::setColor(GLColor c)
 {
 	currentColor = c;
+	GLRenderEngine::setColor(c);
 }
 
 void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
@@ -194,14 +300,9 @@ void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::Dif
 	useTexture3D = (map == GLMaterial::TEXTURE_3D);
 
 	rt::Material mat;
-	if ((matType == GLMaterial::PLASTIC) || (matType == GLMaterial::GLASS))
-	{
-		mat.shininess = 64;
-	}
 
 	if ((matType == GLMaterial::HIGHLIGHT) || (matType == GLMaterial::CONSTANT))
 	{
-		mat.shininess = 0;
 		mat.lighting = false;
 	}
 
@@ -224,16 +325,26 @@ void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::Dif
 void RayTracer::setMaterial(const GLMaterial& glmat)
 {
 	currentColor = glmat.diffuse;
+	currentColor.a = (uint8_t)(255.f*glmat.opacity);
+
 	useVertexColor = false;
-	useTexture1D = false;
+	useTexture1D = (glmat.diffuseMap == GLMaterial::TEXTURE_1D);
 
 	rt::Material mat;
 	if ((glmat.type == GLMaterial::PLASTIC) || (glmat.type == GLMaterial::GLASS))
 	{
-		mat.shininess = (int)(128* glmat.shininess);
+		mat.shininess = 128* glmat.shininess;
 		if (mat.shininess < 0) mat.shininess = 0;
 		if (mat.shininess > 128) mat.shininess = 128;
 		mat.reflection = glmat.reflection;
+
+		mat.ambient = glmat.ambient;
+		mat.specular = glmat.specular;
+	}
+
+	if (useTexture1D)
+	{
+		mat.tex1d = currentTexture1D;
 	}
 
 	matList.push_back(mat);
@@ -243,96 +354,32 @@ void RayTracer::setMaterial(const GLMaterial& glmat)
 void RayTracer::setLightPosition(unsigned int lightIndex, const vec3f& p)
 {
 	Vec4 r(p, 0);
-	lightPos = modelView * r;
+	lightPos = currentTransform()* r;
 }
 
-void RayTracer::begin(PrimitiveType prim)
+void RayTracer::setLightSpecularColor(unsigned int lightIndex, const GLColor& col)
 {
-	assert(immediateMode == false);
-	assert(verts.empty());
-	immediateMode = true;
-	primType = prim;
-	verts.reserve(1024 * 1024);
+	lightSpecular = Color(col);
 }
 
-void RayTracer::end()
+void RayTracer::setLightAmbientColor(unsigned int lightIndex, const GLColor& col)
 {
-	assert(immediateMode);
-	if (immediateMode)
-	{
-		size_t vertices = verts.size();
-		size_t n = 0;
-		switch (primType)
-		{
-		case GLRenderEngine::TRIANGLES:
-		{
-			size_t ntri = vertices / 3;
-			for (size_t i = 0; i < ntri; ++i, n += 3)
-			{
-				rt::Tri tri(verts[n], verts[n+1], verts[n+2]);
-				tri.matid = currentMaterial;
-				addTriangle(tri);
-			}
-		}
-		break;
-		case GLRenderEngine::TRIANGLEFAN:
-		{
-			size_t ntri = vertices - 2;
-			for (size_t i = 0; i < ntri; ++i, n++)
-			{
-				rt::Tri tri(verts[0], verts[n + 1], verts[n + 2]);
-				tri.matid = currentMaterial;
-				addTriangle(tri);
-			}
-		}
-		break;
-		case GLRenderEngine::QUADSTRIP:
-		{
-			size_t nquads = (vertices - 2) / 2;
-			for (size_t i = 0; i < nquads; ++i, n += 2)
-			{
-				rt::Tri tri1(verts[n], verts[n + 1], verts[n + 2]);
-				rt::Tri tri2(verts[n+2], verts[n + 3], verts[n + 1]);
-				tri1.matid = currentMaterial;
-				tri2.matid = currentMaterial;
-				addTriangle(tri1);
-				addTriangle(tri2);
-			}
-		}
-		break;
-		}
-	}
-	immediateMode = false;
-	verts.clear();
+	lightAmbient = Color(col);
 }
 
-void RayTracer::vertex(const vec3d& r)
+void RayTracer::setLightDiffuseColor(unsigned int lightIndex, const GLColor& col)
 {
-	Point p;
-	p.r = modelView * Vec4(r);
-	p.n = modelView * Vec4(currentNormal, 0); p.n.normalize();
-	p.c = currentColor;
-	p.t = currentTexCoord;
-	verts.push_back(p);
+	lightDiffuse = Color(col);
 }
 
-void RayTracer::normal(const vec3d& r)
+void RayTracer::setLightEnabled(unsigned int lightIndex, bool b)
 {
-	currentNormal = Vec3(r);
-}
-
-void RayTracer::texCoord1d(double t)
-{
-	currentTexCoord = Vec3(t, 0, 0);
-}
-
-void RayTracer::texCoord2d(double r, double s)
-{
-	currentTexCoord = Vec3(r, s, 0);
+	lightEnabled = b;
 }
 
 void RayTracer::renderGMesh(const GLMesh& gmesh, bool cacheMesh)
 {
+	gl::Matrix4 mv = currentTransform();
 	int NF = gmesh.Faces();
 	for (int i = 0; i < NF; ++i)
 	{
@@ -342,8 +389,8 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, bool cacheMesh)
 		{
 			for (int j = 0; j < 3; ++j)
 			{
-				tri.r[j] = modelView * Vec4(face.vr[j], 1);
-				tri.n[j] = modelView * Vec4(face.vn[j], 0); tri.n[j].normalize();
+				tri.r[j] = mv * Vec4(face.vr[j], 1);
+				tri.n[j] = mv * Vec4(face.vn[j], 0); tri.n[j].normalize();
 				tri.t[j] = Vec3(face.t[j]);
 				tri.c[j] = (useVertexColor ? face.c[j] : currentColor);
 			}
@@ -352,8 +399,8 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, bool cacheMesh)
 		{
 			for (int j = 0; j < 3; ++j)
 			{
-				tri.r[2-j] = modelView * Vec4(face.vr[j], 1);
-				tri.n[2-j] = modelView * Vec4(face.vn[j], 0); tri.n[j].normalize();
+				tri.r[2-j] = mv * Vec4(face.vr[j], 1);
+				tri.n[2-j] = mv * Vec4(face.vn[j], 0); tri.n[j].normalize();
 				tri.t[2-j] = Vec3(face.t[j]);
 				tri.c[2-j] = (useVertexColor ? face.c[j] : currentColor);
 			}
@@ -365,9 +412,10 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, bool cacheMesh)
 
 void RayTracer::renderGMesh(const GLMesh& gmesh, int surfId, bool cacheMesh)
 {
-	if ((surfId < 0) || (surfId >= gmesh.Partitions())) return;
+	if ((surfId < 0) || (surfId >= gmesh.SurfacePartitions())) return;
+	gl::Matrix4 mv = currentTransform();
 
-	const GLMesh::PARTITION& p = gmesh.Partition(surfId);
+	const GLMesh::SURFACE_PARTITION& p = gmesh.SurfacePartition(surfId);
 	for (int i = 0; i < p.nf; ++i)
 	{
 		const GLMesh::FACE& face = gmesh.Face(p.n0 + i);
@@ -376,8 +424,8 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, int surfId, bool cacheMesh)
 		{
 			for (int j = 0; j < 3; ++j)
 			{
-				tri.r[j] = modelView * Vec4(face.vr[j], 1);
-				tri.n[j] = modelView * Vec4(face.vn[j], 0); tri.n[j].normalize();
+				tri.r[j] = mv * Vec4(face.vr[j], 1);
+				tri.n[j] = mv * Vec4(face.vn[j], 0); tri.n[j].normalize();
 				tri.t[j] = Vec3(face.t[j]);
 				tri.c[j] = (useVertexColor ? face.c[j] : currentColor);
 			}
@@ -386,14 +434,51 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, int surfId, bool cacheMesh)
 		{
 			for (int j = 0; j < 3; ++j)
 			{
-				tri.r[2-j] = modelView * Vec4(face.vr[j], 1);
-				tri.n[2-j] = modelView * Vec4(face.vn[j], 0); tri.n[j].normalize();
+				tri.r[2-j] = mv * Vec4(face.vr[j], 1);
+				tri.n[2-j] = mv * Vec4(face.vn[j], 0); tri.n[j].normalize();
 				tri.t[2-j] = Vec3(face.t[j]);
 				tri.c[2-j] = (useVertexColor ? face.c[j] : currentColor);
 			}
 		}
 		tri.matid = currentMaterial;
 		addTriangle(tri);
+	}
+}
+
+void RayTracer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
+{
+	gl::Matrix4 mv = currentTransform();
+	int NE = mesh.Edges();
+	for (int i = 0; i < NE; ++i)
+	{
+		const GLMesh::EDGE& edge = mesh.Edge(i);
+		rt::Line line;
+		for (int j = 0; j < 2; ++j)
+		{
+			line.r[j] = mv * Vec4(edge.vr[j], 1);
+			line.c[j] = (useVertexColor ? edge.c[j] : currentColor);
+		}
+		addLine(line);
+	}
+}
+
+void RayTracer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cacheMesh)
+{
+	if ((partition < 0) || (partition >= mesh.EdgePartitions())) return;
+
+	gl::Matrix4 mv = currentTransform();
+	const GLMesh::EDGE_PARTITION& p = mesh.EdgePartition(partition);
+	int NE = p.ne;
+	for (int i = 0; i < NE; ++i)
+	{
+		const GLMesh::EDGE& edge = mesh.Edge(i + p.n0);
+		rt::Line line;
+		for (int j = 0; j < 2; ++j)
+		{
+			line.r[j] = mv * Vec4(edge.vr[j], 1);
+			line.c[j] = (useVertexColor ? edge.c[j] : currentColor);
+		}
+		addLine(line);
 	}
 }
 
@@ -418,6 +503,90 @@ const int rtLUT[8][7] = {
 	{ 0,  3,  5, -1, -1, -1, -1},
 	{-1, -1, -1, -1, -1, -1, -1},
 };
+
+
+void RayTracer::addLine(rt::Line& line)
+{
+	// make sure the line is in front of the near plane
+	if ((line.r[0].z() >= -nearPlane) && (line.r[1].z() >= -nearPlane)) return;
+
+	// clip to the near plane
+	if ((line.r[0].z() > -nearPlane) || (line.r[1].z() > -nearPlane))
+	{
+		Point p[3];
+		p[0] = line.point(0);
+		p[1] = line.point(1);
+		Vec3 a = line.r[0];
+		Vec3 b = line.r[1];
+		Vec3 t = b - a;
+		double D = t.z();
+		if (D != 0)
+		{
+			double l = (-nearPlane - a.z()) / D;
+			if (l < 0) l = 0;
+			else if (l > 1) l = 1;
+			p[2] = interpolate(p[0], p[1], l);
+			if (line.r[0].z() > -nearPlane)
+			{
+				line.r[0] = p[2].r;
+				line.c[0] = p[2].c;
+			}
+			else
+			{
+				line.r[1] = p[2].r;
+				line.c[1] = p[2].c;
+			}
+		}
+	}
+
+	// process triangle
+	if (!line.process()) return;
+
+	// TODO: do frustum clipping
+
+	// process clip plane
+	if (useClipPlane)
+	{
+		double* c = clipPlane;
+		Vec3 N(c[0], c[1], c[2]);
+		Vec3* v = line.r;
+		unsigned int ncase = 0;
+		for (int i = 0; i < 2; ++i)
+		{
+			double l = N * v[i] + c[3];
+			if (l < 0) ncase |= (1 << i);
+		}
+
+		if (ncase == 0) mesh.addLine(line);
+		else if (ncase < 2)
+		{
+			Point p[3];
+			p[0] = line.point(0);
+			p[1] = line.point(1);
+
+			Vec3 a = v[0];
+			Vec3 b = v[1];
+			Vec3 t = b - a;
+			double D = N * t;
+			if (D != 0)
+			{
+				double l = -(c[3] + N * a) / D;
+				if (l < 0) l = 0;
+				else if (l > 1) l = 1;
+				p[2] = interpolate(p[0], p[1], l);
+			}
+
+			rt::Line line_n;
+			line_n.r[0] = p[0].r;
+			line_n.r[1] = p[2].r;
+			line_n.c[0] = p[0].c;
+			line_n.c[1] = p[2].c;
+			if (line_n.process())
+				mesh.addLine(line_n);
+		}
+	}
+	else mesh.addLine(line);
+}
 
 void RayTracer::addTriangle(rt::Tri& tri)
 {
@@ -481,8 +650,9 @@ void RayTracer::setClipPlane(unsigned int n, const double* v)
 	if (n == 0)
 	{
 		Vec4 N(v[0], v[1], v[2], 0);
-		Vec4 Np = modelView * N;
-		double v3 = v[3] - (modelView[0][3] * Np[0] + modelView[1][3] * Np[1] + modelView[2][3] * Np[2]);
+		gl::Matrix4 mv = currentTransform();
+		Vec4 Np = mv * N;
+		double v3 = v[3] - (mv[0][3] * Np[0] + mv[1][3] * Np[1] + mv[2][3] * Np[2]);
 
 		clipPlane[0] = Np[0];
 		clipPlane[1] = Np[1];
@@ -518,7 +688,7 @@ void RayTracer::setTexture(GLTexture1D& tex)
 void RayTracer::setTexture(GLTexture3D& tex)
 {
 	rt::Texture3D* t3d = new rt::Texture3D();
-	t3d->setImageData(tex.Get3DImage());
+	t3d->setImageData(&tex);
 	tex3d.push_back(t3d);
 	currentTexture3D = (int)tex3d.size() - 1;
 	if (currentMaterial >= 0) matList[currentMaterial].tex3d = currentTexture3D;
@@ -526,17 +696,7 @@ void RayTracer::setTexture(GLTexture3D& tex)
 
 void RayTracer::preprocess()
 {
-	size_t triangles = mesh.triangles();
-	for (size_t i = 0; i < triangles; ++i) mesh.triangle(i).id = (int) i;
-
-	int levels = GetIntValue(BHV_LEVELS);
-	if (levels < 0)
-	{
-		levels = (int)log2((double)triangles);
-	}
-	if (levels < 0) levels = 0;
-	if (levels > 20) levels = 20;
-	bhv.Build(mesh, levels);
+	geom.finish();
 }
 
 void RayTracer::render()
@@ -552,8 +712,16 @@ void RayTracer::render()
 
 	double ar = (double)W / (double)H;
 
-	double fh = nearPlane * tan(0.5 * fieldOfView * DEG2RAD);
-	double fw = fh * ar;
+	if (ortho)
+	{
+		m_fw = 0.5*(m_right - m_left);
+		m_fh = 0.5*(m_top - m_bottom);
+	}
+	else
+	{
+		m_fh = nearPlane * tan(0.5 * fieldOfView * DEG2RAD);
+		m_fw = m_fh * ar;
+	}
 
 	int samples = GetIntValue(MULTI_SAMPLE) + 1;
 	if (samples < 1) samples = 1;
@@ -562,99 +730,259 @@ void RayTracer::render()
 	int bgOption = GetIntValue(BACKGROUND);
 
 	renderStarted = true;
-#pragma omp parallel
-	for (size_t j = 0; j < H; ++j)
+
+	if (use_multithread)
 	{
+
+#pragma omp parallel
+		for (size_t j = 0; j < H; ++j)
+		{
 #pragma omp master
-		percentCompleted = (100.0 * j) / (double) H;
+			percentCompleted = (100.0 * j) / (double)H;
 
 #pragma omp for nowait schedule(dynamic, 5)
-		for (int i = 0; i < W; ++i)
-		{
-			if (!cancelled)
+			for (int i = 0; i < W; ++i)
 			{
-				double x = -fw + 2.0 * i * fw / (W - 1.0);
-				double y = fh - 2.0 * j * fh / (H - 1.0);
-				double z = -nearPlane;
+				if (!cancelled)
+				{
+					rt::Fragment f = fragment(i, j, samples);
 
-				double dx = fw / W;
-				double dy = fh / H;
-
-				Color c(0, 0, 0, 0);
-				for (int k = 0; k < samples; ++k)
-					for (int l = 0; l < samples; ++l)
-					{
-						double fx = (2.0 * k + 1 - samples) / (double)samples;
-						double fy = (2.0 * l + 1 - samples) / (double)samples;
-
-						double xf = x + fx * dx;
-						double yf = y + fy * dy;
-
-						Vec3 origin(xf, yf, z);
-						Vec3 direction = origin; direction.normalize();
-
-						Ray ray(origin, direction);
-
-						Color fragCol = castRay(bhv, ray);
-
-						c += fragCol;
-					}
-				c /= (double)(samples * samples);
-
-				float* v = surf.value(i, j);
-				v[0] = (float)c.r();
-				v[1] = (float)c.g();
-				v[2] = (float)c.b();
-				v[3] = (bgOption ? (float)c.a() : 1.f);
+					float* v = surf.value(i, j);
+					v[0] = (float)f.color.r();
+					v[1] = (float)f.color.g();
+					v[2] = (float)f.color.b();
+					v[3] = (bgOption ? (float)f.color.a() : 1.f);
+					v[4] = f.depth;
+				}
 			}
 		}
 	}
+	else
+	{
+		for (size_t j = 0; j < H; ++j)
+		{
+			percentCompleted = (100.0 * j) / (double)H;
+			for (int i = 0; i < W; ++i)
+			{
+				if (!cancelled)
+				{
+					rt::Fragment f = fragment(i, j, samples);
+
+					float* v = surf.value(i, j);
+					v[0] = (float)f.color.r();
+					v[1] = (float)f.color.g();
+					v[2] = (float)f.color.b();
+					v[3] = (bgOption ? (float)f.color.a() : 1.f);
+					v[4] = f.depth;
+				}
+			}
+		}
+	}
+
 	percentCompleted = 100.0;
+
+	// render the lines
+	renderLines();
 }
 
-rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
+rt::Fragment RayTracer::fragment(int i, int j, int samples)
 {
-	rt::Point q;
+	int W = surf.width();
+	int H = surf.height();
 
+	double x = -m_fw + 2.0 * i * m_fw / (W - 1.0);
+	double y = m_fh - 2.0 * j * m_fh / (H - 1.0);
+	double z = -nearPlane;
+
+	double dx = m_fw / W;
+	double dy = m_fh / H;
+
+	Color c(0, 0, 0, 0);
+	float depth = 0.f;
+	for (int k = 0; k < samples; ++k)
+		for (int l = 0; l < samples; ++l)
+		{
+			double fx = (2.0 * k + 1 - samples) / (double)samples;
+			double fy = (2.0 * l + 1 - samples) / (double)samples;
+
+			double xf = x + fx * dx;
+			double yf = y + fy * dy;
+
+			Vec3 origin(xf, yf, z);
+			Vec3 direction;
+			if (ortho)
+				direction = Vec3(0, 0, -1);
+			else
+			{
+				direction = origin;
+				direction.normalize();
+			}
+
+			Ray ray(origin, direction);
+
+			Color bg = backgroundColor(origin);
+
+			Color fragCol(0, 0, 0, 0);
+			float fragDepth = -farPlane;
+			Point p;
+			if (castRay(ray, p))
+			{
+				float a = p.c.a();
+				fragCol = bg * (1.0f - a) + p.c*a;
+				fragDepth = p.r.z();
+			}
+			else
+			{
+				fragCol = bg;
+			}
+
+			c += fragCol;
+			depth += fragDepth;
+		}
+	c /= (double)(samples * samples);
+	depth /= (float)(samples * samples);
+
+	depth = projMatrix.depthToNDC(depth, nearPlane, farPlane);
+
+	return Fragment{ c, depth };
+}
+
+GLColor RayTracer::backgroundColor(const Vec3& p)
+{
 	int bgOption = GetIntValue(BACKGROUND);
 
-	Color fragCol;
+	GLColor c;
 	switch (bgOption)
 	{
 	case 0: // default
-		fragCol = backgroundCol;
-		break;
+	{
+		double r = 0.5 * (p.x() / m_fw) + 0.5;
+		double s = 0.5 * (p.y() / m_fh) + 0.5;
+		if (r < 0) r = 0; if (r > 1) r = 1;
+		if (s < 0) s = 0; if (s > 1) s = 1;
+
+		if (m_orient == GLRenderEngine::HORIZONTAL)
+			c = m_col2 * (1 - s) + m_col1 * s;
+		else
+			c = m_col1 * (1 - r) + m_col2 * r;
+		c.a = 255;
+	}
+	break;
 	case 1: // transparent
-		fragCol = Color(0, 0, 0, 0);
+		c = GLColor(0, 0, 0, 0);
 		break;
 	}
-	bool intersectMesh = (bhv.intersect(ray, q));
-	bool renderShadows = GetBoolValue(SHADOWS);
+	return c;
+}
 
-	if (intersectMesh)
+bool RayTracer::intersect(const Ray& ray, rt::Point& q)
+{
+	return geom.intersect(ray, q);
+}
+
+inline double clamp(double x, double a, double b)
+{
+	if (x < a) return a;
+	if (x > b) return b;
+	return x;
+}
+
+bool RayTracer::castRay(const Ray& ray, rt::Point& q)
+{
+	// see if the mesh intersects any geometry
+	bool intersectMesh = intersect(ray, q);
+	if (!intersectMesh) return false;
+
+	// get some material props
+	rt::Material mat;
+	if (q.matid >= 0)
 	{
-		// get some material props
-		rt::Material mat;
-		if (q.matid >= 0)
+		rt::Material& m = matList[q.matid];
+		mat = m;
+	}
+
+	// see if we need to apply a 3D texture
+	if ((mat.tex3d >= 0) && (ray.bounce == 0))
+	{
+		// we've hit a 3D texture. 
+		rt::Texture3D& tex = *tex3d[mat.tex3d];
+		const GLTexture3D& vr = *tex.getImageData();
+
+		Color c(0, 0, 0, 0);
+		rt::Point q2(q);
+		while (true)
 		{
-			rt::Material& m = matList[q.matid];
-			mat = m;
+			// sample texture
+			Color t = tex.sample((float)q2.t[0], (float)q2.t[1], (float)q2.t[2]);
+			float a = t.a();
+
+			a = (a - vr.IscaleMin) * vr.Iscale;
+			a = (a - vr.Imin) / (vr.Imax - vr.Imin);
+			a = clamp(a, 0, 1.f);
+
+			// gamma correction
+			a = pow(a, vr.gamma);
+
+			// user-scaled alpha
+			a = vr.Amin + a * (vr.Amax - vr.Amin);
+
+			t.a(a);
+			t *= q.c;
+
+			a = t.a();
+
+			c.r() += t.r() * a;
+			c.g() += t.g() * a;
+			c.b() += t.b() * a;
+			c.a() += t.a();
+			c.clamp();
+			
+			Vec3 p = q2.r + ray.direction;
+			Ray ray2(p, ray.direction);
+			ray2.bounce = ray.bounce + 1;
+
+			if (intersect(ray2, q2) == false)
+				break;
 		}
+		q.c = c;
+		q.r = q2.r;
+		if (c.a() < 0.01f) return false;
+		else return true;
+	}
+	else
+	{
+		bool renderShadows = GetBoolValue(SHADOWS);
+		double shadowFactor = 1 - GetFloatValue(SHADOW_STRENGTH);
+		if (shadowFactor < 0) shadowFactor = 0;
+		else if (shadowFactor > 1) shadowFactor = 1;
 
 		Color c = q.c;
-		Vec3& t = ray.direction;
+		Vec3 t = ray.direction;
 		Vec3 N = q.n;
 
-		if (mat.lighting)
+		// apply 1D texture
+		if (mat.tex1d >= 0)
 		{
-			// reflection
-			if ((mat.reflection > 0) && (ray.bounce < 2))
-			{
-				Vec3 H = t - N * (2 * (t * N));
-				Ray ray2(q.r, H, q.tri_id);
-				ray2.bounce = ray.bounce + 1;
-				c = c * (1 - mat.reflection) + castRay(bhv, ray2) * mat.reflection;
-			}
+			Color t = tex1d[mat.tex1d]->sample((float)q.t[0]);
+			t.a(1.0);
+			c *= t;
+		}
+
+		// apply environment map
+		if ((mat.reflection > 0) && (!envTex.isNull()))
+		{
+			double r = mat.reflection;
+			Vec3 N = q.n;
+
+			Vec3 R = gl::reflect(t, N);
+
+			float u = atan2(R.z(), R.x()) / (2.0 * PI) + 0.5;
+			float v = 0.5 - asin(R.y()) / PI;
+
+			Color envCol = envTex.sample(u, v);
+			float a = c.a();
+			c = c * (envCol * r + Color(1, 1, 1, 1) * (1 - r));
+			c.a(a);
 		}
 
 		// see if we've reached the front or back face
@@ -666,74 +994,252 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 		}
 		Vec3 L(lightPos); L.normalize();
 
-		// apply texture
-		if (mat.tex1d >= 0)
-		{
-			Color t = tex1d[mat.tex1d]->sample((float)q.t[0]);
-			c *= t;
-		}
-
-		if (mat.tex3d >= 0)
-		{
-			Color t = tex3d[mat.tex3d]->sample((float)q.t[0], (float)q.t[1], (float)q.t[2]);
-			double a = t.a();
-			c.a() *= a;
-		}
-		
 		bool isOccluded = false;
-		if (mat.lighting)
+
+		Color fcol(0, 0, 0, 1);
+		if (mat.lighting && lightEnabled)
 		{
 			// calculate an ambient value
-			fragCol = c * 0.2;
+			fcol = mat.ambient * lightAmbient;
 			double f = N * Vec3(0, 0, 1);
 			if (f < 0) f = 0;
-			fragCol += c * (f * 0.2);
+			fcol += c * (f * 0.2);
 
 			// see if the point is occluded or not
 			if (renderShadows)
 			{
 				Vec3 p = q.r;
-				Ray ray2(p, L, q.tri_id);
+				Ray ray2(p, L);
 				ray2.bounce = ray.bounce + 1;
 				rt::Point q2;
-				if (bhv.intersect(ray2, q2)) isOccluded = true;
+				if (intersect(ray2, q2)) isOccluded = true;
 			}
 
-			if (!isOccluded)
-			{
-				// diffuse component
-				double f = N * L;
-				if (f < 0) f = 0;
-				Color diffuse = c * f;
-				fragCol += diffuse;
-			}
+			// diffuse component
+			f = N * L;
+			if (f < 0) f = 0;
+			if (isOccluded) f *= shadowFactor;
+			Color diffuse = c * f;
+			fcol += diffuse * lightDiffuse;
 		}
-		else fragCol = c;
+		else fcol = c;
 
 		double opacity = c.a();
-		if ((c.a() < 0.99) && (ray.bounce < 100))
+		if ((c.a() < 0.99) && (ray.bounce < 10))
 		{
 			Vec3 p = q.r;
-			Ray ray2(p, ray.direction, q.tri_id);
+			Ray ray2(p, ray.direction);
 			ray2.bounce = ray.bounce + 1;
 
 			rt::Point q2;
-			Color c2 = castRay(bhv, ray2);
-			fragCol = fragCol * opacity + c2 * (1 - opacity);
+			if (castRay(ray2, q2))
+			{
+				fcol = fcol * opacity + q2.c * (1 - opacity);
+			}
 		}
 
-		// add specular component
-		Color spec(0, 0, 0);
-		if (!isOccluded && (mat.shininess > 0) && mat.lighting)
+		// reflection
+/*		if ((mat.reflection > 0) && (ray.bounce < 2))
 		{
 			Vec3 H = t - N * (2 * (t * N));
+			H.normalize();
+			Ray ray2(q.r, H);
+			ray2.bounce = ray.bounce + 1;
+			c = c * (1 - mat.reflection) + castRay(bhv, ray2) * mat.reflection;
+		}
+*/
+		// add specular component
+		if (!isOccluded && (mat.shininess >= 0) && mat.lighting)
+		{
+			Vec3 H = t - N * (2 * (t * N));
+			H.normalize();
 			double f = H * L;
 			double s = (f > 0 ? pow(f, mat.shininess) : 0);
-			spec = Color(s, s, s);
-			fragCol += spec * 0.8;
+			fcol += lightSpecular * mat.specular * s;
 		}
-		fragCol.a() = c.a();
+		fcol.a() = c.a();
+		fcol.clamp();
+
+		q.c = fcol;
 	}
-	fragCol.clamp();
-	return fragCol;
+
+	return true;
+}
+
+unsigned int RayTracer::SetEnvironmentMap(const CRGBAImage& img)
+{
+	envTex.setImageData(img);
+	return 1;
+}
+
+void RayTracer::ActivateEnvironmentMap(unsigned int id)
+{
+
+}
+
+void RayTracer::DeactivateEnvironmentMap(unsigned int id)
+{
+
+}
+
+void RayTracer::addSphere(const vec3d& c, double R)
+{
+	gl::Matrix4 mv = currentTransform();
+	Vec4 p = mv*Vec4(c.x, c.y, c.z, 1);
+	Vec3 o(p.x(), p.y(), p.z());
+	rt::sphere* S = new rt::sphere(o, R);
+	S->col = currentColor;
+	S->matid = currentMaterial;
+	geom.push_back(S);
+}
+
+Vec3 RayTracer::toNDC(Vec4 v)
+{
+	// device coordinates
+	v = projMatrix * v;
+
+	// normalized device coordinates
+	v /= v.w();
+
+	return Vec3(v.x(), v.y(), v.z());
+}
+
+Vec3 RayTracer::NDCtoView(const Vec3& v)
+{
+	// viewport transform
+	Vec3 p;
+	int W = surfaceWidth();
+	int H = surfaceHeight();
+	p.x( (v[0] + 1) * 0.5 * W );
+	p.y( (v[1] + 1) * 0.5 * H );
+	p.z(v[2]);
+
+	return p;
+}
+
+void RayTracer::renderLines()
+{
+	int W = surfaceWidth();
+	int H = surfaceHeight();
+
+	percentCompleted = 0;
+
+	for (int i = 0; i < mesh.lines(); ++i)
+	{
+		if (cancelled) break;
+
+		percentCompleted = (100.0 * i) / (double)mesh.lines();
+
+		rt::Line& line = mesh.line(i);
+
+		// convert to device coordinates
+		Vec4 a = Vec4(line.r[0], 1);
+		Vec4 b = Vec4(line.r[1], 1);
+
+		// convert to normalized device coordinates
+		Vec3 a_ndc = toNDC(a);
+		Vec3 b_ndc = toNDC(b);
+
+		bool isInside = clipLine(a_ndc, b_ndc);
+
+		if (isInside)
+		{
+			Vec3 an = NDCtoView(a_ndc);
+			Vec3 bn = NDCtoView(b_ndc);
+
+			// convert to view coordinates
+			int x0 = (int)an.x(); int y0 = (int)an.y();
+			int x1 = (int)bn.x(); int y1 = (int)bn.y();
+
+			Color col0 = line.c[0];
+			Color col1 = line.c[1];
+
+			float dz = 0.0002f;
+
+			bool swapped = false;
+			std::vector<rt::Pixel> pts = rt::rasterizeLineAA(x0, y0, x1, y1, swapped);
+			int n = 0;
+			for (auto& p : pts)
+			{
+				int x = p.x;
+				int y = H - p.y - 1;
+
+				double w = (pts.size() > 1 ? (double)n / (double)(pts.size() - 1) : 0.0);
+
+				if ((x >= 0) && (x < W) && (y >= 0) && (y < H))
+				{
+					Color c;
+
+					double z = 0;
+					if (swapped)
+					{
+						c = col1 * (1.0 - w) + col0 * w;
+						z = bn.z() * (1.0 - w) + an.z() * w;
+					}
+					else
+					{
+						c = col0 * (1.0 - w) + col1 * w;
+						z = an.z() * (1.0 - w) + bn.z() * w;
+					}
+
+					float* v = surf.value(x, y);
+					if ((z < 1) && (z > -1) && (z <= v[4] + dz))
+					{
+						float a = c.a() * p.brightness;
+
+						v[0] = c.r() * a + v[0] * (1.f - a);
+						v[1] = c.g() * a + v[1] * (1.f - a);
+						v[2] = c.b() * a + v[2] * (1.f - a);
+						v[3] = a + v[3] * (1.f - a);
+					}
+				}
+
+				n++;
+			}
+		}
+	}
+
+	percentCompleted = 100.0;
+}
+
+bool RayTracer::clipLine(Vec3& a, Vec3& b)
+{
+    // NDC cube bounds
+    const double xmin = -1, xmax = 1;
+    const double ymin = -1, ymax = 1;
+    const double zmin = -1, zmax = 1;
+
+    double t0 = 0.0, t1 = 1.0;
+    Vec3 d = b - a;
+
+    auto clip = [&](double p, double q, double& t0, double& t1) -> bool {
+        if (p == 0) return q >= 0; // Parallel, inside if q >= 0
+        double r = q / p;
+        if (p < 0) {
+            if (r > t1) return false;
+            if (r > t0) t0 = r;
+        } else {
+            if (r < t0) return false;
+            if (r < t1) t1 = r;
+        }
+        return true;
+    };
+
+    // Left, Right
+    if (!clip(-d.x(), a.x() - xmin, t0, t1)) return false;
+    if (!clip( d.x(), xmax - a.x(), t0, t1)) return false;
+    // Bottom, Top
+    if (!clip(-d.y(), a.y() - ymin, t0, t1)) return false;
+    if (!clip( d.y(), ymax - a.y(), t0, t1)) return false;
+    // Near, Far
+    if (!clip(-d.z(), a.z() - zmin, t0, t1)) return false;
+    if (!clip( d.z(), zmax - a.z(), t0, t1)) return false;
+
+    if (t1 < t0) return false;
+
+    Vec3 new_a = a + d * t0;
+    Vec3 new_b = a + d * t1;
+    a = new_a;
+    b = new_b;
+    return true;
 }

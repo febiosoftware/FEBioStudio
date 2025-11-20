@@ -43,6 +43,8 @@ class GLPostSceneItem : public GLSceneItem
 public:
 	GLPostSceneItem(CGLPostScene* scene) : m_scene(scene) {}
 
+	const GLCamera& GetCamera() const;
+
 protected:
 	CGLPostScene* m_scene;
 };
@@ -56,18 +58,18 @@ public:
 private:
 	void RenderModel(GLRenderEngine& re, GLContext& rc);
 	void RenderNodes(GLRenderEngine& re, GLContext& rc);
-	void RenderEdges(GLRenderEngine& re, GLContext& rc);
+	void RenderEdges(GLRenderEngine& re);
 	void RenderFaces(GLRenderEngine& re, GLContext& rc);
 	void RenderElems(GLRenderEngine& re, GLContext& rc);
-	void RenderSelection(GLRenderEngine& re, GLContext& rc);
-	void RenderNormals(GLRenderEngine& re, GLContext& rc);
+	void RenderSelection(GLRenderEngine& re);
+	void RenderNormals(GLRenderEngine& re);
 	void RenderOutline(GLRenderEngine& re, GLContext& rc);
-	void RenderGhost(GLRenderEngine& re, GLContext& rc);
+	void RenderGhost(GLRenderEngine& re);
 	void RenderMeshLines(GLRenderEngine& re, GLContext& rc);
 	void RenderDiscrete(GLRenderEngine& re, GLContext& rc);
 	void RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc);
-	void RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc);
-	void RenderMinMaxMarkers(GLRenderEngine& re, GLContext& rc);
+	void RenderDiscreteAsSolid(GLRenderEngine& re);
+	void RenderMinMaxMarkers(GLRenderEngine& re);
 	void RenderDiscreteElement(GLRenderEngine& re, int n);
 	void RenderDiscreteElementAsSolid(GLRenderEngine& re, int n, double W);
 
@@ -86,29 +88,23 @@ public:
 	void render(GLRenderEngine& re, GLContext& rc) override;
 };
 
-class GLPostPlaneCutItem : public GLCompositeSceneItem
+class GLPostPlaneCutItem : public GLPostSceneItem
 {
 public:
-	GLPostPlaneCutItem(CGLPostScene* scene) : m_scene(scene) {}
+	GLPostPlaneCutItem(CGLPostScene* scene) : GLPostSceneItem(scene) {}
 
 	void render(GLRenderEngine& re, GLContext& rc) override;
-
-private:
-	CGLPostScene* m_scene;
 };
 
-class GLPostMirrorItem : public GLCompositeSceneItem
+class GLPostMirrorItem : public GLPostSceneItem
 {
 public:
-	GLPostMirrorItem(CGLPostScene* scene) : m_scene(scene) {}
+	GLPostMirrorItem(CGLPostScene* scene) : GLPostSceneItem(scene) {}
 
 	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
 	void renderMirror(GLRenderEngine& re, GLContext& rc, int start, int end);
-
-private:
-	CGLPostScene* m_scene;
 };
 
 class GLPostObjectItem : public GLPostSceneItem
@@ -138,8 +134,6 @@ public:
 
 	BOX GetBoundingBox() override;
 
-	BOX GetSelectionBox() override;
-
 	void ToggleTrackSelection();
 
 	Post::CGLModel* GetGLModel();
@@ -160,7 +154,7 @@ private:
 	void UpdateTracking();
 
 private:
-	void BuildScene(GLContext& rc);
+	void BuildScene();
 
 private:
 	CGLModelDocument* m_doc;

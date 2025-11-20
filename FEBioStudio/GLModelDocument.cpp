@@ -37,6 +37,14 @@ float CGLModelDocument::GetCurrentTimeValue()
 
 }
 
+BOX CGLModelDocument::GetBoundingBox()
+{
+	BOX box;
+	if (GetFSModel()) 
+		box = GetFSModel()->GetBoundingBox();
+	return box;
+}
+
 std::string CGLModelDocument::GetFieldString()
 {
 	if (IsValid())

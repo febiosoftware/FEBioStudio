@@ -61,8 +61,8 @@ public:
 	void enable() { benable = true; }
 	void disable() { benable = false; }
 
-	void setColor(GLColor c) { diffuse = ambient = c; }
-	void setColor(uint8_t r, uint8_t g, uint8_t b) { diffuse = ambient = GLColor(r,g,b); }
+	void setColor(GLColor c) { diffuse = c; }
+	void setColor(uint8_t r, uint8_t g, uint8_t b) { diffuse = GLColor(r,g,b); }
 
 public:
 	GLColor	diffuse;		// diffuse material color
@@ -72,6 +72,7 @@ public:
 	GLColor meshcol;		// mesh color
 	float	shininess;		// shininess [0..1]
 	float	transparency;	// transparency [0..1]
+	float	reflectivity;	// reflectivity [0..1]
 	bool	benable;		// material enabled or not
 	bool	bvisible;		// material visible or not
 	bool	bmesh;			// show mesh on model or not

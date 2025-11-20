@@ -30,8 +30,9 @@ class GLComposite : public GLWidget
 {
 public:
 	GLComposite(int x, int y, int w, int h);
+	~GLComposite();
 
-	void draw(QPainter* painter) override;
+	void draw(GLPainter* painter) override;
 
 	int handle(int x, int y, int nevent) override;
 

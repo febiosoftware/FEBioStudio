@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include <FEBioMech/FEFiberDensityDistribution.h>
 #include "PropertyList.h"
 #include "PropertyListView.h"
-#include <CUILib/GLSceneView.h>
+#include <RHILib/rhiSceneView.h>
 #include <GLLib/GLScene.h>
 #include <GLLib/GLMesh.h>
 #include <GLLib/GLCamera.h>
@@ -120,18 +120,29 @@ public:
 	{
 		m_sphere = CreateSphere();
 		m_renderSphere = m_sphere;
+		GetCamera().SetTargetDistance(5);
+		GetCamera().Update(true);
 	}
 	~CGLDistroScene() {}
 	
 	// Render the 3D scene
 	void Render(GLRenderEngine& engine, GLContext& rc) override 
 	{
-		if (m_recache) {
-			engine.deleteCachedMesh(&m_renderSphere); m_recache = false;
-		}
+		engine.setLightPosition(0, vec3f(1, 1, 1));
+		engine.setLightSpecularColor(0, GLColor(200, 200, 200));
 
-		engine.setMaterial(GLMaterial::PLASTIC, GLColor::FromRGBf(0.7f, 0.5f, 0.2f));
-		engine.renderGMesh(m_renderSphere);
+		PositionCameraInScene(engine);
+
+		GLMaterial mat;
+		mat.type = GLMaterial::PLASTIC;
+		mat.diffuse = mat.ambient = GLColor::FromRGBf(0.7f, 0.5f, 0.2f);
+		mat.specular = GLColor(200, 200, 200);
+		mat.shininess = 0.8f;
+
+		engine.setMaterial(mat);
+
+		engine.renderGMesh(m_renderSphere, !m_recache);
+		m_recache = false;
 
 		BOX box = m_renderSphere.GetBoundingBox();
 		if (box.Radius() < 1e-9) box = GetBoundingBox();
@@ -146,9 +157,6 @@ public:
 		return b;
 	}
 
-	// get the bounding box of the current selection
-	BOX GetSelectionBox() override { return BOX(-1, -1, -1, 1, 1, 1); }
-
 	GLMesh& GetSphere() { return m_sphere; }
 	GLMesh& GetRenderSphere() { return m_renderSphere; }
 
@@ -162,38 +170,6 @@ private:
 	GLMesh m_renderSphere;
 
 	bool m_recache = true;
-};
-
-class CDistroGLWidget : public CGLManagedSceneView
-{
-public:
-	CDistroGLWidget(QWidget* parent) : CGLManagedSceneView(new CGLDistroScene(), parent)
-	{
-		setMinimumSize(400, 400);
-
-		m_ptriad = new GLTriad(0, 0, 75, 75);
-		m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
-	}
-
-	void RenderCanvas() override
-	{
-		CGLManagedSceneView::RenderCanvas();
-
-		GLCamera& cam = GetActiveScene()->GetCamera();
-		m_ptriad->setOrientation(cam.GetOrientation());
-
-		QPainter painter(this);
-		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-		m_ptriad->draw(&painter);
-	}
-
-	CGLDistroScene* GetScene()
-	{
-		return dynamic_cast<CGLDistroScene*>(GetActiveScene());
-	}
-
-private:
-	GLTriad* m_ptriad = nullptr;
 };
 
 class FEBioPropsList : public CPropertyList
@@ -331,9 +307,11 @@ public:
 	QComboBox* distro = nullptr;
 	CPropertyList* props = nullptr;
 	CPropertyListView* propsView = nullptr;
-	CDistroGLWidget* glw = nullptr;
+	rhiSceneView* glw = nullptr;
 
 	vector<FEFiberDensityDistribution*> fdd;
+
+	CGLDistroScene* scene = nullptr;
 	
 public:
 	UIDlgDistributionVisualizer() {}
@@ -346,6 +324,8 @@ public:
 
 	void setup(CDlgDistributionVisualizer* dlg)
 	{
+		scene = new CGLDistroScene();
+
 		distro = new QComboBox;
 		int mod = FEBio::GetModuleId("solid");
 		int baseClassId = FEBio::GetBaseClassIndex("FEFiberDensityDistribution");
@@ -361,11 +341,15 @@ public:
 		vl->addWidget(distro);
 		vl->addWidget(propsView);
 
-		glw = new CDistroGLWidget(nullptr);
+		glw = new rhiSceneView(CMainWindow::GetInstance());
+		QWidget* rhiw = QWidget::createWindowContainer(glw);
+		rhiw->setMinimumSize(QSize(400, 400));
+
+		glw->SetScene(scene);
 
 		QHBoxLayout* hl = new QHBoxLayout;
 		hl->addLayout(vl);
-		hl->addWidget(glw);
+		hl->addWidget(rhiw);
 
 		QVBoxLayout* l = new QVBoxLayout;
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close);
@@ -414,7 +398,9 @@ void CDlgDistributionVisualizer::onDistroChanged(int n)
 
 void CDlgDistributionVisualizer::onUpdateVisual()
 {
-	CGLDistroScene* scene = ui->glw->GetScene();
+	CGLDistroScene* scene = ui->scene;
+	if (scene == nullptr) return;
+
 	GLMesh& m0 = scene->GetSphere();
 	GLMesh& m1 = scene->GetRenderSphere();
 
@@ -434,8 +420,18 @@ void CDlgDistributionVisualizer::onUpdateVisual()
 		}
 		m1.UpdateBoundingBox();
 		m1.UpdateNormals();
+
+		for (int i = 0; i < m1.Faces(); ++i)
+		{
+			GLMesh::FACE& face = m1.Face(i);
+			face.vr[0] = m1.Node(face.n[0]).r;
+			face.vr[1] = m1.Node(face.n[1]).r;
+			face.vr[2] = m1.Node(face.n[2]).r;
+		}
+
 		scene->Update();
-		scene->ZoomExtents(false);
-		ui->glw->update();
+
+		scene->GetCamera().ZoomToBox(scene->GetBoundingBox());
+		ui->glw->requestUpdate();
 	}
 }

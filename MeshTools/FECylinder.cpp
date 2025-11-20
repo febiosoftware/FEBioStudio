@@ -327,12 +327,6 @@ FSMesh* FECylinder::BuildButterfly()
 	// create the MB
 	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
 
-	// the Multi-block mesher will assign a different smoothing ID
-	// to each face, but we don't want that here. 
-	// For now, we autosmooth the mesh although we should think of a 
-	// better way
-	pm->AutoSmooth(60);
-
 	return pm;
 }
 
@@ -532,7 +526,6 @@ FSMesh* FECylinder::BuildWedged()
 			pf->SetType(FE_FACE_QUAD4);
 //			pf->m_gid = k/(m_nd/4);
 			pf->m_gid = k/(m_nd/4) + 1;
-			pf->m_sid = 0;
 			pf->n[0] = NodeIndex(i  , m_ns, k  );
 			pf->n[1] = NodeIndex(i  , m_ns, k+1);
 			pf->n[2] = NodeIndex(i+1, m_ns, k+1);
@@ -546,7 +539,6 @@ FSMesh* FECylinder::BuildWedged()
 		pf->SetType(FE_FACE_TRI3);
 //		pf->m_gid = 4;
 		pf->m_gid = 0;
-		pf->m_sid = 1;
 		pf->n[0] = NodeIndex(0, 0, 0);
 		pf->n[1] = NodeIndex(0, 1, k+1);
 		pf->n[2] = NodeIndex(0, 1, k);
@@ -558,7 +550,6 @@ FSMesh* FECylinder::BuildWedged()
 			pf->SetType(FE_FACE_QUAD4);
 			pf->m_gid = 0;
 //			pf->m_gid = 4;
-			pf->m_sid = 1;
 			pf->n[0] = NodeIndex(0,j  ,k+1);
 			pf->n[1] = NodeIndex(0,j+1,k+1);
 			pf->n[2] = NodeIndex(0,j+1,k  );
@@ -571,7 +562,6 @@ FSMesh* FECylinder::BuildWedged()
 	{
 		pf->SetType(FE_FACE_TRI3);
 		pf->m_gid = 5;
-		pf->m_sid = 2;
 		pf->n[0] = NodeIndex(m_nz, 0, 0);
 		pf->n[1] = NodeIndex(m_nz, 1, k);
 		pf->n[2] = NodeIndex(m_nz, 1, k+1);
@@ -582,7 +572,6 @@ FSMesh* FECylinder::BuildWedged()
 		{
 			pf->SetType(FE_FACE_QUAD4);
 			pf->m_gid = 5;
-			pf->m_sid = 2;
 			pf->n[0] = NodeIndex(m_nz,j  ,k  );
 			pf->n[1] = NodeIndex(m_nz,j+1,k  );
 			pf->n[2] = NodeIndex(m_nz,j+1,k+1);
@@ -918,12 +907,6 @@ FSMesh* FECylinder2::BuildButterfly()
 	// update the mesh
 	pm->UpdateMesh();
 
-	// the Multi-block mesher will assign a different smoothing ID
-	// to each face, but we don't want that here. 
-	// For now, we autosmooth the mesh although we should think of a 
-	// better way
-	pm->AutoSmooth(60);
-
 	return pm;
 }
 
@@ -1124,7 +1107,6 @@ FSMesh* FECylinder2::BuildWedged()
 			pf->SetType(FE_FACE_QUAD4);
 //			pf->m_gid = k/(m_nd/4);
 			pf->m_gid = k/(m_nd/4) + 1;
-			pf->m_sid = 0;
 			pf->n[0] = NodeIndex(i  , m_ns, k  );
 			pf->n[1] = NodeIndex(i  , m_ns, k+1);
 			pf->n[2] = NodeIndex(i+1, m_ns, k+1);
@@ -1138,7 +1120,6 @@ FSMesh* FECylinder2::BuildWedged()
 		pf->SetType(FE_FACE_TRI3);
 //		pf->m_gid = 4;
 		pf->m_gid = 0;
-		pf->m_sid = 1;
 		pf->n[0] = NodeIndex(0, 0, 0);
 		pf->n[1] = NodeIndex(0, 1, k+1);
 		pf->n[2] = NodeIndex(0, 1, k);
@@ -1150,7 +1131,6 @@ FSMesh* FECylinder2::BuildWedged()
 			pf->SetType(FE_FACE_QUAD4);
 			pf->m_gid = 0;
 //			pf->m_gid = 4;
-			pf->m_sid = 1;
 			pf->n[0] = NodeIndex(0,j  ,k+1);
 			pf->n[1] = NodeIndex(0,j+1,k+1);
 			pf->n[2] = NodeIndex(0,j+1,k  );
@@ -1163,7 +1143,6 @@ FSMesh* FECylinder2::BuildWedged()
 	{
 		pf->SetType(FE_FACE_TRI3);
 		pf->m_gid = 5;
-		pf->m_sid = 2;
 		pf->n[0] = NodeIndex(m_nz, 0, 0);
 		pf->n[1] = NodeIndex(m_nz, 1, k);
 		pf->n[2] = NodeIndex(m_nz, 1, k+1);
@@ -1174,7 +1153,6 @@ FSMesh* FECylinder2::BuildWedged()
 		{
 			pf->SetType(FE_FACE_QUAD4);
 			pf->m_gid = 5;
-			pf->m_sid = 2;
 			pf->n[0] = NodeIndex(m_nz,j  ,k  );
 			pf->n[1] = NodeIndex(m_nz,j+1,k  );
 			pf->n[2] = NodeIndex(m_nz,j+1,k+1);

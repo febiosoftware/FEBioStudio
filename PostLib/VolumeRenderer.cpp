@@ -192,6 +192,70 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 
 	GLColor col = HSV2RGB(360.0*m_tex.hue, m_tex.sat, m_tex.val);
 
+	constexpr int max8 = std::numeric_limits<unsigned char>::max();
+	constexpr int max16 = std::numeric_limits<unsigned short>::max();
+	constexpr uint32_t max32 = std::numeric_limits<unsigned int>::max();
+
+	if (m_tex.IsModified())
+	{
+		double min, max;
+		im3d.GetMinMax(min, max);
+		int pType = im3d.PixelType();
+		switch (pType)
+		{
+		case CImage::INT_8:
+		case CImage::INT_RGB8:
+		{
+			max /= max8 / 2;
+			min /= max8 / 2;
+		}
+		break;
+		case CImage::UINT_8:
+		case CImage::UINT_RGB8:
+		{
+			max /= max8;
+			min /= max8;
+		}
+		break;
+		case CImage::INT_RGB16:
+		{
+			max /= max16 / 2;
+			min /= max16 / 2;
+		}
+		break;
+		case CImage::UINT_16:
+		case CImage::UINT_RGB16:
+		{
+			max /= max16;
+			min /= max16;
+		}
+		break;
+		case CImage::INT_16:
+		case CImage::INT_32:
+		case CImage::UINT_32:
+		{
+			// Don't do anything for these cases since we scale the data
+			// before we send it to OpenGL
+		}
+		break;
+		case CImage::REAL_32:
+		case CImage::REAL_64:
+		{
+			// floating point images are copied and scaled when calling glTexImage3D, so we can just 
+			// set the range to [0,1]
+			max = 1.f;
+			min = 0.f;
+		}
+		break;
+		default:
+			assert(false);
+		}
+
+		if (max == min) max++;
+		m_tex.Iscale = 1.f / (max - min);
+		m_tex.IscaleMin = min;
+	}
+
 	if ((im3d.PixelType() == CImage::INT_RGB8) || (im3d.PixelType() == CImage::UINT_RGB8) 
         || (im3d.PixelType() == CImage::INT_RGB16) || (im3d.PixelType() == CImage::UINT_RGB16))
 	{
@@ -203,8 +267,12 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 		m_tex.col2 = HSV2RGB(360.0 * hue2, 1.0, 1.0);
 		m_tex.col3 = HSV2RGB(360.0 * hue3, 1.0, 1.0);
 	}
-
-	re.pushState();
+	else
+	{
+		m_tex.col1 = GLColor::White();
+		m_tex.col2 = GLColor::Black();
+		m_tex.col3 = GLColor::Black();
+	}
 
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::TEXTURE_3D);
 	re.setTexture(m_tex);
@@ -262,8 +330,6 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 	re.disableClipPlane(3);
 	re.disableClipPlane(4);
 	re.disableClipPlane(5);
-
-	re.popState();
 }
 
 void CVolumeRenderer::RenderSlices(GLRenderEngine& re, const vec3d& view)

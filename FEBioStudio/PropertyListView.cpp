@@ -570,7 +570,7 @@ public:
 class Ui::CPropertyListView
 {
 public:
-	CPropertyList*			m_list;
+	CPropertyList*			m_list = nullptr;
 	QTableView*				m_prop;
 	CPropertyListDelegate*	m_delegate;
 	CPropertyListModel*		m_data;

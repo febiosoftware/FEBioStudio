@@ -160,9 +160,6 @@ void CGLMirrorPlane::RenderPlane(GLRenderEngine& re)
 
 	float R = 2*box.Radius();
 
-	// store attributes
-	re.pushState();
-
 	double r = fabs(norm.x);
 	double g = fabs(norm.y);
 	double b = fabs(norm.z);
@@ -186,7 +183,5 @@ void CGLMirrorPlane::RenderPlane(GLRenderEngine& re)
 		re.vertex(vec3d(-R, R, 0));
 	}
 	re.end();
-
-	re.popState();
 	re.popTransform();
 }

@@ -31,13 +31,13 @@ SOFTWARE.*/
 #include <MeshTools/FENNQuery.h>
 #include <FSCore/ColorMap.h>
 #include <GLLib/GLMesh.h>
-#include <GLLib/GLCamera.h>
 #include <complex>
 #include <sstream>
 #include "SITKTools.h"
 #include <FECore/besselIK.h>
 #include <GLLib/glx.h>
 #include <GLLib/GLContext.h>
+#include <GLLib/GLCamera.h>
 #include <FEBioOpt/FEBioOpt.h>
 
 #ifdef min
@@ -402,7 +402,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(CImageModel* img)
 
     m_overlapFraction = 0.2;
     m_renderScale = 1;
-	m_nshowMesh = 0;
+	m_nshowMesh = MeshOption::ODF_MESH;
 	m_bshowRadial = false;
 	m_nshowSelectionBox = true;
 	m_ncolormode = 0;
@@ -953,8 +953,6 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, GLContext& rc)
 		return;
 	}
 
-	re.pushState();
-
 	// render the meshes (and selection box)
     bool showBoundingBoxes = GetBoolValue(SHOW_BOUND_BOX);
 	bool showSelBox = GetBoolValue(SHOW_SELBOX);
@@ -972,7 +970,7 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, GLContext& rc)
         {
 			re.pushTransform();
             re.scale(odf->m_radius * m_renderScale, odf->m_radius * m_renderScale, odf->m_radius * m_renderScale);
-            renderODFMesh(re, odf, rc.m_cam);
+            renderODFMesh(re, odf, rc.m_cam->IsMoving());
 			re.popTransform();
         }
 
@@ -987,17 +985,14 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, GLContext& rc)
     // show selected box
 	if (sel && showSelBox)
 	{
-		re.disable(GLRenderEngine::DEPTHTEST);
 		re.pushTransform();
 		re.translate(sel->m_position);
 		glx::renderBox(re, sel->m_box, GLColor(255, 255, 0), false, 1);
 		re.popTransform();
 	}
-
-	re.popState();
 }
 
-void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, GLCamera* cam)
+void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, bool remeshOnly)
 {
 	bool meshLines = GetBoolValue(MESHLINES);
     bool radial = GetBoolValue(RADIAL);
@@ -1005,7 +1000,7 @@ void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, GLCamera* c
 	int ncolor = GetIntValue(COLOR_MODE);
 
 	
-    if (showMesh == 2 && radial)
+    if ((showMesh == MeshOption::EFD_MESH) && radial)
     {
 		re.setMaterial(GLMaterial::PLASTIC, GLColor::White());
 
@@ -1035,11 +1030,11 @@ void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, GLCamera* c
     }
 
     GLMesh* mesh = nullptr;
-	if(showMesh == 2 || showMesh == 3)
+	if(showMesh == MeshOption::EFD_MESH || showMesh == MeshOption::VM3_MESH)
     {
         mesh = &odf->m_smallMesh;
     }
-    else if ((showMesh == 1) || cam->IsMoving()) 
+    else if ((showMesh == MeshOption::ODF_REMESH) || remeshOnly) 
     {
         mesh = &odf->m_remesh;
     }

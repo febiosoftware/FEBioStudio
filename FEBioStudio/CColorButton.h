@@ -26,10 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <QFrame>
-#include <QPainter>
-#include <QColorDialog>
 
-//-----------------------------------------------------------------------------
 class CColorButton : public QFrame
 {
 	Q_OBJECT

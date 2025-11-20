@@ -52,7 +52,7 @@ GObject* GPrimitive::Clone()
 	po->CopyTransform(this);
 
 	// copy color
-	po->SetColor(GetColor());
+	po->SetMaterial(GetMaterial());
 
 	// copy parameters
 	po->GetParamBlock() = GetParamBlock();

@@ -496,7 +496,6 @@ void FETorus::BuildFaces(FSMesh* pm)
 			FSFace& f = pm->Face(n);
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 4*(4*j/ns) + i/nd;
-			f.m_sid = 0;
 			f.n[0] = NodeIndex(i  ,j  );
 			f.n[1] = NodeIndex(i+1,j  );
 			f.n[2] = NodeIndex(i+1,j+1);

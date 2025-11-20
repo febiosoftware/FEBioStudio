@@ -298,7 +298,6 @@ void CGLMonitorScene::BuildMesh()
 
 		Post::Material m;
 		m.diffuse = c;
-		m.ambient = c;
 		m.specular = GLColor(128, 128, 128);
 		m.emission = GLColor(0, 0, 0);
 		m.shininess = 0.5f;
@@ -570,8 +569,6 @@ void CGLMonitorScene::UpdateScene()
 		ps->GetFEMesh()->Node(i).r = to_vec3d(ps->m_NODE[i].m_rt);
 	}
 	m_postModel->UpdateMeshState(m_postModel->CurrentTimeIndex());
-	ps->GetFEMesh()->UpdateNormals();
-
 	m_postModel->UpdateBoundingBox();
 	m_glm->Update(true);
 }
@@ -876,18 +873,6 @@ void CGLMonitorScene::UpdateSurfaceData(FEPlotData* pd, Post::FEMeshData& meshDa
 BOX CGLMonitorScene::GetBoundingBox()
 {
 	return m_postModel->GetBoundingBox();
-}
-
-
-BOX CGLMonitorScene::GetSelectionBox()
-{
-	Post::CGLModel* mdl = GetGLModel();
-	if (mdl == nullptr) return BOX(-1, -1, -1, 1, 1, 1);
-
-	FESelection* sel = m_fmdoc->GetCurrentSelection();
-	if (sel) return sel->GetBoundingBox();
-
-	return BOX();
 }
 
 LegendData CGLMonitorScene::GetLegendData(int n)

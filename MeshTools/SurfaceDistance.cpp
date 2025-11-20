@@ -105,17 +105,8 @@ bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, std::vector<dou
 	int nodes = ps->Nodes();
 
 	// calculate node normals
-	std::vector<vec3d> nu;
-	nu.assign(nodes, vec3d(0,0,0));
-	for (int i=0; i<ps->Faces(); ++i)
-	{
-		FSFace& fi = ps->Face(i);
-		int nf = fi.Nodes();
-		for (int j=0; j<nf; ++j)
-		{
-			nu[fi.n[j]] += to_vec3d(fi.m_nn[j]);
-		}
-	}
+	std::vector<vec3d> nu = ps->NodeNormals();
+	assert(nu.size() == nodes);
 
 	// conver them to global coordinates and normalize
 	for (int i=0; i<nodes; ++i)

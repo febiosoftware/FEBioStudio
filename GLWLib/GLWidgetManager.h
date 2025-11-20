@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 
-class QOpenGLWidget;
+class QWidget;
 #include "GLWidget.h"
 #include <vector>
 
@@ -43,21 +43,18 @@ public:
 	GLWidget* operator [] (int i) { return m_Widget[i]; }
 	GLWidget* get(int i) { return m_Widget[i]; }
 
-	void AttachToView(QOpenGLWidget* pview);
-
 	int handle(int x, int y, int nevent);
 
-	void DrawWidgets(QPainter* painter);
-	void DrawWidget(GLWidget* widget, QPainter* painter);
-
-	// Make sure widget are within bounds. (Call when parent QOpenGLWidget changes size)
-	void CheckWidgetBounds();
+	void DrawWidgets(GLPainter* painter);
+	void DrawWidget(GLWidget* widget, GLPainter* painter);
 
 protected:
-	QOpenGLWidget*			m_pview;
 	std::vector<GLWidget*>	m_Widget;
 
 private:
 	CGLWidgetManager(const CGLWidgetManager& m) = delete;
 	CGLWidgetManager& operator = (const CGLWidgetManager& m) = delete;
+
+	bool isResizing = false;
+	bool isDragging = false;
 };

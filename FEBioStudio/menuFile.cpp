@@ -1304,7 +1304,11 @@ void CMainWindow::on_actionCloseAll_triggered()
 
 void CMainWindow::on_actionSnapShot_triggered()
 {
-	QImage img = GetGLView()->CaptureScreen();
+	GetGLView()->CaptureScreen();
+}
+
+void CMainWindow::onCaptureFrameFinished(QImage img)
+{
 	ShowImageViewer(img);
 }
 
@@ -1364,14 +1368,16 @@ private:
 
 void CMainWindow::on_actionRayTrace_triggered()
 {
-	CGLDocument* doc = GetGLDocument();
+	CGLSceneDocument* doc = dynamic_cast<CGLSceneDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	GLScene* scene = doc->GetScene();
 	if (scene == nullptr) return;
 
-	int W = GetGLView()->width();
-	int H = GetGLView()->height();
+	int W = 0, H = 0;
+	W = GetGLView()->width();
+	H = GetGLView()->height();
+	if ((W == 0) || (H == 0)) return;
 
 	RayTracer* rayTracer = new RayTracer;
 	rayTracer->setWidth(W);
@@ -1380,21 +1386,18 @@ void CMainWindow::on_actionRayTrace_triggered()
 	CDlgEditObject dlg(rayTracer, "RayTracer Settings", this);
 	if (dlg.exec())
 	{
-		W = rayTracer->width();
-		H = rayTracer->height();
+		W = rayTracer->surfaceWidth();
+		H = rayTracer->surfaceHeight();
+
+		GLCamera& cam = scene->GetCamera();
 
 		GLContext rc;
-		rc.m_x = 0;
-		rc.m_y = 0;
-		rc.m_w = W;
-		rc.m_h = H;
 		rc.m_settings = GetGLView()->GetViewSettings();
-		rc.m_cam = &scene->GetCamera();
+		rc.m_cam = &cam;
 		QImage img(W, H, QImage::Format_ARGB32);
 
-		CGView& view = scene->GetView();
-		rayTracer->setupProjection(view.m_fov, view.m_fnear);
-		rayTracer->setBackgroundColor(rc.m_settings.m_col1);
+		rayTracer->setProjection(cam.GetFOV(), cam.GetNearPlane(), cam.GetFarPlane());
+		rayTracer->setClearColor(rc.m_settings.m_col1);
 
 		CRayTracerThread* render_thread = new CRayTracerThread(scene, rc, &img, rayTracer);
 		CDlgStartThread dlg2(this, render_thread);

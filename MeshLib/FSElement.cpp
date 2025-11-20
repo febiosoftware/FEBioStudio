@@ -49,7 +49,6 @@ FSElement_::FSElement_()
 
 	m_lid = 0;
 	m_MatID = 0;
-	m_tex = 0.0f;
 
 	m_Q.unit(); m_Qactive = false;
 	m_a0 = 0;
@@ -416,6 +415,8 @@ void FSElement_::GetFace(int i, FSFace& f) const
 		case 3: n[0] = m[2]; n[1] = m[1]; n[2] = m[0]; n[3] = m[7]; n[4] = m[6]; n[5] = m[ 5]; n[6] = m[ 4]; n[7] = m[ 9]; n[8] = m[ 8]; n[9] = m[19]; break;
 		}
 		break;
+	default:
+		assert(false);
 	}
 }
 

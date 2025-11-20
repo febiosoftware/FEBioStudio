@@ -163,8 +163,6 @@ public: // Helper functions for updating mesh data structures
 	void UpdateFacePartitions();
 	//! Update element partitions
 	void UpdateElementPartitions();
-	//! Update smoothing groups
-	void UpdateSmoothingGroups();
 
 	//! Remove elements with specified tag
 	int RemoveElements(int ntag);

@@ -610,9 +610,6 @@ FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 		if (el.m_gid < 0) el.m_gid = 0;
 	}
 
-	// update faces
-	pmesh->SmoothByPartition();
-
 	// associate the FE nodes with the GNodes
 	double R2 = pmesh->GetBoundingBox().GetMaxExtent();
 	if (R2 == 0) R2 = 1.0; else R2 *= R2;	
@@ -816,7 +813,6 @@ FSMesh* FETetGenMesher::build_tet10_mesh(FSMesh* pm)
 
 		f1.SetType(FE_FACE_TRI6);
 		f1.m_gid = f0.m_gid;
-		f1.m_sid = f0.m_sid;
 		f1.n[0] = f0.n[0];
 		f1.n[1] = f0.n[1];
 		f1.n[2] = f0.n[2];
@@ -1632,9 +1628,6 @@ FSMesh* FETetGenMesher::CreateMesh(GSurfaceMeshObject* surfObj)
 	{
 		UpdateElementPartitioning(surfObj, pmesh);
 	}
-
-	// update faces
-	pmesh->SmoothByPartition();
 
 	// associate the FE nodes with the GNodes
 	/*	GObject* po = pm->GetGObject();

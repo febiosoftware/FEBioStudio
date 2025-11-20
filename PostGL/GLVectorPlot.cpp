@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
 #include <FSCore/ColorMapManager.h>
+#include <GLLib/GLMeshBuilder.h>
 using namespace Post;
 
 //////////////////////////////////////////////////////////////////////
@@ -147,8 +148,34 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_nvec == -1) return;
 
-	// store attributes
-	re.pushState();
+	if (m_mesh == nullptr)
+	{
+		BuildMesh();
+
+		// we do this in the rare case that the new mesh is allocated on the exact same address
+		// as the old one
+		if (m_mesh) re.deleteCachedMesh(m_mesh);
+	}
+	if (m_mesh)
+	{
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
+
+		if (m_nglyph == GLYPH_LINE)
+			re.renderGMeshEdges(*m_mesh);
+		else
+			re.renderGMesh(*m_mesh);
+	}
+}
+
+void CGLVectorPlot::BuildMesh()
+{
+	if (m_mesh)
+	{
+		delete m_mesh;
+		m_mesh = nullptr;
+	}
+
+	GLMeshBuilder re;
 
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
@@ -176,6 +203,8 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 
 		m_fscale *= autoscale;
 	}
+
+	re.beginShape();
 
 	if (m_nglyph == GLYPH_LINE)
 	{
@@ -298,8 +327,9 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 		}
 	}
 
-	// restore attributes
-	re.popState();
+	re.endShape();
+
+	m_mesh = re.takeMesh();
 }
 
 void CGLVectorPlot::RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v)
@@ -390,6 +420,9 @@ void CGLVectorPlot::Update()
 
 void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 {
+	delete m_mesh;
+	m_mesh = nullptr;
+
 	if (breset) { m_map.Clear(); m_rng.clear(); m_val.clear(); }
 
 	m_lastTime = ntime;

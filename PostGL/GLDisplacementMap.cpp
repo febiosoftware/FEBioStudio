@@ -91,7 +91,6 @@ void CGLDisplacementMap::Activate(bool b)
 		Post::FERefState& ref = *state->m_ref;
 		FSMeshBase* pm = state->GetFEMesh();
 		for (int i = 0; i<pm->Nodes(); ++i) pm->Node(i).r = to_vec3d(ref.m_Node[i].m_rt);
-		pm->UpdateNormals();
 	}
 }
 
@@ -239,6 +238,5 @@ void CGLDisplacementMap::UpdateNodes()
 	}
 
 	// update the normals
-	pm->UpdateNormals();
     pm->UpdateBoundingBox();
 }

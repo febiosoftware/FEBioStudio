@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/math3d.h>
+#include <FSCore/box.h>
 #include "Interpolator.h"
 
 class GLCameraTransform
@@ -74,9 +75,6 @@ public:
 	// update camera position (for animations)
 	void Update(bool bhit = false);
 
-	// set line-draw or decal mode
-	void LineDrawMode(bool b);
-
 public:
 	void SetCameraSpeed(double f);
 	double GetCameraSpeed() { return m_speed; }
@@ -103,12 +101,15 @@ public:
 	// zoom in or out
 	void Zoom(double f);
 
+	// zoom to a bounding box
+	void ZoomToBox(const BOX& box, bool forceZoom = true, bool animate = true);
+
 public:
 	// sets the distance to the target
 	void SetTargetDistance(double z) { vec3d r = m_trg.Target(); r.z = z; m_trg.Target(r); }
 
 	// gets the distance to the target
-	double GetTargetDistance() { return m_trg.Value().z; }
+	double GetTargetDistance() const { return m_trg.Value().z; }
 
 	// gets the distance to the target
 	double GetFinalTargetDistance() { return m_trg.Target().z; }
@@ -123,7 +124,7 @@ public:
 	void SetOrientation(quatd q) { m_rot.Target(q); }
 
 	// get the camera's orientation
-	quatd GetOrientation() { return m_rot.Value(); }
+	quatd GetOrientation() const { return m_rot.Value(); }
 
 	// get the target position
 	vec3d GetPosition() const { return m_pos.Value(); }
@@ -157,6 +158,16 @@ public:
 	bool IsOrtho() const; 
 	void SetOrthoProjection(bool b);
 
+	// getter/setter
+	void SetNearPlane(double fnear) { m_fnear = fnear; }
+	double GetNearPlane() const { return m_fnear; }
+
+	void SetFarPlane(double ffar) { m_ffar = ffar; }
+	double GetFarPlane() const { return m_ffar; }
+
+	void SetFOV(double fov) { m_fov = fov; }
+	double GetFOV() const { return m_fov; }
+
 public:
 	bool IsMoving() const { return m_isMoving; }
 	void SetMoving(bool b) { m_isMoving = b; }
@@ -165,12 +176,15 @@ public:
 	VecInterpolator		m_pos;	// position of target in global coordinates
 	VecInterpolator		m_trg;	// position of target in local coordinates
 	QuatInterpolator	m_rot;	// orientation of camera
-	bool	m_bdecal;			// decal or line draw mode
 
 private:
 	double	m_speed;
 	double	m_bias;
+
 	bool	m_bortho;
+	double	m_fnear;
+	double	m_ffar;
+	double	m_fov;
 
 	bool	m_isMoving;	// camera is moving when user is moving mouse with depressed button
 };

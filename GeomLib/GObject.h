@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "GBaseObject.h"
+#include <GLLib/GLMaterial.h>
 #include <FSCore/box.h>
 #include <vector>
 
@@ -76,8 +77,12 @@ public:
 
 	//! Get object color
 	GLColor GetColor() const;
+
 	//! Set object color
 	void SetColor(const GLColor& c);
+
+	GLMaterial GetMaterial() const;
+	void SetMaterial(GLMaterial mat);
 
 	//! Collapse the transformation
 	void CollapseTransform();
@@ -140,9 +145,6 @@ public:
 	virtual FSCurveMesh* GetFECurveMesh(int edgeId);
 
 	// --- G E O M E T R Y ---
-
-	// render the geometry of the object (not the FE mesh)
-//	virtual void Render(GLCanvas* pc);
 
 	//! Build the render mesh
 	virtual void BuildGMesh();

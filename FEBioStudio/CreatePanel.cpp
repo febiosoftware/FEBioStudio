@@ -195,12 +195,7 @@ void CCreatePanel::on_create_clicked()
 			wnd->Update(this);
 
 			// make sure the object is visible
-			GLScene* scene = doc->GetScene();
-			if (scene)
-			{
-				scene->ZoomSelection(false);
-				wnd->RedrawGL();
-			}
+			doc->ZoomSelection(false);
 		}
 		else if (dynamic_cast<GDiscreteElement*>(po))
 		{

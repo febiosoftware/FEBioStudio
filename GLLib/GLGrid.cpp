@@ -27,13 +27,15 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLGrid.h"
 #include "GLCamera.h"
-#include "GLContext.h"
 #include "glx.h"
 #include "GLRenderEngine.h"
 
 GLGrid::GLGrid() : m_o(0,0,0), m_q(0, vec3d(0,0,1))
 {
-	m_scale = .1f; 
+	m_scale = .1f;
+
+	m_colx = GLColor::Red();
+	m_coly = GLColor::Green();
 }
 
 vec3d GLGrid::Intersect(vec3d r, vec3d t, bool bsnap)
@@ -68,15 +70,9 @@ vec3d GLGrid::Snap(vec3d r)
 	return r;
 }
 
-void GLGrid::Render(GLRenderEngine& re, GLContext& renderContext)
+void GLGrid::Render(GLRenderEngine& re, const GLCamera& cam)
 {
-	// store attributes
-	re.pushState();
-
-	re.setMaterial(GLMaterial::CONSTANT, GLColor::White());
-
-	// get the camera
-	GLCamera& cam = *renderContext.m_cam;
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
 
 	// store modelview matrix
 	re.pushTransform();
@@ -85,56 +81,9 @@ void GLGrid::Render(GLRenderEngine& re, GLContext& renderContext)
 	re.rotate(m_q);
 
 	// determine the scale
-	double scale = 1.f*(double) cam.GetTargetDistance();
+	double scale = cam.GetTargetDistance();
 	double l = (double)((int) log10(scale));
 	double s = m_scale = (double) pow(10, l-1);
-
-	// determine the colors for the major axis
-	GLColor cx, cy;
-	View_Mode view = renderContext.m_settings.m_nview;
-	int conv = renderContext.m_settings.m_nconv;
-	if (conv == CONV_FR_XZ)
-	{
-		switch (view)
-		{
-		case VIEW_USER:
-		case VIEW_ISOMETRIC:
-		case VIEW_TOP:
-		case VIEW_BOTTOM: cx = GLColor(200, 0, 0); cy = GLColor(0, 200, 0); break;
-		case VIEW_RIGHT:
-		case VIEW_LEFT:  cx = GLColor(0, 200, 0); cy = GLColor(0, 0, 255); break;
-		case VIEW_FRONT:
-		case VIEW_BACK:  cx = GLColor(200, 0, 0); cy = GLColor(0, 0, 255); break;
-		}
-	}
-	else if (conv == CONV_FR_XY)
-	{
-		switch (view)
-		{
-		case VIEW_USER:
-		case VIEW_ISOMETRIC:
-		case VIEW_FRONT:
-		case VIEW_BACK:  cx = GLColor(200, 0, 0); cy = GLColor(0, 200, 0); break;
-		case VIEW_RIGHT:
-		case VIEW_LEFT:  cx = GLColor(0, 0, 255); cy = GLColor(0, 200, 0); break;
-		case VIEW_TOP:
-		case VIEW_BOTTOM: cx = GLColor(200, 0, 0); cy = GLColor(0, 0, 255); break;
-		}
-	}
-	else // US_XY
-	{
-		switch (view)
-		{
-		case VIEW_USER:
-		case VIEW_ISOMETRIC:
-		case VIEW_FRONT:
-		case VIEW_BACK:  cx = GLColor(200, 0, 0); cy = GLColor(0, 200, 0); break;
-		case VIEW_RIGHT:
-		case VIEW_LEFT:  cx = GLColor(0, 0, 255); cy = GLColor(0, 200, 0); break;
-		case VIEW_TOP:
-		case VIEW_BOTTOM: cx = GLColor(200, 0, 0); cy = GLColor(0, 0, 255); break;
-		}
-	}
 
 	// get the camera position
 	vec3d rc = cam.GlobalPosition();
@@ -144,51 +93,50 @@ void GLGrid::Render(GLRenderEngine& re, GLContext& renderContext)
 	int nx = (int)(rc.x/s);
 	int ny = (int)(rc.y/s);
 
-	int i;
-
 	int i0 = -n+nx;
 	int i1 =  n+nx;
 
+	int ndiv = 2*m_ndiv;
+	if (ndiv <= 0) ndiv = 2 * n + 1;
+
 	// render the major axis
-	glx::drawLine(re, 0, (-n + ny)*s, 0, (n + ny)*s, 0, 1, cy, 2 * n + 1);
-	glx::drawLine(re, (-n + nx)*s, 0, (n + nx)*s, 0, 0, 1, cx, 2 * n + 1);
+	re.beginShape();
+	glx::drawLine(re, (-n + nx)*s, 0, (n + nx)*s, 0, 0, 1, m_colx, ndiv);
+	glx::drawLine(re, 0, (-n + ny)*s, 0, (n + ny)*s, 0, 1, m_coly, ndiv);
 
 	// grid lines color
 	GLColor c1(0,0,0);
 
 	// render the x-lines
-	double f, g, a;
-	for (i=i0; i<=i1; ++i)
+	for (int i=i0; i<=i1; ++i)
 	{
-		f = (double) (i-i0) / (double) (i1 - i0);
-		g = 1.0 - f;
-		a = 4.0*f*g;
+		double f = (double) (i-i0) / (double) (i1 - i0);
+		double g = 1.0 - f;
+		double a = 4.0*f*g;
 
 		a = 0.35*a*a;
 		if (abs(i)%10 == 0) a *= 2;
 
-		if (i != 0) glx::drawLine(re, i*s, (-n + ny)*s, i*s, (n + ny)*s, 0, a, c1, 2 * n + 1);
+		if (i != 0) glx::drawLine(re, i*s, (-n + ny)*s, i*s, (n + ny)*s, 0, a, c1, ndiv);
 	}
 
 	// render the y-lines
 	i0 = -n+ny;
 	i1 = n+ny;
-	for (i=i0; i<=i1; ++i)
+	for (int i=i0; i<=i1; ++i)
 	{
-		f = (double) (i-i0) / (double) (i1 - i0);
-		g = 1.0 - f;
-		a = 4.0*f*g;
+		double f = (double) (i-i0) / (double) (i1 - i0);
+		double g = 1.0 - f;
+		double a = 4.0*f*g;
 
 		a = 0.35*a*a;
 		if (i != 0) a *= 0.25;
 		if (abs(i)%10 == 0) a *= 2;
 
-		if (i != 0) glx::drawLine(re, (-n + nx)*s, i*s, (n + nx)*s, i*s, 0, a, c1, 2 * n + 1);
+		if (i != 0) glx::drawLine(re, (-n + nx)*s, i*s, (n + nx)*s, i*s, 0, a, c1, ndiv);
 	}
+	re.endShape();
 
 	// restore modelview matrix
 	re.popTransform();
-
-	// restore attribs
-	re.popState();
 }

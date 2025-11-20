@@ -171,7 +171,6 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 		}
 		m_surfmesh->UpdateFacePartitions();
 		m_surfmesh->UpdateFaceNeighbors();
-		m_surfmesh->UpdateNormals();
 		m_surfmesh->UpdateBoundingBox();
 
 		// copy edges
@@ -409,24 +408,23 @@ void GSurfaceMeshObject::BuildGMesh()
 	}
 
 	// create edges
-	int max_gid = -1;
+	gmesh->NewEdgePartition(0);
 	for (int i = 0; i<pm->Edges(); ++i)
 	{
 		FSEdge& es = pm->Edge(i);
 		if (es.m_gid >= 0)
 		{
-			if (es.m_gid > max_gid) max_gid = es.m_gid;
 			gmesh->AddEdge(es.n, es.Nodes(), es.m_gid);
 		}
 	}
-	max_gid++;
 
 	// create face data
+	gmesh->NewEdgePartition(1);
 	for (int i = 0; i < pm->Faces(); ++i) pm->Face(i).m_ntag = i;
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
 		FSFace& fs = pm->Face(i);
-		gmesh->AddFace(fs.n, fs.Nodes(), fs.m_gid, fs.m_sid, true, i);
+		gmesh->AddFace(fs.n, fs.Nodes(), fs.m_gid, fs.m_gid, true, i);
 
 		// add additional edges for rendering meshlines
 		int ne = fs.Edges();
@@ -436,22 +434,13 @@ void GSurfaceMeshObject::BuildGMesh()
 			if ((pf == nullptr) || !pf->IsVisible() || (fs.m_ntag < pf->m_ntag))
 			{
 				FSEdge e = fs.GetEdge(j);
-				gmesh->AddEdge(e.n, e.Nodes(), max_gid);
+				gmesh->AddEdge(e.n, e.Nodes(), -1);
 			}
 		}
 	}
 
-	gmesh->AutoPartition();
+	gmesh->AutoSurfacePartition();
 	gmesh->Update();
-
-	// The update sorted the edges, so the edges for rendering meshlines will
-	// be at the back. However, they still have a pid set which will causes these
-	// edges to render as feature edges. So, we need to set them to -1
-	for (int i = 0; i < gmesh->Edges(); ++i)
-	{
-		GLMesh::EDGE& edge = gmesh->Edge(i);
-		if (edge.pid == max_gid) edge.pid = -1;
-	}
 
 	SetRenderMesh(gmesh);
 }
@@ -573,7 +562,8 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 		{
 			vec3d pos, scl;
 			quatd rot;
-			GLColor col;
+			GLMaterial mat;
+			mat.type = GLMaterial::PLASTIC;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
@@ -584,16 +574,23 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 				case CID_OBJ_POS: ar.read(pos); break;
 				case CID_OBJ_ROT: ar.read(rot); break;
 				case CID_OBJ_SCALE: ar.read(scl); break;
-				case CID_OBJ_COLOR: ar.read(col); break;
+				case CID_OBJ_COLOR: { ar.read(mat.diffuse); mat.ambient = mat.diffuse; } break;
 				case CID_OBJ_PARTS: ar.read(nparts); break;
 				case CID_OBJ_FACES: ar.read(nfaces); break;
 				case CID_OBJ_EDGES: ar.read(nedges); break;
 				case CID_OBJ_NODES: ar.read(nnodes); break;
+				case CID_MAT_AMBIENT   : ar.read(mat.ambient); break;
+				case CID_MAT_DIFFUSE   : ar.read(mat.diffuse); break;
+				case CID_MAT_SPECULAR  : ar.read(mat.specular); break;
+				case CID_MAT_EMISSION  : ar.read(mat.emission); break;
+				case CID_MAT_SHININESS : ar.read(mat.shininess); break;
+				case CID_MAT_OPACITY   : ar.read(mat.opacity); break;
+				case CID_MAT_REFLECTION: ar.read(mat.reflection); break;
 				}
 				ar.CloseChunk();
 			}
 
-			SetColor(col);
+			SetMaterial(mat);
 
 			Transform& transform = GetTransform();
 			transform.SetPosition(pos);
@@ -891,7 +888,7 @@ GSurfaceMeshObject* ConvertToEditableSurface(GObject* po)
 
 	// copy data
 	pnew->CopyTransform(po);
-	pnew->SetColor(po->GetColor());
+	pnew->SetMaterial(po->GetMaterial());
 
 	// copy the selection state
 	if (po->IsSelected()) pnew->Select();

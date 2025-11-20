@@ -211,14 +211,15 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FSMesh* pnew,vector<int
 	for(int i =0; i< pnew->Faces();i++)
 	{
 		FSFace& fa = pnew->Face(i);
-		m_R.push_back(to_vec3d(fa.m_fn));
+		m_R.push_back(pnew->FaceNormal(fa));
 	}
 	for (int iter = 0 ; iter< m_iteration;iter++)
 	{				
 		//for each face calculate m_R
 		for(int i =0;i<pnew->Faces();i++)
 		{
-			FSFace& fa = pnew->Face(i);				
+			FSFace& fa = pnew->Face(i);
+			vec3f Na = to_vec3f(pnew->FaceNormal(fa));
 			vec3d centroid_R = (pnew->Node(fa.n[0]).r + pnew->Node(fa.n[1]).r + pnew->Node(fa.n[2]).r )/3;
 			//finding the neighbouring faces
 			for(int j =0 ;j<3 ;j++)
@@ -240,13 +241,14 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FSMesh* pnew,vector<int
 			for(int k =0;k<mR.size();k++)
 			{
 				FSFace *fa1 = mR[k];
+				vec3f Na1 = to_vec3f(pnew->FaceNormal(*fa1));
 				vec3d r[3]; //three nodes of the face
 				r[0] = pnew->Node(fa1->n[0]).r;
 				r[1] = pnew->Node(fa1->n[1]).r;
 				r[2] = pnew->Node(fa1->n[2]).r;
 				vec3d centroid_S = (r[0]+r[1]+r[2])/3;
 				double dist = (centroid_S - centroid_R).Length();
-				double angle = acos((fa.m_fn * fa1->m_fn)/(fa.m_fn.Length() * fa1->m_fn.Length()));//angle between the normals
+				double angle = acos((Na * Na1)/(Na.Length() * Na1.Length()));//angle between the normals
 				double weight1 = area_triangle(r) * exp(-m_threshold1 * angle*angle*dist*dist);
 				weight += weight1;
 				m_R_new[i] += m_R[fa1->m_elem[0].eid] * weight1;

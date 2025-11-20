@@ -978,10 +978,11 @@ void FSSpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)
 		FSFace& f = *(its->m_pi);
 		FSMesh& mesh = dynamic_cast<FSMesh&>(*(its->m_pm));
 		int nf = f.Nodes();
+		vec3d Nf = mesh.FaceNormal(f);
 		for (int n=0; n<nf; ++n)
 		{
 			FSNode& ns = mesh.Node(f.n[n]);
-			vec3d nn = to_vec3d(f.m_nn[n]);
+			vec3d nn = Nf;
 			vec3d nr = ns.r;
 
 			int i0 = ns.m_nid;

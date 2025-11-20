@@ -199,7 +199,7 @@ bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 		fprintf(fp, "*FACE_NORMALS\n");
 		for (int i = 0; i<m.Faces(); ++i)
 		{
-			vec3f& r = m.Face(i).m_fn;
+			vec3d r = m.FaceNormal(i);
 			fprintf(fp, "%8d,%15.7lg,%15.7lg,%15.7lg\n", i + 1, r.x, r.y, r.z);
 		}
 	}

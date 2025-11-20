@@ -272,8 +272,11 @@ void CMainWindow::on_actionEditPython_triggered()
 
 void CMainWindow::on_actionOptions_triggered()
 {
-	CDlgSettings dlg(this);
-	dlg.exec();
+	if (GetGLView())
+	{
+		CDlgSettings dlg(this, GetGLDocument(), GetGLView()->GetViewSettings());
+		dlg.exec();
+	}
 }
 
 void CMainWindow::on_actionLayerInfo_triggered()

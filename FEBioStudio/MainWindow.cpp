@@ -129,6 +129,52 @@ private:
 	CMainWindow* wnd;
 };
 
+static QRhi::Implementation MapToValidAPI(GraphicsAPI graphicsApi)
+{
+	// map to RHI implementation
+	QRhi::Implementation api = QRhi::Null;
+	switch (graphicsApi)
+	{
+	case GraphicsAPI::API_OPENGL: api = QRhi::OpenGLES2; break;
+	case GraphicsAPI::API_VULKAN: api = QRhi::Vulkan; break;
+	case GraphicsAPI::API_METAL: api = QRhi::Metal; break;
+	case GraphicsAPI::API_DIRECT3D11: api = QRhi::D3D11; break;
+	case GraphicsAPI::API_DIRECT3D12: api = QRhi::D3D12; break;
+	default:
+		break;
+	}
+
+	// Use platform-specific defaults
+#if defined(Q_OS_WIN)
+	if ((api == QRhi::Null) ||
+		((api != QRhi::D3D11) && (api != QRhi::D3D12) && (api != QRhi::Vulkan) && (api != QRhi::OpenGLES2)))
+	{
+		api = QRhi::OpenGLES2;
+	}
+#endif
+
+	// Always use Metal on Apple platforms
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+	if ((api == QRhi::Null) ||
+		((api != QRhi::Metal) && (api != QRhi::OpenGLES2)))
+	{
+//		api = QRhi::Metal; // TODO: Restore this when 3D textures are working on Metal
+		api = QRhi::OpenGLES2;
+	}
+#endif
+
+	// On Linux, prefer Vulkan if available
+#if defined(Q_OS_LINUX)
+	if ((api == QRhi::Null) ||
+		((api != QRhi::Vulkan) && (api != QRhi::OpenGLES2)))
+	{
+		api = QRhi::OpenGLES2;
+	}
+#endif
+
+	return api;
+}
+
 //-----------------------------------------------------------------------------
 CMainWindow* CMainWindow::m_mainWnd = nullptr;
 
@@ -139,7 +185,7 @@ CMainWindow* CMainWindow::GetInstance()
 }
 
 //-----------------------------------------------------------------------------
-CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
+CMainWindow::CMainWindow(bool reset, GraphicsAPI api, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
 {
 	m_mainWnd = this;
 
@@ -163,6 +209,10 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	// Instantiate IconProvider singleton
 	CIconProvider::Instantiate(devicePixelRatio());
 
+	// initialize RHI
+	QRhi::Implementation rhiAPI = MapToValidAPI(api);
+	RhiWindow::InitRHI(rhiAPI);
+	
 	// setup the GUI
 	ui->setupUi(this);
 
@@ -226,6 +276,8 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 #endif
     ui->m_pluginManager.ReadDatabase();
     ui->m_pluginManager.Connect();
+
+	QObject::connect(GetGLView(), &CGLView::captureFrameFinished, this, &CMainWindow::onCaptureFrameFinished);
 }
 
 //-----------------------------------------------------------------------------
@@ -1163,6 +1215,8 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->Update();
 
+	if (ui->docProps->isVisible() && (psend != ui->docProps)) ui->docProps->Update(breset);
+
 	UpdateGraphs(breset);
 }
 
@@ -1855,6 +1909,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("shadowIntensity", vs.m_shadow_intensity);
 		settings.setValue("lightDirection", Vec3fToString(vs.m_light));
 		settings.setValue("environmentMap", fbs.m_envMapFile);
+		settings.setValue("useEnvironmentMap", vs.m_use_environment_map);
 
 		// Physics
 		settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
@@ -2023,6 +2078,9 @@ void CMainWindow::readSettings()
 		vs.m_light = StringToVec3f(settings.value("lightDirection", "{0.5,0.5,1}").toString());
 		QString envmap = settings.value("environmentMap").toString();
 		fbs.m_envMapFile = envmap;
+		vs.m_use_environment_map = settings.value("useEnvironmentMap", false).toBool();
+
+		if (envmap.isEmpty()) vs.m_use_environment_map = false;
 
 		// Physics
 		vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
@@ -2174,7 +2232,6 @@ void CMainWindow::UpdateToolbar()
 {
 	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
-
 	if (doc->IsValid() == false) return;
 
 	CMainMenu* menu = ui->mainMenu;
@@ -2184,8 +2241,12 @@ void CMainWindow::UpdateToolbar()
 	if (view.m_bmesh  != menu->actionShowMeshLines->isChecked()) menu->actionShowMeshLines->trigger();
 	if (view.m_bgrid  != menu->actionShowGrid->isChecked()) menu->actionShowGrid->trigger();
 
-	CGView& gv = *doc->GetView();
-	if (gv.m_bortho != menu->actionOrtho->isChecked()) menu->actionOrtho->trigger();
+	GLScene* scene = doc->GetScene();
+	if (scene)
+	{
+		GLCamera& cam = scene->GetCamera();
+		if (cam.IsOrtho() != menu->actionOrtho->isChecked()) menu->actionOrtho->trigger();
+	}
 
 	if (ui->buildToolBar->isVisible())
 	{
@@ -2305,6 +2366,8 @@ void CMainWindow::UpdateUIConfig()
 	{
 		ui->setUIConfig(Ui::Config::EMPTY_CONFIG);
 	}
+
+	Update(0, true);
 }
 
 //-----------------------------------------------------------------------------
@@ -2528,7 +2591,7 @@ void CMainWindow::on_actionSelectSurfaces_toggled(bool b)
 	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
-	if (b) doc->SetSelectionMode(SELECT_FACE);
+	if (b) doc->SetSelectionMode(SELECT_SURF);
 	Update();
 }
 
@@ -3348,7 +3411,7 @@ QStringList CMainWindow::GetRecentFileList()
 	return ui->m_settings.m_recentFiles;
 }
 
-QString CMainWindow::GetEnvironmentMap()
+QString CMainWindow::GetEnvironmentMap() const
 {
 	return ui->m_settings.m_envMapFile;
 }
@@ -3356,6 +3419,13 @@ QString CMainWindow::GetEnvironmentMap()
 void CMainWindow::SetEnvironmentMap(const QString& filename)
 {
 	ui->m_settings.m_envMapFile = filename;
+}
+
+bool CMainWindow::IsEnvironmentMapEnabled()
+{
+	CGLView* glv = GetGLView();
+	if (glv) return glv->GetViewSettings().m_use_environment_map;
+	else return false;
 }
 
 QStringList CMainWindow::GetRecentProjectsList()
@@ -3442,7 +3512,7 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 		GLScene* scene = doc->GetScene();
 		if (scene)
 		{
-			scene->ZoomTo(imgModel->GetBoundingBox());
+			scene->GetCamera().ZoomToBox(imgModel->GetBoundingBox());
 			RedrawGL();
 		}
 		return true;

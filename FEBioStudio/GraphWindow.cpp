@@ -53,6 +53,7 @@ SOFTWARE.*/
 #include <QValidator>
 #include <QComboBox>
 #include <QSpinBox>
+#include <QPainter>
 #include <FECore/tools.h>
 #include "CColorButton.h"
 #include <GLWLib/convert.h>

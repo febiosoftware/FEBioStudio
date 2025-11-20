@@ -637,7 +637,7 @@ vec3d Post::IntegrateSurfaceNormal(FSMesh& mesh, Post::FEState* ps)
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
 		FSFace& f = mesh.Face(i);
-		vec3d N = to_vec3d(f.m_fn);
+		vec3d N = mesh.FaceNormal(f);
 
 		if (f.IsSelected() && f.IsActive())
 		{

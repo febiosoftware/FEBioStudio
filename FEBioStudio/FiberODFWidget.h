@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <QWidget>
-#include <CUILib/GLSceneView.h>
+#include <RHILib/rhiSceneView.h>
 #include <GLLib/GLCamera.h>
 #include <GLLib/GLScene.h>
 
@@ -40,43 +40,20 @@ struct CODF;
 
 using std::string;
 
-class CFiberGLWidget;
-
 class CODFScene : public GLScene
 {
 public:
-	CODFScene(CFiberGLWidget* w) : m_w(w) {}
+	CODFScene();
 	void Render(GLRenderEngine& engine, GLContext& rc) override;
-
-	void RenderCanvas(QPainter& painter, GLContext& rc) override;
 
 	BOX GetBoundingBox() override;
 
-	BOX GetSelectionBox() override;
+	void setAnalysis(CFiberODFAnalysis* a) { m_analysis = a; }
+	void setODF(CODF* odf) { m_ODF = odf; }
 
 private:
-	CFiberGLWidget* m_w;
-};
-
-class CFiberGLWidget : public CGLManagedSceneView
-{
-public:
-    CFiberGLWidget();
-	~CFiberGLWidget();
-
-    void setAnalysis(CFiberODFAnalysis* analysis);
-    void setODF(CODF* odf);
-
-	void RenderBackground() override;
-
-private:
-    CFiberODFAnalysis* m_analysis;
-    CODF* m_ODF;
-
-    GLTriad* m_ptriad;
-	GLLegendBar* m_pbar;
-
-	friend class CODFScene;
+	CFiberODFAnalysis* m_analysis;
+	CODF* m_ODF;
 };
 
 namespace Ui

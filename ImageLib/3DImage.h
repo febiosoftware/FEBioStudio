@@ -41,13 +41,13 @@ public:
 
 	virtual bool Create(int nx, int ny, int nz, uint8_t* data = nullptr, int pixelType = CImage::UINT_8);
 
-	int Width () { return m_cx; }
-	int Height() { return m_cy; }
-	int Depth () { return m_cz; }
-    int PixelType() { return m_pixelType; }
-	std::string PixelTypeString();
+	int Width () const { return m_cx; }
+	int Height() const { return m_cy; }
+	int Depth () const { return m_cz; }
+    int PixelType() const { return m_pixelType; }
+	std::string PixelTypeString() const;
     int BPS() const { return m_bps; }
-    bool IsRGB();
+    bool IsRGB() const;
 
     virtual BOX GetBoundingBox() { return m_box; }
     virtual void SetBoundingBox(BOX& box) { m_box = box; }
@@ -72,6 +72,7 @@ public:
 	void GetSampledSliceZ(CImage& im, double f);
 
 	uint8_t* GetBytes() { return m_pb; }
+	const uint8_t* GetBytes() const { return m_pb; }
 	void SetBytes(uint8_t* bytes) {m_pb = bytes; }
 
     void GetMinMax(double& min, double& max, bool recalc = true);

@@ -170,18 +170,9 @@ public: // transformation
 	//! Copy transform info from another object
 	void CopyTransform(GBaseObject* po);
 
-	//! Get the object's render transform
-	Transform& GetRenderTransform() { return m_renderTransform; }
-	//! Get the object's render transform (const version)
-	const Transform& GetRenderTransform() const { return m_renderTransform; }
-	//! Set the object's render transform
-	void SetRenderTransform(const Transform& T) { m_renderTransform = T; }
-
 protected:
 	//! The object's transform
 	Transform	m_transform;
-	//! The objects' transform for rendering
-	Transform	m_renderTransform;
 
 protected:
 	// --- definition of geometry ---

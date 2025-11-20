@@ -45,10 +45,47 @@ void GTranslator::Render(GLRenderEngine& re, int npivot, bool bactive)
 	double l = 0.1*d;
 	double r = 0.3*d;
 
-	re.pushState();
-	re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::White(), GLMaterial::VERTEX_COLOR);
 
 	GLColor g(128, 128, 128);
+
+	re.beginShape();
+
+	if (bactive)
+	{
+		// XY-plane
+		if (npivot == PIVOT_SELECTION_MODE::SELECT_XY) re.setColor(GLColor(255, 255, 0, 128));
+		else re.setColor(GLColor(164, 164, 0, 90));
+		re.renderRect(0, 0, r, r);
+		re.setColor(GLColor(255, 255, 0, 128));
+		re.renderLine(vec3d(r, 0, 0), vec3d(r, r, 0), vec3d(0, r, 0));
+
+		// YZ-plane
+		if (npivot == PIVOT_SELECTION_MODE::SELECT_YZ) re.setColor(GLColor(255, 255, 0, 128));
+		else re.setColor(GLColor(164, 164, 0, 90));
+		re.pushTransform();
+		{
+			re.rotate(-90, 0, 1, 0);
+			re.renderRect(0, 0, r, r);
+
+			re.setColor(GLColor(255, 255, 0, 128));
+			re.renderLine(vec3d(r, 0, 0), vec3d(r, r, 0), vec3d(0, r, 0));
+		}
+		re.popTransform();
+
+		// XZ-plane
+		if (npivot == PIVOT_SELECTION_MODE::SELECT_XZ) re.setColor(GLColor(255, 255, 0, 128));
+		else re.setColor(GLColor(164, 164, 0, 90));
+		re.pushTransform();
+		{
+			re.rotate(90, 1, 0, 0);
+			re.renderRect(0, 0, r, r);
+
+			re.setColor(GLColor(255, 255, 0, 128));
+			re.renderLine(vec3d(r, 0, 0), vec3d(r, r, 0), vec3d(0, r, 0));
+		}
+		re.popTransform();
+	}
 
 	// X-axis
 	re.pushTransform();
@@ -100,43 +137,7 @@ void GTranslator::Render(GLRenderEngine& re, int npivot, bool bactive)
 	}
 	re.popTransform();
 
-	if (bactive)
-	{
-		// XY-plane
-		if (npivot == PIVOT_SELECTION_MODE::SELECT_XY) re.setColor(GLColor(255, 255, 0, 128));
-		else re.setColor(GLColor(164, 164, 0, 90));
-		re.renderRect(0,0,r,r);
-		re.setColor(GLColor(255,255,0, 128));
-		re.renderLine(vec3d(r, 0, 0), vec3d(r, r, 0), vec3d(0, r, 0));
-
-		// YZ-plane
-		if (npivot == PIVOT_SELECTION_MODE::SELECT_YZ) re.setColor(GLColor(255, 255, 0, 128));
-		else re.setColor(GLColor(164, 164, 0, 90));
-		re.pushTransform();
-		{
-			re.rotate(-90, 0, 1, 0);
-			re.renderRect(0,0,r,r);
-
-			re.setColor(GLColor(255,255,0,128));
-			re.renderLine(vec3d(r, 0, 0), vec3d(r, r, 0), vec3d(0, r, 0));
-		}
-		re.popTransform();
-
-		// XZ-plane
-		if (npivot == PIVOT_SELECTION_MODE::SELECT_XZ) re.setColor(GLColor(255, 255, 0, 128));
-		else re.setColor(GLColor(164, 164, 0, 90));
-		re.pushTransform();
-		{
-			re.rotate(90, 1, 0, 0);
-			re.renderRect(0,0,r,r);
-
-			re.setColor(GLColor(255,255,0,128));
-			re.renderLine(vec3d(r, 0, 0), vec3d(r, r, 0), vec3d(0, r, 0));
-		}
-		re.popTransform();
-	}
-
-	re.popState();
+	re.endShape();
 }
 
 int GTranslator::Pick(int x, int  y)
@@ -215,8 +216,9 @@ void GRotator::Render(GLRenderEngine& re, int npivot, bool bactive)
 	double l = 0.1*d;
 	const int N = 50;
 
-	re.pushState();
-	re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
+	re.beginShape();
+
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::White(), GLMaterial::VERTEX_COLOR);
 
 	// X-axis
 	re.pushTransform();
@@ -316,7 +318,7 @@ void GRotator::Render(GLRenderEngine& re, int npivot, bool bactive)
 	}
 	re.popTransform();
 
-	re.popState();
+	re.endShape();
 }
 
 int GRotator::Pick(int x, int y)
@@ -407,10 +409,11 @@ void GScalor::Render(GLRenderEngine& re, int npivot, bool bactive)
 	double l = 0.1*d;
 	double r = 0.3*d;
 
-	re.pushState();
-	re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::White(), GLMaterial::VERTEX_COLOR);
 
 	GLColor g(128, 128, 128);
+
+	re.beginShape();
 
 	// X-axis
 	re.pushTransform();
@@ -498,7 +501,7 @@ void GScalor::Render(GLRenderEngine& re, int npivot, bool bactive)
 		re.popTransform();
 	}
 
-	re.popState();
+	re.endShape();
 }
 
 int GScalor::Pick(int x, int y)

@@ -98,10 +98,10 @@ void CDihedralAngleTool::Update()
 	}
 	else if ((m_face1 > 0) && (m_face2 > 0))
 	{
-		FSFace& face1 = mesh->Face(m_face1 - 1);
-		FSFace& face2 = mesh->Face(m_face2 - 1);
+		vec3d n1 = mesh->FaceNormal(m_face1 - 1);
+		vec3d n2 = mesh->FaceNormal(m_face2 - 1);
 
-		double cosa = face1.m_fn * face2.m_fn;
+		double cosa = n1 * n2;
 
 		m_angle = acos(cosa) * RAD2DEG;
 	}

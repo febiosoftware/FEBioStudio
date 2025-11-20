@@ -57,7 +57,6 @@ void GLViewSettings::Defaults(int ntheme)
 	m_showDiscrete = true;
 	m_showRigidLabels = true;
 
-	m_bcull = false;
 	m_bconn = false;
 	m_bmax = true;
 	m_bpart = true;

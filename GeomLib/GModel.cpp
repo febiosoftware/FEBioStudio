@@ -1822,7 +1822,7 @@ GObject* GModel::CloneObject(GObject *po)
 	if (pco == 0) return 0;
 
 	pco->CopyTransform(po);
-	pco->SetColor(po->GetColor());
+	pco->SetMaterial(po->GetMaterial());
 
 	// set a new name
 	char sz[256];
@@ -2212,9 +2212,6 @@ GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newOb
 			newObject->Part(np)->SetMaterialID(po->Part(j)->GetMaterialID());
 		}
 	}
-
-	// TODO: Figure out a way to retain the original smoothing groups during merge.
-	newObject->GetEditableMesh()->SmoothByPartition();
 
 	return newObject;
 }

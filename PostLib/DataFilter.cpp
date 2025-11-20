@@ -2525,7 +2525,6 @@ ModelDataField* Post::SurfaceNormalProjection(FEPostModel& fem, ModelDataField* 
 					{
 						FSFace& face = mesh.Face(i);
 						face.m_ntag = -1;
-						vec3f n = face.m_fn;
 						if (face.IsExternal())
 						{
 							int eid = face.m_elem[0].eid;
@@ -2534,6 +2533,7 @@ ModelDataField* Post::SurfaceNormalProjection(FEPostModel& fem, ModelDataField* 
 								mat3fs m;
 								src.eval(eid, &m);
 
+								vec3f n = to_vec3f(mesh.FaceNormal(face));
 								float v = n * (m * n);
 
 								dst.add(i, v);
@@ -2612,10 +2612,11 @@ ModelDataField* Post::SurfaceNormalProjection(FEPostModel& fem, ModelDataField* 
 								mat3fs v[FSElement::MAX_NODES];
 								src.eval(eid, v);
 
+								vec3f N = to_vec3f(mesh.FaceNormal(face));
+
 								float fv[FSFace::MAX_NODES] = { 0.f };
 								for (int m = 0; m < face.Nodes(); ++m)
 								{
-									vec3f N = face.m_nn[m];
 									int a = face.n[m];
 									int b = el.FindNodeIndex(a);
 									mat3fs S = v[b];

@@ -138,11 +138,12 @@ void Post::FEDistanceMap::BuildNormalList(Post::FEDistanceMap::Surface& s, bool 
 	for (int i=0; i<NF; ++i)
 	{
 		FSFace& f = mesh.Face(s.m_face[i]);
+		vec3f N = to_vec3f(mesh.FaceNormal(f));
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j) 
 		{
 			int n = s.m_lnode[MN*i + j]; assert(n>=0);
-			s.m_norm[n] += f.m_nn[j];
+			s.m_norm[n] += N;
 		}
 	}
 	for (int i = 0; i < NN; ++i) s.m_norm[i].Normalize();

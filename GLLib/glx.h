@@ -57,7 +57,7 @@ void drawArc(GLRenderEngine& re, const vec3d& c, double R, double w0, double w1,
 void drawHelix(GLRenderEngine& re, const vec3d& a, const vec3d& b, double R, double p, int N);
 
 void drawSphere(GLRenderEngine& re, const vec3d& center, float radius);
-void drawSphere(GLRenderEngine& re, float radius);
+void drawSphere(GLRenderEngine& re, float radius, int M = 10, int N = 16);
 void drawHalfSphere(GLRenderEngine& re, float R);
 void drawSmoothPath(GLRenderEngine& re, const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0 = 0.f, float t1 = 1.f, int nsegs = 16);
 void drawSmoothPath(GLRenderEngine& re, const std::vector<vec3d>& path, float R, float t0 = 0.f, float t1 = 1.f, int leftCap = 0, int rightCap = 0);

@@ -38,7 +38,7 @@ namespace Ui {
 		XML_CONFIG,			// text document	(i.e. feb file)
 		MONITOR_CONFIG,		// febio monitor document
 		FEBREPORT_CONFIG,	// febio report document
-		BATCHRUN_CONFIG,	// febio batch run document
+		BATCHRUN_CONFIG		// febio batch run document
 	};
 
 	// Protected base class for configurations

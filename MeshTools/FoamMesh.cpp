@@ -717,7 +717,6 @@ FSMesh* FoamGen::CreateMesh()
 		s.n[2] = f.n[2];
 		s.n[3] = f.n[2];
 		s.m_gid = f.nid;
-		s.m_sid = f.nid;
 	}
 
 	pm->BuildMesh();

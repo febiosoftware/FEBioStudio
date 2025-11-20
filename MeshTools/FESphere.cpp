@@ -357,16 +357,6 @@ FSMesh* FESphere::BuildMesh()
 
 	// create the MB
 	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
-	if (pm)
-	{
-		// the Multi-block mesher will assign a different smoothing ID
-		// to each face, but we don't want that here. Instead we assign
-		// to each face the same smoothing ID
-		for (int i = 0; i < pm->Faces(); ++i) pm->Face(i).m_sid = 0;
-
-		// finally, we update the normals and we are good to go
-		pm->UpdateNormals();
-	}
 
 	return pm;
 }

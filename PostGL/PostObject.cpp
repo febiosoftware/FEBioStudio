@@ -72,33 +72,6 @@ void CPostObject::UpdateMesh()
 	}
 	mesh->Update();
 
-	vector<double> buf(pm->Nodes());
-	for (int i = 0; i < mesh->Faces(); ++i)
-	{
-		GLMesh::FACE& face = mesh->Face(i);
-		if (face.pid < Faces())
-		{
-			assert(face.fid >= 0);
-			FSFace& f = pm->Face(face.fid);
-			for (int j = 0; j < f.Nodes(); ++j) buf[f.n[j]] = f.m_tex[j];
-			
-			face.t[0].x = buf[face.n[0]];
-			face.t[1].x = buf[face.n[1]];
-			face.t[2].x = buf[face.n[2]];
-		}
-		else
-		{
-			Post::GLSurface& surf = InteralSurface(face.pid - Faces());
-			FSFace& f = surf.Face(face.fid);
-			FSElement& e = pm->Element(face.eid);
-			for (int j = 0; j < f.Nodes(); ++j) buf[f.n[j]] = f.m_tex[j];
-
-			face.t[0].x = buf[face.n[0]];
-			face.t[1].x = buf[face.n[1]];
-			face.t[2].x = buf[face.n[2]];
-		}
-	}
-
 	mesh->setModified(true);
 
 	GLMesh* renderMesh = GetRenderMesh();
@@ -146,7 +119,7 @@ void CPostObject::BuildFERenderMesh()
 	{
 		std::deque<int>::iterator it = faceList[i].begin();
 		GFace* pf = Face(i);
-		gm.NewPartition(pf->m_nPID[1] == -1 ? 0 : 1);
+		gm.NewSurfacePartition(pf->m_nPID[1] == -1 ? 0 : 1);
 		for (auto n : faceList[i])
 		{
 			const FSFace& face = pm->Face(n);
@@ -161,7 +134,7 @@ void CPostObject::BuildFERenderMesh()
 				int mid = -1;
 				if (eid >= 0) mid = pm->Element(eid).m_MatID;
 
-				gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), n, eid, mid);
+				gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_gid, face.IsExterior(), n, eid, mid);
 
 				int ne = face.Edges();
 				for (int j = 0; j < ne; ++j)
@@ -181,7 +154,7 @@ void CPostObject::BuildFERenderMesh()
 	for (int i = 0; i < nsurf; ++i)
 	{
 		Post::GLSurface& surf = InteralSurface(i);
-		gm.NewPartition();
+		gm.NewSurfacePartition();
 		for (int j = 0; j < surf.Faces(); ++j)
 		{
 			FSFace& face = surf.Face(j);
@@ -244,18 +217,7 @@ void CPostObject::BuildInternalSurfaces()
 						el.GetFace(j, face);
 						face.m_elem[0].eid = el.m_lid; // store the element ID. This is used for selection ???
 						face.m_elem[1].eid = pen->m_lid;
-
-						// calculate the face normals
-						vec3f r0 = to_vec3f(mesh.Node(face.n[0]).r);
-						vec3f r1 = to_vec3f(mesh.Node(face.n[1]).r);
-						vec3f r2 = to_vec3f(mesh.Node(face.n[2]).r);
-
-						face.m_fn = (r1 - r0) ^ (r2 - r0);
-						for (int k = 0; k < face.Nodes(); ++k) face.m_nn[k] = face.m_fn;
-						face.m_fn.Normalize();
-						face.m_sid = 0;
 						face.m_gid = nsurf + m;
-
 						m_innerSurface[m]->add(face);
 					}
 				}

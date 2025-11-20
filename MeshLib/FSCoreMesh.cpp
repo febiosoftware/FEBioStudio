@@ -915,13 +915,14 @@ double FSCoreMesh::QuadVolume(const FSElement_& el)
     assert(el.Type() == FE_QUAD4);
 
     FSFace& face = Face(el.m_face[0]);
+	vec3d Nf = FaceNormal(face);
 
     vec3d rt[FSElement::MAX_NODES];
     vec3d Dt[FSElement::MAX_NODES];
     for (int i = 0; i < el.Nodes(); ++i)
     {
         rt[i] = m_Node[el.m_node[i]].r;
-        Dt[i] = to_vec3d(face.m_nn[i]*el.m_h[i]);
+        Dt[i] = Nf*el.m_h[i];
     }
 
     switch (el.Type())
@@ -1570,18 +1571,6 @@ int FSCoreMesh::CountElementPartitions() const
 		if (elem.m_gid > max_gid) max_gid = elem.m_gid;
 	}
 	return max_gid + 1;
-}
-
-//-----------------------------------------------------------------------------
-int FSCoreMesh::CountSmoothingGroups() const
-{
-	int max_sg = -1;
-	for (int i = 0; i<Faces(); ++i)
-	{
-		const FSFace& face = Face(i);
-		if (face.m_sid > max_sg) max_sg = face.m_sid;
-	}
-	return max_sg + 1;
 }
 
 //-----------------------------------------------------------------------------

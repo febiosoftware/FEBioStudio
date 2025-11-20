@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <CUILib/GLSceneView.h>
+#include <RHILib/rhiSceneView.h>
 #include <QNativeGestureEvent>
 #include <GLLib/GLCamera.h>
 #include <FSCore/ColorMap.h>
@@ -47,6 +47,7 @@ class FSModel;
 class CGLView;
 class GLScene;
 class GPart;
+class GLViewTransform;
 
 class GLLabel;
 class GLTriad;
@@ -92,7 +93,7 @@ public:
 };
 
 //===================================================================
-class CGLView : public CGLSceneView
+class CGLView : public rhiSceneView
 {
 	Q_OBJECT
 
@@ -104,6 +105,8 @@ public:
 	CGLDocument* GetDocument();
 
 	GLScene* GetActiveScene() override;
+
+	GLCamera* GetCamera();
 
 	void UpdateScene();
 
@@ -133,7 +136,6 @@ public:
 	vec3d PickPoint(int x, int y, bool* success = 0);
 
 	void SetViewMode(View_Mode n);
-	View_Mode GetViewMode() { return m_view.m_nview; }
 
 	void TogglePerspective(bool b);
 
@@ -141,8 +143,6 @@ public:
 
 	void Set3DCursor(const vec3d& r) { m_view.m_pos3d = r; }
 	vec3d Get3DCursor() const { return m_view.m_pos3d; }
-
-	std::string GetOGLVersionString();
 
 	void ToggleFPS();
 
@@ -170,8 +170,7 @@ signals:
 	// render functions
 public:
 	// other rendering functions
-	void RenderRubberBand();
-	void RenderPivot();
+	void RenderPivot(GLRenderEngine& re);
 
 	void ShowSafeFrame(bool b);
 
@@ -195,27 +194,26 @@ public:
 	void ToggleContextMenu();
 
 protected:
-	void initializeGL() override;
-	void resizeGL(int w, int h) override;
+	void customInit() override;
 
-	void RenderScene() override;
+	void RenderScene(GLRenderEngine& re) override;
 
-	void RenderCanvas(GLContext& rc);
+	void onFrameFinished() override;
 
-private:
-	void Render3DCursor();
-	void RenderTags();
-	void RenderDecorations();
+private: // overlay rendering
+	void RenderOverlay(GLRenderEngine& re, GLContext& rc);
+	void RenderOverlayComponents(QPainter& painter);
+	void RenderTags(QPainter& painter);
+	void RenderDecorations(GLRenderEngine& re);
+	void DrawWidgets(QPainter& painter);
+	void RenderRubberBand(QPainter& painter);
 
 private:
 	void SetSnapMode(Snap_Mode snap) { m_nsnap = snap; }
 	Snap_Mode GetSnapMode() { return m_nsnap; }
 
-	// convert from device pixel to physical pixel
-	QPoint DeviceToPhysical(int x, int y);
-
 public:
-	QImage CaptureScreen();
+	void CaptureScreen();
 
 	void UpdateWidgets();
 
@@ -224,6 +222,8 @@ public:
 
 	bool isSubtitleVisible() const;
 	void showSubtitle(bool b);
+
+	void setRenderOverlay(bool b) { renderOverlay = b; }
 
 public:
 	void AddDecoration(GDecoration* deco);
@@ -236,13 +236,29 @@ public:
 	void LockSafeFrame();
 	void UnlockSafeFrame();
 
+
 public:
 	void SetColorMap(unsigned int n);
 
 	void AddRegionPoint(int x, int y);
 
+public: // added to support new rhi base class
+	GLViewSettings& GetViewSettings() { return m_view; }
+	void repaint();
+	void update();
+	QRect rect() const;
+
+public:
+	bool StartRecording();
+	bool PauseRecording();
+	bool StopRecording();
+
 public slots:
 	void updateView();
+	void captureFrameReady(QImage img);
+
+signals:
+	void captureFrameFinished(QImage img);
 
 protected:
 	CMainWindow*	m_pWnd;	// parent window
@@ -306,10 +322,17 @@ private:
 	GLViewSelector	m_select;
 
 	GLScreenRecorder	m_recorder;
+	bool m_stopRequested = false;
 
 	GLCamera	m_oldCam;
 
-	std::string		m_oglVersionString;
+	bool renderOverlay = false;
+
+	bool mouseIsPressed = false;
+
+	int frameCapturesRequested = 0;
+
+	static GLViewSettings	m_view;
 };
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt);

@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <QWidget>
+#include <GLLib/GLMaterial.h>
 
 class CMainWindow;
 class CObjectPanelUI;
@@ -48,7 +49,7 @@ public:
 	void Update();
 
 protected slots:
-	void onColorChanged(QColor c);
+	void onMaterialChanged(GLMaterial mat);
 
 private:
 	CObjectPanelUI*	ui;

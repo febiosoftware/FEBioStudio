@@ -409,7 +409,6 @@ void FETube::BuildFaces(FSMesh* pm)
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4*i/nd;
 			f.m_gid = 4+4*i/nd;
-			f.m_sid = 0;
 			f.n[0] = NodeIndex(nr,   i,   j);
 			f.n[1] = NodeIndex(nr, i+1,   j);
 			f.n[2] = NodeIndex(nr, i+1, j+1);
@@ -426,7 +425,6 @@ void FETube::BuildFaces(FSMesh* pm)
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4 + 4*i/nd;
 			f.m_gid = 8 + 4*i/nd;
-			f.m_sid = 1;
 			f.n[0] = NodeIndex(0, i+1,   j);
 			f.n[1] = NodeIndex(0,   i,   j);
 			f.n[2] = NodeIndex(0,   i, j+1);
@@ -442,7 +440,6 @@ void FETube::BuildFaces(FSMesh* pm)
 			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 12+4*j/nd;
-			f.m_sid = 2;
 			f.n[0] = NodeIndex(i  ,   j, nz);
 			f.n[1] = NodeIndex(i+1,   j, nz);
 			f.n[2] = NodeIndex(i+1, j+1, nz);
@@ -459,7 +456,6 @@ void FETube::BuildFaces(FSMesh* pm)
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 8+4*j/nd;
 			f.m_gid = 4*j/nd;
-			f.m_sid = 3;
 			f.n[0] = NodeIndex(i+1,   j, 0);
 			f.n[1] = NodeIndex(  i,   j, 0);
 			f.n[2] = NodeIndex(  i, j+1, 0);
@@ -744,7 +740,6 @@ void FETube2::BuildFaces(FSMesh* pm)
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4*i/nd;
 			f.m_gid = 4+4*i/nd;
-			f.m_sid = 0;
 			f.n[0] = NodeIndex(nr,   i,   j);
 			f.n[1] = NodeIndex(nr, i+1,   j);
 			f.n[2] = NodeIndex(nr, i+1, j+1);
@@ -761,7 +756,6 @@ void FETube2::BuildFaces(FSMesh* pm)
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4 + 4*i/nd;
 			f.m_gid = 8 + 4*i/nd;
-			f.m_sid = 1;
 			f.n[0] = NodeIndex(0, i+1,   j);
 			f.n[1] = NodeIndex(0,   i,   j);
 			f.n[2] = NodeIndex(0,   i, j+1);
@@ -777,7 +771,6 @@ void FETube2::BuildFaces(FSMesh* pm)
 			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 12+4*j/nd;
-			f.m_sid = 2;
 			f.n[0] = NodeIndex(i  ,   j, nz);
 			f.n[1] = NodeIndex(i+1,   j, nz);
 			f.n[2] = NodeIndex(i+1, j+1, nz);
@@ -794,7 +787,6 @@ void FETube2::BuildFaces(FSMesh* pm)
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 8+4*j/nd;
 			f.m_gid = 4*j/nd;
-			f.m_sid = 3;
 			f.n[0] = NodeIndex(i+1,   j, 0);
 			f.n[1] = NodeIndex(  i,   j, 0);
 			f.n[2] = NodeIndex(  i, j+1, 0);

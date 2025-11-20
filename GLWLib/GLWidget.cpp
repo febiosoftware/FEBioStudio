@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <assert.h>
 #include "convert.h"
 #include <sstream>
-#include <QPainter>
+#include "GLPainter.h"
 using std::stringstream;
 
 //-----------------------------------------------------------------------------
@@ -171,7 +171,7 @@ std::string GLWidget::getStringTableValue(const std::string& key)
 	return m_stringTable[key];
 }
 
-void GLWidget::draw_bg(int x0, int y0, int x1, int y1, QPainter* painter)
+void GLWidget::draw_bg(int x0, int y0, int x1, int y1, GLPainter* painter)
 {
 	QColor c1 = toQColorAlpha(m_bgFillColor[0]);
 	QColor c2 = toQColorAlpha(m_bgFillColor[1]);
@@ -225,16 +225,23 @@ void GLWidget::call_event_handlers(int nevent)
 	}
 }
 
-void GLWidget::draw(QPainter* painter)
+void GLWidget::draw(GLPainter* painter)
 {
 	if (painter) snap_to_bounds(*painter);
 }
 
-void GLWidget::snap_to_bounds(QPainter& painter)
+void GLWidget::snap_to_bounds(GLPainter& painter)
 {
-	int W = painter.device()->width();
-	int H = painter.device()->height();
+	int W = painter.deviceWidth();
+	int H = painter.deviceHeight();
 
+	// make sure coordinates are in bounds
+	if (m_x < 0) m_x = 0;
+	if (m_y < 0) m_y = 0;
+	if (m_x + m_w > W) m_x = W - m_w;
+	if (m_y + m_h > H) m_y = H - m_h;
+
+	// check snap
 	if      (m_nsnap & GLW_ALIGN_LEFT   ) m_x = 0;
 	else if (m_nsnap & GLW_ALIGN_RIGHT  ) m_x = W - m_w - 1;
 	else if (m_nsnap & GLW_ALIGN_HCENTER) m_x = W / 2 - m_w / 2;

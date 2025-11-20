@@ -184,7 +184,7 @@ bool CMPEGAnimation::Rgb24ToYuv420p(QImage &im)
 {
     struct SwsContext *converted_format = NULL;
     
-	converted_format = sws_getCachedContext(converted_format, av_codec_context->width, av_codec_context->height, AV_PIX_FMT_BGRA, av_codec_context->width, av_codec_context->height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL);
+	converted_format = sws_getCachedContext(converted_format, av_codec_context->width, av_codec_context->height, AV_PIX_FMT_RGBA, av_codec_context->width, av_codec_context->height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL);
     
     if (!converted_format)
     {

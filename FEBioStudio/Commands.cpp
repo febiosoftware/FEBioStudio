@@ -2757,7 +2757,7 @@ CCmdUnhideAll::CCmdUnhideAll(CModelDocument* doc) : CCommand("Unhide all")
 		}
 		break;
 		case SELECT_PART:
-		case SELECT_FACE:
+		case SELECT_SURF:
 		case SELECT_EDGE:
 		case SELECT_NODE:
 		{
@@ -2823,7 +2823,7 @@ void CCmdUnhideAll::Execute()
 		}
 		break;
 		case SELECT_PART:
-		case SELECT_FACE:
+		case SELECT_SURF:
 		case SELECT_EDGE:
 		case SELECT_NODE:
 		{
@@ -3075,7 +3075,6 @@ void CCmdChangeFENodes::Execute()
 	m_newPos = oldPos;
 
 	pm->UpdateBoundingBox();
-	pm->UpdateNormals();
 	m_po->Update();
 }
 
@@ -3120,23 +3119,21 @@ void CCmdChangeFESurfaceMesh::UnExecute()
 // CCmdChangeView
 ///////////////////////////////////////////////////////////////////////////////
 
-CCmdChangeView::CCmdChangeView(CGView* pview, GLCamera cam) : CCommand("Change View")
+CCmdChangeView::CCmdChangeView(GLCamera* oldCam, const GLCamera& newCam) : CCommand("Change View")
 {
-	m_cam = cam;
-	m_pview = pview;
+	m_cam = oldCam;
+	m_newCam = newCam;
 }
 
 CCmdChangeView::~CCmdChangeView()
 {
-	m_pview = 0;
 }
 
 void CCmdChangeView::Execute()
 {
-	GLCamera& cam = m_pview->GetCamera();
-	GLCamera old = cam;
-	cam = m_cam;
-	m_cam = old;
+	GLCamera tmp = *m_cam;
+	*m_cam = m_newCam;
+	m_newCam = tmp;
 }
 
 void CCmdChangeView::UnExecute()
@@ -3288,7 +3285,7 @@ void CCmdConvertToMultiBlock::Execute()
 
 		// copy data
 		m_pnew->CopyTransform(m_pold);
-		m_pnew->SetColor(m_pold->GetColor());
+		m_pnew->SetMaterial(m_pold->GetMaterial());
 
 		// copy the selection state
 		if (m_pold->IsSelected()) m_pnew->Select();

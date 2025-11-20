@@ -228,7 +228,8 @@ void GCurveMeshObject::Load(IArchive& ar)
 		{
 			vec3d pos, scl;
 			quatd rot;
-			GLColor col;
+			GLMaterial mat;
+			mat.type = GLMaterial::PLASTIC;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
@@ -239,15 +240,22 @@ void GCurveMeshObject::Load(IArchive& ar)
 				case CID_OBJ_POS: ar.read(pos); break;
 				case CID_OBJ_ROT: ar.read(rot); break;
 				case CID_OBJ_SCALE: ar.read(scl); break;
-				case CID_OBJ_COLOR: ar.read(col); break;
+				case CID_OBJ_COLOR: { ar.read(mat.diffuse); mat.ambient = mat.diffuse; } break;
 				case CID_OBJ_PARTS: ar.read(nparts); break;
 				case CID_OBJ_EDGES: ar.read(nedges); break;
 				case CID_OBJ_NODES: ar.read(nnodes); break;
+				case CID_MAT_AMBIENT   : ar.read(mat.ambient); break;
+				case CID_MAT_DIFFUSE   : ar.read(mat.diffuse); break;
+				case CID_MAT_SPECULAR  : ar.read(mat.specular); break;
+				case CID_MAT_EMISSION  : ar.read(mat.emission); break;
+				case CID_MAT_SHININESS : ar.read(mat.shininess); break;
+				case CID_MAT_OPACITY   : ar.read(mat.opacity); break;
+				case CID_MAT_REFLECTION: ar.read(mat.reflection); break;
 				}
 				ar.CloseChunk();
 			}
 
-			SetColor(col);
+			SetMaterial(mat);
 
 			Transform& transform = GetTransform();
 			transform.SetPosition(pos);

@@ -65,6 +65,14 @@ class CPluginManager;
 struct ProgressTracker; // in FEBio/FEBioExport4
 class COptimizationStudy;
 
+enum class GraphicsAPI {
+	API_NULL,
+	API_OPENGL,
+	API_VULKAN,
+	API_METAL,
+	API_DIRECT3D11,
+	API_DIRECT3D12
+};
 
 namespace Ui {
 	class CMainWindow;
@@ -80,7 +88,7 @@ class CMainWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	explicit CMainWindow(bool reset = false, QWidget* parent = 0);
+	explicit CMainWindow(bool reset, GraphicsAPI api, QWidget* parent = 0);
 	~CMainWindow();
 
 	static CMainWindow* GetInstance();
@@ -386,8 +394,9 @@ public:
 	QStringList GetRecentProjectsList();
 	QStringList GetRecentPluginsList();
 
-	QString GetEnvironmentMap();
+	QString GetEnvironmentMap() const;
 	void SetEnvironmentMap(const QString& filename);
+	bool IsEnvironmentMapEnabled();
 
 	void AddRecentPlugin(const QString& fileName);
 
@@ -604,8 +613,8 @@ public slots:
 	void on_actionOrtho_toggled(bool b);
 	void on_actionShowGrid_toggled(bool b);
 	void on_actionShowMeshLines_toggled(bool b);
+	void on_actionToggleOverlay_toggled(bool b);
 	void on_actionShowEdgeLines_toggled(bool b);
-	void on_actionBackfaceCulling_toggled(bool b);
 	void on_actionViewSmooth_toggled(bool bchecked);
 	void on_actionShowNormals_toggled(bool b);
 	void on_actionShowFibers_triggered();
@@ -743,6 +752,8 @@ public slots:
 	void autoUpdateCheck(bool update);
 
 	void on_planecut_dataChanged();
+
+	void onCaptureFrameFinished(QImage img);
 
 private:
 	Ui::CMainWindow*	ui;

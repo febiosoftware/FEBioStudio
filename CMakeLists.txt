@@ -35,7 +35,7 @@ if(NOT Qt6_DIR OR NOT CMAKE_PREFIX_PATH)
     if(WIN32)
         find_path(Qt_TEMP Qt6Config.cmake
             PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/*
-            PATH_SUFFIXES "lib/cmake/Qt6" "msvc2019_64/lib/cmake/Qt6"
+            PATH_SUFFIXES "lib/cmake/Qt6" "msvc2022_64/lib/cmake/Qt6"
             DOC "Qt CMake Directory"
             NO_DEFAULT_PATH)
     elseif(APPLE)
@@ -349,12 +349,6 @@ if(USE_FFMPEG)
 	include_directories(${FFMPEG_INC})
 endif()
 
-if(APPLE)
-    include_directories(${GLEW_INCLUDE_DIR})
-else()
-    include_directories(${GLEW_INCLUDE_DIRS})
-endif()
-
 if(USE_PYTHON)
     include_directories(${PYBIND11_INC})
 endif()
@@ -381,7 +375,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib OGLLib GLWLib RTLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioMonitor VTKLib PyLib)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib RTLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioMonitor VTKLib PyLib RHILib)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
@@ -482,20 +476,20 @@ endif()
 ##### Link Libraries #####
 
 # Linking the Qt libraries also pulls in the include files
-target_link_libraries(${FBS_BIN_NAME} Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::OpenGL Qt6::OpenGLWidgets)
-target_link_libraries(CUILib Qt6::Widgets Qt6::Gui Qt6::OpenGLWidgets)
-target_link_libraries(GLWLib Qt6::Gui Qt6::OpenGLWidgets)
+target_link_libraries(${FBS_BIN_NAME} Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::GuiPrivate)
+target_link_libraries(CUILib Qt6::Widgets Qt6::Gui)
+target_link_libraries(GLWLib Qt6::Gui Qt6::Widgets)
 target_link_libraries(PostGL Qt6::Gui)
 target_link_libraries(PostLib Qt6::Gui)
-target_link_libraries(GLLib Qt6::OpenGL Qt6::OpenGLWidgets)
-target_link_libraries(OGLLib Qt6::OpenGL Qt6::OpenGLWidgets)
+target_link_libraries(GLLib)
 target_link_libraries(RTLib)
+target_link_libraries(RHILib Qt6::Core Qt6::Widgets Qt6::Gui Qt6::GuiPrivate)
 target_link_libraries(FSCore Qt6::Core)
 target_link_libraries(MeshIO Qt6::Core)
 target_link_libraries(MeshTools Qt6::Core)
 target_link_libraries(ImageLib Qt6::Core Qt6::Gui)
-target_link_libraries(PyLib Qt6::Core Qt6::Gui Qt6::OpenGLWidgets)
-target_link_libraries(FEBioMonitor Qt6::Core Qt6::Widgets Qt6::Gui Qt6::OpenGLWidgets)
+target_link_libraries(PyLib Qt6::Core Qt6::Gui Qt6::Widgets)
+target_link_libraries(FEBioMonitor Qt6::Core Qt6::Widgets Qt6::Gui)
 
 if(WIN32)
 elseif(APPLE)
@@ -613,11 +607,6 @@ if(USE_ZLIB)
     target_link_libraries(${FBS_BIN_NAME} ${ZLIB_LIBRARY_RELEASE})
 endif()
 
-target_link_libraries(${FBS_BIN_NAME} ${OPENGL_LIBRARY})
-
-
-target_link_libraries(${FBS_BIN_NAME} ${GLEW_LIBRARIES} GLEW::glew)
-
 target_link_libraries(${FBS_BIN_NAME} ${FEBIOSTUDIO_LIBS})
 
 if (WIN32)
@@ -638,6 +627,31 @@ elseif(APPLE)
 else()
     target_link_libraries(${FBS_BIN_NAME} -Wl,--end-group)
 endif()
+
+set(SHADER_FILES
+    RHILib/shaders/color.vert
+    RHILib/shaders/color.frag
+    RHILib/shaders/lines.vert
+    RHILib/shaders/lines.frag
+    RHILib/shaders/point.vert
+    RHILib/shaders/point.frag
+    RHILib/shaders/overlay.vert
+    RHILib/shaders/overlay.frag
+    RHILib/shaders/canvas.vert
+    RHILib/shaders/canvas.frag
+    RHILib/shaders/triad.vert
+    RHILib/shaders/triad.frag
+    RHILib/shaders/volume.vert
+    RHILib/shaders/volume.frag
+    RHILib/shaders/grad.vert
+    RHILib/shaders/grad.frag
+    RHILib/shaders/diffuse.vert
+    RHILib/shaders/diffuse.frag
+)
+
+qt_add_shaders(${FBS_BIN_NAME} "rhi_shaders"
+    FILES ${SHADER_FILES}
+)
 
 option(BUILD_UPDATER "Build updater" OFF)
 if(BUILD_UPDATER)

@@ -93,6 +93,7 @@ SOFTWARE.*/
 #include "PluginManager.h"
 #include <PyLib/PythonRunner.h>
 #include "FEBioBatchView.h"
+#include "DocPropsPanel.h"
 
 class QProcess;
 
@@ -158,7 +159,7 @@ public:
 		TIME_VIEW_2D,
 		GL_VIEWER,
 		FEBREPORT_VIEW,
-		BATCHRUN_VIEW
+		BATCHRUN_VIEW,
 	};
 
 public:
@@ -298,6 +299,7 @@ public:
 	::CImageSettingsPanel* imageSettingsPanel;
 	CFEBioMonitorPanel* febioMonitor;
 	CFEBioMonitorView* febioMonitorView;
+	::CDocPropsPanel* docProps;
 
 	// additional windows
 	::CDlgFiberViz* fiberViz = nullptr;

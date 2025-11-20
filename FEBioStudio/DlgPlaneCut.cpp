@@ -23,17 +23,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #include "stdafx.h"
 #include "DlgPlaneCut.h"
 #include "MainWindow.h"
-#include "GLView.h"
 #include <QBoxLayout>
-#include <QGridLayout>
-#include <QLineEdit>
 #include <QSpinBox>
 #include <QDialogButtonBox>
-#include <QValidator>
 #include <QLabel>
 #include <QPushButton>
 #include "DragBox.h"
@@ -44,7 +39,8 @@ SOFTWARE.*/
 class UIDlgPlaneCut
 {
 public:
-	CGLView*	m_view;
+	GLViewSettings*	m_ops = nullptr;
+	GLScene* m_scene = nullptr;
 	CDragBox*	w[4];
 	QRadioButton*	m_rb[2];
 
@@ -107,10 +103,15 @@ CDlgPlaneCut::CDlgPlaneCut(CMainWindow* wnd) : QDialog(wnd), ui(new UIDlgPlaneCu
 {
 	setWindowTitle("Plane cut");
 	setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
-	ui->m_view = wnd->GetGLView();
 	ui->setup(this);
 
 	QObject::connect(this, &CDlgPlaneCut::dataChanged, wnd, &CMainWindow::on_planecut_dataChanged);
+}
+
+void CDlgPlaneCut::setData(GLViewSettings* vs, GLScene* scene)
+{
+	ui->m_ops = vs;
+	ui->m_scene = scene;
 }
 
 CDlgPlaneCut::~CDlgPlaneCut()
@@ -125,20 +126,29 @@ void CDlgPlaneCut::Update()
 
 void CDlgPlaneCut::showEvent(QShowEvent* ev)
 {
-	ui->m_view->GetViewSettings().m_showPlaneCut = true;
-	onDataChanged();
+	assert(ui->m_ops);
+	if (ui->m_ops) {
+		ui->m_ops->m_showPlaneCut = true;
+		onDataChanged();
+	}
 }
 
 void CDlgPlaneCut::closeEvent(QCloseEvent* ev)
 {
-	ui->m_view->GetViewSettings().m_showPlaneCut = false;
-	onDataChanged();
+	assert(ui->m_ops);
+	if (ui->m_ops) {
+		ui->m_ops->m_showPlaneCut = false;
+		onDataChanged();
+	}
 }
 
 void CDlgPlaneCut::reject()
 {
-	ui->m_view->GetViewSettings().m_showPlaneCut = false;
-	onDataChanged();
+	assert(ui->m_ops);
+	if (ui->m_ops) {
+		ui->m_ops->m_showPlaneCut = false;
+		onDataChanged();
+	}
 	QDialog::reject();
 }
 
@@ -164,22 +174,27 @@ void CDlgPlaneCut::onDataChanged()
 	int nop = 0;
 	if (ui->m_rb[0]->isChecked()) nop = 0;
 	if (ui->m_rb[1]->isChecked()) nop = 1;
-	ui->m_view->GetViewSettings().m_planeCutMode = nop;
+
+	assert(ui->m_ops);
+	if (ui->m_ops) {
+		ui->m_ops->m_planeCutMode = nop;
+	}
 
 	emit dataChanged();
 }
 
 void CDlgPlaneCut::setPlaneCoordinates(double d[4])
 {
-	GLScene* scene = ui->m_view->GetActiveScene();
+	GLScene* scene = ui->m_scene;
 	if (scene == nullptr) return;
+	if (ui->m_ops == nullptr) return;
 
 	BOX box = scene->GetBoundingBox();
 
 	double R = box.GetMaxExtent();
 	if (R < 1e-12) R = 1.0;
 
-	GLViewSettings& vs = ui->m_view->GetViewSettings();
+	GLViewSettings& vs = *ui->m_ops;
 
 	vec3d n(d[0], d[1], d[2]);
 

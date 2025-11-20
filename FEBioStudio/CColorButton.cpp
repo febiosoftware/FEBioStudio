@@ -26,6 +26,9 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "CColorButton.h"
+#include <QPainter>
+#include <QColorDialog>
+
 
 CColorButton::CColorButton(QWidget* parent) : QFrame(parent)
 {

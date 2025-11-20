@@ -55,6 +55,7 @@ public:
 		addProperty("Emission color"   , CProperty::Color );
 		addProperty("Mesh color"       , CProperty::Color );
 		addProperty("Shininess"        , CProperty::Float)->setFloatRange(0.0, 1.0);
+		addProperty("Reflectivity"     , CProperty::Float)->setFloatRange(0.0, 1.0);
 		addProperty("Transparency"     , CProperty::Float)->setFloatRange(0.0, 1.0);
 		addProperty("Transparency mode", CProperty::Enum, "Transparency mode")->setEnumValues(QStringList() << "constant" << "normal-weigthed" << "value-weigthed");
 		addProperty("Show Mesh"        , CProperty::Bool);
@@ -78,11 +79,12 @@ public:
 			case 3: v = toQColor(m_mat->emission); break;
 			case 4: v = toQColor(m_mat->meshcol); break;
 			case 5: v = m_mat->shininess; break;
-			case 6: v = m_mat->transparency; break;
-			case 7: v = m_mat->m_ntransmode; break;
-			case 8: v = m_mat->bmesh; break;
-			case 9: v = m_mat->bcast_shadows; break;
-			case 10: v = m_mat->bclip; break;
+			case 6: v = m_mat->reflectivity; break;
+			case 7: v = m_mat->transparency; break;
+			case 8: v = m_mat->m_ntransmode; break;
+			case 9: v = m_mat->bmesh; break;
+			case 10: v = m_mat->bcast_shadows; break;
+			case 11: v = m_mat->bclip; break;
 			}
 		}
 		return v;
@@ -101,11 +103,12 @@ public:
 			case 3: m_mat->emission = toGLColor(v.value<QColor>()); break;
 			case 4: m_mat->meshcol  = toGLColor(v.value<QColor>()); break;
 			case 5: m_mat->shininess = v.toFloat(); break;
-			case 6: m_mat->transparency = v.toFloat(); break;
-			case 7: m_mat->m_ntransmode = v.toInt(); break;
-			case 8: m_mat->bmesh = v.toBool(); break;
-			case 9: m_mat->bcast_shadows = v.toBool(); break;
-			case 10: m_mat->bclip = v.toBool(); break;
+			case 6: m_mat->reflectivity = v.toFloat(); break;
+			case 7: m_mat->transparency = v.toFloat(); break;
+			case 8: m_mat->m_ntransmode = v.toInt(); break;
+			case 9: m_mat->bmesh = v.toBool(); break;
+			case 10: m_mat->bcast_shadows = v.toBool(); break;
+			case 11: m_mat->bclip = v.toBool(); break;
 			}
 		}
 	}

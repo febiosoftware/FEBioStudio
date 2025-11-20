@@ -252,7 +252,7 @@ FSMesh* FEFlattenFaces::Apply(FSMesh *pm)
 		for (i=0; i<m.Faces(); ++i)
 		{
 			FSFace& f = m.Face(i);
-			if (f.IsSelected()) na += to_vec3d(f.m_fn);
+			if (f.IsSelected()) na += m.FaceNormal(f);
 		}
 	}
 	else na = m_na;
@@ -469,7 +469,6 @@ FSMesh* FEAlignNodes::Apply(FSMesh* pm)
 		}
 	}
 
-	pnm->UpdateNormals();
 	pnm->UpdateBoundingBox();
 
 	return pnm;
@@ -546,7 +545,6 @@ FSMesh* FEProjectNodes::Apply(FSMesh* pm)
     if (iref == -1) { delete pnm; return 0; }
 
 	pnm->UpdateBoundingBox();
-	pnm->UpdateNormals();
     
     return pnm;
 }
@@ -613,7 +611,6 @@ FSMesh* FEProjectNodes::ProjectToUserPlane(GObject* po)
 		}
 	}
 	pnm->UpdateBoundingBox();
-	pnm->UpdateNormals();
 	return pnm;
 }
 
@@ -658,7 +655,6 @@ FSMesh* FEProjectNodes::ProjectToSurface(GObject* po, GFace* pg)
 		}
 	}
 	pnm->UpdateBoundingBox();
-	pnm->UpdateNormals();
 
 	return pnm;
 }
@@ -1199,7 +1195,7 @@ FSMesh* FEMirrorMesh::Apply(FSMesh *pm)
 		for (int i = 0; i < sel->Count(); ++i)
 		{
 			FSFace& face = *sel->Face(i);
-			N += to_vec3d(face.m_fn);
+			N += pm->FaceNormal(face);
 		}
 		N.Normalize();
 	}

@@ -33,10 +33,12 @@ SOFTWARE.*/
 #include <QFormLayout>
 #include <QLabel>
 #include <FSCore/ColorMap.h>
+#include <GLLib/GLViewSettings.h>
 
 class CMainWindow;
 class QAbstractButton;
 class QLabel;
+class CGLDocument;
 
 namespace Ui {
 	class CDlgSettings;
@@ -221,7 +223,7 @@ class CDlgSettings : public QDialog
 	Q_OBJECT
 
 public:
-	CDlgSettings(CMainWindow* pwnd);
+	CDlgSettings(CMainWindow* pwnd, CGLDocument* doc, GLViewSettings& vs);
 
 	void showEvent(QShowEvent* ev);
 

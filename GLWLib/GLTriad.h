@@ -27,19 +27,26 @@ SOFTWARE.*/
 #include "GLWidget.h"
 #include <FSCore/math3d.h>
 
+class GLMesh;
+
 class GLTriad : public GLWidget
 {
 public:
 	GLTriad(int x, int y, int w, int h);
+	~GLTriad();
 
-	void draw(QPainter* painter);
+	void draw(GLPainter* painter) override;
 
 	void show_coord_labels(bool bshow) { m_bcoord_labels = bshow; }
 	bool show_coord_labels() { return m_bcoord_labels; }
 
 	void setOrientation(const quatd& q) { m_rot = q; }
 
+private:
+	void buildMesh();
+
 protected:
+	GLMesh* m_pm = nullptr;
 	quatd	m_rot;
 	bool	m_bcoord_labels;
 };

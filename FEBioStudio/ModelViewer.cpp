@@ -509,7 +509,7 @@ void CModelViewer::SelectItemList(FSItemListBuilder *pitem, bool badd)
 	switch (pitem->Type())
 	{
 	case GO_PART: pdoc->SetSelectionMode(SELECT_PART); pcmd = new CCmdSelectPart(mdl, pi, n, badd); break;
-	case GO_FACE: pdoc->SetSelectionMode(SELECT_FACE); pcmd = new CCmdSelectSurface(mdl, pi, n, badd); break;
+	case GO_FACE: pdoc->SetSelectionMode(SELECT_SURF); pcmd = new CCmdSelectSurface(mdl, pi, n, badd); break;
 	case GO_EDGE: pdoc->SetSelectionMode(SELECT_EDGE); pcmd = new CCmdSelectEdge(mdl, pi, n, badd); break;
 	case GO_NODE: pdoc->SetSelectionMode(SELECT_NODE); pcmd = new CCmdSelectNode(mdl, pi, n, badd); break;
 	case FE_ELEMSET:
@@ -776,6 +776,7 @@ void CModelViewer::OnUnhideAllObjects()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel* m = doc->GetGModel();
 	m->ShowAllObjects();
+	doc->Update();
 	Update();
 	GetMainWindow()->RedrawGL();
 }
@@ -1183,7 +1184,7 @@ void CModelViewer::OnSelectPart()
 void CModelViewer::OnSelectSurface()
 {
 	CMainWindow* wnd = GetMainWindow();
-	wnd->SetSelectionMode(SELECT_FACE);
+	wnd->SetSelectionMode(SELECT_SURF);
 
 	UpdateSelection();
 

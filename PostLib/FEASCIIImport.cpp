@@ -466,7 +466,7 @@ bool FEASCIIImport::BuildMesh(FEPostModel &fem)
 	fem.ClearMaterials();
 	Material m;
 	m.diffuse = GLColor(192,192,192);
-	m.ambient = GLColor(192,192,192);
+	m.ambient = GLColor(0,0,32);
 	m.specular = GLColor(0,0,0);
 	m.emission = GLColor(0,0,0);
 	m.shininess = 1.0f;

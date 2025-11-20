@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include <stack>
 #include <omp.h>
 
+using namespace gl;
+
 size_t rt::Btree::Block::size() const
 {
 	size_t n = tris.size();
@@ -121,10 +123,10 @@ void rt::Btree::Build(Mesh& mesh, int levels)
 	delete root;
 	root = new Block;
 
-	FSLogger::Write("Building binary tree ...\n");
+	if (output) FSLogger::Write("Building binary tree ...\n");
 	int ntriangles = (int)mesh.triangles();
-	FSLogger::Write("  Nr of triangles : %d\n", ntriangles);
-	rt::Box box;
+	if (output) FSLogger::Write("  Nr of triangles : %d\n", ntriangles);
+	Box box;
 	for (size_t i = 0; i < mesh.triangles(); ++i)
 	{
 		rt::Tri& tri = mesh.triangle(i);
@@ -135,7 +137,7 @@ void rt::Btree::Build(Mesh& mesh, int levels)
 	root->box = box;
 
 	if (levels < 0) levels = 0;
-	FSLogger::Write("  Splitting levels : %d\n", levels);
+	if (output) FSLogger::Write("  Splitting levels : %d\n", levels);
 	int m = 0;
 	std::vector<rt::Btree::Block*> leaves;
 #pragma omp parallel shared(leaves)
@@ -162,7 +164,7 @@ void rt::Btree::Build(Mesh& mesh, int levels)
 				m = (int)log2(numThreads);
 				if (m > levels - 1) m = levels - 1;
 				int actualThreads = (int)pow(2, m);
-				FSLogger::Write("  Using %d threads.\n", actualThreads);
+				if (output) FSLogger::Write("  Using %d threads.\n", actualThreads);
 				root->split(m);
 				leaves = rt::Btree::leaves();
 			}
@@ -182,8 +184,8 @@ void rt::Btree::Build(Mesh& mesh, int levels)
 	}
 
 	int nrblocks = (int)blocks();
-	FSLogger::Write("  Nr. of blocks : %d\n", nrblocks);
-	FSLogger::Write("  Nr. of triangles in BTree : %d\n", (int)root->size());
+	if (output) FSLogger::Write("  Nr. of blocks : %d\n", nrblocks);
+	if (output) FSLogger::Write("  Nr. of triangles in BTree : %d\n", (int)root->size());
 }
 
 bool rt::Btree::intersect(const Ray& ray, Point& p)

@@ -24,8 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "RTMath.h"
+#include <GLLib/GLMath.h>
+#include <GLLib/GLTexture3D.h>
 #include <ImageLib/3DImage.h>
+#include <ImageLib/RGBAImage.h>
 
 namespace rt {
 
@@ -37,11 +39,27 @@ namespace rt {
 
 		void setImageData(size_t n, unsigned char* bytes);
 
-		rt::Color sample(float r);
+		gl::Color sample(float r);
 
 	private:
 		size_t size = 0;
 		float* data = nullptr;
+	};
+
+	class Texture2D
+	{
+	public:
+		Texture2D();
+		~Texture2D();
+
+		bool isNull() const { return img.isNull(); }
+
+		void setImageData(const CRGBAImage& image);
+
+		gl::Color sample(float r, float s);
+
+	private:
+		CRGBAImage img;
 	};
 
 	class Texture3D
@@ -50,11 +68,13 @@ namespace rt {
 		Texture3D();
 		~Texture3D();
 
-		void setImageData(C3DImage* img3d);
+		void setImageData(GLTexture3D* tex3d);
 
-		rt::Color sample(float r, float s, float t);
+		const GLTexture3D* getImageData() const { return tex; }
+
+		gl::Color sample(float r, float s, float t);
 
 	private:
-		C3DImage* img;
+		GLTexture3D* tex;
 	};
 }

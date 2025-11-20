@@ -72,7 +72,6 @@ void CGLPlane::Render(GLRenderEngine& re, GLContext& rc)
 {
 	FSMeshBase* pm = m_pfem->GetFEMesh(0);
 
-	re.pushState();
 	re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::NONE, false);
 
 	double R = m_pfem->GetBoundingBox().Radius();
@@ -94,6 +93,4 @@ void CGLPlane::Render(GLRenderEngine& re, GLContext& rc)
 	re.end();
 
 	re.popTransform();
-
-	re.popState();
 }

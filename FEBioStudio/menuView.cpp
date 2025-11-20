@@ -54,12 +54,8 @@ void CMainWindow::on_actionZoomSelect_triggered()
 	CGLDocument* doc = GetGLDocument();
 	if (doc)
 	{
-		GLScene* scene = doc->GetScene();
-		if (scene)
-		{
-			scene->ZoomSelection();
-			RedrawGL();
-		}
+		doc->ZoomSelection();
+		RedrawGL();
 	}
 }
 
@@ -68,10 +64,12 @@ void CMainWindow::on_actionZoomExtents_triggered()
 	CGLDocument* doc = GetGLDocument();
 	if (doc)
 	{
+		BOX box = doc->GetBoundingBox();
+		if (!box.IsValid()) box = BOX(-1, -1, -1, 1, 1, 1);
 		GLScene* scene = doc->GetScene();
 		if (scene)
 		{
-			scene->ZoomExtents();
+			scene->GetCamera().ZoomToBox(box);
 			RedrawGL();
 		}
 	}
@@ -90,15 +88,22 @@ void CMainWindow::on_actionOrtho_toggled(bool b)
 
 void CMainWindow::on_actionShowGrid_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 	GetGLView()->ToggleGridLines(b);
 	RedrawGL();
 }
 
+void CMainWindow::on_actionToggleOverlay_toggled(bool b)
+{
+	CGLView* glv = GetGLView();
+	if (glv) glv->setRenderOverlay(b);
+	Update(this);
+}
+
 void CMainWindow::on_actionShowMeshLines_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 	GetGLView()->ToggleMeshLines(b);
 	Update(this);
@@ -106,19 +111,9 @@ void CMainWindow::on_actionShowMeshLines_toggled(bool b)
 
 void CMainWindow::on_actionShowEdgeLines_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 	GetGLView()->ToggleFeatureEdges(b);
-	Update(this);
-}
-
-void CMainWindow::on_actionBackfaceCulling_toggled(bool b)
-{
-	CDocument* doc = GetDocument();
-	if (doc == nullptr) return;
-
-	GLViewSettings& view = GetGLView()->GetViewSettings();
-	view.m_bcull = b;
 	Update(this);
 }
 
@@ -299,8 +294,10 @@ void CMainWindow::on_actionViewVPSave_triggered()
 	CPostDocument* doc = GetPostDocument();
 	if (doc == nullptr) return;
 
+	GLScene* scene = doc->GetScene();
+
 	CGView& view = *doc->GetView();
-	GLCamera& cam = view.GetCamera();
+	GLCamera& cam = scene->GetCamera();
 	GLCameraTransform t;
 	cam.GetTransform(t);
 
@@ -317,11 +314,12 @@ void CMainWindow::on_actionViewVPPrev_triggered()
 	CPostDocument* doc = GetPostDocument();
 	if (doc == nullptr) return;
 
+	GLScene* scene = doc->GetScene();
 	CGView& view = *doc->GetView();
 	if (view.CameraKeys() > 0)
 	{
 		view.PrevKey();
-		view.GetCamera().SetTransform(view.GetCurrentKey().transform);
+		scene->GetCamera().SetTransform(view.GetCurrentKey().transform);
 		RedrawGL();
 	}
 }
@@ -330,12 +328,12 @@ void CMainWindow::on_actionViewVPNext_triggered()
 {
 	CPostDocument* doc = GetPostDocument();
 	if (doc == nullptr) return;
-
+	GLScene* scene = doc->GetScene();
 	CGView& view = *doc->GetView();
 	if (view.CameraKeys() > 0)
 	{
 		view.NextKey();
-		view.GetCamera().SetTransform(view.GetCurrentKey().transform);
+		scene->GetCamera().SetTransform(view.GetCurrentKey().transform);
 		RedrawGL();
 	}
 }
@@ -345,9 +343,10 @@ void CMainWindow::on_actionSyncViews_triggered()
 {
 	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
+	GLScene* scene = doc->GetScene();
 
 	CGView& view = *doc->GetView();
-	GLCamera& cam = view.GetCamera();
+	GLCamera& cam = scene->GetCamera();
 	GLCameraTransform transform;
 	cam.GetTransform(transform);
 	CDocManager* DM = GetDocManager();
@@ -357,15 +356,13 @@ void CMainWindow::on_actionSyncViews_triggered()
 		CGLDocument* doci = dynamic_cast<CGLDocument*>(DM->GetDocument(i));
 		if (doci && (doci != doc))
 		{
-			CGView& viewi = *doci->GetView();
+			GLScene& scenei = *doci->GetScene();
 
 			// copy the transforms
-			GLCamera& cami = viewi.GetCamera();
+			GLCamera& cami = scenei.GetCamera();
 			cami.SetTransform(transform);
 			cami.Update(true);
-
-			// copy view parameters
-			viewi.m_bortho = view.m_bortho;
+			cami.SetOrthoProjection(cami.IsOrtho());
 		}
 	}
 }

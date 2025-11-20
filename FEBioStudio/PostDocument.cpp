@@ -237,7 +237,17 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLModelDo
 	m_binit = false;
 
 	m_scene = new CGLPostScene(this);
-	m_scene->SetEnvironmentMap(wnd->GetEnvironmentMap().toStdString());
+
+	QString envMap = wnd->GetEnvironmentMap();
+	if (!envMap.isEmpty())
+	{
+		QImage img(envMap);
+		if (!img.isNull() && (img.format() == QImage::Format_RGB32))
+		{
+			CRGBAImage rgba(img.width(), img.height(), img.constBits());
+			m_scene->SetEnvironmentMap(rgba);
+		}
+	}
 
 	SetItemMode(ITEM_ELEM);
 
@@ -312,7 +322,7 @@ bool CPostDocument::Initialize()
 		// reset the camera
 		CGView& view = *GetView();
 		view.Reset();
-		GLCamera& cam = view.GetCamera();
+		GLCamera& cam = m_scene->GetCamera();
 		cam.Reset();
 		cam.SetTargetDistance(box.Radius() * 3);
 		cam.SetTarget(box.Center());
@@ -337,7 +347,6 @@ bool CPostDocument::Initialize()
 					GLColor c = docfem.GetMaterial(i)->GetColor();
 
 					Post::Material* mat = m_fem->GetMaterial(i);
-					mat->ambient = c;
 					mat->diffuse = c;
 				}
 
@@ -345,7 +354,6 @@ bool CPostDocument::Initialize()
 				{
 					GLColor c = mdl->DiscreteObject(i)->GetColor();
 					Post::Material* mat = m_fem->GetMaterial(i + mats);
-					mat->ambient = c;
 					mat->diffuse = c;
 				}
 			}
@@ -590,11 +598,11 @@ void CPostDocument::ApplyPalette(const CPalette& pal)
 
 		Post::Material& m = *m_fem->GetMaterial(i);
 		m.diffuse = c;
-		m.ambient = c;
-		m.specular = GLColor(128, 128, 128);
+		m.specular = GLColor(0, 0, 0);
 		m.emission = GLColor(0, 0, 0);
 		m.shininess = 0.5f;
 		m.transparency = 1.f;
+		m.reflectivity = 0.f;
 	}
 }
 

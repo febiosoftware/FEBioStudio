@@ -264,10 +264,8 @@ void CGLPlaneCutPlot::Render(GLRenderEngine& re, GLContext& rc)
 	// render the mesh
 	if (m_bshow_mesh)
 	{
-		rc.m_cam->LineDrawMode(true);
 		RenderMeshLines(re);
 		RenderOutline(re);
-		rc.m_cam->LineDrawMode(false);
 	}
 
 	if (rc.m_settings.m_bfeat)
@@ -514,10 +512,8 @@ void CGLPlaneCutPlot::UpdateLineMesh()
 // Render the mesh of the plane cut
 void CGLPlaneCutPlot::RenderMeshLines(GLRenderEngine& re)
 {
-	re.pushState();
 	re.setMaterial(GLMaterial::CONSTANT, m_meshColor);
 	re.renderGMeshEdges(m_lineMesh, false);
-	re.popState();
 }
 
 void CGLPlaneCutPlot::UpdateOutlineMesh()
@@ -536,18 +532,8 @@ void CGLPlaneCutPlot::UpdateOutlineMesh()
 // Render the outline of the mesh of the plane cut
 void CGLPlaneCutPlot::RenderOutline(GLRenderEngine& re)
 {
-	re.pushState();
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::Black());
-
-	// because plots are drawn before the mesh
-	// we get visual artifacts from the background seeping through.
-	// therefor we turn blending of
-	re.disable(GLRenderEngine::BLENDING);
-
 	re.renderGMeshEdges(m_outlineMesh, false);
-
-	// restore attributes
-	re.popState();
 }
 
 void CGLPlaneCutPlot::UpdatePlaneCut()
@@ -1041,9 +1027,6 @@ void CGLPlaneCutPlot::RenderPlane(GLRenderEngine& re)
 
 	float R = m_scl;
 
-	// store attributes
-	re.pushState();
-
 	double r = fabs(norm0.x);
 	double g = fabs(norm0.y);
 	double b = fabs(norm0.z);
@@ -1068,8 +1051,6 @@ void CGLPlaneCutPlot::RenderPlane(GLRenderEngine& re)
 		re.vertex(vec3d(-R,  R, 0));
 	}
 	re.end();
-
-	re.popState();
 
 	re.popTransform();
 }

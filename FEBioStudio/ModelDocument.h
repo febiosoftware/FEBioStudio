@@ -102,6 +102,10 @@ public:
 	// toggle selected parts to (in)active
 	void ToggleActiveParts();
 
+	BOX GetBoundingBox() override;
+
+	void AssignColor(GPart* pg, GLColor c);
+
 public:
 	void AddImageModel(CImageModel* imgModel) override;
 

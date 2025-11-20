@@ -224,7 +224,6 @@ FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool sec
 
 			FSFace& face = mesh->Face(i);
 			face.m_gid = ngmesh->GetFaceDescriptor(sel.GetIndex()).SurfNr() - 1;
-			face.m_sid = face.m_gid;
 
 			if (secondOrder == false)
 			{
@@ -310,7 +309,6 @@ FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool sec
 
 			FSFace& face = mesh->Face(i);
 			face.m_gid = ngmesh->GetFaceDescriptor(sel.GetIndex()).SurfNr() - 1;
-			face.m_sid = face.m_gid;
 
 			int np = sel.GetNP();
 

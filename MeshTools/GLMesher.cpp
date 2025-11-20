@@ -53,7 +53,7 @@ GLMesh* GLMesher::CreateMesh()
 		for (int j = 0; j < NF; ++j)
 		{
 			GFace& f = *o.Face(j);
-			gmesh->NewPartition();
+			gmesh->NewSurfacePartition();
 
 			switch (f.m_ntype)
 			{
@@ -69,7 +69,7 @@ GLMesh* GLMesher::CreateMesh()
 		}
 
 		gmesh->Update();
-		assert(gmesh->Partitions() == NF);
+		assert(gmesh->SurfacePartitions() == NF);
 	}
 	else
 	{

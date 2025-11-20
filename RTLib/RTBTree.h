@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "RTMath.h"
+#include <GLLib/GLMath.h>
 #include "RTMesh.h"
 
 namespace rt
@@ -43,7 +43,7 @@ namespace rt
 
 			size_t size() const;
 
-			Box box;
+			gl::Box box;
 			Block* child[2] = { nullptr };
 			std::vector<rt::Tri*> tris;
 		};
@@ -51,14 +51,22 @@ namespace rt
 		Btree() {}
 		~Btree() { delete root; }
 
+		void clear() {
+			delete root;
+			root = nullptr;
+		}
+
 		Block* root = nullptr;
 
 		void Build(rt::Mesh& mesh, int levels);
 
-		bool intersect(const rt::Ray& ray, rt::Point& p);
+		bool intersect(const gl::Ray& ray, rt::Point& p);
 
 		std::vector<rt::Btree::Block*> leaves();
 
 		size_t blocks() const;
+
+	public:
+		bool output = true;
 	};
 }

@@ -323,12 +323,19 @@ void Ui::CMainWindow::buildDockWidgets(::CMainWindow* wnd)
 	mainMenu->menuWindows->addAction(dock11->toggleViewAction());
 	m_wnd->tabifyDockWidget(dock4, dock11);
 
+	QDockWidget* dock12 = new QDockWidget("Properties", m_wnd); 
+	dock12->setObjectName("docProps");
+	docProps = new ::CDocPropsPanel(wnd, dock12);
+	dock12->setWidget(docProps);
+	mainMenu->menuWindows->addAction(dock12->toggleViewAction());
+	m_wnd->tabifyDockWidget(dock2, dock12);
+
 #ifdef HAS_PYTHON
-//	QDockWidget* dock12 = new QDockWidget("Python", m_wnd); dock12->setObjectName("dockPython");
-//	pythonToolsPanel = new ::CPythonToolsPanel(wnd, dock12);
-//	dock12->setWidget(pythonToolsPanel);
-//	mainMenu->menuWindows->addAction(dock12->toggleViewAction());
-//	m_wnd->tabifyDockWidget(dock3, dock12);
+//	QDockWidget* dock13 = new QDockWidget("Python", m_wnd); dock12->setObjectName("dockPython");
+//	pythonToolsPanel = new ::CPythonToolsPanel(wnd, dock13);
+//	dock13->setWidget(pythonToolsPanel);
+//	mainMenu->menuWindows->addAction(dock13->toggleViewAction());
+//	m_wnd->tabifyDockWidget(dock3, dock13);
 #endif
 
 	// make sure the file viewer is the visible tab
@@ -357,7 +364,7 @@ void Ui::CMainWindow::SetSelectionMode(int nselect)
 	{
 	case SELECT_OBJECT  : mainMenu->actionSelectObjects->trigger(); break;
 	case SELECT_PART    : mainMenu->actionSelectParts->trigger(); break;
-	case SELECT_FACE    : mainMenu->actionSelectSurfaces->trigger(); break;
+	case SELECT_SURF    : mainMenu->actionSelectSurfaces->trigger(); break;
 	case SELECT_EDGE    : mainMenu->actionSelectCurves->trigger(); break;
 	case SELECT_NODE    : mainMenu->actionSelectNodes->trigger(); break;
 	case SELECT_DISCRETE: mainMenu->actionSelectDiscrete->trigger(); break;

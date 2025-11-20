@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <stdlib.h>
 #include <GLLib/glx.h>
+#include <GLLib/GLMeshBuilder.h>
 #include <FSCore/ClassDescriptor.h>
 #include <FSCore/ColorMapManager.h>
 using namespace Post;
@@ -194,6 +195,9 @@ void GLTensorPlot::Update()
 
 void GLTensorPlot::Update(int ntime, float dt, bool breset)
 {
+	delete m_mesh;
+	m_mesh = nullptr;
+
 	if (m_lastCol != m_ncol) breset = true;
 	m_lastCol = m_ncol;
 
@@ -422,8 +426,32 @@ void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_ntensor == 0) return;
 
-	// store attributes
-	re.pushState();
+	if (m_mesh == nullptr)
+	{
+		BuildMesh();
+		if (m_mesh) re.deleteCachedMesh(m_mesh);
+	}
+	if (m_mesh)
+	{
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
+
+		if (m_nglyph == Glyph_Line)
+			re.renderGMeshEdges(*m_mesh);
+		else
+			re.renderGMesh(*m_mesh);
+	}
+}
+
+void GLTensorPlot::BuildMesh()
+{
+	if (m_mesh) {
+		delete m_mesh; 
+		m_mesh = nullptr;
+	}
+
+	GLMeshBuilder re;
+
+	re.beginShape();
 
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
@@ -589,8 +617,9 @@ void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 		}
 	}
 
-	// restore attributes
-	re.popState();
+	re.endShape();
+
+	m_mesh = re.takeMesh();
 }
 
 void GLTensorPlot::RenderGlyphs(GLRenderEngine& re, TENSOR& t, float scale)

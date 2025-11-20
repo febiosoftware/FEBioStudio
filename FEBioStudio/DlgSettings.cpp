@@ -30,16 +30,11 @@ SOFTWARE.*/
 #include "Document.h"
 #include "DocManager.h"
 #include "GLView.h"
-#include <QBoxLayout>
-#include <QFormLayout>
 #include <QToolButton>
 #include <QPushButton>
-#include <QTabWidget>
 #include <QListWidget>
-#include <QAction>
 #include <QApplication>
 #include <QStyleHints>
-#include <QLabel>
 #include <QDialogButtonBox>
 #include <QInputDialog>
 #include <QMessageBox>
@@ -61,8 +56,8 @@ SOFTWARE.*/
 #include "IconProvider.h"
 #include "PostDocument.h"
 #include <PostGL/GLModel.h>
-#include <QFileDialog>
 #include "PaletteViewer.h"
+#include <GLLib/GLScene.h>
 #include <FSCore/ColorMapManager.h>
 
 //-----------------------------------------------------------------------------
@@ -1139,8 +1134,11 @@ public:
 	::CPropertyListView*	ca_panel;
 	::CPropertyListView*	po_panel;
 
+	GLViewSettings& ops;
+	CGLDocument* doc = nullptr;
+
 public:
-	CDlgSettings(QDialog* parent, ::CMainWindow* wnd)
+	CDlgSettings(QDialog* parent, ::CMainWindow* wnd, GLViewSettings& vs) : ops(vs)
 	{
 		m_bg = new CBackgroundProps;
 		m_display = new CDisplayProps;
@@ -1225,16 +1223,16 @@ public:
 };
 
 
-CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pwnd))
+CDlgSettings::CDlgSettings(CMainWindow* pwnd, CGLDocument* doc, GLViewSettings& vs) : ui(new Ui::CDlgSettings(this, pwnd, vs))
 {
 	m_pwnd = pwnd;
+	ui->doc = doc;
 	setWindowTitle("Options");
 
 	UpdateSettings();
 
 	if (pwnd->GetDocManager()->Documents())
 	{
-		CGLDocument* doc = pwnd->GetGLDocument();
 		ui->m_unit->showAllOptions(true);
 		if (doc) ui->m_unit->setUnit(doc->GetUnitSystem());
 	}
@@ -1253,8 +1251,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 
 void CDlgSettings::UpdateSettings()
 {
-	GLViewSettings& view = m_pwnd->GetGLView()->GetViewSettings();
-	CGLView* glview = m_pwnd->GetGLView();
+	GLViewSettings& view = ui->ops;
 
 	ui->m_bg->m_bg1 = toQColor(view.m_col1);
 	ui->m_bg->m_bg2 = toQColor(view.m_col2);
@@ -1305,12 +1302,13 @@ void CDlgSettings::UpdateSettings()
 	ui->m_light->m_envmap  = m_pwnd->GetEnvironmentMap();
 	ui->m_light->m_useEV   = view.m_use_environment_map;
 
-	if (glview)
+	if (ui->doc && ui->doc->GetScene())
 	{
-		GLCamera* cam = glview->GetCamera();
+		GLScene* scene = ui->doc->GetScene();
+		GLCamera& cam = scene->GetCamera();
 		ui->m_cam->m_banim = true;
-		ui->m_cam->m_bias = (cam ? cam->GetCameraBias() : 0);
-		ui->m_cam->m_speed = (cam ? cam->GetCameraSpeed() : 0);
+		ui->m_cam->m_bias = cam.GetCameraBias();
+		ui->m_cam->m_speed = cam.GetCameraSpeed();
 	}
 
 	ui->m_post->m_defrng = Post::CGLColorMap::m_defaultRngType;
@@ -1342,9 +1340,7 @@ void CDlgSettings::UpdateUI()
 
 void CDlgSettings::apply()
 {
-	CGLDocument* pdoc = m_pwnd->GetGLDocument();
-	CGLView* glview = m_pwnd->GetGLView();
-	GLViewSettings& view = glview->GetViewSettings();
+	GLViewSettings& view = ui->ops;
 
 	view.m_col1 = toGLColor(ui->m_bg->m_bg1);
 	view.m_col2 = toGLColor(ui->m_bg->m_bg2);
@@ -1419,9 +1415,13 @@ void CDlgSettings::apply()
 	m_pwnd->SetEnvironmentMap(ui->m_light->m_envmap);
 	view.m_use_environment_map = ui->m_light->m_useEV;
 
-	GLCamera* cam = glview->GetCamera();
-	if (cam) cam->SetCameraBias(ui->m_cam->m_bias);
-	if (cam) cam->SetCameraSpeed(ui->m_cam->m_speed);
+	if (ui->doc && ui->doc->GetScene())
+	{
+		GLScene* scene = ui->doc->GetScene();
+		GLCamera& cam = scene->GetCamera();
+		cam.SetCameraBias(ui->m_cam->m_bias);
+		cam.SetCameraSpeed(ui->m_cam->m_speed);
+	}
 
 	Post::CGLColorMap::m_defaultRngType = ui->m_post->m_defrng;
 
@@ -1435,8 +1435,9 @@ void CDlgSettings::apply()
 	else if (nops == 1)
 	{
 		Units::SetUnitSystem(newUnit);
-		if (pdoc) {
-			pdoc->SetUnitSystem(newUnit); pdoc->SetModifiedFlag(true);
+		if (ui->doc) {
+			ui->doc->SetUnitSystem(newUnit); 
+			ui->doc->SetModifiedFlag(true);
 		}
 	}
 	else
@@ -1484,9 +1485,7 @@ void CDlgSettings::onClicked(QAbstractButton* button)
 
 void CDlgSettings::onReset()
 {
-	CGLDocument* pdoc = m_pwnd->GetGLDocument();
-	CGLView* glview = m_pwnd->GetGLView();
-	GLViewSettings& view = glview->GetViewSettings();
+	GLViewSettings& view = ui->ops;
 	int ntheme = 0;
     if(qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark) ntheme = 1;
 	view.Defaults(ntheme);
