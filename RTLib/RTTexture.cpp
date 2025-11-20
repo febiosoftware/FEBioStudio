@@ -134,22 +134,24 @@ gl::Color rt::Texture2D::sample(float u, float v)
 
 rt::Texture3D::Texture3D()
 {
-	img = nullptr;
+	tex = nullptr;
 }
 
 rt::Texture3D::~Texture3D()
 {
-	img = nullptr;
+	tex = nullptr;
 }
 
-void rt::Texture3D::setImageData(C3DImage* img3d)
+void rt::Texture3D::setImageData(GLTexture3D* tex3d)
 {
-	img = img3d;
+	tex = tex3d;
 }
 
 gl::Color rt::Texture3D::sample(float r, float s, float t)
 {
-	if (img == nullptr) return gl::Color(0, 0, 0);
+	if (tex == nullptr) return gl::Color(0, 0, 0);
+
+	C3DImage* img = tex->Get3DImage();
 
 	double v = img->Peek(r, s, t);
 	double vmin, vmax;

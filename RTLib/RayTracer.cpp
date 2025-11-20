@@ -688,7 +688,7 @@ void RayTracer::setTexture(GLTexture1D& tex)
 void RayTracer::setTexture(GLTexture3D& tex)
 {
 	rt::Texture3D* t3d = new rt::Texture3D();
-	t3d->setImageData(tex.Get3DImage());
+	t3d->setImageData(&tex);
 	tex3d.push_back(t3d);
 	currentTexture3D = (int)tex3d.size() - 1;
 	if (currentMaterial >= 0) matList[currentMaterial].tex3d = currentTexture3D;
@@ -820,10 +820,24 @@ rt::Fragment RayTracer::fragment(int i, int j, int samples)
 
 			Ray ray(origin, direction);
 
-			Fragment fragCol = castRay(ray);
+			Color bg = backgroundColor(origin);
 
-			c += fragCol.color;
-			depth += fragCol.depth;
+			Color fragCol(0, 0, 0, 0);
+			float fragDepth = -farPlane;
+			Point p;
+			if (castRay(ray, p))
+			{
+				float a = p.c.a();
+				fragCol = bg * (1.0f - a) + p.c*a;
+				fragDepth = p.r.z();
+			}
+			else
+			{
+				fragCol = bg;
+			}
+
+			c += fragCol;
+			depth += fragDepth;
 		}
 	c /= (double)(samples * samples);
 	depth /= (float)(samples * samples);
@@ -835,19 +849,29 @@ rt::Fragment RayTracer::fragment(int i, int j, int samples)
 
 GLColor RayTracer::backgroundColor(const Vec3& p)
 {
-	double r = 0.5* (p.x() / m_fw)+0.5;
-	double s = 0.5* (p.y() / m_fh)+0.5;
-	if (r < 0) r = 0; if (r > 1) r = 1;
-	if (s < 0) s = 0; if (s > 1) s = 1;
+	int bgOption = GetIntValue(BACKGROUND);
 
 	GLColor c;
-	if (m_orient == GLRenderEngine::HORIZONTAL)
-		c = m_col2 * (1 - s) + m_col1 * s;
-	else
-		c = m_col1 * (1 - r) + m_col2 * r;
+	switch (bgOption)
+	{
+	case 0: // default
+	{
+		double r = 0.5 * (p.x() / m_fw) + 0.5;
+		double s = 0.5 * (p.y() / m_fh) + 0.5;
+		if (r < 0) r = 0; if (r > 1) r = 1;
+		if (s < 0) s = 0; if (s > 1) s = 1;
 
-	c.a = 1;
-
+		if (m_orient == GLRenderEngine::HORIZONTAL)
+			c = m_col2 * (1 - s) + m_col1 * s;
+		else
+			c = m_col1 * (1 - r) + m_col2 * r;
+		c.a = 255;
+	}
+	break;
+	case 1: // transparent
+		c = GLColor(0, 0, 0, 0);
+		break;
+	}
 	return c;
 }
 
@@ -856,78 +880,109 @@ bool RayTracer::intersect(const Ray& ray, rt::Point& q)
 	return geom.intersect(ray, q);
 }
 
-rt::Fragment RayTracer::castRay(Ray& ray)
+inline double clamp(double x, double a, double b)
 {
-	rt::Point q;
+	if (x < a) return a;
+	if (x > b) return b;
+	return x;
+}
 
-	int bgOption = GetIntValue(BACKGROUND);
-
-	Fragment frag;
-	frag.depth = -farPlane;
-	switch (bgOption)
-	{
-	case 0: // default
-		if (ray.bounce == 0)
-			frag.color = backgroundColor(ray.origin);
-		else
-			frag.color = backgroundCol;
-		break;
-	case 1: // transparent
-		frag.color = Color(0, 0, 0, 0);
-		break;
-	}
+bool RayTracer::castRay(const Ray& ray, rt::Point& q)
+{
+	// see if the mesh intersects any geometry
 	bool intersectMesh = intersect(ray, q);
-	bool renderShadows = GetBoolValue(SHADOWS);
-	double shadowFactor = 1 - GetFloatValue(SHADOW_STRENGTH);
-	if (shadowFactor < 0) shadowFactor = 0;
-	else if (shadowFactor > 1) shadowFactor = 1;
+	if (!intersectMesh) return false;
 
-	if (intersectMesh)
+	// get some material props
+	rt::Material mat;
+	if (q.matid >= 0)
 	{
-		// set depth value
-		frag.depth = q.r.z();
+		rt::Material& m = matList[q.matid];
+		mat = m;
+	}
 
-		// get some material props
-		rt::Material mat;
-		if (q.matid >= 0)
+	// see if we need to apply a 3D texture
+	if ((mat.tex3d >= 0) && (ray.bounce == 0))
+	{
+		// we've hit a 3D texture. 
+		rt::Texture3D& tex = *tex3d[mat.tex3d];
+		const GLTexture3D& vr = *tex.getImageData();
+
+		Color c(0, 0, 0, 0);
+		rt::Point q2(q);
+		while (true)
 		{
-			rt::Material& m = matList[q.matid];
-			mat = m;
+			// sample texture
+			Color t = tex.sample((float)q2.t[0], (float)q2.t[1], (float)q2.t[2]);
+			float a = t.a();
+
+			a = (a - vr.IscaleMin) * vr.Iscale;
+			a = (a - vr.Imin) / (vr.Imax - vr.Imin);
+			a = clamp(a, 0, 1.f);
+
+			// gamma correction
+			a = pow(a, vr.gamma);
+
+			// user-scaled alpha
+			a = vr.Amin + a * (vr.Amax - vr.Amin);
+
+			t.a(a);
+			t *= q.c;
+
+			a = t.a();
+
+			c.r() += t.r() * a;
+			c.g() += t.g() * a;
+			c.b() += t.b() * a;
+			c.a() += t.a();
+			c.clamp();
+			
+			Vec3 p = q2.r + ray.direction;
+			Ray ray2(p, ray.direction);
+			ray2.bounce = ray.bounce + 1;
+
+			if (intersect(ray2, q2) == false)
+				break;
 		}
+		q.c = c;
+		q.r = q2.r;
+		if (c.a() < 0.01f) return false;
+		else return true;
+	}
+	else
+	{
+		bool renderShadows = GetBoolValue(SHADOWS);
+		double shadowFactor = 1 - GetFloatValue(SHADOW_STRENGTH);
+		if (shadowFactor < 0) shadowFactor = 0;
+		else if (shadowFactor > 1) shadowFactor = 1;
 
 		Color c = q.c;
-		Vec3& t = ray.direction;
+		Vec3 t = ray.direction;
 		Vec3 N = q.n;
 
-		if (mat.lighting)
+		// apply 1D texture
+		if (mat.tex1d >= 0)
 		{
-			// environment map
-			if ((mat.reflection > 0) && (!envTex.isNull()))
-			{
-				double r = mat.reflection;
-				Vec3 N = q.n;
+			Color t = tex1d[mat.tex1d]->sample((float)q.t[0]);
+			t.a(1.0);
+			c *= t;
+		}
 
-				Vec3 R = gl::reflect(t, N);
+		// apply environment map
+		if ((mat.reflection > 0) && (!envTex.isNull()))
+		{
+			double r = mat.reflection;
+			Vec3 N = q.n;
 
-				float u = atan2(R.z(), R.x()) / (2.0 * PI) + 0.5;
-				float v = 0.5 - asin(R.y()) / PI;
+			Vec3 R = gl::reflect(t, N);
 
-				Color envCol = envTex.sample(u, v);
-				float a = c.a();
-				c = c*(envCol * r + Color(1,1,1,1) * (1 - r));
-				c.a(a);
-			}
+			float u = atan2(R.z(), R.x()) / (2.0 * PI) + 0.5;
+			float v = 0.5 - asin(R.y()) / PI;
 
-			// reflection
-/*			if ((mat.reflection > 0) && (ray.bounce < 2))
-			{
-				Vec3 H = t - N * (2 * (t * N));
-				H.normalize();
-				Ray ray2(q.r, H);
-				ray2.bounce = ray.bounce + 1;
-				c = c * (1 - mat.reflection) + castRay(bhv, ray2) * mat.reflection;
-			}
-*/
+			Color envCol = envTex.sample(u, v);
+			float a = c.a();
+			c = c * (envCol * r + Color(1, 1, 1, 1) * (1 - r));
+			c.a(a);
 		}
 
 		// see if we've reached the front or back face
@@ -939,28 +994,16 @@ rt::Fragment RayTracer::castRay(Ray& ray)
 		}
 		Vec3 L(lightPos); L.normalize();
 
-		// apply texture
-		if (mat.tex1d >= 0)
-		{
-			Color t = tex1d[mat.tex1d]->sample((float)q.t[0]);
-			c *= t;
-		}
-
-		if (mat.tex3d >= 0)
-		{
-			Color t = tex3d[mat.tex3d]->sample((float)q.t[0], (float)q.t[1], (float)q.t[2]);
-			double a = t.a();
-			c.a() *= a;
-		}
-		
 		bool isOccluded = false;
+
+		Color fcol(0, 0, 0, 1);
 		if (mat.lighting && lightEnabled)
 		{
 			// calculate an ambient value
-			frag.color = mat.ambient * lightAmbient;
+			fcol = mat.ambient * lightAmbient;
 			double f = N * Vec3(0, 0, 1);
 			if (f < 0) f = 0;
-			frag.color += c * (f * 0.2);
+			fcol += c * (f * 0.2);
 
 			// see if the point is occluded or not
 			if (renderShadows)
@@ -977,22 +1020,34 @@ rt::Fragment RayTracer::castRay(Ray& ray)
 			if (f < 0) f = 0;
 			if (isOccluded) f *= shadowFactor;
 			Color diffuse = c * f;
-			frag.color += diffuse*lightDiffuse;
+			fcol += diffuse * lightDiffuse;
 		}
-		else frag.color = c;
+		else fcol = c;
 
 		double opacity = c.a();
-		if ((c.a() < 0.99) && (ray.bounce < 100))
+		if ((c.a() < 0.99) && (ray.bounce < 10))
 		{
 			Vec3 p = q.r;
 			Ray ray2(p, ray.direction);
 			ray2.bounce = ray.bounce + 1;
 
 			rt::Point q2;
-			Fragment f2 = castRay(ray2);
-			frag.color = frag.color * opacity + f2.color * (1 - opacity);
+			if (castRay(ray2, q2))
+			{
+				fcol = fcol * opacity + q2.c * (1 - opacity);
+			}
 		}
 
+		// reflection
+/*		if ((mat.reflection > 0) && (ray.bounce < 2))
+		{
+			Vec3 H = t - N * (2 * (t * N));
+			H.normalize();
+			Ray ray2(q.r, H);
+			ray2.bounce = ray.bounce + 1;
+			c = c * (1 - mat.reflection) + castRay(bhv, ray2) * mat.reflection;
+		}
+*/
 		// add specular component
 		if (!isOccluded && (mat.shininess >= 0) && mat.lighting)
 		{
@@ -1000,13 +1055,15 @@ rt::Fragment RayTracer::castRay(Ray& ray)
 			H.normalize();
 			double f = H * L;
 			double s = (f > 0 ? pow(f, mat.shininess) : 0);
-			frag.color += lightSpecular * mat.specular* s;
+			fcol += lightSpecular * mat.specular * s;
 		}
-		frag.color.a() = c.a();
-	}
-	frag.color.clamp();
+		fcol.a() = c.a();
+		fcol.clamp();
 
-	return frag;
+		q.c = fcol;
+	}
+
+	return true;
 }
 
 unsigned int RayTracer::SetEnvironmentMap(const CRGBAImage& img)

@@ -202,7 +202,10 @@ public:
 private:
 	void preprocess();
 	void render();
-	rt::Fragment castRay(gl::Ray& ray);
+
+	// casts a ray and returns the intersection point
+	// returns false if no intersection is found
+	bool castRay(const gl::Ray& ray, rt::Point& pt);
 
 	void addTriangle(rt::Tri& tri);
 

@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <GLLib/GLMath.h>
+#include <GLLib/GLTexture3D.h>
 #include <ImageLib/3DImage.h>
 #include <ImageLib/RGBAImage.h>
 
@@ -67,11 +68,13 @@ namespace rt {
 		Texture3D();
 		~Texture3D();
 
-		void setImageData(C3DImage* img3d);
+		void setImageData(GLTexture3D* tex3d);
+
+		const GLTexture3D* getImageData() const { return tex; }
 
 		gl::Color sample(float r, float s, float t);
 
 	private:
-		C3DImage* img;
+		GLTexture3D* tex;
 	};
 }
