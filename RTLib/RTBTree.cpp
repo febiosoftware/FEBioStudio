@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include <FSCore/FSLogger.h>
 #include <stack>
 #include <omp.h>
+#include <thread>
 
 using namespace gl;
 
@@ -143,7 +144,8 @@ void rt::Btree::Build(Mesh& mesh, int levels)
 #pragma omp parallel shared(leaves)
 	{
 		// the the number of threads in this parallel region
-		int numThreads = omp_get_num_threads();
+//		int numThreads = omp_get_num_threads();
+        int numThreads = std::thread::hardware_concurrency();
 
 		// only execute in parallel if it's worth it
 		if ((levels < 2) || (numThreads < 2))
@@ -170,7 +172,8 @@ void rt::Btree::Build(Mesh& mesh, int levels)
 			}
 
 			// loop over all the triangles and sort them in the blocks
-			int threadId = omp_get_thread_num();
+//			int threadId = omp_get_thread_num();
+            int threadId = std::thread::hardware_concurrency();
 			if ((threadId >= 0) && (threadId < (int)leaves.size()))
 			{
 				for (int i = 0; i < ntriangles; ++i)

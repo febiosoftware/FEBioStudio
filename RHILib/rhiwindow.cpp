@@ -9,7 +9,7 @@ bool RhiWindow::rhi_initialized = false;
 QRhi::Implementation RhiWindow::m_graphicsApi = QRhi::Null;
 
 #if QT_CONFIG(vulkan)
-static QVulkanInstance vulkanInst;
+//static QVulkanInstance vulkanInst;
 #endif
 
 void RhiWindow::InitRHI(QRhi::Implementation api)
@@ -18,7 +18,7 @@ void RhiWindow::InitRHI(QRhi::Implementation api)
 	if (rhi_initialized) return;
 
 #if QT_CONFIG(vulkan)
-	if (api == QRhi::Vulkan) {
+/*	if (api == QRhi::Vulkan) {
 		// Request validation, if available. This is completely optional
 		// and has a performance impact, and should be avoided in production use.
 		vulkanInst.setLayers({ "VK_LAYER_KHRONOS_validation" });
@@ -28,7 +28,7 @@ void RhiWindow::InitRHI(QRhi::Implementation api)
 			qWarning("Failed to create Vulkan instance, switching to OpenGL");
 			api = QRhi::OpenGLES2;
 		}
-	}
+	}*/
 #endif
 
 	// For OpenGL, to ensure there is a depth/stencil buffer for the window.
@@ -77,8 +77,8 @@ RhiWindow::RhiWindow()
     }
 
 #if QT_CONFIG(vulkan)
-	if (m_graphicsApi == QRhi::Vulkan)
-		setVulkanInstance(&vulkanInst);
+//	if (m_graphicsApi == QRhi::Vulkan)
+//		setVulkanInstance(&vulkanInst);
 #endif
 
 	// choose sample count for MSAA
@@ -171,12 +171,12 @@ void RhiWindow::init()
 #endif
 
 #if QT_CONFIG(vulkan)
-    if (m_graphicsApi == QRhi::Vulkan) {
+/*    if (m_graphicsApi == QRhi::Vulkan) {
         QRhiVulkanInitParams params;
         params.inst = vulkanInstance();
         params.window = this;
         m_rhi.reset(QRhi::create(QRhi::Vulkan, &params));
-    }
+    }*/
 #endif
 
 #ifdef Q_OS_WIN
