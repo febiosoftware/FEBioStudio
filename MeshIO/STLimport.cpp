@@ -48,8 +48,10 @@ bool STLimport::read_line(char* szline, const char* sz)
 	if (fgets(szline, 255, m_fp) == 0) return false;
 
 	// remove leading white space
+	// We also check for negative ASCII values. This can happen
+	// if this turns out to be a binary STL file after all.
 	int n = 0;
-	while (isspace(szline[n])) ++n;
+	while ((szline[n] < 0) || (isspace(szline[n]))) ++n;
 	if (n != 0)
 	{
 		char* ch = szline + n;
