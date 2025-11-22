@@ -422,6 +422,8 @@ public:
 
 	QSize GetEditorSize();
 
+	void onDropEvent(QDropEvent* event);
+
 public:
 	bool ConfigureOptimizationStudy(COptimizationStudy* study);
 	void RunOptimizationStudy(COptimizationStudy* study);

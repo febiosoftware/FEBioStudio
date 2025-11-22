@@ -1213,6 +1213,8 @@ bool CGLView::event(QEvent* event)
 {
     if (event->type() == QEvent::NativeGesture)
         return gestureEvent(static_cast<QNativeGestureEvent*>(event));
+	if (event->type() == QEvent::Drop)
+		m_pWnd->onDropEvent(static_cast<QDropEvent*>(event));
     return rhiSceneView::event(event);
 }
 

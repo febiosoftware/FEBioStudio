@@ -50,6 +50,7 @@ SOFTWARE.*/
 #include "GLHighlighter.h"
 #include <QStyleFactory>
 #include <QStyleHints>
+#include <QDropEvent>
 #include "GraphWindow.h"
 #include <PostGL/GLModel.h>
 #include "DlgWidgetProps.h"
@@ -1695,6 +1696,33 @@ void CMainWindow::closeEvent(QCloseEvent* ev)
 	{
 		ui->m_updateOnClose = false;
 		ev->ignore();
+	}
+}
+
+void CMainWindow::onDropEvent(QDropEvent* e)
+{
+	foreach(const QUrl & url, e->mimeData()->urls()) {
+		QString fileName = url.toLocalFile();
+
+		FileReader* fileReader = nullptr;
+
+		QFileInfo file(fileName);
+
+		// Create a file reader
+		// NOTE: For FEB files I prefer to open the file as a separate model,
+		// so I need this hack. 
+		if (file.suffix() != "feb") fileReader = CreateFileReader(fileName);
+
+		CDocument* doc = GetDocument();
+
+		// make sure we have one
+		if (fileReader && doc)
+		{
+			ReadFile(doc, fileName, fileReader, 0);
+		}
+		else {
+			OpenFile(fileName, false, false);
+		}
 	}
 }
 
