@@ -112,14 +112,14 @@ public:
 		if (m_h < m_minh) m_h = m_minh;
 	}
 
-	void scale(double s)
+	virtual void scale(double s)
 	{
 		m_w = (int)(s * m_w);
 		m_h = (int)(s * m_h);
 		if (m_w < m_minw) m_w = m_minw;
 		if (m_h < m_minh) m_h = m_minh;
 
-		m_font.setPixelSize((int)(s * m_font.pixelSize()));
+		m_font.setPointSize((int)(s * m_font.pointSize()));
 	}
 
 	void show() { m_bshow = true; }

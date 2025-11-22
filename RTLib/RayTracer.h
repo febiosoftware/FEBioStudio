@@ -123,7 +123,7 @@ namespace rt {
 
 class RayTracer : public GLRenderEngine
 {
-	enum { WIDTH, HEIGHT, SHADOWS, SHADOW_STRENGTH, MULTI_SAMPLE, BACKGROUND, BHV_LEVELS };
+	enum { WIDTH, HEIGHT, SHADOWS, SHADOW_STRENGTH, MULTI_SAMPLE, BACKGROUND, BGCOLOR, BHV_LEVELS };
 
 public:
 	RayTracer();

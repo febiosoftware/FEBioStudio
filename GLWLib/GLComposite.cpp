@@ -66,3 +66,9 @@ int GLComposite::handle(int x, int y, int nevent)
 	}
 	return 0;
 }
+
+void GLComposite::scale(double s)
+{
+	GLWidget::scale(s);
+	for (GLWidget* w : m_children) w->scale(s);
+}

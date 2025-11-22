@@ -38,6 +38,8 @@ public:
 
 	void add_widget(GLWidget* w) { m_children.push_back(w); }
 
+	void scale(double s) override;
+
 private:
 	std::vector<GLWidget*> m_children;
 };
