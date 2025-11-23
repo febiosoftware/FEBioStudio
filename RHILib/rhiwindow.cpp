@@ -8,8 +8,10 @@ bool RhiWindow::rhi_initialized = false;
 
 QRhi::Implementation RhiWindow::m_graphicsApi = QRhi::Null;
 
+#ifndef Q_OS_MACOS
 #if QT_CONFIG(vulkan)
 static QVulkanInstance vulkanInst;
+#endif
 #endif
 
 void RhiWindow::InitRHI(QRhi::Implementation api)
@@ -17,6 +19,7 @@ void RhiWindow::InitRHI(QRhi::Implementation api)
 	// see if we're already initialized
 	if (rhi_initialized) return;
 
+#ifndef Q_OS_MACOS
 #if QT_CONFIG(vulkan)
 	if (api == QRhi::Vulkan) {
 		// Request validation, if available. This is completely optional
@@ -29,6 +32,7 @@ void RhiWindow::InitRHI(QRhi::Implementation api)
 			api = QRhi::OpenGLES2;
 		}
 	}
+#endif
 #endif
 
 	// For OpenGL, to ensure there is a depth/stencil buffer for the window.
@@ -76,9 +80,11 @@ RhiWindow::RhiWindow()
         break; // RasterSurface
     }
 
+#ifndef Q_OS_MACOS
 #if QT_CONFIG(vulkan)
 	if (m_graphicsApi == QRhi::Vulkan)
 		setVulkanInstance(&vulkanInst);
+#endif
 #endif
 
 	// choose sample count for MSAA
@@ -170,6 +176,7 @@ void RhiWindow::init()
     }
 #endif
 
+#ifndef Q_OS_MACOS
 #if QT_CONFIG(vulkan)
     if (m_graphicsApi == QRhi::Vulkan) {
         QRhiVulkanInitParams params;
@@ -177,6 +184,7 @@ void RhiWindow::init()
         params.window = this;
         m_rhi.reset(QRhi::create(QRhi::Vulkan, &params));
     }
+#endif
 #endif
 
 #ifdef Q_OS_WIN
