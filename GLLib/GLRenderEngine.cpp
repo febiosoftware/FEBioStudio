@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "GLRenderEngine.h"
 #include "GLCamera.h"
 #include "GLMesh.h"
+#include <omp.h>
 
 using namespace gl;
 
@@ -250,69 +251,85 @@ void GLRenderEngine::renderGMeshOutline(const GLCamera& cam, const GLMesh& gmsh,
 	vec3d p = cam.GlobalPosition();
 
 	// this array will collect all points to render
-	std::vector<vec3f> points; points.reserve(1024);
+	std::vector<vec3f> allPoints; allPoints.reserve(1024);
 
 	int NF = gmsh.Faces();
 	if (NF > 0)
 	{
-		// loop over all faces
-		for (int i = 0; i < NF; ++i)
+		const int MIN_CHUNK = 20000;
+		int maxThreads = omp_get_max_threads() / 2;
+		int numThreads = std::min(maxThreads, NF/MIN_CHUNK);
+		numThreads = std::max(1, numThreads);
+
+#pragma omp parallel num_threads(numThreads)
 		{
-			const GLMesh::FACE& f = gmsh.Face(i);
-			for (int j = 0; j < 3; ++j)
+			std::vector<vec3f> points; points.reserve(1024);
+
+#pragma omp for
+			for (int i = 0; i < NF; ++i)
 			{
-				bool bdraw = false;
-
-				if (f.nbr[j] > i)
+				const GLMesh::FACE& f = gmsh.Face(i);
+				for (int j = 0; j < 3; ++j)
 				{
-					const GLMesh::FACE& f2 = gmsh.Face(f.nbr[j]);
-					vec3d n1 = T.LocalToGlobalNormal(to_vec3d(f.fn));
-					vec3d n2 = T.LocalToGlobalNormal(to_vec3d(f2.fn));
+					bool bdraw = false;
 
-					if (cam.IsOrtho())
+					if (f.nbr[j] > i)
 					{
-						q.RotateVector(n1);
-						q.RotateVector(n2);
-						if (n1.z * n2.z <= 0) bdraw = true;
+						const GLMesh::FACE& f2 = gmsh.Face(f.nbr[j]);
+						vec3d n1 = T.LocalToGlobalNormal(to_vec3d(f.fn));
+						vec3d n2 = T.LocalToGlobalNormal(to_vec3d(f2.fn));
+
+						if (cam.IsOrtho())
+						{
+							q.RotateVector(n1);
+							q.RotateVector(n2);
+							if (n1.z * n2.z <= 0) bdraw = true;
+						}
+						else
+						{
+							int a = j;
+							int b = (j + 1) % 3;
+							vec3d ra = T.LocalToGlobal(to_vec3d(gmsh.Node(f.n[a]).r));
+							vec3d rb = T.LocalToGlobal(to_vec3d(gmsh.Node(f.n[b]).r));
+							vec3d c = (ra + rb) * 0.5;
+							vec3d pc = p - c;
+							double d1 = pc * n1;
+							double d2 = pc * n2;
+							if (d1 * d2 <= 0) bdraw = true;
+						}
 					}
-					else
+
+					if (bdraw)
 					{
-						int a = j;
-						int b = (j + 1) % 3;
-						vec3d ra = T.LocalToGlobal(to_vec3d(gmsh.Node(f.n[a]).r));
-						vec3d rb = T.LocalToGlobal(to_vec3d(gmsh.Node(f.n[b]).r));
-						vec3d c = (ra + rb) * 0.5;
-						vec3d pc = p - c;
-						double d1 = pc * n1;
-						double d2 = pc * n2;
-						if (d1 * d2 <= 0) bdraw = true;
+						int a = f.n[j];
+						int b = f.n[(j + 1) % 3];
+						if (a > b) { a ^= b; b ^= a; a ^= b; }
+
+						points.push_back(gmsh.Node(a).r);
+						points.push_back(gmsh.Node(b).r);
 					}
 				}
+			}
 
-				if (bdraw)
+			if (!points.empty())
+			{
+#pragma omp critical
 				{
-					int a = f.n[j];
-					int b = f.n[(j + 1) % 3];
-					if (a > b) { a ^= b; b ^= a; a ^= b; }
-
-					points.push_back(gmsh.Node(a).r);
-					points.push_back(gmsh.Node(b).r);
+					allPoints.insert(allPoints.end(), points.begin(), points.end());
 				}
 			}
 		}
 	}
-	if (points.empty()) return;
+	if (allPoints.empty()) return;
 
-	int nodes = points.size();
-	int edges = points.size() / 2;
+	int nodes = allPoints.size();
+	int edges = allPoints.size() / 2;
 
 	GLMesh mesh;
-	mesh.Create(nodes, 0, edges);
 	for (int i = 0; i < edges; ++i)
 	{
-		mesh.AddEdge(points[2 * i], points[2 * i + 1]);
+		mesh.AddEdge(allPoints[2 * i], allPoints[2 * i + 1]);
 	}
-	mesh.Update();
 
 	renderGMeshEdges(mesh, false);
 }
