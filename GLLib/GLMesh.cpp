@@ -33,6 +33,9 @@ using std::stack;
 
 GLMesh::GLMesh(void)
 {
+	static unsigned int nextId = 1;
+	m_uid = nextId++;
+
 	m_hasNeighborList = false;
 }
 
