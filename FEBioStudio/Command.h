@@ -65,6 +65,11 @@ private:
 class CCommand  
 {
 public:
+	enum Flag {
+		MODIFIES_DOC = 1, // this command modifies the document state
+	};
+
+public:
 	CCommand(const std::string& name);
 	virtual ~CCommand();
 
@@ -77,11 +82,15 @@ public:
 	virtual void SetViewState(VIEW_STATE state);
 	VIEW_STATE GetViewState();
 
+	bool HasFlag(Flag flag) const { return (m_flags & flag) != 0; }
+
 protected:
 	// doc/view state variables
 	VIEW_STATE	m_state;
 
 	std::string m_name;	// command name
+
+	unsigned int m_flags;
 
 	friend class CCommandManager;
 };

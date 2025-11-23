@@ -1673,7 +1673,7 @@ void GLObjectSurfaceItem::render(GLRenderEngine& re, GLContext& rc)
 		{
 		case SELECT_OBJECT:
 		{
-			if (view.m_bcontour)
+			if (view.m_bcontour && (po == m_scene->GetActiveObject()))
 			{
 				GLMesh* gm = po->GetFERenderMesh();
 				if (gm) RenderFEMeshSurface(re, rc);
@@ -1904,11 +1904,8 @@ void GLObjectSurfaceItem::RenderSurfaceMeshFaces(GLRenderEngine& re, GLContext& 
 	if (showContour)
 	{
 		GLMesh* gmesh = surfaceObject->GetRenderMesh();
-
-		// We don't use the cached mesh, since it probably won't have the 
-		// vertex colors stored, which we need here. 
 		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
-		re.renderGMesh(*gmesh, false);
+		re.renderGMesh(*gmesh);
 	}
 	else
 	{
