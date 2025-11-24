@@ -155,9 +155,13 @@ public:
 private:
 	void BuildRenderMesh();
 
+	void ResetMesh(GLMesh* m = nullptr);
+	bool NeedsUpdate() const;
+
 private:
 	GObject* m_po = nullptr;
-	std::unique_ptr<GLMesh> m_edgeMesh;
+	unsigned int m_uid = 0;
+	std::unique_ptr<GLMesh> m_mesh;
 };
 
 class GLObjectNormalsItem : public GLModelSceneItem

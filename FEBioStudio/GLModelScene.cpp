@@ -1793,7 +1793,7 @@ void GLObjectSurfaceItem::RenderGeomSurface(GLRenderEngine& re, GLContext& rc)
 	}
 
 	// see if we should rebuild the surface mesh
-	if ((m_surfMesh == nullptr) || (m->GetUID() != m_uid))
+	if ((m_surfMesh == nullptr) || m->IsModified() || (m->GetUID() != m_uid))
 			BuildSurfaceMesh();
 
 	if (m_surfMesh == nullptr) return;
@@ -2243,17 +2243,20 @@ void GLMeshLinesItem::render(GLRenderEngine& re, GLContext& rc)
 }
 
 GLFeatureEdgesItem::GLFeatureEdgesItem(CGLModelScene* scene, GObject* po) : GLModelSceneItem(scene), m_po(po) {}
+
 GLFeatureEdgesItem::~GLFeatureEdgesItem() {}
 
 void GLFeatureEdgesItem::BuildRenderMesh()
 {
-	m_edgeMesh.reset();
+	ResetMesh();
+
 	GObject* po = m_po;
-	if (m_po == nullptr) return;
+	if (po == nullptr) return;
 	GLMesh* m = po->GetRenderMesh();
 	if (m == nullptr) return;
 
-	m_edgeMesh.reset(new GLMesh());
+	ResetMesh(m);
+
 	for (int i = 0; i < m->Edges(); ++i)
 	{
 		GLMesh::EDGE& ed = m->Edge(i);
@@ -2261,7 +2264,7 @@ void GLFeatureEdgesItem::BuildRenderMesh()
 		{
 			if (po->Edge(ed.pid)->IsVisible())
 			{
-				m_edgeMesh->AddEdge(ed.vr[0], ed.vr[1]);
+				m_mesh->AddEdge(ed.vr[0], ed.vr[1]);
 			}
 		}
 	}
@@ -2273,17 +2276,38 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, GLContext& rc)
 		(rc.m_settings.m_nrender == RENDER_WIREFRAME) || 
 		(m_scene->GetSelectionMode() == SELECT_EDGE))
 	{
-		if (m_edgeMesh == nullptr) BuildRenderMesh();
+		if (NeedsUpdate()) BuildRenderMesh();
 
-		if (m_edgeMesh)
+		if (m_mesh != nullptr)
 		{
 			if (rc.m_settings.m_bfeat)
 				re.setMaterial(GLMaterial::CONSTANT, GLColor::Black());
 			else
 				re.setMaterial(GLMaterial::CONSTANT, GLColor::Blue());
 
-			re.renderGMeshEdges(*m_edgeMesh);
+			re.renderGMeshEdges(*m_mesh);
 		}
+	}
+}
+
+bool GLFeatureEdgesItem::NeedsUpdate() const
+{
+	if (m_po == nullptr) return false;
+	GLMesh* m = m_po->GetRenderMesh();
+	if (m == nullptr) return (m_mesh != nullptr);
+	if (m_mesh == nullptr) return true;
+	return (m->IsModified() || (m_uid != m->GetUID()));
+}
+
+void GLFeatureEdgesItem::ResetMesh(GLMesh* m)
+{
+	if (m) {
+		m_mesh.reset(new GLMesh);
+		m_uid = m->GetUID();
+	}
+	else {
+		m_mesh.reset();
+		m_uid = 0;
 	}
 }
 

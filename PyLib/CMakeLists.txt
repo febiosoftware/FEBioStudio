@@ -195,6 +195,7 @@ add_subdirectory(${PYBIND11_DIR} ./pybind11)
 # Manually pull in include dirs for OpenMP on macOS
 if(APPLE)
     target_include_directories(FEBioMech PRIVATE ${OpenMP_C_INCLUDE_DIRS} ${OMP_INC})
+    target_include_directories(GLLib PRIVATE ${OpenMP_C_INCLUDE_DIRS} ${OMP_INC})
 endif()
 
 find_package(ZLIB)

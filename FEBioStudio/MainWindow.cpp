@@ -1822,6 +1822,23 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 			RedrawGL();
 		}
 	}
+	else if ((ev->key() == Qt::Key_F1))
+	{
+		if (ev->modifiers() & Qt::ControlModifier)
+		{
+			ev->accept();
+			CModelDocument* doc = GetModelDocument();
+			if (doc)
+			{
+				GLScene* scene = doc->GetScene();
+				if (scene)
+				{
+					scene->Update();
+					RedrawGL();
+				}
+			}
+		}
+	}
 }
 
 void CMainWindow::SetCurrentFolder(const QString& folder)
