@@ -7,4 +7,4 @@ fi
 
 chmod +x cmbuild/bin/FEBioStudio.app/Contents/MacOS/*
 scp -r cmbuild/bin/FEBioStudio.app/Contents/MacOS/* repo:~/$REMOTE_PATH/FEBioStudio.app/Contents/MacOS
-find pythonModule/ | grep .dylib | xargs -I file scp file repo:~/download
+find pythonModule/ | grep .so | xargs -I file scp file repo:~/download
