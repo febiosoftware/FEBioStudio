@@ -26,16 +26,15 @@ SOFTWARE.*/
 #include "DlgEditMaterial.h"
 #include <QDialogButtonBox>
 #include <QBoxLayout>
-#include <QColorDialog>
 #include <QFormLayout>
 #include "CColorButton.h"
 #include <GLWLib/convert.h>
 #include "DragBox.h"
-#include <RHILib/rhiSceneView.h>
 #include "MainWindow.h"
-#include <GLLib/glx.h>
-#include <GLLib/GLMeshBuilder.h>
 #include <QComboBox>
+#include <QPainter>
+#include <RTLib/RayTracer.h>
+#include <GLLib/GLContext.h>
 
 class EditMaterialScene : public GLScene
 {
@@ -45,16 +44,8 @@ public:
 
 	BOX GetBoundingBox() override { return BOX(-1, -1, -1, 1, 1, 1); }
 
-private:
-	void BuildMesh();
-
 public:
-	int res = 48;
 	GLMaterial mat;
-	QString envTexFile;
-
-private:
-	std::unique_ptr<GLMesh> mesh;
 };
 
 struct PresetMaterial
@@ -110,27 +101,122 @@ EditMaterialScene::EditMaterialScene()
 
 void EditMaterialScene::Render(GLRenderEngine& re, GLContext& rc)
 {
-	if (!mesh) BuildMesh();
+	ActivateEnvironmentMap(re);
+	re.setLightPosition(0, vec3f(1, 1, 1));
+	PositionCameraInScene(re);
 
-	if (mesh)
-	{
-		ActivateEnvironmentMap(re);
-		re.setLightPosition(0, vec3f(1, 1, 1));
-		PositionCameraInScene(re);
-		re.setMaterial(mat);
-		re.renderGMesh(*mesh.get());
-		DeactivateEnvironmentMap(re);
-	}
+	re.setMaterial(mat);
+
+	RayTracer& rt = dynamic_cast<RayTracer&>(re);
+	rt.addSphere(vec3d(0,0,0), 1.0);
+
+	GLScene::Render(re, rc);
+	DeactivateEnvironmentMap(re);
 }
 
-void EditMaterialScene::BuildMesh()
+class CSceneWidget : public QFrame
 {
-	GLMeshBuilder mb;
-	mb.beginShape();
-	glx::drawSphere(mb, 1, res, res);
-	mb.endShape();
-	mesh.reset(mb.takeMesh());
-}
+public:
+	CSceneWidget(QWidget* parent = nullptr) : QFrame(parent) {}
+
+	void resizeEvent(QResizeEvent* event) override
+	{
+		QRect rect = contentsRect();
+		int W = rect.width();
+		int H = rect.height();
+
+		img = QImage(W, H, QImage::Format_ARGB32);
+		img.fill(Qt::red);
+
+		requestUpdate();
+		QFrame::resizeEvent(event);
+	}
+
+	void paintEvent(QPaintEvent* ev)
+	{
+		QFrame::paintEvent(ev);
+
+		QRect rt = contentsRect();
+		QPainter p(this);
+		p.drawImage(rt.x(), rt.y(), img);
+		p.end();
+	}
+
+	void requestUpdate()
+	{
+		updateImage();
+		update();
+	}
+
+	void updateImage()
+	{
+		int W = img.width();
+		int H = img.height();
+
+		rt.setWidth(W);
+		rt.setHeight(H);
+		rt.useMultiThread(false);
+
+#ifndef NDEBUG
+		rt.setSampleCount(1);
+#else
+		rt.setSampleCount(2);
+#endif
+
+#ifdef NDEBUG
+		rt.setOutput(false);
+#endif
+
+		rt.setRenderShadows(false);
+
+		GLContext rc;
+		rc.m_cam = &scene.GetCamera();
+
+		CMainWindow* wnd = CMainWindow::GetInstance();
+		bool useEnvMap = wnd->IsEnvironmentMapEnabled();
+		if (useEnvMap)
+		{
+			if (envMap.isNull())
+			{
+				QString file = wnd->GetEnvironmentMap();
+				if (!file.isEmpty())
+				{
+					QImage img(file);
+					if (!img.isNull())
+					{
+						QImage::Format format = img.format();
+						envMap = CRGBAImage(img.width(), img.height(), img.constBits());
+					}
+				}
+			}
+
+			if (!envMap.isNull())
+				scene.SetEnvironmentMap(envMap);
+		}
+
+		rt.start();
+		scene.Render(rt, rc);
+		rt.finish();
+
+		RayTraceSurface& trg = rt.surface();
+
+		for (size_t j = 0; j < H; ++j)
+			for (size_t i = 0; i < W; ++i)
+			{
+				GLColor c = trg.colorValue(i, j);
+				QRgb rgb = qRgba(c.r, c.g, c.b, c.a);
+				img.setPixel((int)i, (int)j, rgb);
+			}
+	}
+
+public:
+	EditMaterialScene scene;
+
+private:
+	QImage img;
+	RayTracer rt;
+	CRGBAImage envMap;
+};
 
 class UIDlgEditMaterial
 {
@@ -140,22 +226,20 @@ public:
 	CColorButton* specular;
 	CDragBox* specExp;
 	CDragBox* reflect;
-	rhiSceneView* view;
+	CSceneWidget*view;
 	QComboBox* preset;
 
-	EditMaterialScene scene;
-	
+
 public:
 	void setup(CDlgEditMaterial* dlg)
 	{
 		QHBoxLayout* h = new QHBoxLayout;
 
-		view = new rhiSceneView(CMainWindow::GetInstance());
-		QWidget* w = QWidget::createWindowContainer(view);
+		view = new CSceneWidget();
+		QWidget* w = view;
 		w->setMinimumSize(QSize(300, 300));
 		h->addWidget(w);
 
-		view->SetScene(&scene);
 
 		QVBoxLayout* l = new QVBoxLayout;
 
@@ -212,7 +296,7 @@ CDlgEditMaterial::CDlgEditMaterial(QWidget* parent) : QDialog(parent), ui(new UI
 			{
 				QImage::Format format = img.format();
 				CRGBAImage rgba(img.width(), img.height(), img.constBits());
-				ui->scene.SetEnvironmentMap(rgba);
+				ui->view->scene.SetEnvironmentMap(rgba);
 			}
 		}
 		else
@@ -230,7 +314,7 @@ CDlgEditMaterial::~CDlgEditMaterial()
 
 void CDlgEditMaterial::SetMaterial(const GLMaterial& mat)
 {
-	ui->scene.mat = mat;
+	ui->view->scene.mat = mat;
 	ui->ambient->blockSignals(true);
 	ui->ambient->setColor(toQColor(mat.ambient));
 	ui->ambient->blockSignals(false);
@@ -257,7 +341,7 @@ void CDlgEditMaterial::SetMaterial(const GLMaterial& mat)
 
 GLMaterial CDlgEditMaterial::GetMaterial() const
 {
-	return ui->scene.mat;
+	return ui->view->scene.mat;
 }
 
 void CDlgEditMaterial::accept()
@@ -270,11 +354,12 @@ void CDlgEditMaterial::updateMaterial()
 {
 	ui->preset->setCurrentIndex(0);
 
-	ui->scene.mat.ambient = toGLColor(ui->ambient->color());
-	ui->scene.mat.diffuse = toGLColor(ui->diffuse->color());
-	ui->scene.mat.specular = toGLColor(ui->specular->color());
-	ui->scene.mat.shininess = ui->specExp->value();
-	ui->scene.mat.reflection = ui->reflect->value();
+	GLMaterial& mat = ui->view->scene.mat;
+	mat.ambient = toGLColor(ui->ambient->color());
+	mat.diffuse = toGLColor(ui->diffuse->color());
+	mat.specular = toGLColor(ui->specular->color());
+	mat.shininess = ui->specExp->value();
+	mat.reflection = ui->reflect->value();
 	ui->view->requestUpdate();
 }
 
@@ -283,18 +368,20 @@ void CDlgEditMaterial::selectPreset()
 	int n = ui->preset->currentIndex() - 1;
 	if (n >= 0)
 	{
-		PresetMaterial mat = MatList[n];
-		ui->scene.mat.ambient = mat.ambient;
-		ui->scene.mat.diffuse = mat.diffuse;
-		ui->scene.mat.specular = mat.specular;
-		ui->scene.mat.shininess = mat.shininess;
+		PresetMaterial preset = MatList[n];
+		GLMaterial& mat = ui->view->scene.mat;
+
+		mat.ambient   = preset.ambient;
+		mat.diffuse   = preset.diffuse;
+		mat.specular  = preset.specular;
+		mat.shininess = preset.shininess;
 
 		if (ui->reflect->isEnabled())
-			ui->scene.mat.reflection = mat.reflection;
+			mat.reflection = preset.reflection;
 		else
-			ui->scene.mat.reflection = 0;
+			mat.reflection = 0;
 
-		SetMaterial(ui->scene.mat);
+		SetMaterial(mat);
 		ui->view->requestUpdate();
 	}
 }
