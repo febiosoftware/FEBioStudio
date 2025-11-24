@@ -269,16 +269,6 @@ public:
 	//! Load from archive
 	void Load(IArchive& ar) override;
 
-public:
-	//! Get local bounding box
-	BOX GetLocalBox() const;
-	
-	//! Get global bounding box
-	BOX GetGlobalBox() const;
-	
-	//! Update bounding box
-	void UpdateBoundingBox();
-	
 	//! Update the part
 	bool Update(bool b) override;
 
@@ -299,9 +289,6 @@ protected:
 	//! Part section
 	GPartSection* m_section;
 	
-	//! Bounding box in local coordinates
-	BOX		m_box;
-
 public:
 	//! Node indices
 	std::vector<int>	m_node;
