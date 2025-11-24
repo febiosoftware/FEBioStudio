@@ -35,5 +35,5 @@ public:
 	FSSurfaceMesh* Apply(FSSurfaceMesh* pm);
 
 public:
-	void ShapeSmoothMesh(FSSurfaceMesh& mesh, const FSSurfaceMesh& backMesh, bool preserveShape = false, bool preserveEdges = false);
+	void ShapeSmoothMesh(FSSurfaceMesh& mesh, const FSSurfaceMesh& backMesh, bool preserveShape = false, bool preserveEdges = false, bool selectionOnly = false);
 };
