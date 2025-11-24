@@ -194,6 +194,7 @@ void init_FBSPost(py::module& m)
 
 	py::class_<FEDistanceMap, ModelDataField, std::unique_ptr<FEDistanceMap, py::nodelete>>(post, "DistanceMap")
 		.def(py::init<FEPostModel*, int>())
+        .def("Init", &FEDistanceMap::Init)
 		.def("SetSelection1", &FEDistanceMap::SetSelection1)
 		.def("SetSelection2", &FEDistanceMap::SetSelection2)
 		.def("SetSigned", &FEDistanceMap::SetSigned)
@@ -201,6 +202,7 @@ void init_FBSPost(py::module& m)
 		.def("FlipSecondary", &FEDistanceMap::FlipSecondary)
 		.def("SetMethod", &FEDistanceMap::SetMethod)
 		.def("Apply", &FEDistanceMap::Apply)
+        .def("ApplyState", &FEDistanceMap::ApplyState)
 		;
 
 	py::class_<FEVTKExport>(post, "vtkExport", "class for exporting post-model to vtk file")
