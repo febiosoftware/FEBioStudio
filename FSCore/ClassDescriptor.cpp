@@ -98,6 +98,20 @@ ClassDescriptor* ClassKernel::FindClassDescriptor(Class_Type classType, const ch
 
 }
 
+ClassDescriptor* ClassKernel::FindClassDescriptorFromID(Class_Type classType, int cid)
+{
+	Class_Iterator it;
+	for (it = ClassKernel::FirstCD(); it != ClassKernel::LastCD(); ++it)
+	{
+		ClassDescriptor* pcd = *it;
+		if ((pcd->GetType() == classType) && (pcd->GetClassId() == cid))
+		{
+			return pcd;
+		}
+	}
+	return nullptr;
+}
+
 FSObject* ClassKernel::CreateClass(Class_Type classType, const char* typeStr)
 {
 	ClassDescriptor* pcd = FindClassDescriptor(classType, typeStr);

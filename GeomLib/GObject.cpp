@@ -1286,7 +1286,7 @@ void GObject::Load(IArchive& ar)
 				break;
 				default:
 				{
-					FEMesher* mesher = FSCore::CreateClassFromID<FEMesher>(CLASS_MESHER, ntype);
+					FEMesher* mesher = FSCore::CreateClassFromID<FEMesher, GObject>(CLASS_MESHER, ntype, this);
 					assert(mesher);
 					if (mesher == nullptr) throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
 					SetFEMesher(mesher);

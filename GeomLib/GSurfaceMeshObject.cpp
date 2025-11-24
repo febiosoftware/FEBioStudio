@@ -692,7 +692,7 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 			else
 			{
 				int ntype = ar.GetChunkID();
-				FEMesher* mesher = FSCore::CreateClassFromID<FEMesher>(CLASS_MESHER, ntype);
+				FEMesher* mesher = FSCore::CreateClassFromID<FEMesher, GObject>(CLASS_MESHER, ntype, this);
 				if (mesher)
 				{
 					SetFEMesher(mesher);
