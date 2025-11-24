@@ -686,7 +686,6 @@ protected:
 	GModel*			m_model;	// pointer to model
 	std::vector<int>		m_nsurf;	// list of surfaces to select
 	std::vector<bool>	m_bold;		// old selection state of surfaces
-	bool			m_badd;		// add to current selection
 };
 
 //-----------------------------------------------------------------------------
@@ -892,7 +891,6 @@ protected:
 	FSMesh* m_mesh;
 	bool*	m_ptag;	// old selecion state of elements
 	int*	m_pel;	// array of element indics we need to select
-	bool	m_badd; // add to selection or not
 	int		m_N;	// nr of elements to select
 };
 
@@ -932,7 +930,6 @@ protected:
 	FSMeshBase* m_pm;
 	bool*	m_ptag;	// old selecion state of faces
 	int*	m_pface;	// array of face indics we need to select
-	bool	m_badd; // add to selection or not
 	int		m_N;	// nr of faces to select
 };
 
@@ -972,7 +969,6 @@ protected:
 	FSLineMesh*	m_pm;
 	bool*	m_ptag;		// old selecion state of edges
 	int*	m_pedge;	// array of edge indices we need to select
-	bool	m_badd;		// add to selection or not
 	int		m_N;		// nr of faces to select
 };
 
@@ -1012,7 +1008,6 @@ protected:
 	FSLineMesh* m_mesh;
 	bool*	m_ptag;	// old selecion state of nodes
 	int*	m_pn;	// array of nodes indices we need to select
-	bool	m_badd; // add to selection or not
 	int		m_N;	// nr of nodes to select
 };
 

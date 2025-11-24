@@ -838,6 +838,8 @@ void CCmdToggleFEFaceVisibility::UnExecute()
 
 CCmdSelectObject::CCmdSelectObject(GModel* model, GObject* po, bool badd) : CCommand("Select Object")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_badd = badd;
 
 	m_model = model;
@@ -864,6 +866,8 @@ CCmdSelectObject::CCmdSelectObject(GModel* model, GObject* po, bool badd) : CCom
 
 CCmdSelectObject::CCmdSelectObject(GModel* model, GObject** ppo, int N, bool badd) : CCommand("Select Object")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 	m_badd = badd;
 
@@ -880,6 +884,8 @@ CCmdSelectObject::CCmdSelectObject(GModel* model, GObject** ppo, int N, bool bad
 
 CCmdSelectObject::CCmdSelectObject(GModel* model, const vector<GObject*>& po, bool badd) : CCommand("Select Object")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 	m_badd = badd;
 	int N = (int)po.size();
@@ -924,6 +930,8 @@ void CCmdSelectObject::UnExecute()
 
 CCmdUnselectObject::CCmdUnselectObject(GModel* model, GObject* po) : CCommand("Unselect Object")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 
 	// store the meshes selection state
@@ -939,6 +947,8 @@ CCmdUnselectObject::CCmdUnselectObject(GModel* model, GObject* po) : CCommand("U
 
 CCmdUnselectObject::CCmdUnselectObject(GModel* model, GObject** ppo, int N) : CCommand("Unselect Object")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 
 	// store the meshes selection state
@@ -954,6 +964,8 @@ CCmdUnselectObject::CCmdUnselectObject(GModel* model, GObject** ppo, int N) : CC
 
 CCmdUnselectObject::CCmdUnselectObject(GModel* model, const vector<GObject*>& po) : CCommand("Unselect Object")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 
 	// store the meshes selection state
@@ -992,6 +1004,8 @@ void CCmdUnselectObject::UnExecute()
 
 CCmdSelectPart::CCmdSelectPart(GModel* model, int* npart, int n, bool badd) : CCommand("Select Part")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 
 	if (n > 0)
@@ -1008,6 +1022,8 @@ CCmdSelectPart::CCmdSelectPart(GModel* model, int* npart, int n, bool badd) : CC
 
 CCmdSelectPart::CCmdSelectPart(GModel* model, const vector<int>& part, bool badd) : CCommand("Select Part")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 	int n = (int)part.size();
 
@@ -1056,6 +1072,8 @@ void CCmdSelectPart::UnExecute()
 
 CCmdUnSelectPart::CCmdUnSelectPart(GModel* model, int* npart, int n) : CCommand("Unselect Part")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 
 	if (n > 0)
@@ -1071,6 +1089,8 @@ CCmdUnSelectPart::CCmdUnSelectPart(GModel* model, int* npart, int n) : CCommand(
 
 CCmdUnSelectPart::CCmdUnSelectPart(GModel* model, const vector<int>& part) : CCommand("Unselect Part")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 	int n = (int)part.size();
 
@@ -1111,6 +1131,8 @@ void CCmdUnSelectPart::UnExecute()
 
 CCmdSelectSurface::CCmdSelectSurface(GModel* model, int* nsurf, int n, bool badd) : CCommand("Select Surface")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 
 	if (n > 0)
@@ -1127,6 +1149,8 @@ CCmdSelectSurface::CCmdSelectSurface(GModel* model, int* nsurf, int n, bool badd
 
 CCmdSelectSurface::CCmdSelectSurface(GModel* ps, const vector<int>& surf, bool badd) : CCommand("Select Surface")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = ps;
 	int n = (int)surf.size();
 
@@ -1179,6 +1203,8 @@ void CCmdSelectSurface::UnExecute()
 
 CCmdUnSelectSurface::CCmdUnSelectSurface(GModel* model, int* nsurf, int n) : CCommand("Unselect Surface")
 {
+	m_flags = 0; // this command does not change the document
+
 	// get the model
 	m_model = model;
 	if (n > 0)
@@ -1194,6 +1220,8 @@ CCmdUnSelectSurface::CCmdUnSelectSurface(GModel* model, int* nsurf, int n) : CCo
 
 CCmdUnSelectSurface::CCmdUnSelectSurface(GModel* model, const vector<int>& surf) : CCommand("Unselect Surface")
 {
+	m_flags = 0; // this command does not change the document
+
 	int n = (int)surf.size();
 
 	m_model = model;
@@ -1234,6 +1262,8 @@ void CCmdUnSelectSurface::UnExecute()
 
 CCmdSelectEdge::CCmdSelectEdge(GModel* model, int* nedge, int n, bool badd) : CCommand("Select Edge")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 
 	if (n > 0)
@@ -1250,6 +1280,8 @@ CCmdSelectEdge::CCmdSelectEdge(GModel* model, int* nedge, int n, bool badd) : CC
 
 CCmdSelectEdge::CCmdSelectEdge(GModel* model, const vector<int>& edge, bool badd) : CCommand("Select Edge")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 	int n = (int)edge.size();
 
@@ -1297,6 +1329,8 @@ void CCmdSelectEdge::UnExecute()
 
 CCmdUnSelectEdge::CCmdUnSelectEdge(GModel* model, int* nedge, int n) : CCommand("Unselect Edge")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 	if (n > 0)
 	{
@@ -1311,6 +1345,8 @@ CCmdUnSelectEdge::CCmdUnSelectEdge(GModel* model, int* nedge, int n) : CCommand(
 
 CCmdUnSelectEdge::CCmdUnSelectEdge(GModel* model, const vector<int>& edge) : CCommand("Unselect Edge")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 	int n = (int)edge.size();
 	if (n > 0)
@@ -1351,6 +1387,8 @@ void CCmdUnSelectEdge::UnExecute()
 
 CCmdSelectNode::CCmdSelectNode(GModel* model, int* node, int n, bool badd) : CCommand("Select Node")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 	if (n > 0)
 	{
@@ -1366,6 +1404,8 @@ CCmdSelectNode::CCmdSelectNode(GModel* model, int* node, int n, bool badd) : CCo
 
 CCmdSelectNode::CCmdSelectNode(GModel* model, const vector<int>& node, bool badd) : CCommand("Select Node")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 
 	int n = (int)node.size();
@@ -1410,6 +1450,8 @@ void CCmdSelectNode::UnExecute()
 
 CCmdUnSelectNode::CCmdUnSelectNode(GModel* model, int* node, int n) : CCommand("Unselect Node")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 
 	if (n > 0)
@@ -1425,6 +1467,8 @@ CCmdUnSelectNode::CCmdUnSelectNode(GModel* model, int* node, int n) : CCommand("
 
 CCmdUnSelectNode::CCmdUnSelectNode(GModel* model, const vector<int>& node) : CCommand("Unselect Node")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = model;
 	int n = (int)node.size();
 	if (n > 0)
@@ -1464,6 +1508,8 @@ void CCmdUnSelectNode::UnExecute()
 
 CCmdSelectDiscrete::CCmdSelectDiscrete(GModel* ps, int* pobj, int n, bool badd) : CCommand("Select Discrete")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_pgm = ps;
 	GModel& m = *m_pgm;
 	if (n > 0)
@@ -1480,6 +1526,8 @@ CCmdSelectDiscrete::CCmdSelectDiscrete(GModel* ps, int* pobj, int n, bool badd) 
 
 CCmdSelectDiscrete::CCmdSelectDiscrete(GModel* ps, const vector<int>& obj, bool badd) : CCommand("Select Discrete")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_pgm = ps;
 	GModel& m = *m_pgm;
 
@@ -1495,6 +1543,8 @@ CCmdSelectDiscrete::CCmdSelectDiscrete(GModel* ps, const vector<int>& obj, bool 
 
 CCmdSelectDiscrete::CCmdSelectDiscrete(GModel* ps, const vector<GDiscreteObject*>& obj, bool badd) : CCommand("Select Discrete")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_pgm = ps;
 	GModel& m = *m_pgm;
 	
@@ -1542,6 +1592,8 @@ void CCmdSelectDiscrete::UnExecute()
 
 CCmdSelectDiscreteElements::CCmdSelectDiscreteElements(GDiscreteElementSet* set, const vector<int>& elemList, bool badd) : CCommand("Select Discrete")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_ps = set;
 	m_elemList = elemList;
 	m_badd = badd;
@@ -1583,6 +1635,8 @@ void CCmdSelectDiscreteElements::UnExecute()
 
 CCmdUnSelectDiscreteElements::CCmdUnSelectDiscreteElements(GDiscreteElementSet* set, const vector<int>& elemList) : CCommand("Unselect Discrete")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_ps = set;
 	m_elemList = elemList;
 
@@ -1617,6 +1671,8 @@ void CCmdUnSelectDiscreteElements::UnExecute()
 
 CCmdUnSelectDiscrete::CCmdUnSelectDiscrete(GModel* ps, int* pobj, int n) : CCommand("Unselect Discrete")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = ps;
 	if (n > 0)
 	{
@@ -1631,6 +1687,8 @@ CCmdUnSelectDiscrete::CCmdUnSelectDiscrete(GModel* ps, int* pobj, int n) : CComm
 
 CCmdUnSelectDiscrete::CCmdUnSelectDiscrete(GModel* ps, const vector<int>& obj) : CCommand("Unselect Discrete")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = ps;
 
 	int n = (int)obj.size();
@@ -1647,6 +1705,8 @@ CCmdUnSelectDiscrete::CCmdUnSelectDiscrete(GModel* ps, const vector<int>& obj) :
 
 CCmdUnSelectDiscrete::CCmdUnSelectDiscrete(GModel* ps, const vector<GDiscreteObject*>& obj) : CCommand("Unselect Discrete")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_model = ps;
 
 	m_obj = obj;
@@ -1685,6 +1745,7 @@ void CCmdUnSelectDiscrete::UnExecute()
 
 CCmdInvertSelection::CCmdInvertSelection(CGLDocument* doc) : CCommand("Invert selection")
 {
+	m_flags = 0; // this command does not change the document
 	m_doc = doc;
 }
 
@@ -1704,7 +1765,7 @@ void CCmdInvertSelection::UnExecute()
 
 CCmdSelectElements::CCmdSelectElements(FSCoreMesh* pm, int* pe, int N, bool badd) : CCommand("Select Elements")
 {
-	int i;
+	m_flags = 0; // this command does not change the document
 
 	m_badd = badd;
 	m_pel = 0;
@@ -1716,20 +1777,21 @@ CCmdSelectElements::CCmdSelectElements(FSCoreMesh* pm, int* pe, int N, bool badd
 
 	// store the elements selection state
 	m_ptag = new bool[M];
-	for (i = 0; i<M; ++i) m_ptag[i] = pm->ElementRef(i).IsSelected();
+	for (int i = 0; i<M; ++i) m_ptag[i] = pm->ElementRef(i).IsSelected();
 
 	// store the elements we need to select
 	if (N != 0)
 	{
 		m_N = N;
 		m_pel = new int[m_N];
-		for (i = 0; i<N; ++i) m_pel[i] = pe[i];
+		for (int i = 0; i<N; ++i) m_pel[i] = pe[i];
 	}
 }
 
 CCmdSelectElements::CCmdSelectElements(FSCoreMesh* pm, const std::vector<int>& el, bool badd) : CCommand("Select Elements")
 {
-	int i;
+	m_flags = 0; // this command does not change the document
+
 	int N = (int)el.size();
 
 	m_badd = badd;
@@ -1742,29 +1804,27 @@ CCmdSelectElements::CCmdSelectElements(FSCoreMesh* pm, const std::vector<int>& e
 
 	// store the elements selection state
 	m_ptag = new bool[M];
-	for (i = 0; i<M; ++i) m_ptag[i] = pm->ElementRef(i).IsSelected();
+	for (int i = 0; i<M; ++i) m_ptag[i] = pm->ElementRef(i).IsSelected();
 
 	// store the elements we need to select
 	if (N != 0)
 	{
 		m_N = N;
 		m_pel = new int[m_N];
-		for (i = 0; i<N; ++i) m_pel[i] = el[i];
+		for (int i = 0; i<N; ++i) m_pel[i] = el[i];
 	}
 }
 
 
 void CCmdSelectElements::Execute()
 {
-	int i;
-
 	if (!m_badd)
 	{
-		for (i = 0; i<m_pm->Elements(); ++i) m_pm->ElementRef(i).Unselect();
+		for (int i = 0; i<m_pm->Elements(); ++i) m_pm->ElementRef(i).Unselect();
 	}
 
 	int NE = m_pm->Elements();
-	for (i = 0; i<m_N; ++i)
+	for (int i = 0; i<m_N; ++i)
 	{
 		int n = m_pel[i];
 		if ((n >= 0) && (n<NE)) m_pm->ElementRef(n).Select();
@@ -1789,6 +1849,8 @@ void CCmdSelectElements::UnExecute()
 
 CCmdUnselectElements::CCmdUnselectElements(FSMesh* mesh, int* pe, int N) : CCommand("Unselect")
 {
+	m_flags = 0; // this command does not change the document
+
 	// get the current mesh
 	m_mesh = mesh;
 	FSMesh* pm = mesh;
@@ -1806,6 +1868,8 @@ CCmdUnselectElements::CCmdUnselectElements(FSMesh* mesh, int* pe, int N) : CComm
 
 CCmdUnselectElements::CCmdUnselectElements(FSMesh* mesh, const vector<int>& elem) : CCommand("Unselect")
 {
+	m_flags = 0; // this command does not change the document
+
 	int N = (int)elem.size();
 
 	// get the current mesh
@@ -1849,7 +1913,7 @@ void CCmdUnselectElements::UnExecute()
 
 CCmdSelectFaces::CCmdSelectFaces(FSMeshBase* pm, int* pf, int N, bool badd) : CCommand("Select Faces")
 {
-	int i;
+	m_flags = 0; // this command does not change the document
 
 	m_pm = pm;
 	m_badd = badd;
@@ -1861,20 +1925,21 @@ CCmdSelectFaces::CCmdSelectFaces(FSMeshBase* pm, int* pf, int N, bool badd) : CC
 
 	// store the faces selection state
 	m_ptag = new bool[M];
-	for (i = 0; i<M; ++i) m_ptag[i] = pm->Face(i).IsSelected();
+	for (int i = 0; i<M; ++i) m_ptag[i] = pm->Face(i).IsSelected();
 
 	// store the faces we need to select
 	if (N != 0)
 	{
 		m_N = N;
 		m_pface = new int[m_N];
-		for (i = 0; i<N; ++i) m_pface[i] = pf[i];
+		for (int i = 0; i<N; ++i) m_pface[i] = pf[i];
 	}
 }
 
 CCmdSelectFaces::CCmdSelectFaces(FSMeshBase* pm, const vector<int>& fl, bool badd) : CCommand("Select Faces")
 {
-	int i;
+	m_flags = 0; // this command does not change the document
+
 	int N = (int)fl.size();
 
 	m_pm = pm;
@@ -1887,27 +1952,26 @@ CCmdSelectFaces::CCmdSelectFaces(FSMeshBase* pm, const vector<int>& fl, bool bad
 
 	// store the faces selection state
 	m_ptag = new bool[M];
-	for (i = 0; i<M; ++i) m_ptag[i] = pm->Face(i).IsSelected();
+	for (int i = 0; i<M; ++i) m_ptag[i] = pm->Face(i).IsSelected();
 
 	// store the faces we need to select
 	if (N != 0)
 	{
 		m_N = N;
 		m_pface = new int[m_N];
-		for (i = 0; i<N; ++i) m_pface[i] = fl[i];
+		for (int i = 0; i<N; ++i) m_pface[i] = fl[i];
 	}
 }
 
 void CCmdSelectFaces::Execute()
 {
-	int i;
 	if (!m_badd)
 	{
-		for (i = 0; i<m_pm->Faces(); ++i) m_pm->Face(i).Unselect();
+		for (int i = 0; i<m_pm->Faces(); ++i) m_pm->Face(i).Unselect();
 	}
 
 	int NF = m_pm->Faces();
-	for (i = 0; i<m_N; ++i)
+	for (int i = 0; i<m_N; ++i)
 	{
 		int n = m_pface[i];
 		if ((n >= 0) && (n<NF)) m_pm->Face(n).Select();
@@ -1932,6 +1996,8 @@ void CCmdSelectFaces::UnExecute()
 
 CCmdUnselectFaces::CCmdUnselectFaces(FSMeshBase* pm, int* pf, int N) : CCommand("Unselect")
 {
+	m_flags = 0; // this command does not change the document
+
 	// store the mesh
 	m_pm = pm;
 
@@ -1948,6 +2014,8 @@ CCmdUnselectFaces::CCmdUnselectFaces(FSMeshBase* pm, int* pf, int N) : CCommand(
 
 CCmdUnselectFaces::CCmdUnselectFaces(FSMeshBase* pm, const vector<int>& face) : CCommand("Unselect")
 {
+	m_flags = 0; // this command does not change the document
+
 	// store the mesh
 	m_pm = pm;
 
@@ -1987,6 +2055,8 @@ void CCmdUnselectFaces::UnExecute()
 
 CCmdSelectFEEdges::CCmdSelectFEEdges(FSLineMesh* pm, int* pe, int N, bool badd) : CCommand("Select Edges")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_pm = pm;
 	m_badd = badd;
 	m_pedge = 0;
@@ -2010,6 +2080,8 @@ CCmdSelectFEEdges::CCmdSelectFEEdges(FSLineMesh* pm, int* pe, int N, bool badd) 
 
 CCmdSelectFEEdges::CCmdSelectFEEdges(FSLineMesh* pm, const vector<int>& el, bool badd) : CCommand("Select Edges")
 {
+	m_flags = 0; // this command does not change the document
+
 	int N = (int)el.size();
 
 	m_pm = pm;
@@ -2066,6 +2138,8 @@ void CCmdSelectFEEdges::UnExecute()
 
 CCmdUnselectFEEdges::CCmdUnselectFEEdges(FSLineMesh* pm, int* pe, int N) : CCommand("Unselect")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_pm = pm;
 
 	// get the current mesh
@@ -2083,6 +2157,8 @@ CCmdUnselectFEEdges::CCmdUnselectFEEdges(FSLineMesh* pm, int* pe, int N) : CComm
 
 CCmdUnselectFEEdges::CCmdUnselectFEEdges(FSLineMesh* pm, const vector<int>& edge) : CCommand("Unselect")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_pm = pm;
 
 	int N = (int)edge.size();
@@ -2124,7 +2200,7 @@ void CCmdUnselectFEEdges::UnExecute()
 
 CCmdSelectFENodes::CCmdSelectFENodes(FSLineMesh* pm, int* pn, int N, bool badd) : CCommand("Select Nodes")
 {
-	int i;
+	m_flags = 0; // this command does not change the document
 
 	m_badd = badd;
 	m_pn = 0;
@@ -2136,20 +2212,20 @@ CCmdSelectFENodes::CCmdSelectFENodes(FSLineMesh* pm, int* pn, int N, bool badd) 
 
 	// store the nodes selection state
 	m_ptag = new bool[M];
-	for (i = 0; i<M; ++i) m_ptag[i] = pm->Node(i).IsSelected();
+	for (int i = 0; i<M; ++i) m_ptag[i] = pm->Node(i).IsSelected();
 
 	// store the nodes we need to select
 	if (N != 0)
 	{
 		m_N = N;
 		m_pn = new int[m_N];
-		for (i = 0; i<N; ++i) m_pn[i] = pn[i];
+		for (int i = 0; i<N; ++i) m_pn[i] = pn[i];
 	}
 }
 
 CCmdSelectFENodes::CCmdSelectFENodes(FSLineMesh* pm, const vector<int>& nl, bool badd) : CCommand("Select Nodes")
 {
-	int i;
+	m_flags = 0; // this command does not change the document
 	int N = (int)nl.size();
 
 	m_badd = badd;
@@ -2162,27 +2238,26 @@ CCmdSelectFENodes::CCmdSelectFENodes(FSLineMesh* pm, const vector<int>& nl, bool
 
 	// store the nodes selection state
 	m_ptag = new bool[M];
-	for (i = 0; i<M; ++i) m_ptag[i] = pm->Node(i).IsSelected();
+	for (int i = 0; i<M; ++i) m_ptag[i] = pm->Node(i).IsSelected();
 
 	// store the nodes we need to select
 	if (N != 0)
 	{
 		m_N = N;
 		m_pn = new int[m_N];
-		for (i = 0; i<N; ++i) m_pn[i] = nl[i];
+		for (int i = 0; i<N; ++i) m_pn[i] = nl[i];
 	}
 }
 
 void CCmdSelectFENodes::Execute()
 {
-	int i;
 	if (!m_badd)
 	{
-		for (i = 0; i<m_pm->Nodes(); ++i) m_pm->Node(i).Unselect();
+		for (int i = 0; i<m_pm->Nodes(); ++i) m_pm->Node(i).Unselect();
 	}
 
 	int NN = m_pm->Nodes();
-	for (i = 0; i<m_N; ++i)
+	for (int i = 0; i<m_N; ++i)
 	{
 		int n = m_pn[i];
 		if ((n >= 0) && (n<NN)) m_pm->Node(n).Select();
@@ -2207,6 +2282,8 @@ void CCmdSelectFENodes::UnExecute()
 
 CCmdUnselectNodes::CCmdUnselectNodes(FSLineMesh* pm, int* pn, int N) : CCommand("Unselect")
 {
+	m_flags = 0; // this command does not change the document
+
 	// get the current mesh
 	m_mesh = pm;
 	int M = pm->Nodes();
@@ -2223,6 +2300,8 @@ CCmdUnselectNodes::CCmdUnselectNodes(FSLineMesh* pm, int* pn, int N) : CCommand(
 
 CCmdUnselectNodes::CCmdUnselectNodes(FSLineMesh* pm, const vector<int>& node) : CCommand("Unselect")
 {
+	m_flags = 0; // this command does not change the document
+
 	int N = (int)node.size();
 
 	// get the current mesh

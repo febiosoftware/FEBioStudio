@@ -34,6 +34,7 @@ SOFTWARE.*/
 CCommand::CCommand(const std::string& name)
 {
 	m_name = name;
+	m_flags = MODIFIES_DOC;
 }
 
 CCommand::~CCommand() 

@@ -98,7 +98,7 @@ int main(int argc, char* argv[])
 	FBSApplication app(argc, argv);
 
 #ifdef WIN32
-	app.setStyle("fusion");
+//	app.setStyle("fusion");
 #endif
 
 	// set the display name (this will be displayed on all windows and dialogs)

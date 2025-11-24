@@ -129,6 +129,7 @@ private:
 private:
 	std::vector<GLMaterial> m_mat; // material per face
 	GObject* m_po = nullptr;
+	unsigned int m_uid = 0; // uid of GLMesh used to create the other meshes
 	std::unique_ptr<GLMesh> m_surfMesh;
 	std::unique_ptr<GLMesh> m_surfFEMesh;
 	std::unique_ptr<GLMesh> m_nodeFEMesh;

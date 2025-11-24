@@ -1316,10 +1316,14 @@ void GLObjectItem::RenderSelection(GLRenderEngine& re)
 
 void GLObjectSurfaceItem::BuildSurfaceMesh()
 {
+	m_uid = 0;
 	m_surfMesh.reset();
+	m_surfFEMesh.reset();
+	m_nodeFEMesh.reset();
 	if (m_po == nullptr) return;
 	GLMesh* m = m_po->GetRenderMesh();
 	if (m == nullptr) return;
+	m_uid = m->GetUID();
 
 	int objColorMode = m_scene->GetObjectColorMode();
 	GObject& obj = *m_po;
@@ -1673,7 +1677,7 @@ void GLObjectSurfaceItem::render(GLRenderEngine& re, GLContext& rc)
 		{
 		case SELECT_OBJECT:
 		{
-			if (view.m_bcontour)
+			if (view.m_bcontour && (po == m_scene->GetActiveObject()))
 			{
 				GLMesh* gm = po->GetFERenderMesh();
 				if (gm) RenderFEMeshSurface(re, rc);
@@ -1777,7 +1781,21 @@ void GLObjectSurfaceItem::render(GLRenderEngine& re, GLContext& rc)
 
 void GLObjectSurfaceItem::RenderGeomSurface(GLRenderEngine& re, GLContext& rc)
 {
-	if (m_surfMesh == nullptr) BuildSurfaceMesh();
+	// make sure there is a render mesh
+	GLMesh* m = m_po->GetRenderMesh();
+	if (m == nullptr)
+	{
+		m_surfMesh.reset();
+		m_surfFEMesh.reset();
+		m_nodeFEMesh.reset();
+		m_uid = 0;
+		return;
+	}
+
+	// see if we should rebuild the surface mesh
+	if ((m_surfMesh == nullptr) || (m->GetUID() != m_uid))
+			BuildSurfaceMesh();
+
 	if (m_surfMesh == nullptr) return;
 
 	if (rc.m_settings.m_nrender == RENDER_WIREFRAME) return;
@@ -1904,11 +1922,8 @@ void GLObjectSurfaceItem::RenderSurfaceMeshFaces(GLRenderEngine& re, GLContext& 
 	if (showContour)
 	{
 		GLMesh* gmesh = surfaceObject->GetRenderMesh();
-
-		// We don't use the cached mesh, since it probably won't have the 
-		// vertex colors stored, which we need here. 
 		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
-		re.renderGMesh(*gmesh, false);
+		re.renderGMesh(*gmesh);
 	}
 	else
 	{

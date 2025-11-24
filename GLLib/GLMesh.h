@@ -184,6 +184,8 @@ public:
 
 	void setModified(bool b) { m_isModified = b; }
 
+	unsigned int GetUID() const { return m_uid; }
+
 private:
 	int AddFace(const FACE& face);
 	int AddEdge(const EDGE& edge);
@@ -200,4 +202,6 @@ private:
 
 	bool m_isModified = false;
 	bool m_hasNeighborList = false;
+
+	unsigned int m_uid; // unique ID
 };
