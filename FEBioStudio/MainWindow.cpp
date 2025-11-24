@@ -2823,8 +2823,15 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 {
 	CMainMenu* mainMenu = ui->mainMenu;
 
+	CModelDocument* doc = GetModelDocument();
+
 	menu.addAction(mainMenu->actionZoomSelect);
-	menu.addAction(mainMenu->actionShowGrid);
+
+	if (doc)
+	{
+		// only show the grid option on the build side
+		menu.addAction(mainMenu->actionShowGrid);
+	}
 	menu.addAction(mainMenu->actionShowMeshLines);
 	menu.addAction(mainMenu->actionShowEdgeLines);
 	menu.addAction(mainMenu->actionOrtho);
@@ -2843,7 +2850,6 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 
 	menu.addAction(mainMenu->actionRenderMode);
 
-	CModelDocument* doc = GetModelDocument();
 	if (doc)
 	{
 		menu.addAction(mainMenu->actionShowNormals);
