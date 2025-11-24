@@ -1343,16 +1343,34 @@ void FSModel::UpdateMaterialPositions()
 	for (int i = 0; i < gm.Objects(); ++i)
 	{
 		GObject* po = gm.Object(i);
-		for (int j = 0; j < po->Parts(); ++j)
+		Transform T = po->GetTransform();
+		FSMesh* mesh = po->GetFEMesh();
+		GMaterial* mat = nullptr;
+		int partID = -1;
+		if (mesh)
 		{
-			GPart* pg = po->Part(j);
-			if (pg)
+			int NE = mesh->Elements();
+			for (int j=0; j<NE; ++j)
 			{
-				GMaterial* mat = GetMaterialFromID(pg->GetMaterialID());
-				if (mat)
+				FSElement& el = mesh->Element(j);
+				if ((el.m_gid >= 0) && (el.m_gid < po->Parts()))
 				{
-					mat->m_pos += pg->GetGlobalBox().Center();
-					tag[mat]++;
+					if (partID != el.m_gid)
+					{
+						partID = el.m_gid;
+						GPart* pg = po->Part(partID);
+						if (pg)
+						{
+							mat = GetMaterialFromID(pg->GetMaterialID());
+						}
+						else mat = nullptr;
+					}
+
+					if (mat)
+					{
+						mat->m_pos += T.LocalToGlobal(mesh->ElementCenter(el));
+						tag[mat]++;
+					}
 				}
 			}
 		}

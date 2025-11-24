@@ -735,44 +735,10 @@ void GPart::operator =(const GPart &p)
 //-----------------------------------------------------------------------------
 bool GPart::Update(bool b)
 {
-	UpdateBoundingBox();
 	return true;
 }
 
 //-----------------------------------------------------------------------------
-void GPart::UpdateBoundingBox()
-{
-	GBaseObject* po = Object();
-	if (po == nullptr) return;
-
-	BOX box;
-	for (int i = 0; i < m_node.size(); ++i)
-	{
-		GNode* pn = po->Node(m_node[i]); assert(pn);
-		if (pn) box += pn->LocalPosition();
-	}
-	m_box = box;
-}
-
-//-----------------------------------------------------------------------------
-BOX GPart::GetLocalBox() const
-{
-	return m_box;
-}
-
-BOX GPart::GetGlobalBox() const
-{
-	BOX box = GetLocalBox();
-	const GBaseObject* po = Object();
-	if (po == nullptr) return box;
-
-	vec3d r0 = vec3d(box.x0, box.y0, box.z0);
-	vec3d r1 = vec3d(box.x1, box.y1, box.z1);
-	r0 = po->GetTransform().LocalToGlobal(r0);
-	r1 = po->GetTransform().LocalToGlobal(r1);
-	return BOX(r0.x, r0.y, r0.z, r1.x, r1.y, r1.z);
-}
-
 void GPart::Save(OArchive& ar)
 {
 	int nid = GetID();
