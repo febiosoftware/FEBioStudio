@@ -63,22 +63,23 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FSSurfaceMesh& mesh, const FSSurfaceMe
 
 	std::vector<int> faceIDs(N, -1);
     
-    // tag all selected nodes
-    if (selectionOnly) {
-        for (int i=0; i<mesh.Faces(); ++i) {
-            FSFace& face = mesh.Face(i);
-            if (face.IsSelected()) {
-                for (int j=0; j<face.Nodes(); ++j) {
-                    FSNode& node = mesh.Node(face.n[j]);
-                    node.Select();
-                }
-            }
-        }
-    }
-
 	// smooth node positions
 	for (int n = 0; n<niter; ++n)
 	{
+		// tag all selected nodes
+		mesh.TagAllNodes(1);
+		if (selectionOnly) {
+			for (int i = 0; i < mesh.Faces(); ++i) {
+				FSFace& face = mesh.Face(i);
+				if (!face.IsSelected()) {
+					for (int j = 0; j < face.Nodes(); ++j) {
+						FSNode& node = mesh.Node(face.n[j]);
+						node.m_ntag = 0;
+					}
+				}
+			}
+		}
+
 		// clear tags
 		// first = count of how often a node was visited
 		// second = ID (edge or face) that the nodes should be back-projected to
@@ -91,7 +92,7 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FSSurfaceMesh& mesh, const FSSurfaceMe
 		if (preserveShape || preserveEdges || selectionOnly)
 		{
 			for (int i = 0; i<N; ++i)
-				if ((mesh.Node(i).m_gid >= 0) || (!mesh.Node(i).IsSelected()))
+				if ((mesh.Node(i).m_gid >= 0) || (mesh.Node(i).m_ntag == 0))
 				{
 					newPos[i] = mesh.Node(i).r;
 					tag[i].first = -1;
