@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include "PostDataPanel.h"
 #include "MaterialPanel.h"
 #include "StatePanel.h"
+#include "MainWindow.h"
+#include "GLDocument.h"
 #include <QTabWidget>
 #include <QBoxLayout>
 
@@ -44,7 +46,7 @@ public:
 	QTabWidget*	tab;
 
 public:
-	void setup(::CPostPanel* parent, CMainWindow* wnd)
+	void setup(::CPostPanel* parent, ::CMainWindow* wnd)
 	{
 		tab = new QTabWidget; tab->setObjectName("postTab");
 
@@ -85,6 +87,14 @@ void CPostPanel::Update(bool breset)
 {
 	CWindowPanel* p = ui->currentPanel();
 	if (p) p->Update(breset);
+	CMainWindow* wnd = GetMainWindow();
+	CGLDocument* doc = wnd->GetGLDocument();
+	if (doc)
+	{
+		wnd->UpdateGLControlBar();
+		doc->UpdateSelection();
+		wnd->RedrawGL();
+	}
 }
 
 void CPostPanel::on_postTab_currentChanged(int index)

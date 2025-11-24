@@ -423,8 +423,8 @@ void CGLModel::SetSelection(FESelection* sel)
 
 void CGLModel::UpdateSelectionMesh()
 {
-	GLMesh& m = m_selectionMesh;
-	BuildSelectionMesh(m_selection, m_selectionMesh);
+	m_selectionMesh.reset(new GLMesh());
+	BuildSelectionMesh(m_selection, *m_selectionMesh);
 }
 
 //-----------------------------------------------------------------------------

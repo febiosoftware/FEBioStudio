@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <MeshLib/Intersect.h>
 #include <MeshTools/FESelection.h>
 #include <vector>
+#include <memory>
 
 namespace Post {
 
@@ -301,7 +302,7 @@ public:
 
 	// selected items
 	FESelection* m_selection;
-	GLMesh m_selectionMesh;
+	std::unique_ptr<GLMesh> m_selectionMesh;
 
 	GPlotList			m_pPlot;	// list of plots
 
