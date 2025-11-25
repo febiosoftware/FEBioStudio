@@ -1427,7 +1427,7 @@ void GLObjectSurfaceItem::BuildSurfaceFEMesh(bool useContourMap)
 	if (useContourMap)
 	{
 		GLMaterial mat;
-		mat.diffuse = GLMaterial::PLASTIC;
+		mat.type = GLMaterial::PLASTIC;
 		mat.diffuse = GLColor::White();
 		mat.diffuseMap = GLMaterial::VERTEX_COLOR;
 		m_mat.push_back(mat);
