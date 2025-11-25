@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "WindowPanel.h"
 #include <FSCore/color.h>
+#include <GLLib/GLMaterial.h>
 
 namespace Ui {
 	class CMaterialPanel;
@@ -53,15 +54,14 @@ private:
 	// return the currently active model
 	Post::CGLModel* GetActiveModel();
 
-private:
-	void SetItemColor(int item, GLColor c);
-
 private slots:
 	void on_materialList_currentItemChanged(QTableWidgetItem* current, QTableWidgetItem* prev);
 	void on_materialList_itemClicked(QTableWidgetItem* item);
 	void on_matprops_dataChanged(int nprop);
 	void on_filter_textChanged(const QString& txt);
 	void on_highlightButton_toggled(bool);
+	void on_matEditButton_materialChanged(GLMaterial col);
+	void on_nameEdit_editingFinished();
 
 private:
 	Ui::CMaterialPanel*	ui;
