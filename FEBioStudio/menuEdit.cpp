@@ -1511,23 +1511,39 @@ void CMainWindow::on_actionExtract_triggered()
 		return;
 	}
 
+	GObject* po = doc->GetActiveObject();
+	if (po == nullptr)
+	{
+		QMessageBox::critical(this, "Extract Selection", "No active object.");
+		return;
+	}
+
+	if (po->GetFEMesh() == nullptr)
+	{
+		QMessageBox::critical(this, "Extract Selection", "This tool only works for meshed objects.");
+		return;
+	}
+
 	CDlgExtractSelection dlg(this);
 	if (dlg.exec())
 	{
-		GObject* po = doc->GetActiveObject();
-		if (po == 0) return;
-
 		// create a new object for this mesh
 		GMeshObject* newObject = ExtractSelection(po);
+		if (newObject)
+		{
+			// give the object a new name
+			string newName = dlg.getName().toStdString();
+			newObject->SetName(newName);
 
-		// give the object a new name
-		string newName = dlg.getName().toStdString();
-		newObject->SetName(newName);
+			// add it to the pile
+			doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject), newObject->GetNameAndType());
 
-		// add it to the pile
-		doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject), newObject->GetNameAndType());
-
-		UpdateModel(newObject, true);
+			UpdateModel(newObject, true);
+		}
+		else
+		{
+			QMessageBox::critical(this, "Extract Selection", "Failed to extract selection.");
+		}
 	}
 }
 
