@@ -1795,7 +1795,6 @@ void FSMeshBuilder::AutoPartitionSurface(double angleDegrees, bool creaseInterna
 		FSFace* pf = m_mesh.FacePtr(i);
 		if (pf->m_gid == -1)
 		{
-			vec3d Nf = m_mesh.FaceNormal(*pf);
 			stack[ns++] = pf;
 			while (ns > 0)
 			{
@@ -1804,6 +1803,8 @@ void FSMeshBuilder::AutoPartitionSurface(double angleDegrees, bool creaseInterna
 
 				// mark as processed
 				pf->m_gid = ngid;
+
+				vec3d Nf = m_mesh.FaceNormal(*pf);
 
 				// get the element part ID's
 				assert(pf->m_elem[0].eid >= 0);

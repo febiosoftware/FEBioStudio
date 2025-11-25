@@ -1320,9 +1320,13 @@ GMeshObject* GMeshObject::DetachSelection()
 
 GMeshObject* ExtractSelection(GObject* po)
 {
+	if (po == nullptr) return nullptr;
+
 	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return nullptr;
 
 	FSMesh* newMesh = pm->ExtractFaces(true);
+	if (newMesh == nullptr) return nullptr;
 
 	// create a new object for this mesh
 	GMeshObject* newObject = new GMeshObject(newMesh);

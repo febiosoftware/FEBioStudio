@@ -2702,7 +2702,7 @@ void CGLView::RenderTags(QPainter& painter)
 	}
 	GLViewSettings& vs = GetViewSettings();
 
-	painter.setFont(QFont("Helvetica", vs.m_tagFontSize));
+	painter.setFont(QFont("Helvetica", (int)(dpr*vs.m_tagFontSize)));
 	for (int i = 0; i<ntags; ++i)
 	{
 		GLTAG& tag = scene->Tag(i);
