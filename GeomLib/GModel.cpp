@@ -572,6 +572,33 @@ GPart* GModel::Part(int n)
 	return 0;
 }
 
+std::vector<GPart*> GModel::AllParts()
+{
+	std::vector<GPart*> parts;
+	for (int i = 0; i < Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		for (int j = 0; j < po->Parts(); ++j)
+			parts.push_back(po->Part(j));
+	}
+	return parts;
+}
+
+std::vector<GPart*> GModel::AllParts(std::function<bool(const GPart* pg)> filter)
+{
+	std::vector<GPart*> parts;
+	for (int i = 0; i < Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		for (int j = 0; j < po->Parts(); ++j)
+		{
+			GPart* pg = po->Part(j);
+			if (filter(pg)) parts.push_back(pg);
+		}
+	}
+	return parts;
+}
+
 //-----------------------------------------------------------------------------
 GPart* GModel::FindPart(int nid)
 {

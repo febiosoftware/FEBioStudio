@@ -365,6 +365,11 @@ void CModelDocument::DeleteObject(FSObject* po)
 		}
 		else if (dynamic_cast<FSModelComponent*>(po))
 			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)), po->GetName());
+		else if (dynamic_cast<GMaterial*>(po))
+		{
+			GMaterial* pmat = dynamic_cast<GMaterial*>(po);
+			DoCommand(new CCmdDeleteMaterial(pmat, fem));
+		}
 		else
 			DoCommand(new CCmdDeleteFSObject(po));
 	}

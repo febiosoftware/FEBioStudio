@@ -1255,6 +1255,7 @@ GMaterial* FSModel::FindMaterial(const string& name)
 
 void FSModel::AssignMaterial(GObject* po, GMaterial* mat)
 {
+	ClearMLT();
 	int matID = (mat ? mat->GetID() : -1);
 	for (int i = 0; i < po->Parts(); ++i)
 	{
@@ -1267,6 +1268,7 @@ void FSModel::AssignMaterial(GObject* po, GMaterial* mat)
 
 void FSModel::AssignMaterial(GPart* pg, GMaterial* mat)
 {
+	ClearMLT();
 	int matID = (mat ? mat->GetID() : -1);
 	pg->SetMaterialID(matID);
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
@@ -1276,6 +1278,7 @@ void FSModel::AssignMaterial(GPart* pg, GMaterial* mat)
 
 void FSModel::AssignMaterial(const std::vector<GPart*>& partList, GMaterial* mat)
 {
+	ClearMLT();
 	int matID = (mat ? mat->GetID() : -1);
 	std::set<GObject*> obj;
 	for (auto pg : partList)
@@ -1290,6 +1293,7 @@ void FSModel::AssignMaterial(const std::vector<GPart*>& partList, GMaterial* mat
 void FSModel::AssignMaterial(const std::vector<GPart*>& partList, const std::vector<GMaterial*>& matList)
 {
 	if (partList.size() != matList.size()) { assert(false); return; }
+	ClearMLT();
 
 	std::set<GObject*> obj;
 	for (int i=0; i<partList.size(); ++i)
