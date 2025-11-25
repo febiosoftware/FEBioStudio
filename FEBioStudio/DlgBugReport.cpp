@@ -92,7 +92,7 @@ void CDlgBugReport::accept()
 
     if(ui->action->currentIndex() == 1)
     {
-        url += "/new?labels=from%20fbs";
+        url += "/new?template=🐛-bug-report.md&labels=from%20fbs&type=Bug";
     }
 
     QDesktopServices::openUrl(QUrl(url));
