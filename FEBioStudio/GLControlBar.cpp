@@ -88,7 +88,7 @@ public:
 		meshToolButton[0] = addButton(QIcon(":/icons/select_connected.png"), "Select connected");
 
 		maxAngle = new QDoubleSpinBox; maxAngle->setRange(0.0, 180); maxAngle->setSingleStep(0.5);
-		maxAngle->setMaximumWidth(60);
+		maxAngle->setMaximumWidth(100);
 
 		meshToolButton[1] = addButton(QIcon(":/icons/brush.png"), "Brush Select");
 		meshToolButton[2] = addButton(QIcon(":/icons/select_path.png"), "Select by closest path");
