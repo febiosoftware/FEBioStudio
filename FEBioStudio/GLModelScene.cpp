@@ -196,6 +196,23 @@ void CGLModelScene::Render(GLRenderEngine& engine, GLContext& rc)
 		BuildScene(rc);
 		m_buildScene = false;
 	}
+	else
+	{
+		// update active object
+		GObject* activeObject = m_doc->GetActiveObject();
+		m_activeObjectItem = nullptr;
+		if (activeObject)
+		{
+			for (auto o : m_glObjectList)
+			{
+				if (o->GetGObject() == activeObject)
+				{
+					m_activeObjectItem = o;
+					break;
+				}
+			}
+		}
+	}
 
 	// set the object's render transforms
 	UpdateRenderTransforms(rc);
