@@ -44,7 +44,12 @@ CGLViewer::CGLViewer(::CMainWindow* wnd)
 	glc->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Policy::Fixed);
 
 	// add it all to the layout
-	l->addWidget(QWidget::createWindowContainer(glview));
+	QWidget* w = QWidget::createWindowContainer(glview);
+	w->setMinimumSize(200, 200);
+	w->setFocusPolicy(Qt::StrongFocus);
+	w->setAttribute(Qt::WA_NativeWindow);
+
+	l->addWidget(w);
 	l->addWidget(glc);
 	setLayout(l);
 

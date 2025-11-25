@@ -42,6 +42,7 @@ FESmoothMesh::FESmoothMesh() : FEModifier("Smooth")
 	AddBoolParam(false, "preserve shape", "preserve shape");
 	AddBoolParam(false, "project", "project");
 	AddBoolParam(false, "volume only");
+	AddBoolParam(false, "selected elements only");
 }
 
 FSMesh* FESmoothMesh::Apply(FSMesh* pm)
@@ -63,6 +64,7 @@ void FESmoothMesh::SmoothMesh(FSMesh& mesh)
 	int niter = GetIntValue(0);
 	double w = GetFloatValue(1);
 	bool volOnly = GetBoolValue(4);
+	bool selOnly = GetBoolValue(5);
 
 	// set up the node-element table
 	FSNodeNodeList NNL(&mesh);
@@ -77,6 +79,20 @@ void FESmoothMesh::SmoothMesh(FSMesh& mesh)
 			FSFace& face = mesh.Face(i);
 			int nf = face.Nodes();
 			for (int j=0; j<nf; ++j) mesh.Node(face.n[j]).m_ntag = 0;
+		}
+	}
+
+	if (selOnly)
+	{
+		int NE = mesh.Elements();
+		for (int i = 0; i < NE; ++i)
+		{
+			FSElement& el = mesh.Element(i);
+			if (!el.IsSelected())
+			{
+				int ne = el.Nodes();
+				for (int j = 0; j < ne; ++j) mesh.Node(el.m_node[j]).m_ntag = 0;
+			}
 		}
 	}
 

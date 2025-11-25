@@ -333,6 +333,8 @@ void rhiRenderer::setMaterial(const GLMaterial& mat)
 
 void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 {
+	if (mesh.Faces() == 0) return;
+
 	rhi::SubMesh* pm = nullptr;
 	if (m_currentMat.diffuseMap == GLMaterial::TEXTURE_3D)
 	{
@@ -362,6 +364,8 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 
 void rhiRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 {
+	if (mesh.Faces() == 0) return;
+
 	rhi::SubMesh* pm = nullptr;
 	if ((m_currentMat.type == GLMaterial::OVERLAY) || ((m_currentMat.type == GLMaterial::HIGHLIGHT)))
 	{
@@ -386,6 +390,8 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 
 void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 {
+	if (mesh.Edges() == 0) return;
+
 	rhi::SubMesh* lineMesh = nullptr;
 	if (m_currentMat.type == GLMaterial::OVERLAY)
 	{
@@ -410,6 +416,8 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 
 void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cacheMesh)
 {
+	if (mesh.Edges() == 0) return;
+
 	rhi::SubMesh* lineMesh = nullptr;
 	if (m_currentMat.type == GLMaterial::OVERLAY)
 	{
@@ -434,6 +442,8 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cache
 
 void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 {
+	if (mesh.Nodes() == 0) return;
+
 	rhi::SubMesh* pointMesh = nullptr;
 	if (m_currentMat.type == GLMaterial::OVERLAY)
 	{

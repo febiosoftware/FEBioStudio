@@ -198,9 +198,6 @@ void GLPostModelItem::RenderModel(GLRenderEngine& re, GLContext& rc)
 		RenderMeshLines(re, rc);
 	}
 
-	// render the selected elements and faces
-	RenderSelection(re);
-
 	// render the normals
 	if (glm.m_bnorm) RenderNormals(re);
 
@@ -218,6 +215,9 @@ void GLPostModelItem::RenderModel(GLRenderEngine& re, GLContext& rc)
 	{
 		RenderNodes(re, rc);
 	}
+
+	// render the selection
+	RenderSelection(re);
 }
 
 void GLPostModelItem::RenderMesh(GLRenderEngine& re, GLMesh& mesh, int surfId)
@@ -330,42 +330,9 @@ void GLPostModelItem::RenderEdges(GLRenderEngine& re)
 			}
 		}
 	}
-	lineMesh.Update();
 
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::Blue());
 	re.renderGMeshEdges(lineMesh, false);
-
-	// render selected edges
-	if (glm.GetSelectionType() == SELECT_FE_EDGES)
-	{
-		FEEdgeSelection* sel = dynamic_cast<FEEdgeSelection*>(m_scene->GetSelection());
-		if (sel && sel->Count())
-		{
-			GLMesh selMesh;
-			int n = sel->Count();
-			for (int i = 0; i < n; ++i)
-			{
-				FSEdge& edge = *sel->Edge(i);
-				r[0] = to_vec3f(mesh.Node(edge.n[0]).r);
-				r[1] = to_vec3f(mesh.Node(edge.n[1]).r);
-
-				switch (edge.Type())
-				{
-				case FE_EDGE2:
-					selMesh.AddEdge(r, 2, edge.m_gid);
-					break;
-				case FE_EDGE3:
-					r[2] = to_vec3f(mesh.Node(edge.n[2]).r);
-					selMesh.AddEdge(r, 3, edge.m_gid);
-					break;
-				}
-			}
-			selMesh.Update();
-
-			re.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow());
-			re.renderGMeshEdges(lineMesh, false);
-		}
-	}
 }
 
 void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
@@ -543,15 +510,16 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 void GLPostModelItem::RenderSelection(GLRenderEngine& re)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
+	if (glm.m_selectionMesh == nullptr) return;
 
 	// render the selection surface
 	GLColor c = glm.m_sel_col; c.a = 128;
 	re.setMaterial(GLMaterial::OVERLAY, c);
-	re.renderGMesh(glm.m_selectionMesh, false);
+	re.renderGMesh(*glm.m_selectionMesh);
 
 	// render the selection outlines
 	re.setColor(GLColor::Yellow());
-	re.renderGMeshEdges(glm.m_selectionMesh, false);
+	re.renderGMeshEdges(*glm.m_selectionMesh);
 }
 
 void GLPostModelItem::RenderNormals(GLRenderEngine& re)
