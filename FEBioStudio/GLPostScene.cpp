@@ -230,16 +230,6 @@ void GLPostModelItem::RenderMesh(GLRenderEngine& re, GLMesh& mesh, int surfId)
 	re.renderGMesh(mesh, surfId, true);
 }
 
-void GLPostModelItem::RenderMeshEdges(GLRenderEngine& re, GLMesh& mesh)
-{
-	if (mesh.IsModified())
-	{
-		re.deleteCachedMesh(&mesh);
-		mesh.setModified(false);
-	}
-	re.renderGMeshEdges(mesh, true);
-}
-
 void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
@@ -675,10 +665,30 @@ void GLPostModelItem::RenderMeshLines(GLRenderEngine& re, GLContext& rc)
 	GLMesh* mesh = po->GetFERenderMesh();
 	if (mesh == nullptr) return;
 
-	GLColor c = rc.m_settings.m_meshColor;
-	c.a = 128;
-	re.setMaterial(GLMaterial::CONSTANT, c);
-	RenderMeshEdges(re, *mesh);
+	Post::FEPostModel* fem = glm.GetFSModel();
+	if (fem)
+	{
+		assert(mesh->EdgePartitions() == fem->Materials());
+
+		if (mesh->IsModified())
+		{
+			re.deleteCachedMesh(mesh);
+			mesh->setModified(false);
+		}
+
+		for (int i = 0; i < fem->Materials(); ++i)
+		{
+			Post::Material* mat = fem->GetMaterial(i);
+			if (mat->bmesh)
+			{
+				GLColor c = mat->meshcol;
+				c.a = 128;
+
+				re.setMaterial(GLMaterial::CONSTANT, c);
+				re.renderGMeshEdges(*mesh, i, true);
+			}
+		}
+	}
 }
 
 void GLPostModelItem::RenderDiscrete(GLRenderEngine& re, GLContext& rc)

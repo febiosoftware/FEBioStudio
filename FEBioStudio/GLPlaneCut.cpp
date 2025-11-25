@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <GLLib/GLRenderEngine.h>
 #include <FSCore/ColorMap.h>
 #include "GLModelScene.h"
+#include <FSCore/ColorMapManager.h>
 
 const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
@@ -318,7 +319,7 @@ void GLPlaneCut::CreateHideElements(CGLModelScene& scene, bool showMeshData)
 	GLMesh* planeCut = m_planeCut;
 
 	// TODO: swith to texture
-	CColorMap colormap;
+	CColorMap& colormap = m_col;
 
 	std::vector<GLObjectItem*> objItems = scene.GetGLObjectItems();
 	for (auto item : objItems)
@@ -474,12 +475,14 @@ void GLPlaneCut::CreateHideElements(CGLModelScene& scene, bool showMeshData)
 
 								// calculate nodal positions
 								vec3f r[3];
+								GLColor vc[3];
 								for (int m = 0; m < 3; m++)
 								{
 									int node = pf[m];
 									if (node < 4)
 									{
 										r[m] = to_vec3f(T.LocalToGlobal(ex[node]));
+										vc[m] = ec[node];
 									}
 									else
 									{
@@ -492,6 +495,9 @@ void GLPlaneCut::CreateHideElements(CGLModelScene& scene, bool showMeshData)
 										float w = (ref - (float)v1) / ((float)v2 - (float)v1);
 										vec3d p = ex[n1] * (1.f - w) + ex[n2] * w;
 										r[m] = to_vec3f(T.LocalToGlobal(p));
+
+										GLColor cm = ec[n1] * (1.f - w) + ec[n2] * w;
+										vc[m] = cm;
 									}
 								}
 
@@ -502,7 +508,15 @@ void GLPlaneCut::CreateHideElements(CGLModelScene& scene, bool showMeshData)
 								{
 									face.eid = i;
 								}
-								face.c[0] = face.c[1] = face.c[2] = c;
+
+								if (showContour)
+								{
+									face.c[0] = vc[0];
+									face.c[1] = vc[1];
+									face.c[2] = vc[2];
+								}
+								else
+									face.c[0] = face.c[1] = face.c[2] = c;
 
 								pf += 3;
 							}
@@ -534,7 +548,11 @@ void GLPlaneCut::Render(GLRenderEngine& re)
 	if (m_planeCut == nullptr) return;
 
 	// render the unselected faces
-	re.setMaterial(GLMaterial::PLASTIC, GLColor(200, 200, 200), GLMaterial::VERTEX_COLOR);
+	GLMaterial mat;
+	mat.type = GLMaterial::PLASTIC;
+	mat.diffuse = GLColor::White();
+	mat.diffuseMap = GLMaterial::VERTEX_COLOR;
+	re.setMaterial(mat);
 	re.renderGMesh(*m_planeCut, 0);
 
 	// render the selected faces

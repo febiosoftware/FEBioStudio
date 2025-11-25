@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <MeshLib/FSItemListBuilder.h>
 #include <vector>
+#include <functional>
 
 class GObject;
 class FSModel;
@@ -127,6 +128,10 @@ public:
 
 	// find a part based on its name
 	GPart* FindPart(const std::string& partName);
+
+	// get all the parts (helpful if you want to loop over all parts)
+	std::vector<GPart*> AllParts();
+	std::vector<GPart*> AllParts(std::function<bool(const GPart* pg)> filter);
 
 	// --- surface functions ---
 

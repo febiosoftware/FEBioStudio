@@ -3760,6 +3760,44 @@ void CCmdDeleteFSObject::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
+// CCmdDeleteMaterial
+//-----------------------------------------------------------------------------
+
+CCmdDeleteMaterial::CCmdDeleteMaterial(GMaterial* mat, FSModel& fem) : CCommand(string("Delete ") + mat->GetName()), m_mat(mat), m_fem(fem)
+{
+	assert(m_mat->GetParent());
+	m_parent = m_mat->GetParent();
+	m_delMaterial = false;
+
+	// find all parts that use this material
+	GModel& gm = m_fem.GetModel();
+	m_partList = gm.AllParts([=](const GPart* pg) { return pg->GetMaterialID() == m_mat->GetID(); });
+}
+
+CCmdDeleteMaterial::~CCmdDeleteMaterial()
+{
+	if (m_delMaterial) delete m_mat;
+}
+
+void CCmdDeleteMaterial::Execute()
+{
+	m_fem.AssignMaterial(m_partList, nullptr);
+
+	m_insertPos = m_parent->RemoveChild(m_mat);
+	m_mat->SetParent(nullptr);
+	m_delMaterial = true;
+}
+
+void CCmdDeleteMaterial::UnExecute()
+{
+	m_parent->InsertChild(m_insertPos, m_mat);
+	assert(m_mat->GetParent() == m_parent);
+	m_delMaterial = false;
+
+	m_fem.AssignMaterial(m_partList, m_mat);
+}
+
+//-----------------------------------------------------------------------------
 // CCmdRemoveMeshData
 //-----------------------------------------------------------------------------
 

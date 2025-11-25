@@ -54,9 +54,9 @@ void GLLabel::draw(GLPainter* painter)
 		label = processLabel();
 		if ((label.size() > 0) && !has_focus())
 		{
-			QFontMetrics fm(m_font);
-			QSize size = fm.size(Qt::TextExpandTabs, QString::fromStdString(label));
-			if ((size.width() < w() - 2*m_margin) || (size.height() < h() - 2 * m_margin))
+			QFontMetricsF fm(m_font);
+			QSizeF size = fm.size(Qt::TextExpandTabs, QString::fromStdString(label));
+			if ((size.width() > w() - 2*m_margin) || (size.height() > h() - 2 * m_margin))
 			{
 				resize(x(), y(), size.width() + 2 * m_margin, size.height() + 2 * m_margin);
 			}

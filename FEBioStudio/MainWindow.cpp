@@ -3537,7 +3537,7 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 
 	if (dlg.exec())
 	{
-		std::string name = imgModel->GetImageSource()->GetName();
+		std::string name = imgModel->GetName();
 		if (name.empty())
 		{
 			std::stringstream ss;

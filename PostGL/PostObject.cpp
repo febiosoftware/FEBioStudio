@@ -143,7 +143,7 @@ void CPostObject::BuildFERenderMesh()
 					if ((face.m_nbr[j] < 0) || (face.n[j] < face.n[j1]))
 					{
 						int m[2] = { face.n[j], face.n[j1] };
-						gm.AddEdge(m, 2);
+						gm.AddEdge(m, 2, mid);
 					}
 				}
 			}
@@ -176,12 +176,13 @@ void CPostObject::BuildFERenderMesh()
 				if ((face.m_nbr[j] < 0) || (face.n[j] < face.n[j1]))
 				{
 					int m[2] = { face.n[j], face.n[j1] };
-					gm.AddEdge(m, 2);
+					gm.AddEdge(m, 2, mid);
 				}
 			}
 		}
 	}
 
+	gm.AutoEdgePartition();
 	gm.Update();
 	SetFERenderMesh(&gm);
 }

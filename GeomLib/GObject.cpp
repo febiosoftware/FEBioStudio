@@ -57,7 +57,7 @@ public:
 		m_objManip = nullptr;
 
 		m_mat.type = GLMaterial::PLASTIC;
-		m_mat.diffuse = GLColor(200, 200, 200);
+		m_mat.diffuse = m_mat.ambient = GLColor(200, 200, 200);
 
 		m_bValid = true;
 	}

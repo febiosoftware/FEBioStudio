@@ -1535,6 +1535,24 @@ protected:
 	size_t		m_insertPos;
 };
 
+class CCmdDeleteMaterial : public CCommand
+{
+public:
+	CCmdDeleteMaterial(GMaterial* mat, FSModel& fem);
+	~CCmdDeleteMaterial();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	GMaterial*	m_mat;
+	FSObject*	m_parent;
+	FSModel&	m_fem;
+	bool		m_delMaterial;
+	size_t		m_insertPos;
+	std::vector<GPart*> m_partList;
+};
+
 class CCmdRemoveMeshData : public CCommand
 {
 public:

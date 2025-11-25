@@ -257,6 +257,7 @@ CDlgBoxProps::CDlgBoxProps(GLWidget* widget, QWidget* parent) : QDialog(parent),
 	ui->ptext->setText(widget->get_label());
 	ui->pshadow->setChecked(pb->m_bshadow);
 	ui->pshadowCol->setColor(toQColor(pb->m_shc));
+	ui->align->setCurrentIndex(pb->m_align);
 
 	ui->pbgstyle->setCurrentIndex(pb->get_bg_style());
 	ui->bgCol1->setColor(toQColor(pb->get_bg_color(0)));
