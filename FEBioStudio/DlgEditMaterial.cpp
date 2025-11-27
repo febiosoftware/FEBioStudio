@@ -172,28 +172,6 @@ public:
 		GLContext rc;
 		rc.m_cam = &scene.GetCamera();
 
-		CMainWindow* wnd = CMainWindow::GetInstance();
-		bool useEnvMap = wnd->IsEnvironmentMapEnabled();
-		if (useEnvMap)
-		{
-			if (envMap.isNull())
-			{
-				QString file = wnd->GetEnvironmentMap();
-				if (!file.isEmpty())
-				{
-					QImage img(file);
-					if (!img.isNull())
-					{
-						QImage::Format format = img.format();
-						envMap = CRGBAImage(img.width(), img.height(), img.constBits());
-					}
-				}
-			}
-
-			if (!envMap.isNull())
-				scene.SetEnvironmentMap(envMap);
-		}
-
 		rt.start();
 		scene.Render(rt, rc);
 		rt.finish();
@@ -288,16 +266,9 @@ CDlgEditMaterial::CDlgEditMaterial(QWidget* parent) : QDialog(parent), ui(new UI
 	if (wnd)
 	{
 		bool useEnvMap = wnd->IsEnvironmentMapEnabled();
-		QString file = wnd->GetEnvironmentMap();
-		if (useEnvMap && !file.isEmpty())
+		if (useEnvMap)
 		{
-			QImage img(file);
-			if (!img.isNull())
-			{
-				QImage::Format format = img.format();
-				CRGBAImage rgba(img.width(), img.height(), img.constBits());
-				ui->view->scene.SetEnvironmentMap(rgba);
-			}
+			ui->view->scene.SetEnvironmentMap(wnd->GetEnvironmentMapImage());
 		}
 		else
 		{

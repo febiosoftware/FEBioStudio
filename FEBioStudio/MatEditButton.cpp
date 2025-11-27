@@ -83,11 +83,23 @@ public:
 	QImage img;
 	RayTracer rt;
 	MatEditButtonScene scene;
-	CRGBAImage envMap;
+	bool initEnvMap = false;
 
 	Imp() 
 	{
 		scene.addItem(new SphereItem(rt, vec3d(0, 0, 0), 1));
+	}
+
+	void InitEnvMap()
+	{
+		if (initEnvMap) return;
+		CMainWindow* wnd = CMainWindow::GetInstance();
+		bool useEnvMap = wnd->IsEnvironmentMapEnabled();
+		if (useEnvMap)
+		{
+			scene.SetEnvironmentMap(wnd->GetEnvironmentMapImage());
+		}
+		initEnvMap = true;
 	}
 };
 
@@ -140,31 +152,10 @@ void CMatEditButton::updateImage()
 
 	m.rt.setRenderShadows(false);
 
+	if (m.initEnvMap == false) m.InitEnvMap();
+
 	GLContext rc;
 	rc.m_cam = &m.scene.GetCamera();
-
-	CMainWindow* wnd = CMainWindow::GetInstance();
-	bool useEnvMap = wnd->IsEnvironmentMapEnabled();
-	if (useEnvMap)
-	{
-		if (m.envMap.isNull())
-		{
-			QString file = wnd->GetEnvironmentMap();
-			if (!file.isEmpty())
-			{
-				QImage img(file);
-				if (!img.isNull())
-				{
-					QImage::Format format = img.format();
-					m.envMap = CRGBAImage(img.width(), img.height(), img.constBits());
-				}
-			}
-		}
-
-		if (!m.envMap.isNull())
-			m.scene.SetEnvironmentMap(m.envMap);
-	}
-
 	m.rt.start();
 	m.scene.Render(m.rt, rc);
 	m.rt.finish();

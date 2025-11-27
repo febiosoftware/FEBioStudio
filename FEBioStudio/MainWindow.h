@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <FEMLib/GMaterial.h>
 #include <FSCore/math3d.h>
 #include <FSCore/color.h>
+#include <ImageLib/RGBAImage.h>
 class FSObject;
 class CDocument;
 class CGLDocument;
@@ -397,6 +398,7 @@ public:
 	QString GetEnvironmentMap() const;
 	void SetEnvironmentMap(const QString& filename);
 	bool IsEnvironmentMapEnabled();
+	CRGBAImage GetEnvironmentMapImage();
 
 	void AddRecentPlugin(const QString& fileName);
 

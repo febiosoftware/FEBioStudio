@@ -3479,6 +3479,24 @@ bool CMainWindow::IsEnvironmentMapEnabled()
 	else return false;
 }
 
+CRGBAImage CMainWindow::GetEnvironmentMapImage()
+{
+	if (ui->m_settings.m_envImg.isNull())
+	{
+		QString file = GetEnvironmentMap();
+		if (!file.isEmpty())
+		{
+			QImage img(file);
+			if (!img.isNull())
+			{
+				QImage::Format format = img.format();
+				ui->m_settings.m_envImg = CRGBAImage(img.width(), img.height(), img.constBits());
+			}
+		}
+	}
+	return ui->m_settings.m_envImg;
+}
+
 QStringList CMainWindow::GetRecentProjectsList()
 {
 	return ui->m_settings.m_recentProjects;

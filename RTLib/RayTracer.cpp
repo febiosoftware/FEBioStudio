@@ -1072,7 +1072,8 @@ bool RayTracer::castRay(const Ray& ray, rt::Point& q)
 
 unsigned int RayTracer::SetEnvironmentMap(const CRGBAImage& img)
 {
-	envTex.setImageData(img);
+	if (envTex.isNull())
+		envTex.setImageData(img);
 	return 1;
 }
 

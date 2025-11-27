@@ -94,6 +94,7 @@ SOFTWARE.*/
 #include <PyLib/PythonRunner.h>
 #include "FEBioBatchView.h"
 #include "DocPropsPanel.h"
+#include <ImageLib/RGBAImage.h>
 
 class QProcess;
 
@@ -248,6 +249,7 @@ struct FBS_SETTINGS
 	QStringList m_recentImages;
 
 	QString m_envMapFile;
+	CRGBAImage m_envImg;
 
 	vector<CLaunchConfig*> m_launch_configs;
 };
