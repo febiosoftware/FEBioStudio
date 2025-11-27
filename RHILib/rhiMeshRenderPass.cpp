@@ -47,7 +47,7 @@ void rhi::MeshRenderPass::clearCache()
 void rhi::MeshRenderPass::clearUnusedCache()
 {
 	for (auto it = m_meshList.begin(); it != m_meshList.end(); ) {
-		if ((it->mesh->isActive() == false) || (it->glmesh == nullptr))
+		if ((it->mesh->isActive() == false) || (it->gluid == 0))
 		{
 			delete it->mesh;
 			it = m_meshList.erase(it);
@@ -59,9 +59,10 @@ void rhi::MeshRenderPass::clearUnusedCache()
 
 void rhi::MeshRenderPass::removeCachedMesh(const GLMesh* mesh)
 {
+	unsigned int uid = (mesh ? mesh->GetUID() : 0);
 	for (auto it = m_meshList.begin(); it != m_meshList.end(); )
 	{
-		if (it->glmesh == mesh)
+		if (it->gluid == uid)
 		{
 			delete it->mesh;
 			it = m_meshList.erase(it);
@@ -79,7 +80,7 @@ rhi::Mesh* rhi::MeshRenderPass::addGLMesh(const GLMesh& mesh, bool cacheMesh)
 	auto it = m_meshList.end();
 	if (cacheMesh)
 	{
-		it = m_meshList.find(&mesh);
+		it = m_meshList.find(mesh.GetUID());
 	}
 
 	// if we didn't find it, create a new mesh
@@ -88,7 +89,7 @@ rhi::Mesh* rhi::MeshRenderPass::addGLMesh(const GLMesh& mesh, bool cacheMesh)
 		// create a new mesh
 		rhi::Mesh* rm = newMesh(&mesh); assert(rm);
 		if (rm == nullptr) return nullptr;
-		m_meshList.push_back((cacheMesh ? &mesh : nullptr), rm);
+		m_meshList.push_back((cacheMesh ? mesh.GetUID() : 0), rm);
 		it = m_meshList.back();
 	}
 

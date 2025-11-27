@@ -33,7 +33,7 @@ namespace rhi {
 	{
 		struct Entry
 		{
-			const GLMesh* glmesh = nullptr;
+			unsigned int gluid = 0; // The UID of the GLMesh that was used to create this mesh
 			rhi::Mesh* mesh = nullptr;
 		};
 
@@ -48,14 +48,14 @@ namespace rhi {
 		Container::iterator begin() { return meshList.begin(); }
 		Container::iterator end() { return meshList.end(); }
 
-		Container::iterator find(const GLMesh* m)
+		Container::iterator find(unsigned int uid)
 		{
-			return std::find_if(begin(), end(), [=](const auto& item) { return (item.glmesh == m); });
+			return std::find_if(begin(), end(), [=](const auto& item) { return (item.gluid == uid); });
 		}
 
-		void push_back(const GLMesh* gm, rhi::Mesh* rm)
+		void push_back(unsigned int uid, rhi::Mesh* rm)
 		{
-			meshList.push_back({ gm, rm});
+			meshList.push_back({ uid, rm});
 		}
 
 		bool empty() const { return meshList.empty(); }
