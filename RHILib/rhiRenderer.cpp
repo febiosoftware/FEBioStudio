@@ -329,6 +329,10 @@ void rhiRenderer::setColor(GLColor c)
 void rhiRenderer::setMaterial(const GLMaterial& mat)
 {
 	m_currentMat = mat;
+	if (!useEnvMap)
+	{
+		m_currentMat.reflection = 0.0;
+	}
 }
 
 void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
@@ -517,10 +521,12 @@ unsigned int rhiRenderer::SetEnvironmentMap(const CRGBAImage& img)
 
 void rhiRenderer::ActivateEnvironmentMap(unsigned int mapid)
 {
+	useEnvMap = true;
 }
 
 void rhiRenderer::DeactivateEnvironmentMap(unsigned int mapid)
 {
+	useEnvMap = false;
 }
 
 void rhiRenderer::useOverlayImage(bool b)

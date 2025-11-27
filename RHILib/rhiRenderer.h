@@ -213,4 +213,5 @@ private:
 	GLMaterial m_currentMat;
 	bool m_clipEnabled = false;
 	float clipPlane[4];
+	bool useEnvMap = false;
 };

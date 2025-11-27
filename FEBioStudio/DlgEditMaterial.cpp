@@ -46,6 +46,7 @@ public:
 
 public:
 	GLMaterial mat;
+	bool useEnvMap = false;
 };
 
 struct PresetMaterial
@@ -101,7 +102,7 @@ EditMaterialScene::EditMaterialScene()
 
 void EditMaterialScene::Render(GLRenderEngine& re, GLContext& rc)
 {
-	ActivateEnvironmentMap(re);
+	if (useEnvMap) ActivateEnvironmentMap(re);
 	re.setLightPosition(0, vec3f(1, 1, 1));
 	PositionCameraInScene(re);
 
@@ -269,6 +270,7 @@ CDlgEditMaterial::CDlgEditMaterial(QWidget* parent) : QDialog(parent), ui(new UI
 		if (useEnvMap)
 		{
 			ui->view->scene.SetEnvironmentMap(wnd->GetEnvironmentMapImage());
+			ui->view->scene.useEnvMap = true;
 		}
 		else
 		{

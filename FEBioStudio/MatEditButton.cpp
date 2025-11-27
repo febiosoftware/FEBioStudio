@@ -58,7 +58,7 @@ public:
 
 	void Render(GLRenderEngine& re, GLContext& rc)
 	{
-		ActivateEnvironmentMap(re);
+		if (useEnvMap) ActivateEnvironmentMap(re);
 		re.setLightPosition(0, vec3f(1, 1, 1));
 		PositionCameraInScene(re);
 		re.setMaterial(mat);
@@ -73,7 +73,7 @@ private:
 
 public:
 	GLMaterial mat;
-	QString envTexFile;
+	bool useEnvMap = false;
 };
 
 class CMatEditButton::Imp
@@ -98,6 +98,7 @@ public:
 		if (useEnvMap)
 		{
 			scene.SetEnvironmentMap(wnd->GetEnvironmentMapImage());
+			scene.useEnvMap = true;
 		}
 		initEnvMap = true;
 	}

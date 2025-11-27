@@ -319,6 +319,9 @@ void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::Dif
 		mat.shininess = 0; // don't add specular component when using textures
 	}
 
+	if (!useEnvTex)
+		mat.reflection = 0;
+
 	matList.push_back(mat);
 	currentMaterial = (int)matList.size() - 1;
 }
@@ -347,6 +350,9 @@ void RayTracer::setMaterial(const GLMaterial& glmat)
 	{
 		mat.tex1d = currentTexture1D;
 	}
+
+	if (!useEnvTex)
+		mat.reflection = 0;
 
 	matList.push_back(mat);
 	currentMaterial = (int)matList.size() - 1;
@@ -973,7 +979,7 @@ bool RayTracer::castRay(const Ray& ray, rt::Point& q)
 		}
 
 		// apply environment map
-		if ((mat.reflection > 0) && (!envTex.isNull()))
+		if ((mat.reflection > 0) && !envTex.isNull())
 		{
 			double r = mat.reflection;
 			Vec3 N = q.n;
@@ -1079,12 +1085,13 @@ unsigned int RayTracer::SetEnvironmentMap(const CRGBAImage& img)
 
 void RayTracer::ActivateEnvironmentMap(unsigned int id)
 {
-
+	if (envTex.isNull()) return;
+	useEnvTex = true;
 }
 
 void RayTracer::DeactivateEnvironmentMap(unsigned int id)
 {
-
+	useEnvTex = false;
 }
 
 void RayTracer::addSphere(const vec3d& c, double R)
