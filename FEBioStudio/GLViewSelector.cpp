@@ -1149,7 +1149,7 @@ void GLViewSelector::SelectFEElements(int x, int y)
 		}
 	}
 
-	if ((pcmd == nullptr) && (!(m_selectionMode == SELECT_ADD)) && (!m_selectionMode == SELECT_SUBTRACT))
+	if ((pcmd == nullptr) && ((m_selectionMode != SELECT_ADD)) && (m_selectionMode != SELECT_SUBTRACT))
 	{
 		// clear selection
 		int nsel = pm->CountSelectedElements();
@@ -1260,7 +1260,7 @@ void GLViewSelector::SelectFEFaces(int x, int y)
 			}
 		}
 	}
-	else if (!(m_selectionMode == SELECT_ADD))
+	else if (m_selectionMode != SELECT_ADD)
 	{
 		int nsel = pm->CountSelectedFaces();
 		if (nsel > 0)
@@ -1398,7 +1398,7 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 			}
 		}
 	}
-	else if (!(m_selectionMode == SELECT_ADD))
+	else if (m_selectionMode != SELECT_ADD)
 	{
 		int nsel = pm->CountSelectedEdges();
 		if (nsel)
@@ -2151,7 +2151,7 @@ void GLViewSelector::SelectSurfaceFaces(int x, int y)
 			else pcmd = new CCmdSelectFaces(pm, &index, 1, (m_selectionMode == SELECT_ADD));
 		}
 	}
-	else if (!(m_selectionMode == SELECT_ADD)) pcmd = new CCmdSelectFaces(pm, 0, 0, false);
+	else if (m_selectionMode != SELECT_ADD) pcmd = new CCmdSelectFaces(pm, 0, 0, false);
 
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
@@ -2248,7 +2248,7 @@ void GLViewSelector::SelectSurfaceEdges(int x, int y)
 			else pcmd = new CCmdSelectFEEdges(pm, &num, 1, (m_selectionMode == SELECT_ADD));
 		}
 	}
-	else if (!(m_selectionMode == SELECT_ADD)) pcmd = new CCmdSelectFEEdges(pm, 0, 0, false);
+	else if (m_selectionMode != SELECT_ADD) pcmd = new CCmdSelectFEEdges(pm, 0, 0, false);
 
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
@@ -2346,7 +2346,7 @@ void GLViewSelector::SelectSurfaceNodes(int x, int y)
 			lastIndex = -1;
 		}
 	}
-	else if (!(m_selectionMode == SELECT_ADD))
+	else if (m_selectionMode != SELECT_ADD)
 	{
 		pcmd = new CCmdSelectFENodes(lineMesh, 0, 0, false);
 		lastIndex = -1;
@@ -2909,7 +2909,7 @@ void GLViewSelector::SelectFENodes(int x, int y)
 			lastIndex = -1;
 		}
 	}
-	else if (!(m_selectionMode == SELECT_ADD))
+	else if (m_selectionMode != SELECT_ADD)
 	{
 		int nsel = pm->CountSelectedNodes();
 		if (nsel > 0)
