@@ -292,7 +292,7 @@ void GObject::BuildFERenderMesh()
 	for (int i = 0; i < NE; ++i)
 	{
 		FSElement& el = pm->Element(i);
-		if (el.IsVisible())
+		if (el.IsVisible() && !el.IsSelected())
 		{
 			int nf = el.Faces();
 			for (int j = 0; j < nf; ++j)
@@ -300,7 +300,7 @@ void GObject::BuildFERenderMesh()
 				if (el.m_nbr[j] >= 0)
 				{
 					FSElement& elj = pm->Element(el.m_nbr[j]);
-					if ((el.m_gid == elj.m_gid) && !elj.IsVisible())
+					if ((el.m_gid == elj.m_gid) && (!elj.IsVisible() || elj.IsSelected()))
 					{
 						partElems[el.m_gid].push_back(i);
 						break;
@@ -326,7 +326,7 @@ void GObject::BuildFERenderMesh()
 				if (el.m_nbr[j] >= 0)
 				{
 					FSElement& elj = pm->Element(el.m_nbr[j]);
-					if (!elj.IsVisible() && (el.m_gid == elj.m_gid))
+					if ((el.m_gid == elj.m_gid) && (!elj.IsVisible() || elj.IsSelected()))
 					{
 						el.GetFace(j, face);
 						gm.AddFace(face.n, face.Nodes(), maxSurfID + i, -1, false, -1, *it, el.m_MatID);

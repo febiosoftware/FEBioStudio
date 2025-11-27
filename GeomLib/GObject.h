@@ -204,7 +204,6 @@ public:
 	//! Update the FE render mesh
 	virtual void UpdateFERenderMesh();
 
-protected:
 	//! Set the render mesh
 	void SetRenderMesh(GLMesh* mesh);
 	//! Set the FE render mesh

@@ -954,7 +954,10 @@ void CModelDocument::UpdateSelection()
 	}
 
 	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(GetScene());
-	if (scene) scene->UpdateSelectionMesh(m_psel);
+	if (scene) {
+		scene->UpdateSelectionMesh(m_psel);
+		scene->Update();
+	}
 
 	// update the window's toolbar to make sure it reflects the correct
 	// selection tool

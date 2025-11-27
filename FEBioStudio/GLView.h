@@ -150,6 +150,7 @@ public:
 	void ToggleGridLines(bool b);
 	void ToggleFeatureEdges(bool b);
 	void ToggleNormals(bool b);
+	void ToggleWireframe(bool b);
 
 protected:
 	void mousePressEvent  (QMouseEvent* ev) override;

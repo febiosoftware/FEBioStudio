@@ -68,7 +68,7 @@ public:
 		bool	bext = true;	// external flag
 		int		tag = 0;	// multipurpose tag
 		int		n[3];	// nodes
-		int		nbr[3];	// neighbor faces
+		int		nbr[3] = { -1,-1,-1 };	// neighbor faces
 		vec3f	fn;		// face normal
 		vec3f	vn[3];	// node normals
 		vec3f	vr[3];	// nodal coordinates

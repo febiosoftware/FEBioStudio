@@ -265,10 +265,7 @@ void CMainWindow::on_actionRenderMode_toggled(bool b)
 {
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
-
-	GLViewSettings& view = GetGLView()->GetViewSettings();
-	view.m_nrender = (b ? RENDER_WIREFRAME : RENDER_SOLID);
-	RedrawGL();
+	GetGLView()->ToggleWireframe(b);
 }
 
 void CMainWindow::on_actionSnap3D_triggered()

@@ -81,6 +81,12 @@ private:
 	GLItemList m_children;
 };
 
+struct GLSceneStats
+{
+	int updates = 0;
+	int rebuilds = 0;
+};
+
 class GLScene
 {
 public:
@@ -88,6 +94,8 @@ public:
 	virtual ~GLScene();
 
 	virtual void Update();
+
+	GLSceneStats GetStats() const { return stats; }
 
 	// Render the 3D scene
 	virtual void Render(GLRenderEngine& engine, GLContext& rc);
@@ -162,4 +170,6 @@ protected:
 	std::vector<GLTAG> m_tags;
 
 	GLSceneItem m_root;
+
+	GLSceneStats stats; // number of calls to Update
 };

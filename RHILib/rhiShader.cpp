@@ -231,7 +231,7 @@ public:
 		m_data.setInt  ( 8, ((m.mat.type == GLMaterial::HIGHLIGHT) || (m.mat.type == GLMaterial::GLASS) ? 1 : 0));
 		m_data.setInt  ( 9, (m.doClipping ? 1 : 0));
 		m_data.setInt  (10, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
-		m_data.setInt  (11, (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) ? 0 : 1);
+		m_data.setInt  (11, (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) || (m.mat.type == GLMaterial::HIGHLIGHT) ? 0 : 1);
 		m_data.setInt  (12, (m.mat.frontOnly ? 1 : 0));
 		m_data.setInt  (13, (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 0 : 1));
 	}

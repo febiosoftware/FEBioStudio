@@ -68,7 +68,7 @@ void GLScene::Render(GLRenderEngine& engine, GLContext& rc)
 
 void GLScene::Update()
 {
-
+	stats.updates++;
 }
 
 void GLScene::SetupProjection(GLRenderEngine& re)

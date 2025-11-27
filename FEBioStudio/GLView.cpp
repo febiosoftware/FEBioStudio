@@ -282,7 +282,7 @@ public:
 			});
 		add_widget(w);
 
-		m_toggleWireframe = w = new GLCheckBox(0, 0, 150, 25, "wireframe (w)");
+		m_wireframe = w = new GLCheckBox(0, 0, 150, 25, "wireframe (w)");
 		w->add_event_handler([=](GLWidget* w, int nevent) {
 			GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
 			GLViewSettings& vs = glview->GetViewSettings();
@@ -311,13 +311,18 @@ public:
 		m_showNormals->m_checked = b;
 	}
 
+	void toggleWireframe(bool b)
+	{
+		m_wireframe->m_checked = b;
+	}
+
 private:
 	CGLView* m_glview;
 	GLCheckBox* m_meshLines;
 	GLCheckBox* m_gridLines;
 	GLCheckBox* m_featureEdges;
 	GLCheckBox* m_showNormals;
-	GLCheckBox* m_toggleWireframe;
+	GLCheckBox* m_wireframe;
 };
 
 void RenderBrush(QPainter& painter, int x, int y, double R)
@@ -917,22 +922,27 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	{
 		if (but == Qt::LeftButton)
 		{
+			// allow for a small "deadzone" to simplify clicking with sensitive mice.
+			const int DELTA = 3; 
+
 			// if we are in selection mode, we need to see if 
 			// there is an object under the cursor
-			if (((m_x0==m_x1) && (m_y0==m_y1)) || m_bsel)
+			if (((abs(m_x0-m_x1)<=DELTA) && (abs(m_y0-m_y1)<=DELTA)) || m_bsel)
 			{
-				if ((m_x0 == m_x1) && (m_y0 == m_y1))
+				if (((abs(m_x0 - m_x1) <= DELTA) && (abs(m_y0 - m_y1) <= DELTA)))
 				{
+					int xc = (m_x0 + m_x1) / 2;
+					int yc = (m_y0 + m_y1) / 2;
 					if (item == ITEM_MESH) 
 					{
 						switch (nsel)
 						{
-						case SELECT_OBJECT  : m_select.SelectObjects (m_x0, m_y0); break;
-						case SELECT_PART    : m_select.SelectParts   (m_x0, m_y0); break;
-						case SELECT_SURF    : m_select.SelectSurfaces(m_x0, m_y0); break;
-						case SELECT_EDGE    : m_select.SelectEdges   (m_x0, m_y0); break;
-						case SELECT_NODE    : m_select.SelectNodes   (m_x0, m_y0); break;
-						case SELECT_DISCRETE: m_select.SelectDiscrete(m_x0, m_y0); break;
+						case SELECT_OBJECT  : m_select.SelectObjects (xc, yc); break;
+						case SELECT_PART    : m_select.SelectParts   (xc, yc); break;
+						case SELECT_SURF    : m_select.SelectSurfaces(xc, yc); break;
+						case SELECT_EDGE    : m_select.SelectEdges   (xc, yc); break;
+						case SELECT_NODE    : m_select.SelectNodes   (xc, yc); break;
+						case SELECT_DISCRETE: m_select.SelectDiscrete(xc, yc); break;
 						default:
 							ev->accept();
 							return ;
@@ -942,21 +952,21 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 					{
 						if (meshMode == MESH_MODE_VOLUME)
 						{
-							if      (item == ITEM_ELEM) m_select.SelectFEElements(m_x0, m_y0);
-							else if (item == ITEM_FACE) m_select.SelectFEFaces(m_x0, m_y0);
-							else if (item == ITEM_EDGE) m_select.SelectFEEdges(m_x0, m_y0);
-							else if (item == ITEM_NODE) m_select.SelectFENodes(m_x0, m_y0);
+							if      (item == ITEM_ELEM) m_select.SelectFEElements(xc, yc);
+							else if (item == ITEM_FACE) m_select.SelectFEFaces   (xc, yc);
+							else if (item == ITEM_EDGE) m_select.SelectFEEdges   (xc, yc);
+							else if (item == ITEM_NODE) m_select.SelectFENodes   (xc, yc);
 						}
 						else
 						{
-							if      (item == ITEM_FACE) m_select.SelectSurfaceFaces(m_x0, m_y0);
-							else if (item == ITEM_EDGE) m_select.SelectSurfaceEdges(m_x0, m_y0);
-							else if (item == ITEM_NODE) m_select.SelectSurfaceNodes(m_x0, m_y0);
+							if      (item == ITEM_FACE) m_select.SelectSurfaceFaces(xc, yc);
+							else if (item == ITEM_EDGE) m_select.SelectSurfaceEdges(xc, yc);
+							else if (item == ITEM_NODE) m_select.SelectSurfaceNodes(xc, yc);
 						}
 					}
 
 					bool bok = false;
-					vec3d r = PickPoint(m_x0, m_y0, &bok);
+					vec3d r = PickPoint(xc, yc, &bok);
 					if (bok)
 					{
 						m_bpick = true;
@@ -1773,6 +1783,24 @@ void CGLView::RenderOverlayComponents(QPainter& painter)
 			double uploadMB = (double) stats.dataUploadSize / MB;
 			t = QString("%1MB").arg(uploadMB, 0, 'f', 3);
 			painter.drawText(rt, QString("upload:%1").arg(t, fieldWidth), to);
+
+			// scene stats
+			GLScene* scene = GetActiveScene();
+			if (scene)
+			{
+				painter.setPen(QPen(QColor(255, 128, 0)));
+				GLSceneStats stats = scene->GetStats();
+
+				Y += Yinc;
+				rt.setY(Y);
+				t = QString("%1").arg(stats.updates);
+				painter.drawText(rt, QString("updates:%1").arg(t, fieldWidth), to);
+
+				Y += Yinc;
+				rt.setY(Y);
+				t = QString("%1").arg(stats.rebuilds);
+				painter.drawText(rt, QString("rebuilds:%1").arg(t, fieldWidth), to);
+			}
 		}
 	}
 }
@@ -2779,5 +2807,13 @@ void CGLView::ToggleNormals(bool b)
 	GLViewSettings& view = GetViewSettings();
 	view.m_bnorm = b;
 	if (m_menu) m_menu->toggleNormals(b);
+	update();
+}
+
+void CGLView::ToggleWireframe(bool b)
+{
+	GLViewSettings& view = GetViewSettings();
+	view.m_nrender = (b ? RENDER_WIREFRAME : RENDER_SOLID);
+	if (m_menu) m_menu->toggleWireframe(b);
 	update();
 }

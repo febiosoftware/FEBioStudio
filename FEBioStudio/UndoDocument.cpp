@@ -124,8 +124,8 @@ bool CUndoDocument::DoCommand(CCommand* pcmd, const std::string& s)
 	if (ret && pcmd->HasFlag(CCommand::MODIFIES_DOC))
 	{
 		SetModifiedFlag();
-		Update();
 	}
+	Update();
 	return ret;
 }
 

@@ -273,7 +273,7 @@ void GLRenderEngine::renderGMeshOutline(const GLCamera& cam, const GLMesh& gmsh,
 				{
 					bool bdraw = false;
 
-					if (f.nbr[j] > i)
+					if ((f.nbr[j] > i) && (f.nbr[j] < NF))
 					{
 						const GLMesh::FACE& f2 = gmsh.Face(f.nbr[j]);
 						vec3d n1 = T.LocalToGlobalNormal(to_vec3d(f.fn));

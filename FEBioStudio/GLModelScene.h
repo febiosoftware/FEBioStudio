@@ -73,6 +73,8 @@ private:
 	GLPlaneCut	m_planeCut;
 };
 
+class GLObjectSurfaceItem;
+
 class GLObjectItem : public GLModelSceneItem
 {
 public:
@@ -85,13 +87,16 @@ public:
 	Transform GetTransform() const;
 	void SetTransform(const Transform& T);
 
+	GLMesh* GetSelectionMesh();
+
 private:
 	void RenderGObject(GLRenderEngine& re, GLContext& rc);
 
 	void RenderSelection(GLRenderEngine& re);
 
 private:
-	GObject* m_po;
+	GObject* m_po = nullptr;
+	GLObjectSurfaceItem* m_surfItem = nullptr;
 	Transform m_renderTransform;
 };
 
@@ -106,6 +111,8 @@ public:
 
 	void render(GLRenderEngine& re, GLContext& rc) override;
 
+	GLMesh* GetSelectionMesh();
+
 private:
 	void RenderGeomSurface(GLRenderEngine& re, GLContext& rc);
 	void RenderFEMeshSurface(GLRenderEngine& re, GLContext& rc);
@@ -113,14 +120,12 @@ private:
 	void RenderSurfaceMeshFaces(GLRenderEngine& re, GLContext& rc);
 
 	void RenderUnselectedBeamElements(GLRenderEngine& re);
-	void RenderSelectedFEElements(GLRenderEngine& re);
 
 	void RenderBeamParts(GLRenderEngine& re);
 	void RenderNodes(GLRenderEngine& re);
 
 	void RenderSurfaceMeshEdges(GLRenderEngine& re);
 	void RenderAllBeamElements(GLRenderEngine& re);
-	void RenderSelectedFEFaces(GLRenderEngine& re);
 	void RenderFEEdges(GLRenderEngine& re);
 	void RenderFENodes(GLRenderEngine& re, GLContext& rc);
 	void RenderSurfaceMeshNodes(GLRenderEngine& re, GLContext& rc);
@@ -131,6 +136,7 @@ private:
 	GObject* m_po = nullptr;
 	unsigned int m_uid = 0; // uid of GLMesh used to create the other meshes
 	std::unique_ptr<GLMesh> m_surfMesh;
+	std::unique_ptr<GLMesh> m_selectionMesh;
 	std::unique_ptr<GLMesh> m_surfFEMesh;
 	std::unique_ptr<GLMesh> m_nodeFEMesh;
 };
@@ -320,7 +326,7 @@ private:
 public:
 	void RenderRigidLabels();
 
-	void RenderTags(GLContext& rc);
+	void UpdateTags(GLContext& rc);
 
 public:
 	GLMaterial GetPartMaterial(GPart* pg);
