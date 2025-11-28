@@ -52,7 +52,6 @@ public slots:
 	void on_plot_draggingEnd(QPoint p);
 	void on_plot_pointSelected(int n);
 	void on_plot_backgroundImageChanged();
-	void on_plot_doneZoomToRect();
 	void on_plot_regionSelected(QRect);
 	void on_xval_textEdited();
 	void on_yval_textEdited();
@@ -60,7 +59,6 @@ public slots:
 	void on_zoomToFit_clicked();
 	void on_zoomX_clicked();
 	void on_zoomY_clicked();
-	void on_map_clicked();
 	void on_lineType_currentIndexChanged(int n);
 	void on_extendMode_currentIndexChanged(int n);
 	void on_undo_clicked(bool b);
