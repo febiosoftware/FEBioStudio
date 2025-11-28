@@ -246,6 +246,14 @@ public:
 		h->addLayout(l);
 		dlg->setLayout(h);
 
+		// Assign "What's This?" help to widgets
+		ambient->setWhatsThis("The ambient color is a constant color that is added to the material's total color.");
+		diffuse->setWhatsThis("The diffuse color is the main color of the material.");
+		specular->setWhatsThis("The specular color is the color of the highlights. (Also see shininess)");
+		specExp->setWhatsThis("The shininess specifies the size of the specular highlight.");
+		reflect->setWhatsThis("Sets how reflective the material is. (Needs environment map enabled to have any effect.)");
+		preset->setWhatsThis("Choose a preset material.");
+
 		QObject::connect(bb, &QDialogButtonBox::accepted, dlg, &QDialog::accept);
 		QObject::connect(bb, &QDialogButtonBox::rejected, dlg, &QDialog::reject);
 
@@ -261,6 +269,8 @@ public:
 CDlgEditMaterial::CDlgEditMaterial(QWidget* parent) : QDialog(parent), ui(new UIDlgEditMaterial)
 {
 	setWindowTitle("Edit material");
+	setWindowFlags(windowFlags() | Qt::WindowContextHelpButtonHint); // Enable "What's This?" button
+
 	ui->setup(this);
 
 	CMainWindow* wnd = CMainWindow::GetInstance();
