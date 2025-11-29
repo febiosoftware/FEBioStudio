@@ -100,7 +100,6 @@ void GLViewSettings::Defaults(int ntheme)
 	m_line_size = 1.0f;
 	m_bline_smooth = true;
 	m_bpoint_smooth = true;
-	m_bzsorting = true;
 
 	m_snapToGrid = true;
 	m_snapToNode = false;

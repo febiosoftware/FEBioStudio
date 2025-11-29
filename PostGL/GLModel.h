@@ -286,7 +286,6 @@ public:
 	int		m_nshellref;
 
 	bool		m_bshowMesh;
-	bool		m_doZSorting;
 
 public:
 	FEPostModel*	m_ps;

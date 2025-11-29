@@ -103,7 +103,7 @@ struct GLViewSettings
 	float	m_line_size;		//!< line size
 	bool	m_bline_smooth;		//!< line smoothing flag
 	bool	m_bpoint_smooth;	//!< point smoothing flag
-	bool	m_bzsorting;
+
 	int		m_defaultFGColorOption;	//!< determines how default FG color for widgets is set (0=theme, 1=user)
 	GLColor	m_defaultFGColor;		//!< the default FG color (when m_defaultFGColorOption == 1)
 	bool	m_snapToGrid;		//!< snap to grid

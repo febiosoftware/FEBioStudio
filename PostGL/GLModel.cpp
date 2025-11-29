@@ -59,8 +59,6 @@ CGLModel::CGLModel(FEPostModel* ps)
 	m_nDivs = 0; // this means "auto"
 	m_brenderInteriorNodes = true;
 
-	m_doZSorting = true;
-
 	m_renderInnerSurface = true;
 
 	m_solidBeamRadius = 1.f;

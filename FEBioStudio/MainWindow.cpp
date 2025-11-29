@@ -1934,7 +1934,6 @@ void CMainWindow::writeSettings()
 		settings.setValue("meshColor", vs.m_meshColor.to_uint());
 		settings.setValue("normalsScaleFactor", vs.m_scaleNormals);
 		settings.setValue("multiViewProjection", vs.m_nconv);
-		settings.setValue("improvedTransparency", vs.m_bzsorting);
 		settings.setValue("showGrid", vs.m_bgrid);
 		settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
 		settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
@@ -2098,7 +2097,6 @@ void CMainWindow::readSettings()
 		if (vs.m_meshColor.a == 0) vs.m_meshColor.a = 64;
 		vs.m_scaleNormals = settings.value("normalsScaleFactor", vs.m_scaleNormals).toDouble();
 		vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
-		vs.m_bzsorting = settings.value("improvedTransparency", vs.m_bzsorting).toBool();
 		vs.m_bgrid = settings.value("showGrid", vs.m_bgrid).toBool();
 		vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
 		vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor.to_uint()).toInt());
