@@ -31,15 +31,15 @@ SOFTWARE.*/
 #include <GLLib/GLScene.h>
 #include <GLLib/GLMesh.h>
 
-class UIDlgEditMaterial;
+class UIDlgEditAppearance;
 
-class CDlgEditMaterial : public QDialog
+class CDlgEditAppearance : public QDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgEditMaterial(QWidget* parent);
-	~CDlgEditMaterial();
+	CDlgEditAppearance(QWidget* parent);
+	~CDlgEditAppearance();
 
 	void SetMaterial(const GLMaterial& mat);
 	GLMaterial GetMaterial() const;
@@ -47,9 +47,9 @@ public:
 	void accept() override;
 
 public slots:
-	void updateMaterial();
+	void updateAppearance();
 	void selectPreset();
 
 private:
-	UIDlgEditMaterial* ui;
+	UIDlgEditAppearance* ui;
 };

@@ -23,7 +23,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "DlgEditMaterial.h"
+#include "DlgEditAppearance.h"
 #include <QDialogButtonBox>
 #include <QBoxLayout>
 #include <QFormLayout>
@@ -197,7 +197,7 @@ private:
 	CRGBAImage envMap;
 };
 
-class UIDlgEditMaterial
+class UIDlgEditAppearance
 {
 public:
 	CColorButton* ambient;
@@ -210,7 +210,7 @@ public:
 
 
 public:
-	void setup(CDlgEditMaterial* dlg)
+	void setup(CDlgEditAppearance* dlg)
 	{
 		QHBoxLayout* h = new QHBoxLayout;
 
@@ -257,18 +257,18 @@ public:
 		QObject::connect(bb, &QDialogButtonBox::accepted, dlg, &QDialog::accept);
 		QObject::connect(bb, &QDialogButtonBox::rejected, dlg, &QDialog::reject);
 
-		QObject::connect(preset, &QComboBox::currentIndexChanged, dlg, &CDlgEditMaterial::selectPreset);
-		QObject::connect(ambient, &CColorButton::colorChanged, dlg, &CDlgEditMaterial::updateMaterial);
-		QObject::connect(diffuse, &CColorButton::colorChanged, dlg, &CDlgEditMaterial::updateMaterial);
-		QObject::connect(specular, &CColorButton::colorChanged, dlg, &CDlgEditMaterial::updateMaterial);
-		QObject::connect(specExp, &CDragBox::valueChanged, dlg, &CDlgEditMaterial::updateMaterial);
-		QObject::connect(reflect, &CDragBox::valueChanged, dlg, &CDlgEditMaterial::updateMaterial);
+		QObject::connect(preset, &QComboBox::currentIndexChanged, dlg, &CDlgEditAppearance::selectPreset);
+		QObject::connect(ambient, &CColorButton::colorChanged, dlg, &CDlgEditAppearance::updateAppearance);
+		QObject::connect(diffuse, &CColorButton::colorChanged, dlg, &CDlgEditAppearance::updateAppearance);
+		QObject::connect(specular, &CColorButton::colorChanged, dlg, &CDlgEditAppearance::updateAppearance);
+		QObject::connect(specExp, &CDragBox::valueChanged, dlg, &CDlgEditAppearance::updateAppearance);
+		QObject::connect(reflect, &CDragBox::valueChanged, dlg, &CDlgEditAppearance::updateAppearance);
 	}
 };
 
-CDlgEditMaterial::CDlgEditMaterial(QWidget* parent) : QDialog(parent), ui(new UIDlgEditMaterial)
+CDlgEditAppearance::CDlgEditAppearance(QWidget* parent) : QDialog(parent), ui(new UIDlgEditAppearance)
 {
-	setWindowTitle("Edit material");
+	setWindowTitle("Edit Appearance");
 	setWindowFlags(windowFlags() | Qt::WindowContextHelpButtonHint); // Enable "What's This?" button
 
 	ui->setup(this);
@@ -290,12 +290,12 @@ CDlgEditMaterial::CDlgEditMaterial(QWidget* parent) : QDialog(parent), ui(new UI
 	}
 }
 
-CDlgEditMaterial::~CDlgEditMaterial()
+CDlgEditAppearance::~CDlgEditAppearance()
 {
 
 }
 
-void CDlgEditMaterial::SetMaterial(const GLMaterial& mat)
+void CDlgEditAppearance::SetMaterial(const GLMaterial& mat)
 {
 	ui->view->scene.mat = mat;
 	ui->ambient->blockSignals(true);
@@ -322,18 +322,18 @@ void CDlgEditMaterial::SetMaterial(const GLMaterial& mat)
 	}
 }
 
-GLMaterial CDlgEditMaterial::GetMaterial() const
+GLMaterial CDlgEditAppearance::GetMaterial() const
 {
 	return ui->view->scene.mat;
 }
 
-void CDlgEditMaterial::accept()
+void CDlgEditAppearance::accept()
 {
-	updateMaterial();
+	updateAppearance();
 	QDialog::accept();
 }
 
-void CDlgEditMaterial::updateMaterial()
+void CDlgEditAppearance::updateAppearance()
 {
 	ui->preset->setCurrentIndex(0);
 
@@ -346,7 +346,7 @@ void CDlgEditMaterial::updateMaterial()
 	ui->view->requestUpdate();
 }
 
-void CDlgEditMaterial::selectPreset()
+void CDlgEditAppearance::selectPreset()
 {
 	int n = ui->preset->currentIndex() - 1;
 	if (n >= 0)

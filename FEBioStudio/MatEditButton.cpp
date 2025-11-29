@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "MatEditButton.h"
 #include <GLLib/GLContext.h>
-#include "DlgEditMaterial.h"
+#include "DlgEditAppearance.h"
 #include <RTLib/RayTracer.h>
 #include <RTLib/RayTraceSurface.h>
 #include <QPainter>
@@ -191,7 +191,7 @@ void CMatEditButton::setMaterial(const GLMaterial& mat)
 
 void CMatEditButton::mouseReleaseEvent(QMouseEvent* ev)
 {
-	CDlgEditMaterial dlg(this);
+	CDlgEditAppearance dlg(this);
 	dlg.SetMaterial(m.mat);
 	if (dlg.exec())
 	{
