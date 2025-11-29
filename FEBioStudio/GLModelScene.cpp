@@ -1526,9 +1526,6 @@ void GLObjectSurfaceItem::BuildSurfaceFEMesh(bool useContourMap)
 	m_surfFEMesh.reset();
 	if (m_po == nullptr) return;
 
-	// force a rebuild of the FE render mesh
-	m_po->SetFERenderMesh(nullptr);
-
 	GLMesh* m = m_po->GetFERenderMesh();
 	if (m == nullptr) return;
 
@@ -3654,6 +3651,9 @@ LegendData CGLModelScene::GetLegendData(int n)
 
 void CGLModelScene::ColorizeMesh(GObject* po)
 {
+	// force a rebuild of the FE render mesh
+	po->SetFERenderMesh(nullptr);
+
 	GLMesh* gmsh = po->GetFERenderMesh();
 	if (gmsh == nullptr) return;
 
