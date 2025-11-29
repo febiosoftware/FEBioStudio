@@ -1854,12 +1854,17 @@ FEBioStudioProject* CMainWindow::GetProject()
 
 void CMainWindow::setAutoSaveInterval(int interval)
 {
-	ui->m_settings.autoSaveInterval = interval;
+	if (interval < 0) interval = 0;
+	if ((interval != 0) && (interval < 60)) interval = 60; // minimum is 1 minute
 
-	ui->m_autoSaveTimer->stop();
-	if (ui->m_settings.autoSaveInterval > 0)
+	ui->m_settings.autoSaveInterval = interval;
+	if (ui->m_autoSaveTimer)
 	{
-		ui->m_autoSaveTimer->start(ui->m_settings.autoSaveInterval * 1000);
+		ui->m_autoSaveTimer->stop();
+		if (ui->m_settings.autoSaveInterval > 0)
+		{
+			ui->m_autoSaveTimer->start(ui->m_settings.autoSaveInterval * 1000);
+		}
 	}
 }
 
@@ -2134,7 +2139,8 @@ void CMainWindow::readSettings()
 
 		// UI
 		vs.m_apply = settings.value("emulateApply", vs.m_apply).toBool();
-		ui->m_settings.autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
+		int autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
+		setAutoSaveInterval(autoSaveInterval);
 
 		// Units
 		ui->m_settings.defaultUnits = settings.value("defaultUnits", 0).toInt();
