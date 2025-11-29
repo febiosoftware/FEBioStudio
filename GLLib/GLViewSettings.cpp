@@ -106,8 +106,6 @@ void GLViewSettings::Defaults(int ntheme)
 	m_snapToNode = false;
 
 	m_bLighting = true;
-	m_bShadows = false;
-	m_shadow_intensity = 0.5f;
 	m_ambient = 0.09f;
 	m_diffuse = 0.8f;
 	m_use_environment_map = false;

@@ -214,8 +214,6 @@ public:
 		addProperty("Enable lighting", CProperty::Bool);
 		addProperty("Diffuse intensity", CProperty::Float)->setFloatRange(0.0, 1.0);
 		addProperty("Ambient intensity", CProperty::Float)->setFloatRange(0.0, 1.0);
-		addProperty("Render shadows", CProperty::Bool);
-		addProperty("Shadow intensity", CProperty::Float)->setFloatRange(0.0, 1.0);
 		addProperty("Light direction"  , CProperty::Vec3);
 		addProperty("Environment map"  , CProperty::Resource);
 		addProperty("Use environment map"  , CProperty::Bool);
@@ -223,8 +221,6 @@ public:
 		m_blight = true;
 		m_diffuse = 0.7f;
 		m_ambient = 0.3f;
-		m_bshadow = false;
-		m_shadow = 0.1f;
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -235,11 +231,9 @@ public:
 		case 0: return m_blight; break;
 		case 1: return m_diffuse; break;
 		case 2: return m_ambient; break;
-		case 3: return m_bshadow; break;
-		case 4: return m_shadow; break;
-		case 5: return vecToString(m_pos); break;
-		case 6: return m_envmap; break;
-		case 7: return m_useEV; break;
+		case 3: return vecToString(m_pos); break;
+		case 4: return m_envmap; break;
+		case 5: return m_useEV; break;
 		}
 		return v;
 	}
@@ -251,11 +245,9 @@ public:
 		case 0: m_blight = v.toBool(); break;
 		case 1: m_diffuse = v.toFloat(); break;
 		case 2: m_ambient = v.toFloat(); break;
-		case 3: m_bshadow = v.toBool(); break;
-		case 4: m_shadow = v.toFloat(); break;
-		case 5: m_pos = stringToVec(v.toString()); break;
-		case 6: m_envmap = v.toString(); break;
-		case 7: m_useEV = v.toBool(); break;
+		case 3: m_pos = stringToVec(v.toString()); break;
+		case 4: m_envmap = v.toString(); break;
+		case 5: m_useEV = v.toBool(); break;
 		}
 	}
 
@@ -263,8 +255,6 @@ public:
 	bool	m_blight;
 	float	m_diffuse;
 	float	m_ambient;
-	bool	m_bshadow;
-	float	m_shadow;
 	vec3f	m_pos;
 	QString m_envmap;
 	bool	m_useEV;
@@ -1296,8 +1286,6 @@ void CDlgSettings::UpdateSettings()
 	ui->m_light->m_blight  = view.m_bLighting;
 	ui->m_light->m_diffuse = view.m_diffuse;
 	ui->m_light->m_ambient = view.m_ambient;
-	ui->m_light->m_bshadow = view.m_bShadows;
-	ui->m_light->m_shadow  = view.m_shadow_intensity;
 	ui->m_light->m_pos     = view.m_light;
 	ui->m_light->m_envmap  = m_pwnd->GetEnvironmentMap();
 	ui->m_light->m_useEV   = view.m_use_environment_map;
@@ -1409,8 +1397,6 @@ void CDlgSettings::apply()
 	view.m_bLighting = ui->m_light->m_blight;
 	view.m_diffuse   = ui->m_light->m_diffuse;
 	view.m_ambient   = ui->m_light->m_ambient;
-	view.m_bShadows  = ui->m_light->m_bshadow;
-	view.m_shadow_intensity = ui->m_light->m_shadow;
 	view.m_light = ui->m_light->m_pos;
 	m_pwnd->SetEnvironmentMap(ui->m_light->m_envmap);
 	view.m_use_environment_map = ui->m_light->m_useEV;

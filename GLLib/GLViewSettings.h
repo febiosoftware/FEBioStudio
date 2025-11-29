@@ -129,8 +129,6 @@ struct GLViewSettings
 
 	// Lighting
 	bool	m_bLighting;	// use lighting or not
-	bool	m_bShadows;		// use shadows or not
-	float	m_shadow_intensity;	// shadow intensity
 	float	m_ambient;		// scene light ambient intensity
 	float	m_diffuse;		// scene light diffuse inentisty
 	bool	m_use_environment_map;	// use the environment map (if one is provided)

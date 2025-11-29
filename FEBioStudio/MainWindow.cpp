@@ -1950,8 +1950,6 @@ void CMainWindow::writeSettings()
 
 		// Lighting
 		settings.setValue("lighting", vs.m_bLighting);
-		settings.setValue("shadows", vs.m_bShadows);
-		settings.setValue("shadowIntensity", vs.m_shadow_intensity);
 		settings.setValue("lightDirection", Vec3fToString(vs.m_light));
 		settings.setValue("environmentMap", fbs.m_envMapFile);
 		settings.setValue("useEnvironmentMap", vs.m_use_environment_map);
@@ -2118,8 +2116,6 @@ void CMainWindow::readSettings()
 
 		// Lighting
 		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
-		vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
-		vs.m_shadow_intensity = settings.value("shadowIntensity", vs.m_shadow_intensity).toFloat();
 		vs.m_light = StringToVec3f(settings.value("lightDirection", "{0.5,0.5,1}").toString());
 		QString envmap = settings.value("environmentMap").toString();
 		fbs.m_envMapFile = envmap;
