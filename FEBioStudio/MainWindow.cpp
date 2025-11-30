@@ -2906,7 +2906,7 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		menu.addAction(colorMode->menuAction());
 	}
 
-	menu.addAction(mainMenu->actionOptions);
+	menu.addAction(mainMenu->actionSettings);
 }
 
 //-----------------------------------------------------------------------------

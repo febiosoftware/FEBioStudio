@@ -119,7 +119,7 @@ public:
 	QAction* actionTop;
 	QAction* actionBottom;
 	QAction* actionIsometric;
-	QAction* actionOptions;
+	QAction* actionSettings;
 	QAction* actionRenderMode;
 	QAction* actionShowFibers;
 	QAction* actionShowMatAxes;

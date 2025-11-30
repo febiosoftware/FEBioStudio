@@ -172,7 +172,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	QAction* actionKinemat = createAction("Kinemat ...", "actionKinemat");
 	QAction* actionPlotMix = createAction("Plotmix ...", "actionPlotMix");
 	QAction* actionPython = createAction("Python editor ...", "actionEditPython");
-	actionOptions = createAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F12);
+	actionSettings = createAction("Settings ...", "actionSettings"); actionSettings->setShortcut(Qt::Key_F12);
 
 	QAction* actionLayerInfo = createAction("Print Layer Info", "actionLayerInfo"); actionLayerInfo->setShortcut(Qt::AltModifier | Qt::Key_L);
 
@@ -595,7 +595,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuTools->addAction(actionKinemat);
 	menuTools->addAction(actionPlotMix);
 	menuTools->addAction(actionPython);
-	menuTools->addAction(actionOptions);
+	menuTools->addAction(actionSettings);
 
 	// View menu
 	menuBar->addAction(menuView->menuAction());

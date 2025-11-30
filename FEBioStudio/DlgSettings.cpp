@@ -1215,7 +1215,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd, CGLDocument* doc, GLViewSettings& 
 {
 	m_pwnd = pwnd;
 	ui->doc = doc;
-	setWindowTitle("Options");
+	setWindowTitle("Settings");
 
 	UpdateSettings();
 

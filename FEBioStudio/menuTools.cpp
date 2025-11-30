@@ -270,7 +270,7 @@ void CMainWindow::on_actionEditPython_triggered()
 	ui->pythonEditor->activateWindow();
 }
 
-void CMainWindow::on_actionOptions_triggered()
+void CMainWindow::on_actionSettings_triggered()
 {
 	if (GetGLView())
 	{
