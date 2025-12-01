@@ -1001,8 +1001,9 @@ void glx::renderHelicalAxis(GLRenderEngine& re, double R)
 
 void glx::renderGlyph(GLRenderEngine& re, glx::GlyphType glyph, float scale, GLColor c)
 {
-	re.setMaterial(GLMaterial::OVERLAY, c);
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::White(), GLMaterial::VERTEX_COLOR);
 	re.beginShape();
+	re.setColor(c);
 	switch (glyph)
 	{
 	case GlyphType::RIGID_BODY: glx::renderRigidBody(re, scale); break;

@@ -324,9 +324,9 @@ private:
 	void BuildScene(GLContext& rc);
 
 public:
-	void RenderRigidLabels();
-
 	void UpdateTags(GLContext& rc);
+	void UpdateSelectionTags(GLContext& rc);
+	void UpdateRigidLabels(GLContext& rc);
 
 public:
 	GLMaterial GetPartMaterial(GPart* pg);

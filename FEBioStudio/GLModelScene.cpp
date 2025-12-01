@@ -661,7 +661,12 @@ GLMaterial CGLModelScene::GetFaceMaterial(GFace& f)
 void CGLModelScene::UpdateTags(GLContext& rc)
 {
 	ClearTags();
+	UpdateSelectionTags(rc);
+	UpdateRigidLabels(rc);
+}
 
+void CGLModelScene::UpdateSelectionTags(GLContext& rc)
+{
 	GLViewSettings& view = rc.m_settings;
 
 	GObject* po = m_doc->GetActiveObject();
@@ -847,10 +852,12 @@ void CGLModelScene::UpdateTags(GLContext& rc)
 	}
 }
 
-void CGLModelScene::RenderRigidLabels()
+void CGLModelScene::UpdateRigidLabels(GLContext& rc)
 {
 	FSModel* fem = m_doc->GetFSModel();
 	if (fem == nullptr) return;
+
+	if (rc.m_settings.m_showRigidLabels == false) return;
 
 	for (int i = 0; i < fem->Materials(); ++i)
 	{
