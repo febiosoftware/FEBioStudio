@@ -469,6 +469,20 @@ void RayTracer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 	}
 }
 
+void RayTracer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
+{
+	gl::Matrix4 mv = currentTransform();
+	int NN = mesh.Nodes();
+	for (int i = 0; i < NN; ++i)
+	{
+		const GLMesh::NODE& node = mesh.Node(i);
+		rt::Point pt;
+		pt.r = mv * Vec4(node.r, 1);
+		pt.c = (useVertexColor ? node.c : currentColor);
+		addPoint(pt);
+	}
+}
+
 void RayTracer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cacheMesh)
 {
 	if ((partition < 0) || (partition >= mesh.EdgePartitions())) return;
@@ -593,6 +607,28 @@ void RayTracer::addLine(rt::Line& line)
 		}
 	}
 	else mesh.addLine(line);
+}
+
+void RayTracer::addPoint(rt::Point& point)
+{
+	// make sure the point is in front of the near plane
+	if ((point.r.z() >= -nearPlane)) return;
+
+	// TODO: do frustum clipping
+
+	// process clip plane
+	if (useClipPlane)
+	{
+		double* c = clipPlane;
+		Vec3 N(c[0], c[1], c[2]);
+		Vec3 v = point.r;
+		unsigned int ncase = 0;
+		double l = N * v + c[3];
+		if (l < 0) ncase |= 1;
+
+		if (ncase == 0) mesh.addPoint(point);
+	}
+	else mesh.addPoint(point);
 }
 
 void RayTracer::addTriangle(rt::Tri& tri)
@@ -788,8 +824,8 @@ void RayTracer::render()
 
 	percentCompleted = 100.0;
 
-	// render the lines
-	renderLines();
+	// render the lines and points
+	renderOverlay();
 }
 
 rt::Fragment RayTracer::fragment(int i, int j, int samples)
@@ -1129,6 +1165,12 @@ Vec3 RayTracer::NDCtoView(const Vec3& v)
 	return p;
 }
 
+void RayTracer::renderOverlay()
+{
+	renderLines();
+	renderPoints();
+}
+
 void RayTracer::renderLines()
 {
 	int W = surfaceWidth();
@@ -1199,6 +1241,73 @@ void RayTracer::renderLines()
 					{
 						float a = c.a() * p.brightness;
 
+						v[0] = c.r() * a + v[0] * (1.f - a);
+						v[1] = c.g() * a + v[1] * (1.f - a);
+						v[2] = c.b() * a + v[2] * (1.f - a);
+						v[3] = a + v[3] * (1.f - a);
+					}
+				}
+
+				n++;
+			}
+		}
+	}
+
+	percentCompleted = 100.0;
+}
+
+void RayTracer::renderPoints()
+{
+	int W = surfaceWidth();
+	int H = surfaceHeight();
+
+	percentCompleted = 0;
+
+	std::vector<rt::Pixel> pts = rt::rasterizePoint(0, 0, pointSize);
+
+	for (int i = 0; i < mesh.points(); ++i)
+	{
+		if (cancelled) break;
+
+		percentCompleted = (100.0 * i) / (double)mesh.points();
+
+		rt::Point& point = mesh.point(i);
+
+		// convert to device coordinates
+		Vec4 a = Vec4(point.r, 1);
+
+		// convert to normalized device coordinates
+		Vec3 a_ndc = toNDC(a);
+
+		bool isInside = (a_ndc.x() >= -1 && a_ndc.x() <= 1 && a_ndc.y() >= -1 && a_ndc.y() <= 1 && a_ndc.z() >= -1 && a_ndc.z() <= 1);
+
+		if (isInside)
+		{
+			Vec3 an = NDCtoView(a_ndc);
+
+			// convert to view coordinates
+			int x0 = (int)an.x(); int y0 = (int)an.y();
+
+			Color col0 = point.c;
+
+			float dz = 0.0002f;
+
+			double z = an.z();
+			float* v = surf.value(x0, H - y0 - 1);
+			if ((z < 1) && (z > -1) && (z <= v[4] + dz))
+			{
+				int n = 0;
+				for (auto& p : pts)
+				{
+					int x = x0 + p.x;
+					int y = H - (y0+p.y) - 1;
+
+					if ((x >= 0) && (x < W) && (y >= 0) && (y < H))
+					{
+						Color c = col0;
+
+						float a = c.a() * p.brightness;
+						float* v = surf.value(x, y);
 						v[0] = c.r() * a + v[0] * (1.f - a);
 						v[1] = c.g() * a + v[1] * (1.f - a);
 						v[2] = c.b() * a + v[2] * (1.f - a);

@@ -149,3 +149,39 @@ std::vector<rt::Pixel> rt::rasterizeLineAA(float x0, float y0, float x1, float y
 
 	return pixels;
 }
+
+std::vector<rt::Pixel> rt::rasterizePoint(int x0, int y0, float pointSize)
+{
+	std::vector<rt::Pixel> pixels;
+	if (pointSize <= 1.f)
+	{
+		pixels.push_back({ x0, y0, 1.f });
+	}
+	else
+	{
+		int r = (int)(pointSize / 2.f);
+		int r2 = r * r;
+		for (int y = -r; y <= r; ++y)
+			for (int x = -r; x <= r; ++x)
+			{
+				int distSqr = x * x + y * y;
+				if (distSqr <= r2 )
+				{
+					float brightness = 1.f;
+					pixels.push_back({ x0 + x, y0 + y, brightness });
+				}
+				else
+				{
+					float dist = sqrtf((float)distSqr);
+					float dr = dist - (float)r;
+					if (dr < 1.f)
+					{
+						float brightness = 1.f - dr;
+						pixels.push_back({ x0 + x, y0 + y, brightness });
+					}
+				}
+			}
+	}
+
+	return pixels;
+}

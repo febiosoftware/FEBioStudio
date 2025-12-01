@@ -152,6 +152,8 @@ public:
 
 	void useMultiThread(bool b) { use_multithread = b; }
 
+	void setPointSize(float f) override { pointSize = f; }
+
 public:
 	void start() override;
 	void finish() override;
@@ -183,6 +185,9 @@ public:
 	void renderGMeshEdges(const GLMesh& mesh, bool cacheMesh = true) override;
 	void renderGMeshEdges(const GLMesh& mesh, int partition, bool cacheMesh = true) override;
 
+	void renderGMeshNodes(const GLMesh& mesh, bool cacheMesh = true) override;
+
+
 public:
 	void setClipPlane(unsigned int n, const double* v) override;
 	void enableClipPlane(unsigned int n) override;
@@ -211,13 +216,17 @@ private:
 
 	void addLine(rt::Line& line);
 
+	void addPoint(rt::Point& point);
+
 	GLColor backgroundColor(const gl::Vec3& r);
 
 	bool intersect(const gl::Ray& ray, rt::Point& q);
 
 	rt::Fragment fragment(int i, int j, int samples);
 
+	void renderOverlay();
 	void renderLines();
+	void renderPoints();
 
 	gl::Vec3 toNDC(gl::Vec4 v);
 	gl::Vec3 NDCtoView(const gl::Vec3& v);
@@ -275,6 +284,8 @@ private:
 
 	bool useClipPlane = false;
 	double clipPlane[4] = { 0,0,0,0 };
+
+	float pointSize = 1.f;
 
 	bool cancelled;
 	bool use_multithread = true;

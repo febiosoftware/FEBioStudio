@@ -38,4 +38,5 @@ namespace rt
 
 	std::vector<Pixel> rasterizeLineAA(float x0, float y0, float x1, float y1, bool& swapped);
 
+	std::vector<Pixel> rasterizePoint(int x0, int y0, float pointSize = 1.f);
 }

@@ -128,6 +128,8 @@ namespace rt {
 
 		void addLine(Line& l);
 
+		void addPoint(Point& p);
+
 		size_t triangles() const { return triList.size(); }
 
 		Tri& triangle(size_t n) { return triList[n]; }
@@ -138,9 +140,13 @@ namespace rt {
 		Line& line(size_t n) { return lineList[n]; }
 		const Line& line(size_t n) const { return lineList[n]; }
 
+		size_t points() const { return pointList.size(); }
+		Point& point(size_t n) { return pointList[n]; }
+
 	private:
 		std::vector<Tri> triList;
 		std::vector<Line> lineList;
+		std::vector<Point> pointList;
 	};
 
 	bool intersect(Mesh& mesh, const gl::Ray& ray, rt::Point& q);

@@ -53,6 +53,11 @@ void Mesh::addLine(rt::Line& line)
 	lineList.push_back(line);
 }
 
+void Mesh::addPoint(Point& p)
+{
+	pointList.push_back(p);
+}
+
 bool intersectTri(rt::Tri& tri, const gl::Ray& ray, Intersect& intersect)
 {
 	const gl::Vec3& fn = tri.fn;
