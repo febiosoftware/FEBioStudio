@@ -39,13 +39,16 @@ void GlobalUniformBlock::create(QRhi* rhi)
 		{ rhi::UniformBlock::VEC4, "specColor"},
 		{ rhi::UniformBlock::VEC4, "clipPlane"},
 		{ rhi::UniformBlock::INT , "lightEnabled"},
-		{ rhi::UniformBlock::FLOAT, "pointSize"}
+		{ rhi::UniformBlock::FLOAT, "pointSize"},
+		{ rhi::UniformBlock::FLOAT, "zOffset"}
 	});
 
 	m_ub.setVec4(LIGHTSPEC, GLColor::White());
 	m_ub.setVec4(LIGHTDIFF, GLColor::White());
 	m_ub.setVec4(LIGHTAMB, GLColor(50, 50, 50));
 	m_ub.setInt(LIGHTON, 1);
+	m_ub.setFloat(POINTSIZE, 1.0f);
+	m_ub.setFloat(ZOFFSET, 0.0f);
 
 	m_ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, m_ub.size()));
 	m_ubuf->create();
@@ -86,6 +89,12 @@ void GlobalUniformBlock::setPointSize(float s)
 {
 	if (s < 1.0f) s = 1.0f;
 	m_ub.setFloat(POINTSIZE, s);
+}
+
+void GlobalUniformBlock::setZOffset(float z)
+{
+	if (z < 0.0f) z = 0.0f;
+	m_ub.setFloat(ZOFFSET, z);
 }
 
 void GlobalUniformBlock::update(QRhiResourceUpdateBatch* u)
@@ -296,12 +305,16 @@ void rhiRenderer::setProjection(double fov, double fnear, double far)
 	double H = m_viewport[3];
 	double ar = (H == 0 ? 1 : W / H);
 	m_projMatrix.perspective(fov, ar, fnear, far);
+	zNear = fnear;
+	zFar = far;
 }
 
-void rhiRenderer::setOrthoProjection(double left, double right, double bottom, double top, double zNear, double zFar)
+void rhiRenderer::setOrthoProjection(double left, double right, double bottom, double top, double fnear, double far)
 {
 	m_projMatrix = m_rhi->clipSpaceCorrMatrix();
-	m_projMatrix.ortho(left, right, bottom, top, zNear, zFar);
+	m_projMatrix.ortho(left, right, bottom, top, fnear, far);
+	zNear = fnear;
+	zFar = far;
 }
 
 void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
@@ -615,10 +628,14 @@ void rhiRenderer::finish()
 
 	QRhiCommandBuffer* cb = m_sc->currentFrameCommandBuffer();
 
+	float zrange = fabs(zFar - zNear);
+	float dz = 2e-5 * zrange;
+
 	// set global properties
 	m_global.setLightPosition(m_light);
 	m_global.setClipPlane(clipPlane);
 	m_global.setProjectionMatrix(m_projMatrix);
+	m_global.setZOffset(dz);
 	m_global.update(resourceUpdates);
 
 	// update solid mesh data

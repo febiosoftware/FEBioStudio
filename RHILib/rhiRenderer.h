@@ -42,7 +42,7 @@ using dseconds = duration<double>;
 class GlobalUniformBlock
 {
 public:
-	enum { PROJMATRIX, LIGHTPOS, LIGHTAMB, LIGHTDIFF, LIGHTSPEC, CLIPPLANE, LIGHTON, POINTSIZE};
+	enum { PROJMATRIX, LIGHTPOS, LIGHTAMB, LIGHTDIFF, LIGHTSPEC, CLIPPLANE, LIGHTON, POINTSIZE, ZOFFSET};
 
 public:
 	GlobalUniformBlock() {}
@@ -61,6 +61,7 @@ public:
 	void setClipPlane(const float f[4]);
 	void setLightEnabled(bool b);
 	void setPointSize(float s);
+	void setZOffset(float z);
 
 private:
 	rhi::UniformBlock m_ub;
@@ -198,6 +199,8 @@ private:
 	// matrix stuff
 	std::array<float, 4> m_viewport{ 0.f };
 	QMatrix4x4 m_projMatrix;
+	float zNear = 0.01f;
+	float zFar = 100.0f;
 
 	// overlay flag
 	bool m_useOverlay = false;

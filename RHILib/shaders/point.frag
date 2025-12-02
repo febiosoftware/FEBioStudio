@@ -17,6 +17,7 @@ layout(std140, binding = 0) uniform GlobalBlock {
     vec4 clipPlane;
     int lightEnabled;
     float pointSize;
+    float zOffset;
 } glob;
 
 // mesh-specific block

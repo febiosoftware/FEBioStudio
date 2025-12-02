@@ -18,6 +18,7 @@ layout(std140, binding = 0) uniform GlobalBlock {
     vec4 clipPlane;
     int lightEnabled;
     float pointSize;
+    float zOffset;
 } glob;
 
 // mesh-specific block
@@ -31,7 +32,7 @@ layout(std140, binding = 1) uniform MeshBlock {
 void main()
 {
     vec4 r = glob.projectionMatrix*(mesh.mv * vec4(position, 1));
-    r.z -= 2.0e-4;
+    r.z -= glob.zOffset;
     v_pos = (mesh.mv*vec4(position,1)).xyz;
     v_col = color;
     gl_Position = r;
