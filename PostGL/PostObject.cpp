@@ -182,6 +182,18 @@ void CPostObject::BuildFERenderMesh()
 		}
 	}
 
+	// discrete elements
+	for (int i=0; i<pm->Edges(); ++i)
+	{
+		FSEdge& edge = pm->Edge(i);
+		if (edge.m_elem >= 0)
+		{
+			FSElement& el = pm->Element(edge.m_elem);
+			int m[2] = { edge.n[0], edge.n[1] };
+			gm.AddEdge(m, 2, el.m_MatID);
+		}
+	}
+
 	gm.AutoEdgePartition();
 	gm.Update();
 	SetFERenderMesh(&gm);

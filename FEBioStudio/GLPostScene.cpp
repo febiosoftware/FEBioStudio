@@ -678,7 +678,7 @@ void GLPostModelItem::RenderMeshLines(GLRenderEngine& re, GLContext& rc)
 		for (int i = 0; i < fem->Materials(); ++i)
 		{
 			Post::Material* mat = fem->GetMaterial(i);
-			if (mat->bmesh)
+			if (mat->bvisible && mat->bmesh)
 			{
 				GLColor c = mat->meshcol;
 				c.a = 128;
@@ -752,7 +752,7 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 	// loop over un-selected, inactive elements
 	if (gm.DiscreteEdges() > 0)
 	{
-		re.setMaterial(GLMaterial::CONSTANT, GLColor::White());
+		re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
 		curMat = -1;
 		re.begin(GLRenderEngine::LINES);
 		for (int i = 0; i < gm.DiscreteEdges(); ++i)
