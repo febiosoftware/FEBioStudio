@@ -78,7 +78,7 @@ void main()
         if ((mesh.useLighting > 0) && (glob.lightEnabled > 0))
         {
             // diffuse component
-            float a = max(dot(N, L),0);
+            float a = abs(dot(N, L));
             a = clamp(a, 0.3, 1); // avoid too dark colors
             vec3 diffuseColor = glob.diffuse.xyz * col.xyz;
             col.xyz = diffuseColor*a;
