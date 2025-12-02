@@ -85,7 +85,10 @@ CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
 	l->addWidget(m_name = new QLineEdit, 0, 1);
 	m_name->setObjectName("name");
 
-	l->addWidget(m_mat = new CMatEditButton, 0, 2, 2, 2);
+	l->addWidget(m_col = new CColorButton, 0, 2);
+	m_col->setObjectName("col");
+
+	l->addWidget(m_mat = new CMatEditButton, 0, 3, 2, 2);
 	m_mat->setObjectName("mat");
 
 	l->addWidget(new QLabel("Type:"), 1, 0, Qt::AlignRight);
@@ -120,6 +123,16 @@ void CObjectPropsPanel::showMaterial(bool b)
 	m_mat->setVisible(b);
 }
 
+void CObjectPropsPanel::showColor(bool b)
+{
+	m_col->setVisible(b);
+}
+
+void CObjectPropsPanel::setColor(GLColor c)
+{
+	m_col->setColor(toQColor(c));
+}
+
 void CObjectPropsPanel::showStatus(bool b)
 {
 	m_status->setVisible(b);
@@ -144,6 +157,11 @@ void CObjectPropsPanel::on_name_textEdited(const QString& t)
 void CObjectPropsPanel::on_mat_materialChanged(GLMaterial mat)
 {
 	emit materialChanged(mat);
+}
+
+void CObjectPropsPanel::on_col_colorChanged(QColor col)
+{
+	emit colorChanged(col);
 }
 
 void CObjectPropsPanel::on_status_clicked(bool b)
@@ -521,9 +539,11 @@ public:
 		QMetaObject::connectSlotsByName(parent);
 	}
 
-	void showObjectInfo(bool b, bool showMaterial = false, bool editName = true, GLMaterial mat = GLMaterial(), bool showActive = false, bool isActive = false)
+	void showObjectInfo(bool b, bool showMaterial = false, bool showColor = false, bool editName = true, GLMaterial mat = GLMaterial(), bool showActive = false, bool isActive = false)
 	{ 
 		obj->showMaterial(showMaterial);
+		obj->showColor(showColor);
+		if (showColor) obj->setColor(mat.diffuse);
 		obj->showStatus(showActive);
 		if (showActive) obj->setStatus(isActive);
 		if (showMaterial) obj->setMaterial(mat);
@@ -882,26 +902,28 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			if (dynamic_cast<GObject*>(po))
 			{
 				GObject* go = dynamic_cast<GObject*>(po);
-				ui->showObjectInfo(true, true, nameEditable, go->GetMaterial());
+				ui->showObjectInfo(true, true, false, nameEditable, go->GetMaterial());
 				ui->showMeshInfoPanel(true);
 				ui->setObject(go);
 			}
 			else if (dynamic_cast<GMaterial*>(po))
 			{
 				GMaterial* mo = dynamic_cast<GMaterial*>(po);
-				ui->showObjectInfo(true, true, nameEditable, mo->GetGLMaterial());
+				ui->showObjectInfo(true, true, false, nameEditable, mo->GetGLMaterial());
 			}
 			else if (dynamic_cast<GDiscreteElementSet*>(po))
 			{
 				GDiscreteElementSet* pd = dynamic_cast<GDiscreteElementSet*>(po);
 				bool isActive = pd->IsActive();
-				ui->showObjectInfo(true, false, nameEditable, GLMaterial(), true, isActive);
+				GLMaterial m;
+				m.diffuse = pd->GetColor();
+				ui->showObjectInfo(true, false, true, nameEditable, m, true, isActive);
 			}
 			else if (dynamic_cast<FSStepComponent*>(po))
 			{
 				FSStepComponent* pc = dynamic_cast<FSStepComponent*>(po);
 
-				ui->showObjectInfo(false, false, nameEditable);
+				ui->showObjectInfo(false, false, false, nameEditable);
 
 				ui->setBCName(name);
 				ui->setBCType(type);
@@ -911,7 +933,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			else if (dynamic_cast<Post::CGLObject*>(po))
 			{
 				Post::CGLObject* plot = dynamic_cast<Post::CGLObject*>(po);
-				ui->showObjectInfo(true, false, nameEditable, GLMaterial(), true, plot->IsActive());
+				ui->showObjectInfo(true, false, false, nameEditable, GLMaterial(), true, plot->IsActive());
 			}
 			else if (dynamic_cast<GPart*>(po))
 			{
@@ -944,9 +966,9 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			else if (dynamic_cast<CImageAnalysis*>(po))
 			{
 				CImageAnalysis* ima = dynamic_cast<CImageAnalysis*>(po);
-				ui->showObjectInfo(true, false, nameEditable, GLMaterial(), true, ima->IsActive());
+				ui->showObjectInfo(true, false, false, nameEditable, GLMaterial(), true, ima->IsActive());
 			}
-			else ui->showObjectInfo(true, false, nameEditable);
+			else ui->showObjectInfo(true, false, false, nameEditable);
 		}
 		else ui->showObjectInfo(false);
 	}
@@ -1737,10 +1759,18 @@ void CModelPropsPanel::on_object_materialChanged(GLMaterial mat)
 		mo->SetGLMaterial(mat);
 	}
 
+	CModelDocument* doc = m_wnd->GetModelDocument();
+	if (doc) doc->Update();
+	m_wnd->RedrawGL();
+}
+
+void CModelPropsPanel::on_object_colorChanged(QColor col)
+{
+	GObject* po = dynamic_cast<GObject*>(m_currentObject);
 	GDiscreteObject* pd = dynamic_cast<GDiscreteObject*>(m_currentObject);
 	if (pd)
 	{
-		pd->SetColor(mat.diffuse);
+		pd->SetColor(toGLColor(col));
 	}
 
 	CModelDocument* doc = m_wnd->GetModelDocument();

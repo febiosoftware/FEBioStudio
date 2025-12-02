@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <QWidget>
 #include <QDialog>
 #include <vector>
+#include <FSCore/color.h>
 
 class CMainWindow;
 class FSObject;
@@ -67,6 +68,10 @@ public:
 
 	void showMaterial(bool b);
 
+	void showColor(bool b);
+
+	void setColor(GLColor c);
+
 	void showStatus(bool b);
 
 	void setNameReadOnly(bool b);
@@ -74,16 +79,19 @@ public:
 protected slots:
 	void on_name_textEdited(const QString&);
 	void on_mat_materialChanged(GLMaterial col);
+	void on_col_colorChanged(QColor col);
 	void on_status_clicked(bool b);
 
 signals:
 	void nameChanged(const QString& newName);
 	void materialChanged(GLMaterial mat);
+	void colorChanged(QColor c);
 	void statusChanged(bool b);
 
 private:
 	QLineEdit*		m_name;
 	QLabel*			m_type;
+	CColorButton*	m_col;
 	CMatEditButton*	m_mat;
 	QCheckBox*		m_status;
 	QLabel*			m_statusLabel;
@@ -226,6 +234,7 @@ private slots:
 	void on_partInfo_activeChanged(bool);
 	void on_data_nameChanged(const QString&);
 	void on_object_materialChanged(GLMaterial mat);
+	void on_object_colorChanged(QColor c);
 	void on_props_dataChanged(int n);
 	void on_form_dataChanged(bool itemModified);
 	void on_bcobject_stepChanged(int n);

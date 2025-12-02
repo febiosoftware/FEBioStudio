@@ -165,6 +165,8 @@ void CCreatePanel::on_create_clicked()
 {
 	CCreatePane* pane = ui->currentPage(); assert(pane);
 	FSObject* po = pane->Create();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
 
 	if (po)
 	{
@@ -176,8 +178,6 @@ void CCreatePanel::on_create_clicked()
 				QMessageBox::critical(this, "Create Object", "Cannot create object.\nInvalid object parameters");
 				return;
 			}
-
-			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 
 			GObject* activeObject = doc->GetActiveObject();
 			if ((pane->createPolicy() == CCreatePane::ADD_NEW_OBJECT) || (activeObject == nullptr))
@@ -199,6 +199,7 @@ void CCreatePanel::on_create_clicked()
 		}
 		else if (dynamic_cast<GDiscreteElement*>(po))
 		{
+			doc->Update();
 			GetMainWindow()->UpdateModel(go);
 			GetMainWindow()->Update(this);
 		}
@@ -206,9 +207,9 @@ void CCreatePanel::on_create_clicked()
 		{
 			GDiscreteObject* go = dynamic_cast<GDiscreteObject*>(po);
 
-			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 			GModel& geo = doc->GetFSModel()->GetModel();
 			geo.AddDiscreteObject(go);
+			doc->Update();
 			GetMainWindow()->UpdateModel(go);
 			GetMainWindow()->Update(this);
 		}
