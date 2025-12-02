@@ -39,6 +39,7 @@ namespace rt {
 		int tex1d = -1;
 		int tex3d = -1;
 		double reflection = 0;
+		bool depthTest = true;
 
 		gl::Color ambient  = GLColor::Black();
 		gl::Color specular = GLColor::Black();

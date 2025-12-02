@@ -302,6 +302,8 @@ void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::Dif
 
 	rt::Material mat;
 
+	mat.depthTest = (matType != GLMaterial::OVERLAY);
+
 	if ((matType == GLMaterial::HIGHLIGHT) || (matType == GLMaterial::CONSTANT))
 	{
 		mat.lighting = false;
@@ -464,6 +466,7 @@ void RayTracer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 		{
 			line.r[j] = mv * Vec4(edge.vr[j], 1);
 			line.c[j] = (useVertexColor ? edge.c[j] : currentColor);
+			line.matid = currentMaterial;
 		}
 		addLine(line);
 	}
@@ -1196,6 +1199,13 @@ void RayTracer::renderLines()
 
 		bool isInside = clipLine(a_ndc, b_ndc);
 
+		bool depthTest = true;
+		if ((line.matid >= 0) && (line.matid < (int)matList.size()))
+		{
+			rt::Material& mat = matList[line.matid];
+			depthTest = mat.depthTest;
+		}
+
 		if (isInside)
 		{
 			Vec3 an = NDCtoView(a_ndc);
@@ -1237,7 +1247,7 @@ void RayTracer::renderLines()
 					}
 
 					float* v = surf.value(x, y);
-					if ((z < 1) && (z > -1) && (z <= v[4] + dz))
+					if ((z < 1) && (z > -1) && (!depthTest || (z <= v[4] + dz)))
 					{
 						float a = c.a() * p.brightness;
 
