@@ -1204,7 +1204,12 @@ void CMainWindow::on_actionClone_triggered()
 	}
 }
 
-static GObject* copyObject = nullptr;
+static std::vector<GObject*> copyObject;
+void clearCopiedObjects()
+{
+	for (auto po : copyObject) delete po;
+	copyObject.clear();
+}
 
 void CMainWindow::on_actionCopyObject_triggered()
 {
@@ -1212,29 +1217,35 @@ void CMainWindow::on_actionCopyObject_triggered()
 	if (doc == nullptr) return;
 
 	// get the active object
-	GObject* po = doc->GetActiveObject();
-	if (po == 0)
+	GObjectSelection* sel = dynamic_cast<GObjectSelection*>(doc->GetCurrentSelection());
+	if (sel == nullptr) 
 	{
 		QMessageBox::critical(this, "FEBio Studio", "You need to select an object first.");
 		return;
 	}
 
+	clearCopiedObjects();
+
 	// get the model
 	GModel& m = *doc->GetGModel();
 
 	// clone the object
-	GObject* pco = m.CloneObject(po);
-	if (pco == nullptr)
+	for (int i = 0; i < sel->Size(); ++i)
 	{
-		QMessageBox::critical(this, "FEBio Studio", "Could not clone this object.");
-		return;
+		GObject* po = sel->Object(i);
+		GObject* pco = m.CloneObject(po);
+		if (pco == nullptr)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Could not clone the selection.");
+			return;
+		}
+
+		// copy the name
+		pco->SetName(po->GetName());
+
+		// store this object
+		copyObject.push_back(pco);
 	}
-
-	// copy the name
-	pco->SetName(po->GetName());
-
-	// store this object
-	copyObject = pco;
 }
 
 void CMainWindow::on_actionPasteObject_triggered()
@@ -1242,7 +1253,7 @@ void CMainWindow::on_actionPasteObject_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	if (copyObject == nullptr)
+	if (copyObject.empty())
 	{
 		QMessageBox::critical(this, "FEBio Studio", "No object to paste.");
 		return;
@@ -1251,35 +1262,47 @@ void CMainWindow::on_actionPasteObject_triggered()
 	// get the model
 	GModel& m = *doc->GetGModel();
 
+	CCmdGroup* cmd = new CCmdGroup("Paste Objects");
+
 	// we need to make sure that the object has a unique name.
-	string nameBase = copyObject->GetName();
-	string name = nameBase;
-	GObject* po = nullptr;
-	do
+	BOX box;
+	for (int i=0; i<copyObject.size(); ++i)
 	{
-		po = m.FindObject(name);
-		int n = 1;
-		if (po)
+		GObject* pco = copyObject[i];
+		string nameBase = pco->GetName();
+		string name = nameBase;
+		GObject* po = nullptr;
+		do
 		{
-			stringstream ss;
-			ss << nameBase << "(" << n++ << ")";
-			name = ss.str();
-		}
-	} while (po);
-	copyObject->SetName(name);
+			po = m.FindObject(name);
+			int n = 1;
+			if (po)
+			{
+				stringstream ss;
+				ss << nameBase << "(" << n++ << ")";
+				name = ss.str();
+			}
+		} while (po);
+		pco->SetName(name);
 
-	// since the copy object was created in another model,
-	// it is possible that its items IDs are already used in this model. 
-	// therefore, we reindex the object
-	copyObject->Reindex();
+		// since the copy object was created in another model,
+		// it is possible that its items IDs are already used in this model. 
+		// therefore, we reindex the object
+		pco->Reindex();
 
-	// add and select the new object
-	doc->DoCommand(new CCmdAddAndSelectObject(&m, copyObject));
+		// add and select the new object
+		cmd->AddCommand(new CCmdAddObject(&m, pco));
+		copyObject[i] = nullptr;
+
+		box += pco->GetGlobalBox();
+	}
+	copyObject.clear();
+
+	doc->DoCommand(cmd);
+
 	GLScene* scene = doc->GetScene();
-	if (scene)
+	if (scene && box.IsValid())
 	{
-		BOX box = copyObject->GetGlobalBox();
-
 		double f = box.GetMaxExtent();
 		if (f == 0) f = 1;
 
@@ -1287,9 +1310,7 @@ void CMainWindow::on_actionPasteObject_triggered()
 
 		cam.SetTarget(box.Center());
 		cam.SetTargetDistance(2.0 * f);
-		cam.SetOrientation(copyObject->GetTransform().GetRotationInverse());
 	}
-	copyObject = nullptr;
 
 	// update windows
 	Update(0, true);
