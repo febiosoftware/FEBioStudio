@@ -1341,8 +1341,12 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 	// render child items
 	GLModelSceneItem::render(re, rc);
 
-	// render the selection mesh 
-	RenderSelection(re);
+	// render the selection mesh
+	if ((m_scene->GetItemMode() != ITEM_MESH)
+		&& (m_scene->GetActiveObject() == m_po))
+	{
+		RenderSelection(re);
+	}
 
 	// render mesh outline in wireframe mode
 	if ((rc.m_settings.m_nrender == RENDER_WIREFRAME) && (rc.m_settings.m_bmesh == false))
