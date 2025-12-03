@@ -80,6 +80,7 @@ GLMesh* GLMesher::CreateMesh()
 			for (int i = 0; i < NC; ++i)
 			{
 				GEdge& e = *o.Edge(i);
+				gmesh->NewEdgePartition(i);
 				switch (e.Type())
 				{
 				case EDGE_LINE: BuildEdgeLine(gmesh, e); break;

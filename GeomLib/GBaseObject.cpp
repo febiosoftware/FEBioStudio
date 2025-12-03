@@ -613,6 +613,9 @@ void GBaseObject::CopyTransform(GBaseObject* po)
 void GBaseObject::RemoveNode(int n)
 {
 	// delete the node
+	assert((n >= 0) && (n < Nodes()));
+	if (n < 0 || n >= Nodes()) return;
+
 	delete m_Node[n];
 	m_Node.erase(m_Node.begin() + n);
 

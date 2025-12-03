@@ -1136,6 +1136,8 @@ void GLMesh::Attach(GLMesh &m, bool bupdate)
 		AddFace(f);
 	}
 	setModified(true);
+	m_EIL.clear();
+	m_FIL.clear();
 
 	if (bupdate) Update();
 }

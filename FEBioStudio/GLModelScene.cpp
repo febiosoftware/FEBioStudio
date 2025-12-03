@@ -3433,32 +3433,36 @@ void GLHighlighterItem::drawEdge(GLRenderEngine& re, GEdge* edge, GLColor c)
 	GObject* po = dynamic_cast<GObject*>(edge->Object());
 	if (po == 0) return;
 
-	GLObjectItem* objItem = m_scene->FindGLObjectItem(po); assert(objItem);
+	re.pushTransform();
+
+	GLObjectItem* objItem = m_scene->FindGLObjectItem(po);
 	if (objItem)
 	{
-		re.pushTransform();
 		re.transform(objItem->GetTransform());
-
-		GLMesh& m = *po->GetRenderMesh();
-
-		re.setMaterial(GLMaterial::OVERLAY, c);
-		re.renderGMeshEdges(m, edge->GetLocalID());
-
-		GNode* n0 = po->Node(edge->m_node[0]);
-		GNode* n1 = po->Node(edge->m_node[1]);
-
-		if (n0 && n1)
-		{
-			GLMesh endPoints;
-			vec3d r0 = n0->LocalPosition();
-			vec3d r1 = n1->LocalPosition();
-			endPoints.AddNode(to_vec3f(r0));
-			endPoints.AddNode(to_vec3f(r1));
-
-			re.renderGMeshNodes(endPoints, false);
-		}
-		re.popTransform();
 	}
+	else
+		re.transform(po->GetTransform());
+
+	GLMesh& m = *po->GetRenderMesh();
+
+	re.setMaterial(GLMaterial::OVERLAY, c);
+	re.renderGMeshEdges(m, edge->GetLocalID());
+
+	GNode* n0 = po->Node(edge->m_node[0]);
+	GNode* n1 = po->Node(edge->m_node[1]);
+
+	if (n0 && n1)
+	{
+		GLMesh endPoints;
+		vec3d r0 = n0->LocalPosition();
+		vec3d r1 = n1->LocalPosition();
+		endPoints.AddNode(to_vec3f(r0));
+		endPoints.AddNode(to_vec3f(r1));
+
+		re.renderGMeshNodes(endPoints, false);
+	}
+
+	re.popTransform();
 }
 
 void GLHighlighterItem::drawNode(GLRenderEngine& re, GLContext& rc, GNode* node, GLColor c)

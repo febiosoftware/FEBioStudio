@@ -100,6 +100,9 @@ void Ui::CMainWindow::setupUi(::CMainWindow* wnd)
     QObject::connect(postPanel, &::CPostPanel::postTree_currentObjectChanged, imageSettingsPanel, &::CImageSettingsPanel::ModelTreeSelectionChanged);
     QObject::connect(postPanel, &::CPostPanel::postTree_currentObjectChanged, centralWidget->sliceView, &::CImageSliceView::ModelTreeSelectionChanged);
     QObject::connect(postPanel, &::CPostPanel::postTree_currentObjectChanged, centralWidget->timeView2D, &::C2DImageTimeView::ModelTreeSelectionChanged);
+
+	CGLView* glview = centralWidget->glw->GetGLView();
+	QObject::connect(glview, &CGLView::pointPicked, wnd, &::CMainWindow::on_glview_pointPicked);
 }
 
 QAction* Ui::CMainWindow::addAction(const QString& title, const QString& name, const QString& iconFile, bool bcheckable)
