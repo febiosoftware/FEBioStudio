@@ -30,13 +30,40 @@ SOFTWARE.*/
 #include <assert.h>
 
 using std::stack;
+static unsigned int nextId = 1;
 
 GLMesh::GLMesh(void)
 {
-	static unsigned int nextId = 1;
 	m_uid = nextId++;
-
 	m_hasNeighborList = false;
+}
+
+// implemented copy constructor to ensure unique IDs
+GLMesh::GLMesh(const GLMesh& m)
+{
+	m_uid = nextId++;
+	m_box = m.m_box;
+	m_Node = m.m_Node;
+	m_Edge = m.m_Edge;
+	m_Face = m.m_Face;
+	m_FIL = m.m_FIL;
+	m_EIL = m.m_EIL;
+	m_hasNeighborList = m.m_hasNeighborList;
+	setModified(true);
+}
+
+// implemented assignment operator to ensure uid is not copied
+GLMesh& GLMesh::operator = (const GLMesh& m)
+{
+	m_box = m.m_box;
+	m_Node = m.m_Node;
+	m_Edge = m.m_Edge;
+	m_Face = m.m_Face;
+	m_FIL = m.m_FIL;
+	m_EIL = m.m_EIL;
+	m_hasNeighborList = m.m_hasNeighborList;
+	setModified(true);
+	return *this;
 }
 
 GLMesh::~GLMesh(void)

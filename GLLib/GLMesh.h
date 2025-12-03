@@ -92,6 +92,8 @@ public:
 
 public:
 	GLMesh(void);
+	GLMesh(const GLMesh& m);
+	GLMesh& operator = (const GLMesh& m);
 	virtual ~GLMesh(void);
 
 	void Create(int nodes, int faces, int edges = 0);
