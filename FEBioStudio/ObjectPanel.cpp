@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <GeomLib/GOCCObject.h>
 #include <GLWLib/convert.h>
 #include "MainWindow.h"
 #include "GLDocument.h"
@@ -139,6 +140,11 @@ void CObjectPanel::Update()
 			ui->menu->addAction("Multiblock Mesh")->setData(CONVERT_TO_MULTIBLOCK);
 			ui->menu->setEnabled(true);
 
+		}
+		else if (dynamic_cast<GOCCObject*>(po))
+		{
+			ui->menu->addAction("Editable Surface")->setData(CONVERT_TO_EDITABLE_SURFACE);
+			ui->menu->setEnabled(true);
 		}
 		else ui->menu->setEnabled(false);
 
