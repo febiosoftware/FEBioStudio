@@ -51,6 +51,18 @@ int degenerate_hex(int* n)
 	return FE_HEX8;
 }
 
+bool is_degenerate_penta(int* n)
+{
+	for (int i=0; i<6; ++i)
+	{
+		for (int j=i+1; j<6; ++j)
+		{
+			if (n[i] == n[j]) return true;
+		}
+	}
+	return false;
+}
+
 int degenerate_penta(int* n)
 {
     // todo: add more checks for degenerate elements
@@ -59,9 +71,8 @@ int degenerate_penta(int* n)
         n[3] = n[5];
         return FE_TET4;
     }
-    else if ((n[0] == n[3]) && (n[1] == n[4]))
+    else if ((n[0] == n[3]) && (n[2] == n[5]))
     {
-        int n1 = n[1];
         n[3] = n[4];
         return FE_TET4;
     }
@@ -69,6 +80,40 @@ int degenerate_penta(int* n)
     {
         return FE_TET4;
     }
+	else if (n[2] == n[5])
+	{
+		int m[6] = { n[0], n[1], n[2], n[3], n[4], n[5] };
+		n[0] = m[0];
+		n[1] = m[3];
+		n[2] = m[4];
+		n[3] = m[1];
+		n[4] = m[2];
+		return FE_PYRA5;
+	}
+	else if (n[0] == n[3])
+	{
+		int m[6] = { n[0], n[1], n[2], n[3], n[4], n[5] };
+		n[0] = m[1];
+		n[1] = m[4];
+		n[2] = m[5];
+		n[3] = m[2];
+		n[4] = m[3];
+		return FE_PYRA5;
+	}
+	else if (n[1] == n[4])
+	{
+		int m[6] = { n[0], n[1], n[2], n[3], n[4], n[5] };
+		n[0] = m[0];
+		n[1] = m[2];
+		n[2] = m[5];
+		n[3] = m[3];
+		n[4] = m[1];
+		return FE_PYRA5;
+	}
+
+    // assert that this is not a degenerate element
+    assert(!is_degenerate_penta(n));
+
     return FE_PENTA6;
 }
 
