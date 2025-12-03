@@ -51,6 +51,27 @@ int degenerate_hex(int* n)
 	return FE_HEX8;
 }
 
+int degenerate_penta(int* n)
+{
+    // todo: add more checks for degenerate elements
+    if ((n[0] == n[3]) && (n[1] == n[4]))
+    {
+        n[3] = n[5];
+        return FE_TET4;
+    }
+    else if ((n[0] == n[3]) && (n[1] == n[4]))
+    {
+        int n1 = n[1];
+        n[3] = n[4];
+        return FE_TET4;
+    }
+    else if ((n[1] == n[4]) && (n[2] == n[5]))
+    {
+        return FE_TET4;
+    }
+    return FE_PENTA6;
+}
+
 FSMesh* FEExtrudeToSurface::Apply(GObject* po, FESelection* pg)
 {
 	if ((pg == nullptr) || (po == nullptr)) return nullptr;
@@ -210,16 +231,23 @@ FSMesh* FEExtrudeToSurface::Apply(GObject* po, FESelection* pg)
 			}
 			else if (f.Type() == FE_FACE_TRI3)
 			{
+                int n[6] = { 0 };
 				FSElement& el = newMesh->Element(l * NF + i);
 				el.SetType(FE_PENTA6);
 				el.m_gid = 0;
-				el.m_node[0] = ids[f.n[0]];
-				el.m_node[1] = ids[f.n[1]];
-				el.m_node[2] = ids[f.n[2]];
+				n[0] = ids[f.n[0]];
+				n[1] = ids[f.n[1]];
+				n[2] = ids[f.n[2]];
 
-				el.m_node[3] = id2[f.n[0]];
-				el.m_node[4] = id2[f.n[1]];
-				el.m_node[5] = id2[f.n[2]];
+				n[3] = id2[f.n[0]];
+				n[4] = id2[f.n[1]];
+				n[5] = id2[f.n[2]];
+                
+                // it's possible that we have a degenerate elements, so let's check
+                int elemType = degenerate_penta(n);
+                assert(elemType != -1);
+                el.SetType(elemType);
+                for (int i = 0; i < el.Nodes(); ++i) el.m_node[i] = n[i];
 			}
 			else
 			{
