@@ -793,6 +793,7 @@ void GObject::Show()
 		{
 			FSElement& el = mesh->Element(i);
 			el.Show();
+			el.Unhide();
 		}
 		mesh->UpdateItemVisibility();
 	}

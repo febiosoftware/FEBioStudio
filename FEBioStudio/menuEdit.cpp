@@ -1497,12 +1497,23 @@ void CMainWindow::on_actionDetach_triggered()
 		return;
 	}
 
+	GObject* poa = doc->GetActiveObject();
+	if (poa == nullptr)
+	{
+		QMessageBox::critical(this, "Detach Selection", "No object selected.");
+		return;
+	}
+
+	GMeshObject* po = dynamic_cast<GMeshObject*>(doc->GetActiveObject());
+	if (po == nullptr)
+	{
+		QMessageBox::critical(this, "Detach Selection", "The Detach tool only works with editable meshes.");
+		return;
+	}
+
 	CDlgDetachSelection dlg(this);
 	if (dlg.exec())
 	{
-		GMeshObject* po = dynamic_cast<GMeshObject*>(doc->GetActiveObject()); assert(po);
-		if (po == 0) return;
-
 		doc->SetCurrentSelection(nullptr);
 
 		// create a new object for this mesh
