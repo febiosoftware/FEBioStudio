@@ -1451,7 +1451,20 @@ void GLObjectSurfaceItem::BuildSurfaceMesh()
 	m_surfMesh.reset(new GLMesh);
 	m_selectionMesh.reset(new GLMesh);
 	GLMesh& rm = *m_surfMesh;
+
 	GLMesh& sm = *m_selectionMesh;
+
+	// for the selection mesh, copy all the nodes
+	if (selMode != SELECT_NODE)
+	{
+		sm.Create(m->Nodes(), 0);
+		for (int i = 0; i < m->Nodes(); ++i)
+		{
+			GLMesh::NODE& node = m->Node(i);
+			sm.Node(i).r = node.r;
+		}
+	}
+
 	for (int i = 0; i < m->Faces(); ++i)
 	{
 		GLMesh::FACE& face = m->Face(i);
@@ -1498,7 +1511,7 @@ void GLObjectSurfaceItem::BuildSurfaceMesh()
 			}
 			else if (isSelected)
 			{
-				sm.AddFace(face.vr, face.vn, face.t, face.c);
+				sm.AddFace(face.n, face.vn, face.t, face.c);
 			}
 		}
 	}
@@ -1515,7 +1528,7 @@ void GLObjectSurfaceItem::BuildSurfaceMesh()
 				GEdge& e = *m_po->Edge(ed.pid);
 				if (e.IsSelected())
 				{
-					sm.AddEdge(ed.vr[0], ed.vr[1]);
+					sm.AddEdge(ed.n[0], ed.n[1]);
 				}
 			}
 		}
@@ -3296,7 +3309,9 @@ void GLSelectionItem::RenderSelectedSurfaces(GLRenderEngine& re, GLContext& rc, 
 
 	if (m->Faces() > 0)
 	{
-		re.setMaterial(GLMaterial::HIGHLIGHT, GLColor::Blue());
+		GLColor c = GLColor::Blue();
+		c.a = 128;
+		re.setMaterial(GLMaterial::OVERLAY, c);
 		re.renderGMesh(*m);
 
 		re.setMaterial(GLMaterial::OVERLAY, GLColor::Blue());
@@ -3347,7 +3362,9 @@ void GLSelectionItem::RenderSelectedParts(GLRenderEngine& re, GLContext& rc, GLO
 
 	if (m->Faces() > 0)
 	{
-		re.setMaterial(GLMaterial::HIGHLIGHT, GLColor::Blue());
+		GLColor c = GLColor::Blue();
+		c.a = 128;
+		re.setMaterial(GLMaterial::OVERLAY, c);
 		re.renderGMesh(*m);
 
 		re.setMaterial(GLMaterial::OVERLAY, GLColor::Blue());

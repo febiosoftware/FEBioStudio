@@ -842,18 +842,25 @@ void GMeshObject::BuildGMesh()
 	}
 
 	// create edges
-	int n[FSFace::MAX_NODES];
-	for (int i=0; i<pm->Edges(); ++i)
+	std::vector<std::deque<int>> edgeList(Edges());
+	int NC = pm->Edges();
+	for (int i = 0; i < NC; i++)
 	{
-		FSEdge& es = pm->Edge(i);
-		if (es.IsExterior())
+		const FSEdge& edge = pm->Edge(i);
+		if (edge.m_gid >= 0)
+			edgeList[edge.m_gid].push_back(i);
+	}
+
+	int n[FSFace::MAX_NODES];
+	for (int i = 0; i < Edges(); ++i)
+	{
+		gmesh->NewEdgePartition();
+		for (int l : edgeList[i])
 		{
-			n[0] = pm->Node(es.n[0]).m_ntag; assert(n[0] >= 0);
-			n[1] = pm->Node(es.n[1]).m_ntag; assert(n[1] >= 0);
-			if (es.n[2] != -1) { n[2] = pm->Node(es.n[2]).m_ntag; assert(n[2] >= 0); }
-			if (es.n[3] != -1) { n[3] = pm->Node(es.n[3]).m_ntag; assert(n[3] >= 0); }
-			assert(es.m_gid >= 0);
-			gmesh->AddEdge(n, es.Nodes(), es.m_gid);
+			FSEdge& edge = pm->Edge(l);
+			int ne = edge.Nodes();
+			for (int j = 0; j < ne; ++j) n[j] = pm->Node(edge.n[j]).m_ntag;
+			gmesh->AddEdge(n, ne, edge.m_gid);
 		}
 	}
 

@@ -273,7 +273,11 @@ void GLRenderEngine::renderGMeshOutline(const GLCamera& cam, const GLMesh& gmsh,
 				{
 					bool bdraw = false;
 
-					if ((f.nbr[j] > i) && (f.nbr[j] < NF))
+					if (f.nbr[j] < 0)
+					{
+						bdraw = true;
+					}
+					else if ((f.nbr[j] > i) && (f.nbr[j] < NF))
 					{
 						const GLMesh::FACE& f2 = gmsh.Face(f.nbr[j]);
 						vec3d n1 = T.LocalToGlobalNormal(to_vec3d(f.fn));
@@ -360,7 +364,7 @@ void GLRenderEngine::renderGMeshOutline(const GLCamera& cam, const GLMesh& gmsh,
 				{
 					bdraw = true;
 				}
-				else if (f.nbr[j] > i)
+				else if ((f.nbr[j] > i) && (f.nbr[j] < NF))
 				{
 					const GLMesh::FACE& f2 = gmsh.Face(f.nbr[j]);
 

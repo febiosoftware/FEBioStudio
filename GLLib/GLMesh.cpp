@@ -576,6 +576,29 @@ int GLMesh::AddFace(vec3f r[3], vec3f n[3], vec3f tex[3], GLColor c[3], int tag)
 	return AddFace(face);
 }
 
+int GLMesh::AddFace(int nodes[3], vec3f n[3], vec3f tex[3], GLColor c[3], int tag)
+{
+	FACE face;
+	face.n[0] = nodes[0];
+	face.n[1] = nodes[1];
+	face.n[2] = nodes[2];
+	face.vn[0] = n[0];
+	face.vn[1] = n[1];
+	face.vn[2] = n[2];
+	face.vr[0] = Node(nodes[0]).r;
+	face.vr[1] = Node(nodes[1]).r;
+	face.vr[2] = Node(nodes[2]).r;
+	face.t[0] = tex[0];
+	face.t[1] = tex[1];
+	face.t[2] = tex[2];
+	face.c[0] = c[0];
+	face.c[1] = c[1];
+	face.c[2] = c[2];
+	face.tag = tag;
+	return AddFace(face);
+}
+
+
 void GLMesh::AddFace(vec3f r[3], float t[3], GLColor c[3])
 {
 	int n0 = AddNode(r[0]);
