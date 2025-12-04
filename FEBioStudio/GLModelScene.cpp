@@ -1477,7 +1477,7 @@ void GLObjectSurfaceItem::BuildSurfaceMesh()
 			{
 				pg = nullptr;
 				if (objFace->m_nPID[1] >= 0) pg = obj.Part(objFace->m_nPID[1]);
-				if (!pg->IsVisible()) pg = nullptr;
+				if (pg && !pg->IsVisible()) pg = nullptr;
 			}
 
 			// only add face if it's visible and not selected 
