@@ -1371,6 +1371,16 @@ void GLObjectItem::RenderSelection(GLRenderEngine& re)
 		re.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow());
 		re.renderGMeshEdges(selectionMesh);
 	}
+	else if (selectionMesh.Edges() > 0)
+	{
+		re.setMaterial(GLMaterial::OVERLAY, GLColor::Red());
+		re.renderGMeshEdges(selectionMesh);
+	}
+	else if (selectionMesh.Nodes() > 0)
+	{
+		re.setMaterial(GLMaterial::OVERLAY, GLColor::Red());
+		re.renderGMeshNodes(selectionMesh);
+	}
 }
 
 void GLObjectSurfaceItem::BuildSurfaceMesh()
@@ -2191,19 +2201,6 @@ void GLObjectSurfaceItem::RenderFENodes(GLRenderEngine& re, GLContext& rc)
 		re.setMaterial(GLMaterial::CONSTANT, GLColor(0, 0, 255, 128));
 		re.renderGMeshNodes(*m_nodeFEMesh);
 	}
-
-	// render selected nodes
-	// TODO: Shouldn't this be done in the GLSelectionItem?
-	FENodeSelection* sel = dynamic_cast<FENodeSelection*>(m_scene->GetCurrentSelection());
-	if (sel && sel->Size())
-	{
-		GLMesh& selectionMesh = m_scene->GetSelectionMesh();
-		if (selectionMesh.Nodes() > 0)
-		{
-			re.setMaterial(GLMaterial::OVERLAY, GLColor::Red());
-			re.renderGMeshNodes(selectionMesh, false);
-		}
-	}
 }
 
 void GLObjectSurfaceItem::renderTaggedGMeshNodes(GLRenderEngine& re, const GLMesh& mesh, int tag)
@@ -2251,24 +2248,14 @@ void GLObjectSurfaceItem::RenderSurfaceMeshNodes(GLRenderEngine& re, GLContext& 
 	}
 }
 
-//-----------------------------------------------------------------------------
 // Render the FE Edges
 void GLObjectSurfaceItem::RenderFEEdges(GLRenderEngine& re)
 {
-	// render the unselected edges
 	GLMesh* mesh = m_po->GetFERenderMesh();
 	if (mesh)
 	{
 		re.setMaterial(GLMaterial::CONSTANT, GLColor(0, 0, 255, 128));
 		re.renderGMeshEdges(*mesh);
-	}
-
-	// render the selected edges
-	GLMesh& selectionMesh = m_scene->GetSelectionMesh();
-	if (selectionMesh.Edges() > 0)
-	{
-		re.setMaterial(GLMaterial::OVERLAY, GLColor(255, 0, 0, 128));
-		re.renderGMeshEdges(selectionMesh, false);
 	}
 }
 
@@ -2311,13 +2298,8 @@ void GLObjectSurfaceItem::RenderSurfaceMeshEdges(GLRenderEngine& re)
 	GLMesh* mesh = m_po->GetRenderMesh();
 	if (mesh == nullptr) return;
 
-	// render the unselected edges
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::Blue());
 	re.renderGMeshEdges(*mesh);
-
-	// render the selected edges
-	re.setMaterial(GLMaterial::OVERLAY, GLColor::Red());
-	re.renderGMeshEdges(m_scene->GetSelectionMesh(), false);
 }
 
 void GLMeshLinesItem::render(GLRenderEngine& re, GLContext& rc)
