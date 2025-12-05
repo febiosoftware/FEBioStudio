@@ -1066,6 +1066,7 @@ void CModelViewer::OnHidePart()
 	}
 
 	CMainWindow* wnd = GetMainWindow();
+	doc->Update();
 	wnd->RedrawGL();
 }
 
@@ -1159,6 +1160,7 @@ void CModelViewer::OnShowPart()
 		}
 	}
 	Update();
+	doc->Update();
 	CMainWindow* wnd = GetMainWindow();
 	wnd->RedrawGL();
 }
