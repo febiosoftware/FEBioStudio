@@ -3004,7 +3004,7 @@ void GLPhysicsItem::RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc) c
 	BOX box = model.GetBoundingBox();
 	double h = 0.05 * box.GetMaxExtent() * view.m_fiber_scale;
 
-	re.setMaterial(GLMaterial::CONSTANT, GLColor::White());
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
 
 	GLColor rgb[3] = { GLColor::Red(), GLColor::Green(), GLColor::Blue() };
 
@@ -3021,6 +3021,7 @@ void GLPhysicsItem::RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc) c
 			{
 				Transform T = objItem->GetTransform();
 				rel.m_pmesh = pm;
+				re.beginShape();
 				for (int j = 0; j < pm->Elements(); ++j)
 				{
 					FSElement& el = pm->Element(j);
@@ -3070,6 +3071,7 @@ void GLPhysicsItem::RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc) c
 						}
 					}
 				}
+				re.endShape();
 			}
 		}
 	}
