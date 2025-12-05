@@ -178,10 +178,13 @@ public:
 protected:
 	size_t RemoveChild(FSObject* po) override
 	{
+		assert(po && po->GetParent() == this);
+		if (po == nullptr) return -1;
 		for (size_t i = 0; i < m_obs.size(); ++i)
 		{
 			if (m_obs[i] == po)
 			{
+				po->SetParent(nullptr);
 				m_obs.erase(m_obs.begin() + i);
 				return i;
 			}

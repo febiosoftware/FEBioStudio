@@ -1226,6 +1226,8 @@ void CModelPropsPanel::addSelection(int n)
 				pg = partSet;
 			}
 
+			CCmdGroup* cmd = new CCmdGroup("Add Selection");
+
 			// for model components and mesh data, we need to give this new list a name and add it to the model
 			FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(m_currentObject);
 			FSMeshData* pmd = dynamic_cast<FSMeshData*>(m_currentObject);
@@ -1238,10 +1240,13 @@ void CModelPropsPanel::addSelection(int n)
 					else s += "Secondary";
 				}
 				pg->SetName(s);
-				mdl.AddNamedSelection(pg);
+
+				cmd->AddCommand(new CCmdAddNamedSelection(mdl, pg));
 			}
 
-			pdoc->DoCommand(new CCmdSetItemList(pil, pg, n), m_currentObject->GetName());
+			cmd->AddCommand(new CCmdSetItemList(pil, pg, n));
+			pdoc->DoCommand(cmd, m_currentObject->GetName());
+
 			SetSelection(n, pil->GetItemList(n));
 
 			emit modelChanged();

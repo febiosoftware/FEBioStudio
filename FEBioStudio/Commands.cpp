@@ -141,10 +141,11 @@ void CCmdAddRigidConnector::UnExecute()
 // CCmdAddConstraint
 //////////////////////////////////////////////////////////////////////
 
-CCmdAddConstraint::CCmdAddConstraint(FSStep* ps, FSModelConstraint* pmc) : CCommand("Add constraint") 
+CCmdAddConstraint::CCmdAddConstraint(FSStep* ps, FSModelConstraint* pmc, FSItemListBuilder* items) : CCommand("Add constraint")
 { 
 	m_ps = ps; 
 	m_pmc = pmc;
+	m_itemList = items;
 	m_bdel = true; 
 }
 
@@ -156,6 +157,7 @@ CCmdAddConstraint::~CCmdAddConstraint()
 void CCmdAddConstraint::Execute()
 {
 	// add the connector to the step
+	m_pmc->SetItemList(m_itemList);
 	m_ps->AddConstraint(m_pmc);
 	m_bdel = false;
 }
@@ -163,6 +165,7 @@ void CCmdAddConstraint::Execute()
 void CCmdAddConstraint::UnExecute()
 {
 	// remove the connector from the step
+	m_pmc->SetItemList(nullptr);
 	m_ps->RemoveConstraint(m_pmc);
 	m_bdel = true;
 }
@@ -529,13 +532,68 @@ void CCmdAddGNodeGroup::UnExecute()
 	m_bdel = true;
 }
 
+//=========================================================
+CCmdAddNamedSelection::CCmdAddNamedSelection(GModel& mdl, FSItemListBuilder* item) : CCommand("Add named selection"), gm(mdl)
+{
+	assert(item);
+	itemList = item;
+	parentOfList = nullptr;
+	insertPos = -1;
+	bdel = true;
+}
+
+CCmdAddNamedSelection::~CCmdAddNamedSelection()
+{
+	if (bdel)
+		delete itemList;
+}
+
+void CCmdAddNamedSelection::Execute()
+{
+	if (itemList == nullptr) return;
+	if (parentOfList == nullptr)
+	{
+		gm.AddNamedSelection(itemList);
+	}
+	else
+	{
+		parentOfList->InsertChild(insertPos, itemList);
+		insertPos = -1;
+	}
+	bdel = false;
+}
+
+void CCmdAddNamedSelection::UnExecute()
+{
+	if (itemList == nullptr) return;
+	parentOfList = itemList->GetParent(); assert(parentOfList);
+	if (parentOfList)
+	{
+		insertPos = parentOfList->RemoveChild(itemList);
+	}
+	bdel = true;
+}
+
 //////////////////////////////////////////////////////////////////////
 // CCmdAddBC
 //////////////////////////////////////////////////////////////////////
 
+CCmdAddBC::CCmdAddBC(FSStep* ps, FSBoundaryCondition* pbc, FSItemListBuilder* item) : CCommand("Add Boundary Condition")
+{ 
+	m_ps = ps; 
+	m_pbc = pbc;
+	m_itemList = item;
+	m_bdel = true; 
+}
+
+CCmdAddBC::~CCmdAddBC()
+{ 
+	if (m_bdel) delete m_pbc;
+}
+
 void CCmdAddBC::Execute()
 {
-	// add the boundary condition to the step
+	m_pbc->SetItemList(m_itemList);
 	m_ps->AddBC(m_pbc);
 	m_bdel = false;
 }
@@ -543,6 +601,7 @@ void CCmdAddBC::Execute()
 void CCmdAddBC::UnExecute()
 {
 	// remove the boundary condition from the step
+	m_pbc->SetItemList(nullptr);
 	m_ps->RemoveBC(m_pbc);
 	m_bdel = true;
 }
@@ -551,14 +610,29 @@ void CCmdAddBC::UnExecute()
 // CCmdAddIC
 //////////////////////////////////////////////////////////////////////
 
+CCmdAddIC::CCmdAddIC(FSStep* ps, FSInitialCondition* pic, FSItemListBuilder* items) : CCommand("Add Initial Condition") 
+{ 
+	m_ps = ps; 
+	m_pic = pic; 
+	m_itemList = items;
+	m_bdel = true; 
+}
+
+CCmdAddIC::~CCmdAddIC()
+{ 
+	if (m_bdel) delete m_pic; 
+}
+
 void CCmdAddIC::Execute()
 {
+	m_pic->SetItemList(m_itemList);
 	m_ps->AddIC(m_pic);
 	m_bdel = false;
 }
 
 void CCmdAddIC::UnExecute()
 {
+	m_pic->SetItemList(nullptr);
 	m_ps->RemoveIC(m_pic);
 	m_bdel = true;
 }
@@ -568,14 +642,26 @@ void CCmdAddIC::UnExecute()
 // CCmdAddLoad
 //////////////////////////////////////////////////////////////////////
 
+CCmdAddLoad::CCmdAddLoad(FSStep* ps, FSLoad* pfc, FSItemListBuilder* items) : CCommand("Add Load")
+{ 
+	m_ps = ps; 
+	m_pfc = pfc; 
+	m_itemList = items;
+	m_bdel = true; 
+}
+
+CCmdAddLoad::~CCmdAddLoad() { if (m_bdel) delete m_pfc; }
+
 void CCmdAddLoad::Execute()
 {
+	m_pfc->SetItemList(m_itemList);
 	m_ps->AddLoad(m_pfc);
 	m_bdel = false;
 }
 
 void CCmdAddLoad::UnExecute()
 {
+	m_pfc->SetItemList(nullptr);
 	m_ps->RemoveLoad(m_pfc);
 	m_bdel = true;
 }
@@ -3628,21 +3714,29 @@ CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(IHasItemLists* pmc, int n) 
 	m_pmc = pmc;
 	m_pitem = nullptr;
 	m_index = n;
+	m_cmd = nullptr;
 }
 
 CCmdRemoveItemListBuilder::~CCmdRemoveItemListBuilder()
 {
-	
+	delete m_cmd;
 }
 
 void CCmdRemoveItemListBuilder::Execute()
 {
 	m_pitem = m_pmc->GetItemList(m_index);
 	m_pmc->SetItemList(nullptr, m_index);
+
+	if (m_pitem && (m_pitem->GetReferenceCount() == 0))
+	{
+		if (m_cmd == nullptr) m_cmd = new CCmdDeleteFSObject(m_pitem);
+		m_cmd->Execute();
+	}
 }
 
 void CCmdRemoveItemListBuilder::UnExecute()
 {
+	if (m_cmd) m_cmd->UnExecute();
 	m_pmc->SetItemList(m_pitem, m_index);
 	m_pitem = nullptr;
 }

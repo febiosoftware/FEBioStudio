@@ -658,6 +658,7 @@ void CModelViewer::on_props_nameChanged(const QString& txt)
 void CModelViewer::on_props_selectionChanged()
 {
 	FSObject* po = ui->props->GetCurrentObject();
+	Update();
 	ui->tree->UpdateObject(po);
 	CDocument* doc = GetDocument();
 	if (doc) doc->Update();
