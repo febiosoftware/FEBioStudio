@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <MeshLib/FSCurveMesh.h>
 #include <GeomLib/GModel.h>
+#include "GLHighlighter.h"
 #include "Commands.h"
 #include <FEBioLink/FEBioClass.h>
 //using namespace std;
@@ -157,6 +158,7 @@ void CCreateSpringPane::showEvent(QShowEvent* ev)
 
 void CCreateSpringPane::hideEvent(QHideEvent* ev)
 {
+	GLHighlighter::ClearHighlights();
 	m_parent->SetTempObject(0);
 }
 
@@ -224,6 +226,7 @@ void CCreateSpringPane::on_newSet_clicked()
 bool CCreateSpringPane::updateTempObject()
 {
 	ui->m_curves->ClearMesh();
+	GLHighlighter::ClearHighlights();
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
 	GModel& geom = doc->GetFSModel()->GetModel();
@@ -245,7 +248,7 @@ bool CCreateSpringPane::updateTempObject()
 		FSMesh* m = po->GetFEMesh();
 		if (m == 0) return false;
 
-		for (int i = 0; i<(int)fenodes.size(); ++i)
+		for (int i = 0; i < (int)fenodes.size(); ++i)
 		{
 			vec3d ri = m->NodePosition(fenodes[i] - 1);
 			node1.push_back(ri);
@@ -256,7 +259,7 @@ bool CCreateSpringPane::updateTempObject()
 		vector<int> gnode1;
 		ui->m_node[0]->getAllItems(gnode1);
 
-		for (int i=0; i<(int)gnode1.size(); ++i)
+		for (int i = 0; i < (int)gnode1.size(); ++i)
 		{
 			vec3d ri = geom.FindNode(gnode1[i])->Position();
 			node1.push_back(ri);
@@ -276,7 +279,7 @@ bool CCreateSpringPane::updateTempObject()
 		FSMesh* m = po->GetFEMesh();
 		if (m == 0) return false;
 
-		for (int i = 0; i<(int)fenodes.size(); ++i)
+		for (int i = 0; i < (int)fenodes.size(); ++i)
 		{
 			vec3d ri = m->NodePosition(fenodes[i] - 1);
 			node2.push_back(ri);
@@ -287,7 +290,7 @@ bool CCreateSpringPane::updateTempObject()
 		vector<int> gnode2;
 		ui->m_node[1]->getAllItems(gnode2);
 
-		for (int i = 0; i<(int)gnode2.size(); ++i)
+		for (int i = 0; i < (int)gnode2.size(); ++i)
 		{
 			vec3d ri = geom.FindNode(gnode2[i])->Position();
 			node2.push_back(ri);
@@ -307,8 +310,8 @@ bool CCreateSpringPane::updateTempObject()
 		FSCurveMesh* cm = ui->m_curves->GetCurveMesh();
 		int n1 = (int)node1.size();
 		int n2 = (int)node2.size();
-		for (int i=0; i<node1.size(); ++i) cm->AddNode(node1[i], false);
-		for (int i=0; i<node2.size(); ++i) cm->AddNode(node2[i], false);
+		for (int i = 0; i < node1.size(); ++i) cm->AddNode(node1[i], false);
+		for (int i = 0; i < node2.size(); ++i) cm->AddNode(node2[i], false);
 		for (auto s : springs)
 		{
 			cm->AddEdge(s.first, s.second + n1);
@@ -317,6 +320,16 @@ bool CCreateSpringPane::updateTempObject()
 		ui->m_curves->Update();
 
 		m_parent->SetTempObject(ui->m_curves);
+	}
+
+	// highlight edges
+	GObject* tmp = ui->m_curves;;
+	if (tmp && (tmp->Edges() > 0))
+	{
+		int N = tmp->Edges();
+		GLHighlighter::SetActiveItem(0);
+		for (int i = 0; i < N; ++i)
+			GLHighlighter::PickItem(tmp->Edge(i));
 	}
 
 	return true;
