@@ -2565,9 +2565,9 @@ GLDiscreteItem::GLDiscreteItem(CGLModelScene* scene) : GLModelSceneItem(scene)
 				{
 					GDiscreteElement& el = pd->element(n);
 
+					c = pd->GetColor();
 					if (bsel && el.IsSelected()) c = GLColor(255, 255, 0);
 					else if (!po->IsActive()) c = GLColor(128, 128, 128);
-					else c = GLColor(c.r, c.g, c.b);
 
 					int n0 = el.Node(0) - minId;
 					int n1 = el.Node(1) - minId;
