@@ -2517,32 +2517,52 @@ void CCmdDeleteFESurfaceSelection::UnExecute()
 	FSSurfaceMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
 }
 
+CCmdShowObject::CCmdShowObject(GObject* po) : CCommand("Show")
+{
+	m_pobj.push_back(po);
+}
+
+CCmdShowObject::CCmdShowObject(vector<GObject*> po) : CCommand("Show")
+{
+	m_pobj = po;
+}
+
+void CCmdShowObject::Execute()
+{
+	for (GObject* po : m_pobj)
+		po->Show();
+}
+
+void CCmdShowObject::UnExecute()
+{
+	for (GObject* po : m_pobj)
+		po->Hide();
+}
+
 //////////////////////////////////////////////////////////////////////
 // CCmdHideObject
 //////////////////////////////////////////////////////////////////////
 
-CCmdHideObject::CCmdHideObject(GObject* po, bool bhide) : CCommand(bhide ? "Hide" : "Unhide")
+CCmdHideObject::CCmdHideObject(GObject* po) : CCommand("Hide")
 {
 	m_pobj.push_back(po);
-	m_bhide = bhide;
 }
 
-CCmdHideObject::CCmdHideObject(vector<GObject*> po, bool bhide) : CCommand(bhide ? "Hide" : "Unhide")
+CCmdHideObject::CCmdHideObject(vector<GObject*> po) : CCommand("Hide")
 {
 	m_pobj = po;
-	m_bhide = bhide;
 }
 
 void CCmdHideObject::Execute()
 {
 	for (GObject* po : m_pobj)
-		if (m_bhide) po->Hide(); else po->Show();
+		po->Hide();
 }
 
 void CCmdHideObject::UnExecute()
 {
 	for (GObject* po : m_pobj)
-		if (m_bhide) po->Show(); else po->Hide();
+		po->Show();
 }
 
 //////////////////////////////////////////////////////////////////////

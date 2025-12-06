@@ -846,20 +846,25 @@ void CModelViewer::OnHideObject()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel& m = doc->GetFSModel()->GetModel();
 
-	for (int i=0; i<m_selection.size(); ++i)
+	vector<GObject*> objList;
+	for (int i = 0; i < m_selection.size(); ++i)
 	{
 		GObject* po = dynamic_cast<GObject*>(m_selection[i]); assert(po);
-		if (po) 
+		if (po)
 		{
-			m.ShowObject(po, false);
-
+			objList.push_back(po);
+			po->Hide();
 			QTreeWidgetItem* item = ui->tree->FindItem(po);
 			if (item) item->setForeground(0, Qt::gray);
 		}
 	}
 
-	CMainWindow* wnd = GetMainWindow();
-	wnd->RedrawGL();
+	if (!objList.empty())
+	{
+		doc->AddCommand(new CCmdHideObject(objList));
+		CMainWindow* wnd = GetMainWindow();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnShowObject()
@@ -867,20 +872,25 @@ void CModelViewer::OnShowObject()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel& m = doc->GetFSModel()->GetModel();
 
+	vector<GObject*> objList;
 	for (int i=0; i<(int)m_selection.size(); ++i)
 	{
 		GObject* po = dynamic_cast<GObject*>(m_selection[i]); assert(po);
 		if (po)
 		{
-			m.ShowObject(po, true);
-
+			po->Show();
+			objList.push_back(po);
 			QTreeWidgetItem* item = ui->tree->FindItem(po);
 			if (item) item->setForeground(0, QBrush());
 		}
 	}
-	doc->Update();
-	CMainWindow* wnd = GetMainWindow();
-	wnd->RedrawGL();
+
+	if (!objList.empty())
+	{
+		doc->AddCommand(new CCmdShowObject(objList));
+		CMainWindow* wnd = GetMainWindow();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnSelectObject()

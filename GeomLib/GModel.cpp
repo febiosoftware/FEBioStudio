@@ -1690,14 +1690,6 @@ void GModel::ShowObjects(const vector<int>& objList, bool bshow)
         for (int i : objList) Object(i)->Hide();
 }
 
-void GModel::ShowObject(GObject* po, bool bshow)
-{
-	if (bshow)
-		po->Show();
-	else
-		po->Hide();
-}
-
 //-----------------------------------------------------------------------------
 void GModel::SelectObjects(const vector<int>& objList)
 {
@@ -1827,7 +1819,7 @@ bool GModel::DeleteParts(std::vector<GPart*>& partList)
 
 void GModel::ShowAllObjects()
 {
-	for (int i = 0; i<Objects(); ++i) ShowObject(Object(i));
+	for (int i = 0; i<Objects(); ++i) Object(i)->Show();
 }
 
 //-----------------------------------------------------------------------------

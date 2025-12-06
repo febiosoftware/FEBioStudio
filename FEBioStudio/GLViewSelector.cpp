@@ -1552,7 +1552,7 @@ void GLViewSelector::SelectObjects(int x, int y)
 		GLViewSettings& vs = m_glv->GetViewSettings();
 		if (vs.m_selectAndHide)
 		{
-			pcmd = new CCmdHideObject(closestObject, true);
+			pcmd = new CCmdHideObject(closestObject);
 		}
 		else
 		{

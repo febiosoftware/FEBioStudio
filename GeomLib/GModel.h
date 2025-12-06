@@ -258,7 +258,6 @@ public:
 public:
 	// show (or hide if bshow==false) a list of objects
 	void ShowObjects(const std::vector<int>& objList, bool bshow = true);
-	void ShowObject(GObject* po, bool bshow = true);
 
 	// select a list of objects
 	void SelectObjects(const std::vector<int>& objList);

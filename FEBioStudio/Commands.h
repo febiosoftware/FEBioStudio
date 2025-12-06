@@ -1052,19 +1052,30 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+class CCmdShowObject : public CCommand
+{
+public:
+	CCmdShowObject(GObject* po);
+	CCmdShowObject(std::vector<GObject*> po);
+
+	void Execute() override;
+	void UnExecute() override;
+
+protected:
+	std::vector<GObject*>	m_pobj;
+};
 
 class CCmdHideObject : public CCommand
 {
 public:
-	CCmdHideObject(GObject* po, bool bhide);
-	CCmdHideObject(std::vector<GObject*> po, bool bhide);
+	CCmdHideObject(GObject* po);
+	CCmdHideObject(std::vector<GObject*> po);
 
-	void Execute();
-	void UnExecute();
+	void Execute() override;
+	void UnExecute() override;
 
 protected:
 	std::vector<GObject*>	m_pobj;
-	bool				m_bhide;
 };
 
 //-----------------------------------------------------------------------------

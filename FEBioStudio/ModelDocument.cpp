@@ -1004,7 +1004,7 @@ void CModelDocument::HideUnselected()
 			for (int i = 0; i<mdl->Objects(); ++i)
 				if (mdl->Object(i)->IsSelected() == false) po.push_back(mdl->Object(i));
 
-			DoCommand(new CCmdHideObject(po, true));
+			DoCommand(new CCmdHideObject(po));
 		}
 		else if (selMode == SELECT_PART)
 		{
