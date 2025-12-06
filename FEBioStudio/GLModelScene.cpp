@@ -2992,8 +2992,36 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, double scale) cons
 	}
 }
 
-void GLPhysicsItem::RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc) const
+void GLPhysicsItem::RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc)
 {
+	GObject* poa = m_scene->GetActiveObject();
+	if (poa == nullptr) return;
+	FSMesh* pam = poa->GetFEMesh();
+	if (pam == nullptr) return;
+
+	if ((m_axesMesh == nullptr) || (poa != m_axesObject) || (pam != m_axesFEMesh))
+	{
+		BuildAxesMesh(rc);
+	}
+
+	if (m_axesMesh && (m_axesMesh->Edges() > 0))
+	{
+		re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
+		re.renderGMeshEdges(*m_axesMesh);
+	}
+}
+
+void GLPhysicsItem::BuildAxesMesh(GLContext& rc)
+{
+	m_axesMesh.reset();
+	GLObjectItem* activeItem = m_scene->GetActiveGLObjectItem();
+	if (activeItem == nullptr) return;
+	m_axesObject = activeItem->GetGObject();
+	if (m_axesObject == nullptr) return;
+	if (!m_axesObject->IsVisible()) return;
+	m_axesFEMesh = m_axesObject->GetFEMesh();
+	if (m_axesFEMesh == nullptr) return;
+
 	// get the model
 	FSModel* ps = m_scene->GetFSModel();
 	GModel& model = ps->GetModel();
@@ -3004,74 +3032,65 @@ void GLPhysicsItem::RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc) c
 	BOX box = model.GetBoundingBox();
 	double h = 0.05 * box.GetMaxExtent() * view.m_fiber_scale;
 
-	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
-
 	GLColor rgb[3] = { GLColor::Red(), GLColor::Green(), GLColor::Blue() };
 
-	std::vector<GLObjectItem*> objItems = m_scene->GetItemsOfType<GLObjectItem>();
-
-	for (int i = 0; i < objItems.size(); ++i)
+	GObject* po = m_axesObject;
+	FSMesh* pm = m_axesFEMesh;
+	Transform T = activeItem->GetTransform();
+	rel.m_pmesh = pm;
+	m_axesMesh.reset(new GLMesh());
+	for (int j = 0; j < pm->Elements(); ++j)
 	{
-		GLObjectItem* objItem = objItems[i];
-		GObject* po = objItem->GetGObject();
-		if (po && po->IsVisible())
+		FSElement& el = pm->Element(j);
+
+		GPart* pg = po->Part(el.m_gid);
+
+		bool showAxes = (pg->IsVisible() && el.IsVisible()) || view.m_showHiddenFibers;
+
+		if (showAxes)
 		{
-			FSMesh* pm = po->GetFEMesh();
-			if (pm)
+			GMaterial* pgm = ps->GetMaterialFromID(po->Part(el.m_gid)->GetMaterialID());
+			FSMaterial* pmat = 0;
+			if (pgm) pmat = pgm->GetMaterialProperties();
+
+			rel.m_nelem = j;
+			if (el.m_Qactive)
 			{
-				Transform T = objItem->GetTransform();
-				rel.m_pmesh = pm;
-				re.beginShape();
-				for (int j = 0; j < pm->Elements(); ++j)
-				{
-					FSElement& el = pm->Element(j);
+				vec3d c(0, 0, 0);
+				for (int k = 0; k < el.Nodes(); ++k) c += pm->NodePosition(el.m_node[k]);
+				c /= el.Nodes();
 
-					GPart* pg = po->Part(el.m_gid);
+				mat3d Q = el.m_Q;
+				vec3d q;
+				vec3f r[2];
+				for (int k = 0; k < 3; ++k) {
+					q = vec3d(Q[0][k], Q[1][k], Q[2][k]);
 
-					bool showAxes = (pg->IsVisible() && el.IsVisible()) || view.m_showHiddenFibers;
+					q = T.LocalToGlobalNormal(q);
 
-					if (showAxes)
-					{
-						GMaterial* pgm = ps->GetMaterialFromID(po->Part(el.m_gid)->GetMaterialID());
-						FSMaterial* pmat = 0;
-						if (pgm) pmat = pgm->GetMaterialProperties();
+					r[0] = to_vec3f(c);
+					r[1] = to_vec3f(c + q * h);
 
-						rel.m_nelem = j;
-						if (el.m_Qactive)
-						{
-							vec3d c(0, 0, 0);
-							for (int k = 0; k < el.Nodes(); ++k) c += pm->NodePosition(el.m_node[k]);
-							c /= el.Nodes();
-
-							mat3d Q = el.m_Q;
-							vec3d q;
-							for (int k = 0; k < 3; ++k) {
-								q = vec3d(Q[0][k], Q[1][k], Q[2][k]);
-
-								q = T.LocalToGlobalNormal(q);
-
-								re.setColor(rgb[k]);
-								re.renderLine(c, c + q * h);
-							}
-						}
-						else if (pmat && pmat->HasMaterialAxes())
-						{
-							vec3d c(0, 0, 0);
-							for (int k = 0; k < el.Nodes(); ++k) c += pm->NodePosition(el.m_node[k]);
-							c /= el.Nodes();
-
-							mat3d Q = pmat->GetMatAxes(rel);
-							vec3d q;
-							for (int k = 0; k < 3; ++k) {
-								q = vec3d(Q[0][k], Q[1][k], Q[2][k]);
-
-								re.setColor(rgb[k]);
-								re.renderLine(c, c + q * h);
-							}
-						}
-					}
+					m_axesMesh->AddEdge(r, rgb[k]);
 				}
-				re.endShape();
+			}
+			else if (pmat && pmat->HasMaterialAxes())
+			{
+				vec3d c(0, 0, 0);
+				for (int k = 0; k < el.Nodes(); ++k) c += pm->NodePosition(el.m_node[k]);
+				c /= el.Nodes();
+
+				mat3d Q = pmat->GetMatAxes(rel);
+				vec3d q;
+				vec3f r[2];
+				for (int k = 0; k < 3; ++k) {
+					q = vec3d(Q[0][k], Q[1][k], Q[2][k]);
+
+					r[0] = to_vec3f(c);
+					r[1] = to_vec3f(c + q * h);
+
+					m_axesMesh->AddEdge(r, rgb[k]);
+				}
 			}
 		}
 	}

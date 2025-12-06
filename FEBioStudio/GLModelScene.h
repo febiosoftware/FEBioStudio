@@ -214,7 +214,15 @@ private:
 	void RenderRigidJoints(GLRenderEngine& re, double scale) const;
 	void RenderRigidConnectors(GLRenderEngine& re, double scale) const;
 	void RenderRigidWalls(GLRenderEngine& re) const;
-	void RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc) const;
+	void RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc);
+
+private:
+	void BuildAxesMesh(GLContext& rc);
+
+private:
+	std::unique_ptr<GLMesh> m_axesMesh;
+	GObject* m_axesObject = nullptr;
+	FSMesh* m_axesFEMesh = nullptr;
 };
 
 class GLFiberVizItem : public GLModelSceneItem
