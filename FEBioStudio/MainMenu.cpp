@@ -481,6 +481,8 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuEditPost->addSeparator();
 	menuEditPost->addAction(actionFind);
 	menuEditPost->addAction(actionSelectRange);
+	menuEditPost->addSeparator();
+	menuEditPost->addAction(actionCopyObject);
 
 	// Edit (txt) menu
 	menuBar->addAction(menuEditTxt->menuAction());

@@ -1214,29 +1214,54 @@ void clearCopiedObjects()
 void CMainWindow::on_actionCopyObject_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	// get the active object
-	GObjectSelection* sel = dynamic_cast<GObjectSelection*>(doc->GetCurrentSelection());
-	if (sel == nullptr) 
+	if (doc)
 	{
-		QMessageBox::critical(this, "FEBio Studio", "You need to select an object first.");
-		return;
+		// get the active object
+		GObjectSelection* sel = dynamic_cast<GObjectSelection*>(doc->GetCurrentSelection());
+		if (sel == nullptr)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "You need to select an object first.");
+			return;
+		}
+
+		clearCopiedObjects();
+
+		// get the model
+		GModel& m = *doc->GetGModel();
+
+		// clone the object
+		for (int i = 0; i < sel->Size(); ++i)
+		{
+			GObject* po = sel->Object(i);
+			GObject* pco = m.CloneObject(po);
+			if (pco == nullptr)
+			{
+				QMessageBox::critical(this, "FEBio Studio", "Could not clone the selection.");
+				return;
+			}
+
+			// copy the name
+			pco->SetName(po->GetName());
+
+			// store this object
+			copyObject.push_back(pco);
+		}
 	}
 
-	clearCopiedObjects();
-
-	// get the model
-	GModel& m = *doc->GetGModel();
-
-	// clone the object
-	for (int i = 0; i < sel->Size(); ++i)
+	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(GetDocument());
+	if (postDoc)
 	{
-		GObject* po = sel->Object(i);
-		GObject* pco = m.CloneObject(po);
+		GObject* po = postDoc->GetActiveObject();
+		if (po == nullptr)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Nothing to copy.");
+			return;
+		}
+
+		GObject* pco = po->Clone();
 		if (pco == nullptr)
 		{
-			QMessageBox::critical(this, "FEBio Studio", "Could not clone the selection.");
+			QMessageBox::critical(this, "FEBio Studio", "Could not clone the object.");
 			return;
 		}
 
@@ -1244,6 +1269,7 @@ void CMainWindow::on_actionCopyObject_triggered()
 		pco->SetName(po->GetName());
 
 		// store this object
+		clearCopiedObjects();
 		copyObject.push_back(pco);
 	}
 }
