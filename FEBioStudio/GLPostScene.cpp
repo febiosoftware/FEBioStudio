@@ -381,7 +381,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 			else
 			{
 				float alpha = mat.transparency;
-				GLColor c = glm.m_pcol->GetInactiveColor();
+				GLColor c = glm.m_colMap->GetInactiveColor();
 				c.a = (uint8_t)(255.f * alpha);
 				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
 			}
@@ -470,7 +470,7 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 			else
 			{
 				float alpha = mat.transparency;
-				GLColor c = glm.m_pcol->GetInactiveColor();
+				GLColor c = glm.m_colMap->GetInactiveColor();
 				c.a = (uint8_t)(255.f * alpha);
 				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
 			}

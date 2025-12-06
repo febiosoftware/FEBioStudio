@@ -23,11 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-// FEModel.cpp: implementation of the FEModel class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "stdafx.h"
 #include "FEPostModel.h"
 #include "FEDataManager.h"
@@ -127,7 +122,9 @@ FEPostModel* FEPostModel::GetInstance()
 //-----------------------------------------------------------------------------
 FEState* FEPostModel::CurrentState()
 {
-	return m_State[m_nTime];
+	if (m_nTime >= 0 && m_nTime < GetStates())
+		return m_State[m_nTime];
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -659,7 +656,12 @@ void FEPostModel::DeleteState(int n)
 	for (int i=0; i<(int)m_State.size(); ++i) m_State[i]->SetID(i);
 }
 
-//-----------------------------------------------------------------------------
+FEState* FEPostModel::GetState(int nstate)
+{ 
+	if ((nstate < 0) || (nstate >= m_State.size())) return nullptr;
+	return m_State[nstate]; 
+}
+
 // insert a state a time f
 void FEPostModel::InsertState(FEState *ps, float f)
 {
@@ -1249,14 +1251,13 @@ vec3f FEPostModel::NodePosition(int n, int ntime)
 	{
 		FEState* state = GetState(ntime);
 		FERefState& ref = *state->m_ref;
-		FSMesh* mesh = state->GetFEMesh();
 		r = ref.m_Node[n].m_rt;
 		if (m_ndisp >= 0) r += EvaluateNodeVector(n, ntime, m_ndisp);
 	}
 	else
 	{
 		FSMesh* mesh = GetFEMesh(0);
-		r = to_vec3f(mesh->Node(n).r);
+		if (mesh) r = to_vec3f(mesh->Node(n).r);
 	}
 
 	return r;
@@ -1269,7 +1270,7 @@ vec3f FEPostModel::NodePosition(const vec3f& r, int ntime)
 
 	// find the element in which this node lies
 	int iel = -1; double iso[3] = {0};
-	if (FindElementInReferenceFrame(*mesh, r, iel, iso))
+	if (mesh && FindElementInReferenceFrame(*mesh, r, iel, iso))
 	{
 		vec3f x[FSElement::MAX_NODES];
 		GetElementCoords(iel, ntime, x);
@@ -1304,6 +1305,8 @@ vec3f FEPostModel::FaceNormal(FSFace& f, int ntime)
 int FEPostModel::GetElementCoords(int iel, int ntime, vec3f* r)
 {
 	FSMesh* mesh = GetState(ntime)->GetFEMesh();
+	if (mesh == nullptr) return 0;
+
 	FSElement_& elem = mesh->ElementRef(iel);
 	NODEDATA* pn = &m_State[ntime]->m_NODE[0];
 
@@ -1435,6 +1438,8 @@ void FEPostModel::UpdateMeshState(int ntime)
 	FEState& state = *GetState(ntime);
 
 	FSMesh* mesh = state.GetFEMesh();
+	if (mesh == nullptr) return;
+
 	int NE = mesh->Elements();
 	bool elemsModified = false;
 	for (int i = 0; i < NE; ++i)

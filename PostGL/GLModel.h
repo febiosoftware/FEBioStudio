@@ -108,9 +108,9 @@ public:
 
 	CPostObject* GetPostObject();
 
-	CGLDisplacementMap* GetDisplacementMap() { return m_pdis; }
-	CGLColorMap* GetColorMap() { return m_pcol; }
-	FEPostModel* GetFSModel() { return m_ps; }
+	CGLDisplacementMap* GetDisplacementMap() { return m_dispMap.get(); }
+	CGLColorMap* GetColorMap() { return m_colMap.get(); }
+	FEPostModel* GetFSModel() { return m_postMdl; }
 
 	bool Update(bool breset) override;
 	void UpdateDisplacements(int nstate, bool breset = false);
@@ -288,14 +288,14 @@ public:
 	bool		m_bshowMesh;
 
 public:
-	FEPostModel*	m_ps;
+	FEPostModel*	m_postMdl;
 
-	CPostObject* m_postObj;
+	std::unique_ptr<CPostObject> m_postObj;
+	std::unique_ptr<CGLDisplacementMap> m_dispMap;
+	std::unique_ptr<CGLColorMap>	m_colMap;
 
 	GLEdge					m_edge;	// all line elements from springs
 
-	CGLDisplacementMap*		m_pdis;
-	CGLColorMap*			m_pcol;
 
 	FSMesh*	m_lastMesh;	// mesh of last evaluated state
 

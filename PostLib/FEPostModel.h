@@ -207,10 +207,10 @@ public:
 	void DeleteState(int n);
 
 	//! Get the nr of states
-	int GetStates() { return (int) m_State.size(); }
+	int GetStates() const { return (int) m_State.size(); }
 
 	//! Retrieve pointer to a state
-	FEState* GetState(int nstate) { return m_State[nstate]; }
+	FEState* GetState(int nstate);
 
 	//! Add a new data field
 	void AddDataField(ModelDataField* pd, const std::string& name = "");
