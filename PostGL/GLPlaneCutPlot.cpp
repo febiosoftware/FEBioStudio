@@ -827,7 +827,7 @@ void CGLPlaneCutPlot::AddFaces(FSMesh* pm)
 		int elemId = face.m_elem[0].eid;
 		FSElement& el = pm->Element(elemId);
 		int pid = el.m_MatID;
-		if (pid >= 0)
+		if ((pid >= 0) && (pid < pm->MeshPartitions()))
 		{
 			FSMeshPartition& dom = pm->MeshPartition(pid);
 			int matId = dom.GetMatID();
