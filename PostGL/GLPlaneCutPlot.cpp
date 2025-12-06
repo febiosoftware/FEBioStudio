@@ -243,8 +243,14 @@ void CGLPlaneCutPlot::Render(GLRenderEngine& re, GLContext& rc)
 	// make sure we have a clip plane ID assigned
 	if ((m_nclip == -1) || !IsActive()) return;
 
+	Post::CGLModel* mdl = GetModel();
+	if ((mdl == nullptr) || !mdl->IsValid()) return;
+
+	Post::FEPostModel* fem = mdl->GetFSModel();
+	if (fem == nullptr) return;
+
 	vec3d r = m_T.GetPosition();
-	BOX box = GetModel()->GetFSModel()->GetBoundingBox();
+	BOX box = fem->GetBoundingBox();
 	m_T.SetPosition(-box.Center());
 	m_T.SetRotation(quatd(0.0, vec3d(1, 0, 0)));
 
