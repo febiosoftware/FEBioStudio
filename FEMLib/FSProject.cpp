@@ -200,7 +200,7 @@ FSProject::~FSProject(void)
 //-----------------------------------------------------------------------------
 void FSProject::Reset()
 {
-	m_fem.New();
+	m_fem.Reset();
 	m_plt.Init();
 }
 

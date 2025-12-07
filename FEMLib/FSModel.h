@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include "FEInitialCondition.h"
 #include <FSCore/FSObjectList.h>
 #include <unordered_set>
+#include <memory>
 
 class GModel;
 class FSReactionMaterial;
@@ -56,6 +57,10 @@ public:
 	//! Destructor
 	virtual ~FSModel();
 
+	FSModel(const FSModel&) = delete;
+	FSModel& operator = (const FSModel&) = delete;
+
+public:
 	//! Clear the model
 	void Clear();
 
@@ -106,13 +111,13 @@ public:
 	void RemoveUnusedItems();
 
 	//! Reset model data
-	void New();
+	void Reset();
 
 	//! Count the mesh data fields (includes mesh data fields stored on the mesh and the mesh data generators)
 	int CountMeshDataFields();
 
 	//! Return the model geometry
-	GModel& GetModel() { return *m_pModel; }
+	GModel& GetModel() { return *(m_GMdl.get()); }
 
 	// --- material functions ---
 
@@ -377,7 +382,8 @@ protected:
 
 protected:
 	//! Model geometry
-	GModel*					m_pModel;
+	std::unique_ptr<GModel>	m_GMdl;
+
 	//! Degree of freedom list
 	std::vector<FEDOFVariable>	m_DOF;
 
