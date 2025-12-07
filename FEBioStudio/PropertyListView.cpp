@@ -223,7 +223,7 @@ public:
 			{
 				if (role == Qt::DisplayRole)
 				{
-					Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+					Post::FEPostModel* fem = Post::FEPostModel::GetActiveModel(); assert(fem);
 					std::string s;
 					if (fem)
 					{
@@ -238,7 +238,7 @@ public:
 			{
 				if (role == Qt::DisplayRole)
 				{
-					Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+					Post::FEPostModel* fem = Post::FEPostModel::GetActiveModel(); assert(fem);
 					std::string s;
 					if (fem)
 					{
@@ -253,7 +253,7 @@ public:
 			{
 				if (role == Qt::DisplayRole)
 				{
-					Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+					Post::FEPostModel* fem = Post::FEPostModel::GetActiveModel(); assert(fem);
 					std::string s;
 					if (fem)
 					{
@@ -466,7 +466,7 @@ public:
 			else if (prop.type == CProperty::DataScalar)
 			{
 				CDataFieldSelector* pc = new CDataFieldSelector(parent);
-				Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+				Post::FEPostModel* fem = Post::FEPostModel::GetActiveModel(); assert(fem);
 				if (fem) pc->BuildMenu(fem, Post::TENSOR_SCALAR);
 				int nfield = data.toInt();
 				pc->setCurrentValue(nfield);
@@ -476,7 +476,7 @@ public:
 			else if (prop.type == CProperty::DataVec3)
 			{
 				CDataFieldSelector* pc = new CDataFieldSelector(parent);
-				Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+				Post::FEPostModel* fem = Post::FEPostModel::GetActiveModel(); assert(fem);
 				if (fem) pc->BuildMenu(fem, Post::TENSOR_VECTOR);
 				int nfield = data.toInt();
 				pc->setCurrentValue(nfield);
@@ -486,7 +486,7 @@ public:
 			else if (prop.type == CProperty::DataVec3Exp)
 			{
 				CDataFieldSelector* pc = new CDataFieldSelector(parent);
-				Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+				Post::FEPostModel* fem = Post::FEPostModel::GetActiveModel(); assert(fem);
 				if (fem) pc->BuildMenu(fem, Post::TENSOR_VECTOR, true);
 				int nfield = data.toInt();
 				pc->setCurrentValue(nfield);
@@ -496,7 +496,7 @@ public:
 			else if (prop.type == CProperty::DataMat3)
 			{
 				CDataFieldSelector* pc = new CDataFieldSelector(parent);
-				Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+				Post::FEPostModel* fem = Post::FEPostModel::GetActiveModel(); assert(fem);
 				if (fem) pc->BuildMenu(fem, Post::TENSOR_TENSOR2);
 				int nfield = data.toInt();
 				pc->setCurrentValue(nfield);

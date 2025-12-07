@@ -33,10 +33,10 @@ SOFTWARE.*/
 #include "GLObject.h"
 #include <FSCore/box.h>
 #include <vector>
+#include <memory>
 
 namespace Post {
 
-//-----------------------------------------------------------------------------
 //! Class for storing metadata information about the model
 class MetaData
 {
@@ -45,7 +45,6 @@ public:
 	string	software;	//!< software that generated the model file
 };
 
-//-----------------------------------------------------------------------------
 //! Base class for derived classes that need to be informed when the model changes
 class FEModelDependant
 {
@@ -60,7 +59,6 @@ public:
 	virtual void Update(FEPostModel* pfem) = 0;
 };
 
-//-----------------------------------------------------------------------------
 //! Class that describes an FEPostModel. A model consists of a mesh (in the future
 //! there can be multiple meshes to support remeshing), a list of materials
 //! and a list of states. The states contain the data associated with the model
@@ -137,6 +135,10 @@ public:
 	//! Virtual destructor
 	virtual ~FEPostModel();
 
+	// This class is not copyable
+	FEPostModel(const FEPostModel&) = delete;
+	FEPostModel& operator=(const FEPostModel&) = delete;
+
 	//! Clear all model data
 	void Clear();
 
@@ -174,7 +176,7 @@ public:
 	int GetClosestTime(double t);
 
 	//! Get the data manager
-	FEDataManager* GetDataManager() { return m_pDM; }
+	FEDataManager* GetDataManager() { return m_DM.get(); }
 
 	// --- M A T E R I A L S ---
 
@@ -325,10 +327,11 @@ public:
 	bool Merge(FEPostModel* fem);
 
 public:
-	//! Set the singleton instance
-	static void SetInstance(FEPostModel* fem);
-	//! Get the singleton instance
-	static FEPostModel* GetInstance();
+	//! Set the active model
+	static void SetActiveModel(FEPostModel* fem);
+
+	//! Get the active model
+	static FEPostModel* GetActiveModel();
 
 	//! Get the metadata
 	MetaData& GetMetaData() { return m_meta; }
@@ -383,9 +386,9 @@ protected:
 
 	// --- M E S H ---
 	//! Reference state for meshes
-	std::vector<FERefState*>		m_RefState;	// reference state for meshes
+	std::vector< std::unique_ptr<FERefState>>	m_RefState;	// reference state for meshes
 	//! The list of meshes
-	std::vector<FSMesh*>		m_mesh;		// the list of meshes
+	std::vector<std::unique_ptr<FSMesh>>	m_mesh;		// the list of meshes
 	//! Bounding box of mesh
 	BOX						m_bbox;		// bounding box of mesh
 
@@ -395,22 +398,23 @@ protected:
 
 	// --- O B J E C T S ---
 	//! Vector of point objects
-	std::vector<PointObject*>	m_Points;
+	std::vector< std::unique_ptr<PointObject> >	m_Points;
 	//! Vector of line objects
-	std::vector<LineObject *>	m_Lines;
+	std::vector<std::unique_ptr<LineObject> >	m_Lines;
 
 	// --- S T A T E ---
 	//! Array of pointers to FE-state structures
-	std::vector<FEState*>	m_State;	// array of pointers to FE-state structures
+	std::vector<std::unique_ptr<FEState>>	m_State;	// array of pointers to FE-state structures
+
 	//! The Data Manager
-	FEDataManager*		m_pDM;		// the Data Manager
+	std::unique_ptr<FEDataManager>	m_DM;		// the Data Manager
 	//! Vector field defining the displacement
 	int					m_ndisp;	// vector field defining the displacement
 
 	//! Vector of dependant objects
 	std::vector<FEModelDependant*>	m_Dependants;
 
-	//! Singleton instance pointer
-	static FEPostModel*	m_pThis;
+	//! Only one model can be active at a time
+	static FEPostModel*	m_activeModel;
 };
 } // namespace Post

@@ -435,7 +435,7 @@ void CPostDocument::ActivateColormap(bool bchecked)
 
 void CPostDocument::Activate()
 {
-	Post::FEPostModel::SetInstance(m_fem);
+	Post::FEPostModel::SetActiveModel(m_fem);
 	CGLDocument::Activate();
 }
 
