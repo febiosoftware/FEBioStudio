@@ -3621,7 +3621,7 @@ void CMainWindow::on_doCommand(QString msg)
 
 void CMainWindow::on_selectionChanged()
 {
-//	ReportSelection();
+	ReportSelection();
 }
 
 CPluginManager* CMainWindow::GetPluginManager() { return &ui->m_pluginManager; }
