@@ -797,6 +797,9 @@ void GObject::Show()
 		}
 		mesh->UpdateItemVisibility();
 	}
+
+	SetRenderMesh(nullptr);
+	SetFERenderMesh(nullptr);
 }
 
 //-----------------------------------------------------------------------------
