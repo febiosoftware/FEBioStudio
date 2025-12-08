@@ -491,6 +491,11 @@ GOCCObject* MergeOCCObjects(std::vector<GOCCObject*> occlist)
 	aBuilder.SetIntersect(true);
 	aBuilder.SetAvoidInternalShapes(false);
 	aBuilder.Perform();
+	if (aBuilder.HasErrors())
+	{
+		return nullptr;
+	}
+
 	TopoDS_Shape solid = aBuilder.Shape();
 	GOCCObject* occ = new GOCCObject;
 	occ->SetShape(solid);

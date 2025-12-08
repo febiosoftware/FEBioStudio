@@ -237,15 +237,6 @@ public:
 	std::list<GPart*> FindPartsFromMaterial(int matId, bool bmatch = true);
 
 public:
-	// create a clone
-	GObject* CloneObject(GObject *po);
-
-	// clone the object on a grid
-	std::vector<GObject*> CloneGrid(GObject* po, int x0, int x1, int y0, int y1, int z0, int z1, double dx, double dy, double dz);
-
-	// reolve clone the object
-	std::vector<GObject*> CloneRevolve(GObject* po, int count, double range, double spiral, const vec3d& center, const vec3d& axis, bool rotateClones);
-
 	// merge the selected objects
 	GObject* MergeSelectedObjects(GObjectSelection* sel, const std::string& newObjectName, bool weld, double tol);
 

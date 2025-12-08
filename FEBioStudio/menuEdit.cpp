@@ -50,6 +50,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GCurveObject.h>
+#include <GeomLib/GeomTools.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/FEMeshOverlap.h>
 #include <MeshLib/FSFindElement.h>
@@ -1184,7 +1185,7 @@ void CMainWindow::on_actionClone_triggered()
 		GModel& m = *doc->GetGModel();
 
 		// clone the object
-		GObject* pco = m.CloneObject(po);
+		GObject* pco = GeomTools::CloneObject(po);
 		if (pco == 0)
 		{
 			QMessageBox::critical(this, "FEBio Studio", "Could not clone this object.");
@@ -1226,14 +1227,11 @@ void CMainWindow::on_actionCopyObject_triggered()
 
 		clearCopiedObjects();
 
-		// get the model
-		GModel& m = *doc->GetGModel();
-
 		// clone the object
 		for (int i = 0; i < sel->Size(); ++i)
 		{
 			GObject* po = sel->Object(i);
-			GObject* pco = m.CloneObject(po);
+			GObject* pco = GeomTools::CloneObject(po);
 			if (pco == nullptr)
 			{
 				QMessageBox::critical(this, "FEBio Studio", "Could not clone the selection.");
@@ -1361,7 +1359,7 @@ void CMainWindow::on_actionCloneGrid_triggered()
 		GModel& m = *doc->GetGModel();
 
 		// clone the object
-		vector<GObject*> newObjects = m.CloneGrid(po, dlg.m_rangeX[0], dlg.m_rangeX[1], dlg.m_rangeY[0], dlg.m_rangeY[1], dlg.m_rangeZ[0], dlg.m_rangeZ[1], dlg.m_inc[0], dlg.m_inc[1], dlg.m_inc[2]);
+		vector<GObject*> newObjects = GeomTools::CloneGrid(po, dlg.m_rangeX[0], dlg.m_rangeX[1], dlg.m_rangeY[0], dlg.m_rangeY[1], dlg.m_rangeZ[0], dlg.m_rangeZ[1], dlg.m_inc[0], dlg.m_inc[1], dlg.m_inc[2]);
 		if (newObjects.empty())
 		{
 			QMessageBox::critical(this, "FEBio Studio", "Failed to grid clone this object");
@@ -1399,7 +1397,7 @@ void CMainWindow::on_actionCloneRevolve_triggered()
 	{
 		GModel& m = *doc->GetGModel();
 
-		vector<GObject*> newObjects = m.CloneRevolve(po, dlg.m_count, dlg.m_range, dlg.m_spiral, dlg.m_center, dlg.m_axis, dlg.m_rotateClones);
+		vector<GObject*> newObjects = GeomTools::CloneRevolve(po, dlg.m_count, dlg.m_range, dlg.m_spiral, dlg.m_center, dlg.m_axis, dlg.m_rotateClones);
 		if (newObjects.empty())
 		{
 			QMessageBox::critical(this, "FEBio Studio", "Failed to revolve clone this object");
