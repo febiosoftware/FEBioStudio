@@ -725,7 +725,6 @@ protected:
 	GModel*			m_model;	// pointer to model
 	std::vector<int>		m_nedge;	// list of edges to select
 	std::vector<bool>	m_bold;		// old selection state of surfaces
-	bool			m_badd;		// add to current selection
 };
 
 //-----------------------------------------------------------------------------
@@ -761,7 +760,6 @@ protected:
 	GModel*			m_model;	// pointer to model
 	std::vector<int>		m_node;		// list of edges to select
 	std::vector<bool>	m_bold;		// old selection state of surfaces
-	bool			m_badd;		// add to current selection
 };
 
 //-----------------------------------------------------------------------------
@@ -856,7 +854,6 @@ public:
 
 protected:
 	CGLDocument*	m_doc;
-	int	m_item;
 };
 
 //-----------------------------------------------------------------------------

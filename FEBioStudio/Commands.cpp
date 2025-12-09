@@ -800,6 +800,7 @@ void CCmdScaleSelection::UnExecute()
 //=============================================================================
 CCmdToggleObjectVisibility::CCmdToggleObjectVisibility(GModel* model) : CCommand("Toggle visibility")
 {
+	m_flags = 0; // this command does not change the document
 	m_model = model;
 }
 
@@ -821,6 +822,7 @@ void CCmdToggleObjectVisibility::UnExecute()
 //=============================================================================
 CCmdTogglePartVisibility::CCmdTogglePartVisibility(GModel* model) : CCommand("Toggle visibility")
 {
+	m_flags = 0; // this command does not change the document
 	m_model = model;
 }
 
@@ -852,6 +854,7 @@ void CCmdTogglePartVisibility::UnExecute()
 //=============================================================================
 CCmdToggleDiscreteVisibility::CCmdToggleDiscreteVisibility(GModel* model) : CCommand("Toggle visibility")
 {
+	m_flags = 0; // this command does not change the document
 	m_model = model;
 }
 
@@ -873,6 +876,7 @@ void CCmdToggleDiscreteVisibility::UnExecute()
 //=============================================================================
 CCmdToggleElementVisibility::CCmdToggleElementVisibility(GObject* po) : CCommand("Toggle visibility")
 {
+	m_flags = 0; // this command does not change the document
 	m_po = po;
 	m_mesh = (m_po ? m_po->GetFEMesh() : nullptr);
 }
@@ -899,6 +903,7 @@ void CCmdToggleElementVisibility::UnExecute()
 //=============================================================================
 CCmdToggleFEFaceVisibility::CCmdToggleFEFaceVisibility(FSMeshBase* mesh) : CCommand("Toggle visibility")
 {
+	m_flags = 0; // this command does not change the document
 	m_mesh = mesh;
 }
 
@@ -2519,11 +2524,13 @@ void CCmdDeleteFESurfaceSelection::UnExecute()
 
 CCmdShowObject::CCmdShowObject(GObject* po) : CCommand("Show")
 {
+	m_flags = 0; // this command does not change the document
 	m_pobj.push_back(po);
 }
 
 CCmdShowObject::CCmdShowObject(vector<GObject*> po) : CCommand("Show")
 {
+	m_flags = 0; // this command does not change the document
 	m_pobj = po;
 }
 
@@ -2545,11 +2552,13 @@ void CCmdShowObject::UnExecute()
 
 CCmdHideObject::CCmdHideObject(GObject* po) : CCommand("Hide")
 {
+	m_flags = 0; // this command does not change the document
 	m_pobj.push_back(po);
 }
 
 CCmdHideObject::CCmdHideObject(vector<GObject*> po) : CCommand("Hide")
 {
+	m_flags = 0; // this command does not change the document
 	m_pobj = po;
 }
 
@@ -2571,12 +2580,14 @@ void CCmdHideObject::UnExecute()
 
 CCmdHideParts::CCmdHideParts(GModel* model, GPart* part) : CCommand("Hide")
 {
+	m_flags = 0; // this command does not change the document
 	m_model = model;
 	m_partList.push_back(part);
 }
 
 CCmdHideParts::CCmdHideParts(GModel* model, std::list<GPart*> partList) : CCommand("Hide")
 {
+	m_flags = 0; // this command does not change the document
 	m_model = model;
 	m_partList = partList;
 }
@@ -2597,6 +2608,7 @@ void CCmdHideParts::UnExecute()
 
 CCmdShowParts::CCmdShowParts(GModel* model, std::list<GPart*> partList) : CCommand("Show parts")
 {
+	m_flags = 0; // this command does not change the document
 	m_model = model;
 	m_partList = partList;
 }
@@ -2617,6 +2629,7 @@ void CCmdShowParts::UnExecute()
 
 CCmdHideElements::CCmdHideElements(GObject* po, const vector<int>& elemList) : CCommand("Hide")
 {
+	m_flags = 0; // this command does not change the document
 	m_po = po;
 	m_mesh = po->GetFEMesh();
 	m_elemList = elemList;
@@ -2624,6 +2637,7 @@ CCmdHideElements::CCmdHideElements(GObject* po, const vector<int>& elemList) : C
 
 CCmdHideElements::CCmdHideElements(FSMesh* mesh, const vector<int>& elemList) : CCommand("Hide")
 {
+	m_flags = 0; // this command does not change the document
 	m_po = nullptr;
 	m_mesh = mesh;
 	m_elemList = elemList;
@@ -2647,6 +2661,7 @@ void CCmdHideElements::UnExecute()
 
 CCmdHideFaces::CCmdHideFaces(FSSurfaceMesh* mesh, const vector<int>& faceList) : CCommand("Hide")
 {
+	m_flags = 0; // this command does not change the document
 	m_mesh = mesh;
 	m_faceList = faceList;
 }
@@ -2667,6 +2682,8 @@ void CCmdHideFaces::UnExecute()
 
 CCmdHideSelection::CCmdHideSelection(CModelDocument* doc) : CCommand("Hide")
 {
+	m_flags = 0; // this command does not change the document
+
 	m_doc = doc;
 	FESelection* ps = m_doc->GetCurrentSelection();
 	assert(ps->Size());
@@ -2804,6 +2821,7 @@ void CCmdHideSelection::UnExecute()
 
 CCmdHideUnselected::CCmdHideUnselected(CModelDocument* doc) : CCommand("Hide")
 {
+	m_flags = 0; // this command does not change the document
 	m_doc = doc;
 	FESelection* ps = m_doc->GetCurrentSelection();
 	assert(ps->Size());
@@ -2922,6 +2940,7 @@ void CCmdHideUnselected::UnExecute()
 
 CCmdUnhideAll::CCmdUnhideAll(CModelDocument* doc) : CCommand("Unhide all")
 {
+	m_flags = 0; // this command does not change the document
 	m_doc = doc;
 	m_nitem = doc->GetItemMode();
 	m_nselect = doc->GetSelectionMode();
