@@ -151,7 +151,14 @@ if(CAD_FEATURES)
         endforeach(name)    
     endif()
 
+set(USE_NEW_OCC "OFF" CACHE BOOL "Enable or disable OCC libraries < 7.7.0")
+
+if (USE_NEW_OCC)
+    set(OCCT_LIB_NAMES TKernel TKGeomBase TKTopAlgo TKPrim TKMesh TKMath TKBRep TKDESTL TKFillet TKBO TKDEIGES TKDESTEP  TKXSBase TKG3d TKLCAF TKVCAF)
+else()
     set(OCCT_LIB_NAMES TKernel TKGeomBase TKTopAlgo TKPrim TKMesh TKMath TKBRep TKSTL TKFillet TKBO TKIGES TKSTEP TKSTEPBase TKXSBase TKG3d TKLCAF TKVCAF)
+endif()
+
     foreach(name IN LISTS OCCT_LIB_NAMES)
         findLib(OCCT_LIB_DIR OCCT_LIB ${name})
         list(APPEND OCCT_LIBS ${OCCT_LIB})
