@@ -42,9 +42,11 @@ public:
 
 	void SetMaxIterations(int n) { m_maxiter = n; }
 	void SetTolerance(double tol) { m_tol = tol; }
+	void SetOutputLevel(int n) { m_outputLevel = n; }
 
 	int Iterations() const { return m_iters; }
 	double RelativeError() const { return m_err; }
+	int OutputLevel() const { return m_outputLevel; }
 
 private:
 	Transform Register(const std::vector<vec3d>& P0, const std::vector<vec3d>& Y, double* err);
@@ -53,6 +55,7 @@ private:
 private:
 	double	m_tol;
 	int		m_maxiter;
+	int		m_outputLevel;
 
 	int		m_iters;
 	double	m_err;

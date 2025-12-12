@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshLib/FSMesh.h>
 #include <FECore/matrix.h>
 #include <MeshTools/FENNQuery.h>
+#include <FSCore/FSLogger.h>
 using namespace std;
 
 vec3d CenterOfMass(const vector<vec3d>& S)
@@ -97,6 +98,7 @@ GICPRegistration::GICPRegistration()
 {
 	m_maxiter = 100;
 	m_tol = 0.001;
+	m_outputLevel = 0;
 
 	m_iters = 0;
 	m_err = 0.0;
@@ -173,7 +175,7 @@ void ClosestPointSet(FSNNQuery& X, const vector<vec3d>& P, vector<vec3d>& Y)
 Transform GICPRegistration::Register(const vector<vec3d>& X, const vector<vec3d>& P0)
 {
 	FSNNQuery NNQ(X);
-	NNQ.Init();
+	if (NNQ.Init() == false) return Transform();
 
 	int NX = (int)X.size();
 	int NP = (int)P0.size();
@@ -239,6 +241,8 @@ Transform GICPRegistration::Register(const vector<vec3d>& X, const vector<vec3d>
 
 			// check convergence
 			double rel = (m_err - prev_err) / R;
+			if (m_outputLevel != 0)
+				FSLogger::Write("iter %d: err = %lg (rel = %lg)\n", m_iters + 1, m_err, rel);
 			if (fabs(rel) < m_tol) {
 				m_iters++; break;
 			}

@@ -35,6 +35,7 @@
 #include <QDoubleValidator>
 #include <QGroupBox>
 #include <QMessageBox>
+#include <QComboBox>
 #include "ModelDocument.h"
 #include "SelectionBox.h"
 #include <GeomLib/GObject.h>
@@ -49,6 +50,7 @@ class ICPRegistrationToolUI : public QWidget
 private:
     QLineEdit* m_tol;
     QLineEdit* m_maxiter;
+	QComboBox* m_outputLevel;
     CSelectionBox* m_src;
     CSelectionBox* m_trg;
 
@@ -65,6 +67,7 @@ public:
         QFormLayout* f = new QFormLayout;
         f->addRow("Tolerance:", m_tol = new QLineEdit); m_tol->setValidator(new QDoubleValidator());
         f->addRow("Max. iterations:", m_maxiter = new QLineEdit); m_maxiter->setValidator(new QIntValidator(1, 10000));
+		f->addRow("Output level:", m_outputLevel = new QComboBox); m_outputLevel->addItems({ "default", "verbose" });
         QPushButton* apply = new QPushButton("Apply");
 
         f->setAlignment(Qt::AlignRight);
@@ -114,6 +117,7 @@ public:
 
     double tolerance() { return m_tol->text().toDouble(); }
     int maxIterations() { return m_maxiter->text().toInt(); }
+	int outputLevel() { return m_outputLevel->currentIndex(); }
 
 	bool UpdateSelectionList(FSItemListBuilder*& pl, FSItemListBuilder* items)
 	{
@@ -318,6 +322,7 @@ void CICPRegistrationTool::OnApply()
 	GICPRegistration icp;
 	icp.SetTolerance(ui->tolerance());
 	icp.SetMaxIterations(ui->maxIterations());
+	icp.SetOutputLevel(ui->outputLevel());
 	Transform Q = icp.Register(trgNodes, srcNodes);
 
 	vec3d t = Q.GetPosition();
