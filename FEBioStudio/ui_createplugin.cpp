@@ -209,7 +209,16 @@ class CLinearSolverProps : public CPluginTemplate
 public:
 	CLinearSolverProps() : CPluginTemplate("Linear solver", szhdr_ls, szsrc_ls)
 	{
-		SetInfo("Implement a new linear solver.");
+		SetInfo("Implement a new linear solver for solving linear systems of equations.");
+	}
+};
+
+class CFELinearSolverProps : public CPluginTemplate
+{
+public:
+	CFELinearSolverProps() : CPluginTemplate("Linear FE solver", szhdr_fels, szsrc_fels)
+	{
+		SetInfo("Implement a new solver for solving linear finite element problems.");
 	}
 };
 
@@ -238,11 +247,12 @@ public:
 //=============================================================================
 // Try to keep this in alphabetical order
 // NOTE: remember to increase PLUGIN_TEMPLATES when adding a new template.
-const int PLUGIN_TEMPLATES = 9;
+const int PLUGIN_TEMPLATES = 10;
 CPluginTemplate* pluginTemplates[PLUGIN_TEMPLATES] = {
 	new CCallbackProps(),
 	new CElasticMaterialProps(),
 	new CElemDataGeneratorProps(),
+	new CFELinearSolverProps(),
 	new CLogDataProps(),
 	new CPlotDataProps(),
 	new CSurfaceLoadProps(),

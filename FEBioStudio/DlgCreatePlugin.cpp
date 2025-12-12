@@ -153,6 +153,17 @@ void CDlgCreatePlugin::accept()
 		return;
 	}
 
+	// collect FEBio libraries needed by the plugin
+	QStringList febioLibs;
+	febioLibs << "FECore";
+	if      (pluginModule == "solid"          ) febioLibs << "FEBioMech";
+	else if (pluginModule == "biphasic"       ) febioLibs << "FEBioMech" << "FEBioMix";
+	else if (pluginModule == "solute"         ) febioLibs << "FEBioMech" << "FEBioMix";
+	else if (pluginModule == "multiphasic"    ) febioLibs << "FEBioMech" << "FEBioMix";
+	else if (pluginModule == "fluid"          ) febioLibs << "FEBioMech" << "FEBioFluid";
+	else if (pluginModule == "fluid-FSI"      ) febioLibs << "FEBioMech" << "FEBioFluid";
+	else if (pluginModule == "multiphasic-FSI") febioLibs << "FEBioMech" << "FEBioMix" << "FEBioFluid";
+
 	// generate the plugin meta data
 	PluginConfig config;
 	config.name        = pluginName;
@@ -165,7 +176,7 @@ void CDlgCreatePlugin::accept()
 	config.args        = ui->opsPage->GetOptions();
 	config.sdkInc      = ui->m_wnd->GetSDKIncludePath();
 	config.sdkLib      = ui->m_wnd->GetSDKLibraryPath();
-    config.febioLibs   = QStringList() << "FECore" << "FEBioMech";
+    config.febioLibs   = febioLibs;
 	config.headerFile  = config.path + sep + config.className + ".h";
 	config.sourceFile  = config.path + sep + config.className + ".cpp";
 	config.mainFile    = config.path + sep + "main.cpp";

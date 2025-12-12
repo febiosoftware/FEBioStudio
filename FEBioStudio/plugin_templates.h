@@ -602,6 +602,67 @@ bool $(CLASS_NAME)::SetSparseMatrix(SparseMatrix* pA)
 }
 )delim";
 
+
+// ============================================================================
+// Linear Solver
+// ============================================================================
+const char* szhdr_fels =
+R"delim(
+#include <FECore/FELinearSolver.h>
+
+class $(CLASS_NAME) : public FELinearSolver
+{
+public:
+	$(CLASS_NAME)(FEModel* fem);
+
+	~$(CLASS_NAME)();
+
+	// one-time initialization
+	bool Init() override;
+
+	// evaluate the RHS vector
+	void ForceVector(FEGlobalVector& R) override;
+
+	//! calculate the stiffness matrix
+	bool StiffnessMatrix(FELinearSystem& LS) override; 
+};
+)delim";
+
+const char* szsrc_fels =
+R"delim(
+#include "$(CLASS_NAME).h"
+
+$(CLASS_NAME)::$(CLASS_NAME)(FEModel* fem) : FELinearSolver(fem)
+{
+}
+
+$(CLASS_NAME)::~$(CLASS_NAME)()
+{
+}
+
+bool $(CLASS_NAME)::Init()
+{
+	// call base-class first
+	if (!FELinearSolver::Init()) return false;
+
+	// TODO: Add additional initialization
+
+	return true;
+}
+
+void $(CLASS_NAME)::ForceVector(FEGlobalVector& R)
+{
+	// Base-class can do most of the work
+	FELinearSolver::ForceVector(R);
+}
+
+bool $(CLASS_NAME)::StiffnessMatrix(FELinearSystem& LS)
+{
+	// TODO: Implement stiffness matrix calculation
+	return true;
+}
+)delim";
+
 // ============================================================================
 // Custom class
 // ============================================================================
