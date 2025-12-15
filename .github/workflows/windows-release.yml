@@ -13,6 +13,8 @@ jobs:
   call_workflow:
     uses: febiosoftware/febio-workflows/.github/workflows/windows-release.yml@develop
     with:
-      aws-ami-id: ${{ vars.WINDOWS_AMI }}
+      # aws-ami-id: ${{ vars.WINDOWS_AMI }}
+      aws-ami-id: ami-069001bb982dcc2c6
       aws-sg-id: sg-0ca7912782cf1538b
+      publish: 'false'
     secrets: inherit
