@@ -425,7 +425,7 @@ void CMainWindow::unzipFinished()
 {
     ReleaseFile& currentFile = ui->updateWidget->updateFiles[ui->zippedFiles[ui->currentZippedIndex]];
 
-    QFile zip = QApplication::applicationDirPath() + QString(REL_ROOT) + currentFile.name;
+    QFile zip = QFile(QApplication::applicationDirPath() + QString(REL_ROOT) + currentFile.name);
 
     if(zip.exists())
     {
