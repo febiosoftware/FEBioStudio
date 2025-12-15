@@ -35,6 +35,7 @@ SOFTWARE.*/
 //
 // $(CLASS_NAME)       : the name of the plugin. Also used as the class name. 
 // $(PLUGIN_MODULE)    : the FEBio module to which the class will be added. 
+// $(MODULE_LIB)       : the name of the library that contains the module
 // $(CLASS_TYPESTRING) : the type string for the plugin class. (I.e. how the feature is referenced in the input file)
 //
 // In addition, the code snippets use additional special fields, denoted $(ARG1), $(ARG2), ...
@@ -51,7 +52,6 @@ cmake_minimum_required(VERSION 3.5.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_FILES_DIRECTORY ${CMAKE_BINARY_DIR}/CMakeFiles)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Name of your plugin
@@ -599,5 +599,95 @@ SparseMatrix* $(CLASS_NAME)::CreateSparseMatrix(Matrix_Type ntype)
 bool $(CLASS_NAME)::SetSparseMatrix(SparseMatrix* pA)
 {
 	return false;
+}
+)delim";
+
+
+// ============================================================================
+// Linear Solver
+// ============================================================================
+const char* szhdr_fels =
+R"delim(
+#include <FECore/FELinearSolver.h>
+
+class $(CLASS_NAME) : public FELinearSolver
+{
+public:
+	$(CLASS_NAME)(FEModel* fem);
+
+	~$(CLASS_NAME)();
+
+	// one-time initialization
+	bool Init() override;
+
+	// evaluate the RHS vector
+	void ForceVector(FEGlobalVector& R) override;
+
+	//! calculate the stiffness matrix
+	bool StiffnessMatrix(FELinearSystem& LS) override; 
+};
+)delim";
+
+const char* szsrc_fels =
+R"delim(
+#include "$(CLASS_NAME).h"
+
+$(CLASS_NAME)::$(CLASS_NAME)(FEModel* fem) : FELinearSolver(fem)
+{
+}
+
+$(CLASS_NAME)::~$(CLASS_NAME)()
+{
+}
+
+bool $(CLASS_NAME)::Init()
+{
+	// call base-class first
+	if (!FELinearSolver::Init()) return false;
+
+	// TODO: Add additional initialization
+
+	return true;
+}
+
+void $(CLASS_NAME)::ForceVector(FEGlobalVector& R)
+{
+	// Base-class can do most of the work
+	FELinearSolver::ForceVector(R);
+}
+
+bool $(CLASS_NAME)::StiffnessMatrix(FELinearSystem& LS)
+{
+	// TODO: Implement stiffness matrix calculation
+	return true;
+}
+)delim";
+
+// ============================================================================
+// Custom class
+// ============================================================================
+const char* szhdr_custom =
+R"delim(
+#include <$(MODULE_LIB)/$(ARG1).h>
+
+class $(CLASS_NAME) : public $(ARG1)
+{
+public:
+	$(CLASS_NAME)(FEModel* fem);
+
+	~$(CLASS_NAME)();
+};
+)delim";
+
+const char* szsrc_custom =
+R"delim(
+#include "$(CLASS_NAME).h"
+
+$(CLASS_NAME)::$(CLASS_NAME)(FEModel* fem) : $(ARG1)(fem)
+{
+}
+
+$(CLASS_NAME)::~$(CLASS_NAME)()
+{
 }
 )delim";

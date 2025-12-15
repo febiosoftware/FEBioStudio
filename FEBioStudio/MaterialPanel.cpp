@@ -40,25 +40,30 @@ SOFTWARE.*/
 #include <PostLib/Material.h>
 #include <PostGL/GLModel.h>
 #include "GLHighlighter.h"
+#include "MatEditButton.h"
 
 class MaterialProps : public CPropertyList
 {
 public:
-	// NOTE: Changes to the list should be reflected in void CMaterialPanel::on_props_dataChanged(int nprop)
+	enum {
+		RENDER_MODE,
+		OPACITY,
+		OPACITY_MODE,
+		SHOW_MESH,
+		MESH_COLOR,
+		CLIP_MESH
+	};
+
+public:
+	// NOTE: Changes to the list should be reflected in void CMaterialPanel::on_matprops_dataChanged(int nprop)
 	MaterialProps()
 	{
 		m_mat = 0;
-		addProperty("Render mode"      , CProperty::Enum, "Render mode")->setEnumValues(QStringList() << "default" << "solid" << "wireframe");
-		addProperty("Color"            , CProperty::Color );
-//		addProperty("Ambient"          , CProperty::Color );
-		addProperty("Specular color"   , CProperty::Color );
-		addProperty("Emission color"   , CProperty::Color );
-		addProperty("Mesh color"       , CProperty::Color );
-		addProperty("Shininess"        , CProperty::Float)->setFloatRange(0.0, 1.0);
-		addProperty("Transparency"     , CProperty::Float)->setFloatRange(0.0, 1.0);
-		addProperty("Transparency mode", CProperty::Enum, "Transparency mode")->setEnumValues(QStringList() << "constant" << "normal-weigthed" << "value-weigthed");
+		addProperty("Render mode"      , CProperty::Enum)->setEnumValues(QStringList() << "default" << "solid" << "wireframe");
+		addProperty("Opacity"          , CProperty::Float)->setFloatRange(0.0, 1.0);
+		addProperty("Opacity mode"     , CProperty::Enum)->setEnumValues(QStringList() << "constant" << "normal-weigthed" << "value-weigthed");
 		addProperty("Show Mesh"        , CProperty::Bool);
-		addProperty("Cast shadows"     , CProperty::Bool);
+		addProperty("Mesh color"       , CProperty::Color );
 		addProperty("Clip"             , CProperty::Bool);
 	}
 
@@ -71,18 +76,12 @@ public:
 		{
 			switch (i)
 			{
-			case 0: v = m_mat->m_nrender; break;
-			case 1: v = toQColor(m_mat->diffuse); break;
-//			case 2: v = toQColor(m_mat->ambient); break;
-			case 2: v = toQColor(m_mat->specular); break;
-			case 3: v = toQColor(m_mat->emission); break;
-			case 4: v = toQColor(m_mat->meshcol); break;
-			case 5: v = m_mat->shininess; break;
-			case 6: v = m_mat->transparency; break;
-			case 7: v = m_mat->m_ntransmode; break;
-			case 8: v = m_mat->bmesh; break;
-			case 9: v = m_mat->bcast_shadows; break;
-			case 10: v = m_mat->bclip; break;
+			case RENDER_MODE : v = m_mat->m_nrender; break;
+			case OPACITY     : v = m_mat->transparency; break;
+			case OPACITY_MODE: v = m_mat->m_ntransmode; break;
+			case SHOW_MESH   : v = m_mat->bmesh; break;
+			case MESH_COLOR  : v = toQColor(m_mat->meshcol); break;
+			case CLIP_MESH   : v = m_mat->bclip; break;
 			}
 		}
 		return v;
@@ -94,18 +93,12 @@ public:
 		{
 			switch (i)
 			{
-			case 0: m_mat->m_nrender = v.toInt(); break;
-			case 1: m_mat->diffuse  = m_mat->ambient = toGLColor(v.value<QColor>()); break;
-//			case 2: m_mat->ambient  = toGLColor(v.value<QColor>()); break;
-			case 2: m_mat->specular = toGLColor(v.value<QColor>()); break;
-			case 3: m_mat->emission = toGLColor(v.value<QColor>()); break;
-			case 4: m_mat->meshcol  = toGLColor(v.value<QColor>()); break;
-			case 5: m_mat->shininess = v.toFloat(); break;
-			case 6: m_mat->transparency = v.toFloat(); break;
-			case 7: m_mat->m_ntransmode = v.toInt(); break;
-			case 8: m_mat->bmesh = v.toBool(); break;
-			case 9: m_mat->bcast_shadows = v.toBool(); break;
-			case 10: m_mat->bclip = v.toBool(); break;
+			case RENDER_MODE : m_mat->m_nrender = v.toInt(); break;
+			case OPACITY     : m_mat->transparency = v.toFloat(); break;
+			case OPACITY_MODE: m_mat->m_ntransmode = v.toInt(); break;
+			case SHOW_MESH   : m_mat->bmesh = v.toBool(); break;
+			case MESH_COLOR  : m_mat->meshcol  = toGLColor(v.value<QColor>()); break;
+			case CLIP_MESH   : m_mat->bclip = v.toBool(); break;
 			}
 		}
 	}
@@ -121,6 +114,8 @@ public:
 	::CPropertyListView*	m_prop;
 	QLineEdit* m_flt;
 	QToolButton* highlightButton;
+	CMatEditButton* matEditButton;
+	QLineEdit* nameEdit;
 
 	bool update;
 
@@ -163,10 +158,17 @@ public:
 		m_list->setSelectionMode(QAbstractItemView::ExtendedSelection);
 		m_list->setSelectionBehavior(QAbstractItemView::SelectRows);
 
+		QHBoxLayout* hl = new QHBoxLayout;
+		hl->addWidget(new QLabel("Name:"), 0, Qt::AlignTop);
+		hl->addWidget(nameEdit = new QLineEdit, 0, Qt::AlignTop);
+		hl->addWidget(matEditButton = new CMatEditButton, 0, Qt::AlignTop);
+		matEditButton->setObjectName("matEditButton");
+		nameEdit->setObjectName("nameEdit");
+
 		QWidget* w = new QWidget;
 		QVBoxLayout* pvl = new QVBoxLayout;
 		pvl->setContentsMargins(0,0,0,0);
-
+		pvl->addLayout(hl);
 
 		m_prop = new ::CPropertyListView;
 		m_prop->setObjectName("matprops");
@@ -208,6 +210,38 @@ public:
 		p.drawEllipse(2, 2, 20, 20);
 		p.end();
 		item->setIcon(QIcon(pix));
+	}
+
+	void setMaterial(Post::Material* pmat)
+	{
+		GLMaterial mat;
+		if (pmat)
+		{
+			mat.type = GLMaterial::PLASTIC;
+			mat.diffuse = pmat->diffuse;
+			mat.ambient = pmat->ambient;
+			mat.specular = pmat->specular;
+			mat.shininess = pmat->shininess;
+			mat.reflection = pmat->reflectivity;
+			matEditButton->setMaterial(mat);
+		}
+	}
+
+	void setName(const QString& name)
+	{
+		nameEdit->setText(name);
+	}
+
+	void SetItemColor(int index, GLColor c)
+	{
+		QTableWidgetItem* item = m_list->item(index, 0);
+		setColor(item, c);
+	}
+
+	void SetItemName(int index, QString name)
+	{
+		QTableWidgetItem* item = m_list->item(index, 0);
+		item->setText(name);
 	}
 };
 
@@ -348,6 +382,9 @@ void CMaterialPanel::on_materialList_currentItemChanged(QTableWidgetItem* curren
 			Post::Material* pmat = fem.GetMaterial(imat);
 			m_pmat->SetMaterial(pmat);
 			ui->m_prop->Update(m_pmat);
+			ui->setMaterial(pmat);
+
+			ui->setName(QString::fromStdString(pmat->GetName()));
 		}
 	}
 }
@@ -438,12 +475,6 @@ void CMaterialPanel::on_materialList_itemClicked(QTableWidgetItem* item)
 	}
 }
 
-void CMaterialPanel::SetItemColor(int index, GLColor c)
-{
-	QTableWidgetItem* item = ui->m_list->item(index, 0);
-	ui->setColor(item, c);
-}
-
 void CMaterialPanel::on_filter_textChanged(const QString& txt)
 {
 	Update(true);
@@ -452,6 +483,62 @@ void CMaterialPanel::on_filter_textChanged(const QString& txt)
 void CMaterialPanel::on_highlightButton_toggled(bool)
 {
 	on_materialList_itemClicked(ui->m_list->currentItem());
+}
+
+void CMaterialPanel::on_nameEdit_editingFinished()
+{
+	// Get the model
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	Post::FEPostModel& fem = *glm->GetFSModel();
+
+	// get the current material
+	QModelIndex currentIndex = ui->m_list->currentIndex();
+	if (currentIndex.isValid() == false) return;
+
+	// get the current material
+	int nmat = ui->m_list->item(currentIndex.row(), 0)->data(Qt::UserRole).toInt();
+	Post::Material& currentMat = *fem.GetMaterial(nmat);
+
+	QString newName = ui->nameEdit->text();
+	if (newName.isEmpty())
+	{
+		ui->setName(QString::fromStdString(currentMat.GetName()));
+	}
+	else
+	{
+		currentMat.SetName(newName.toStdString());
+		ui->SetItemName(currentIndex.row(), newName);
+	}
+}
+
+void CMaterialPanel::on_matEditButton_materialChanged(GLMaterial col)
+{
+	// Get the model
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	Post::FEPostModel& fem = *glm->GetFSModel();
+
+	// get the current material
+	QModelIndex currentIndex = ui->m_list->currentIndex();
+	if (currentIndex.isValid() == false) return;
+
+	// get the current material
+	int nmat = ui->m_list->item(currentIndex.row(), 0)->data(Qt::UserRole).toInt();
+	Post::Material& currentMat = *fem.GetMaterial(nmat);
+
+	currentMat.ambient = col.ambient;
+	currentMat.diffuse = col.diffuse;
+	currentMat.specular = col.specular;
+	currentMat.emission = col.emission;
+	currentMat.shininess = col.shininess;
+	currentMat.reflectivity = col.reflection;
+
+	// update color of corresponding item in material list
+	ui->SetItemColor(currentIndex.row(), currentMat.diffuse);
+
+	glm->Update(false);
+	GetMainWindow()->RedrawGL();
 }
 
 void CMaterialPanel::on_matprops_dataChanged(int nprop)
@@ -469,9 +556,6 @@ void CMaterialPanel::on_matprops_dataChanged(int nprop)
 	int nmat = ui->m_list->item(currentIndex.row(), 0)->data(Qt::UserRole).toInt();
 	Post::Material& currentMat = *fem.GetMaterial(nmat);
 
-	// update color of corresponding item in material list
-	if (nprop == 1) SetItemColor(currentIndex.row(), currentMat.diffuse);
-
 	// update all the other selected materials
 	QItemSelectionModel* pselect = ui->m_list->selectionModel();
 	QModelIndexList selection = pselect->selectedRows();
@@ -486,26 +570,15 @@ void CMaterialPanel::on_matprops_dataChanged(int nprop)
 
 			switch (nprop)
 			{
-			case  0: mati.m_nrender     = currentMat.m_nrender; break;
-			case  1: 
-				mati.diffuse = currentMat.diffuse; 
-				mati.ambient = currentMat.ambient;
-				break;
-			case  2: mati.specular      = currentMat.specular; break;
-			case  3: mati.emission      = currentMat.emission; break;
-			case  4: mati.meshcol       = currentMat.meshcol; break;
-			case  5: mati.shininess     = currentMat.shininess; break;
-			case  6: mati.transparency  = currentMat.transparency; break;
-			case  7: mati.m_ntransmode  = currentMat.m_ntransmode; break;
-			case  8: mati.bmesh         = currentMat.bmesh; break;
-			case  9: mati.bcast_shadows = currentMat.bcast_shadows; break;
-			case 10: mati.bclip         = currentMat.bclip; break;
+			case MaterialProps::RENDER_MODE : mati.m_nrender     = currentMat.m_nrender; break;
+			case MaterialProps::OPACITY     : mati.transparency  = currentMat.transparency; break;
+			case MaterialProps::OPACITY_MODE: mati.m_ntransmode  = currentMat.m_ntransmode; break;
+			case MaterialProps::SHOW_MESH   : mati.bmesh         = currentMat.bmesh; break;
+			case MaterialProps::MESH_COLOR  : mati.meshcol       = currentMat.meshcol; break;
+			case MaterialProps::CLIP_MESH   : mati.bclip         = currentMat.bclip; break;
 			default:
 				assert(false);
 			};
-
-			// update color of corresponding item in material list
-			if (nprop == 1) SetItemColor(index.row(), mati.diffuse);
 		}
 	}
 

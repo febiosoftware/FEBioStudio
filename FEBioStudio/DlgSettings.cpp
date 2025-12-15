@@ -30,16 +30,11 @@ SOFTWARE.*/
 #include "Document.h"
 #include "DocManager.h"
 #include "GLView.h"
-#include <QBoxLayout>
-#include <QFormLayout>
 #include <QToolButton>
 #include <QPushButton>
-#include <QTabWidget>
 #include <QListWidget>
-#include <QAction>
 #include <QApplication>
 #include <QStyleHints>
-#include <QLabel>
 #include <QDialogButtonBox>
 #include <QInputDialog>
 #include <QMessageBox>
@@ -61,8 +56,8 @@ SOFTWARE.*/
 #include "IconProvider.h"
 #include "PostDocument.h"
 #include <PostGL/GLModel.h>
-#include <QFileDialog>
 #include "PaletteViewer.h"
+#include <GLLib/GLScene.h>
 #include <FSCore/ColorMapManager.h>
 
 //-----------------------------------------------------------------------------
@@ -101,11 +96,11 @@ public:
 		addBoolProperty  (&m_bnormal, "Show normals"  );
 		addDoubleProperty(&m_scaleNormal, "Normals scale factor");
 		addBoolProperty(&m_showHighlights, "Enable highlighting");
+		addBoolProperty(&m_identifyBackfacing, "Identify backfacing faces");
 		QStringList vconv;
 		vconv <<"First-angle projection (XZ)"<<"First-angle projection (XY)"<<"Third-angle projection (XY)";
 		addEnumProperty(&m_nconv, "Multiview projection")->setEnumValues(vconv);
 		addEnumProperty(&m_ntrans, "Object transparency mode")->setEnumValues(QStringList() << "None" << "Selected only" << "Unselected only");
-		addBoolProperty(&m_dozsorting, "Improved Transparency");
 		addEnumProperty(&m_defaultFGColorOption, "Default text color option")->setEnumValues(QStringList() << "Theme" << "Custom");
 		addColorProperty(&m_defaultFGColor, "Custom text color");
 		addIntProperty(&m_tagFontSize, "Tag font size")->setIntRange(5, 100);
@@ -120,10 +115,10 @@ public:
 	double	m_scaleNormal;
 	int		m_nconv;
 	int		m_ntrans;
-	bool	m_dozsorting;
 	int		m_defaultFGColorOption;
 	QColor	m_defaultFGColor;
 	bool	m_showHighlights;
+	bool	m_identifyBackfacing;
 	int		m_tagFontSize;
 };
 
@@ -217,8 +212,6 @@ public:
 		addProperty("Enable lighting", CProperty::Bool);
 		addProperty("Diffuse intensity", CProperty::Float)->setFloatRange(0.0, 1.0);
 		addProperty("Ambient intensity", CProperty::Float)->setFloatRange(0.0, 1.0);
-		addProperty("Render shadows", CProperty::Bool);
-		addProperty("Shadow intensity", CProperty::Float)->setFloatRange(0.0, 1.0);
 		addProperty("Light direction"  , CProperty::Vec3);
 		addProperty("Environment map"  , CProperty::Resource);
 		addProperty("Use environment map"  , CProperty::Bool);
@@ -226,8 +219,6 @@ public:
 		m_blight = true;
 		m_diffuse = 0.7f;
 		m_ambient = 0.3f;
-		m_bshadow = false;
-		m_shadow = 0.1f;
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -238,11 +229,9 @@ public:
 		case 0: return m_blight; break;
 		case 1: return m_diffuse; break;
 		case 2: return m_ambient; break;
-		case 3: return m_bshadow; break;
-		case 4: return m_shadow; break;
-		case 5: return vecToString(m_pos); break;
-		case 6: return m_envmap; break;
-		case 7: return m_useEV; break;
+		case 3: return vecToString(m_pos); break;
+		case 4: return m_envmap; break;
+		case 5: return m_useEV; break;
 		}
 		return v;
 	}
@@ -254,11 +243,9 @@ public:
 		case 0: m_blight = v.toBool(); break;
 		case 1: m_diffuse = v.toFloat(); break;
 		case 2: m_ambient = v.toFloat(); break;
-		case 3: m_bshadow = v.toBool(); break;
-		case 4: m_shadow = v.toFloat(); break;
-		case 5: m_pos = stringToVec(v.toString()); break;
-		case 6: m_envmap = v.toString(); break;
-		case 7: m_useEV = v.toBool(); break;
+		case 3: m_pos = stringToVec(v.toString()); break;
+		case 4: m_envmap = v.toString(); break;
+		case 5: m_useEV = v.toBool(); break;
 		}
 	}
 
@@ -266,8 +253,6 @@ public:
 	bool	m_blight;
 	float	m_diffuse;
 	float	m_ambient;
-	bool	m_bshadow;
-	float	m_shadow;
 	vec3f	m_pos;
 	QString m_envmap;
 	bool	m_useEV;
@@ -682,7 +667,7 @@ void CColormapWidget::onNew()
 	QString newName = QInputDialog::getText(this, "New color map", "name:", QLineEdit::Normal, name, &bok);
 	if (bok && (newName.isEmpty() == false))
 	{
-		CColorMap& map = ColorMapManager::GetColorMap(m_currentMap);
+		const CColorMap& map = ColorMapManager::GetColorMap(m_currentMap);
 		string sname = newName.toStdString();
 		ColorMapManager::AddColormap(sname, map);
 
@@ -759,8 +744,7 @@ void CColormapWidget::clearGrid()
 
 void CColormapWidget::Apply()
 {
-	CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
-	tex = m_map;
+	ColorMapManager::SetColormap(m_currentMap, m_map);
 }
 
 void CColormapWidget::currentMapChanged(int n)
@@ -769,8 +753,7 @@ void CColormapWidget::currentMapChanged(int n)
 	{
 		if (QMessageBox::question(this, "FEBio Studio", "The current map was changed. Do you want to keep the changes?") == QMessageBox::Yes)
 		{
-			CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
-			tex = m_map;
+			ColorMapManager::SetColormap(m_currentMap, m_map);
 			emit colormapChanged(m_currentMap);
 		}
 	}
@@ -780,7 +763,7 @@ void CColormapWidget::currentMapChanged(int n)
 	if (n != -1)
 	{
 		m_currentMap = n;
-		CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
+		const CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
 		m_map = tex;
 
 		updateColorMap(ColorMapManager::GetColorMap(n));
@@ -1057,6 +1040,20 @@ CFEBioSettingsWidget::CFEBioSettingsWidget(QWidget* parent) : QWidget(parent)
 	QVBoxLayout* layout = new QVBoxLayout;
 	layout->setAlignment(Qt::AlignTop);
 
+	m_loadConfig = new QCheckBox("Load FEBio config file on startup.");
+	layout->addWidget(m_loadConfig);
+
+	QHBoxLayout* pathLayout = new QHBoxLayout;
+	pathLayout->addWidget(new QLabel("Config file: "));
+	m_configEdit = new QLineEdit;
+	pathLayout->addWidget(m_configEdit);
+
+	QToolButton* pathButton = new QToolButton;
+	pathButton->setIcon(CIconProvider::GetIcon("open"));
+	pathLayout->addWidget(pathButton);
+
+	layout->addLayout(pathLayout);
+
 	QFormLayout* f = new QFormLayout;
 	f->addRow("FEBio SDK Include path: ", m_sdkInc = new QLineEdit);
 	f->addRow("FEBio SDK Library path: ", m_sdkLib = new QLineEdit);
@@ -1064,7 +1061,15 @@ CFEBioSettingsWidget::CFEBioSettingsWidget(QWidget* parent) : QWidget(parent)
 	layout->addLayout(f);
 	 
 	this->setLayout(layout);
+
+	QObject::connect(pathButton, SIGNAL(clicked()), this, SLOT(editConfigFilePath()));
 }
+
+bool CFEBioSettingsWidget::GetLoadConfigFlag() { return m_loadConfig->isChecked(); }
+QString CFEBioSettingsWidget::GetConfigFileName() { return m_configEdit->text(); }
+
+void CFEBioSettingsWidget::SetLoadConfigFlag(bool b) { m_loadConfig->setChecked(b); }
+void CFEBioSettingsWidget::SetConfigFileName(QString s) { m_configEdit->setText(s); }
 
 QString CFEBioSettingsWidget::GetSDKIncludePath() const { return m_sdkInc->text(); }
 void CFEBioSettingsWidget::SetSDKIncludePath(const QString& s) { m_sdkInc->setText(s); }
@@ -1074,6 +1079,19 @@ void CFEBioSettingsWidget::SetSDKLibraryPath(const QString& s) { m_sdkLib->setTe
 
 QString CFEBioSettingsWidget::GetCreatePluginPath() const { return m_pluginPath->text(); }
 void CFEBioSettingsWidget::SetCreatePluginPath(const QString& s) { m_pluginPath->setText(s); }
+
+void CFEBioSettingsWidget::editConfigFilePath()
+{
+	QFileDialog dlg(this);
+	dlg.setAcceptMode(QFileDialog::AcceptOpen);
+	dlg.setDirectory(m_configEdit->text());
+	if (dlg.exec())
+	{
+		QStringList files = dlg.selectedFiles();
+		QString fileName = files.first();
+		m_configEdit->setText(fileName);
+	}
+}
 
 //-----------------------------------------------------------------------------
 class Ui::CDlgSettings
@@ -1104,8 +1122,11 @@ public:
 	::CPropertyListView*	ca_panel;
 	::CPropertyListView*	po_panel;
 
+	GLViewSettings& ops;
+	CGLDocument* doc = nullptr;
+
 public:
-	CDlgSettings(QDialog* parent, ::CMainWindow* wnd)
+	CDlgSettings(QDialog* parent, ::CMainWindow* wnd, GLViewSettings& vs) : ops(vs)
 	{
 		m_bg = new CBackgroundProps;
 		m_display = new CDisplayProps;
@@ -1190,16 +1211,16 @@ public:
 };
 
 
-CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pwnd))
+CDlgSettings::CDlgSettings(CMainWindow* pwnd, CGLDocument* doc, GLViewSettings& vs) : ui(new Ui::CDlgSettings(this, pwnd, vs))
 {
 	m_pwnd = pwnd;
-	setWindowTitle("Options");
+	ui->doc = doc;
+	setWindowTitle("Settings");
 
 	UpdateSettings();
 
 	if (pwnd->GetDocManager()->Documents())
 	{
-		CGLDocument* doc = pwnd->GetGLDocument();
 		ui->m_unit->showAllOptions(true);
 		if (doc) ui->m_unit->setUnit(doc->GetUnitSystem());
 	}
@@ -1218,8 +1239,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 
 void CDlgSettings::UpdateSettings()
 {
-	GLViewSettings& view = m_pwnd->GetGLView()->GetViewSettings();
-	CGLView* glview = m_pwnd->GetGLView();
+	GLViewSettings& view = ui->ops;
 
 	ui->m_bg->m_bg1 = toQColor(view.m_col1);
 	ui->m_bg->m_bg2 = toQColor(view.m_col2);
@@ -1235,9 +1255,9 @@ void CDlgSettings::UpdateSettings()
 	ui->m_display->m_bnormal = view.m_bnorm;
 	ui->m_display->m_scaleNormal = view.m_scaleNormals;
 	ui->m_display->m_showHighlights = view.m_showHighlights;
+	ui->m_display->m_identifyBackfacing = view.m_identifyBackfacing;
 	ui->m_display->m_nconv = view.m_nconv;
 	ui->m_display->m_ntrans = view.m_transparencyMode;
-	ui->m_display->m_dozsorting = view.m_bzsorting;
 	ui->m_display->m_defaultFGColorOption = view.m_defaultFGColorOption;
 	ui->m_display->m_defaultFGColor = toQColor(view.m_defaultFGColor);
 	ui->m_display->m_tagFontSize = view.m_tagFontSize;
@@ -1263,21 +1283,23 @@ void CDlgSettings::UpdateSettings()
 	ui->m_light->m_blight  = view.m_bLighting;
 	ui->m_light->m_diffuse = view.m_diffuse;
 	ui->m_light->m_ambient = view.m_ambient;
-	ui->m_light->m_bshadow = view.m_bShadows;
-	ui->m_light->m_shadow  = view.m_shadow_intensity;
 	ui->m_light->m_pos     = view.m_light;
 	ui->m_light->m_envmap  = m_pwnd->GetEnvironmentMap();
 	ui->m_light->m_useEV   = view.m_use_environment_map;
 
-	if (glview)
+	if (ui->doc && ui->doc->GetScene())
 	{
-		GLCamera* cam = glview->GetCamera();
+		GLScene* scene = ui->doc->GetScene();
+		GLCamera& cam = scene->GetCamera();
 		ui->m_cam->m_banim = true;
-		ui->m_cam->m_bias = (cam ? cam->GetCameraBias() : 0);
-		ui->m_cam->m_speed = (cam ? cam->GetCameraSpeed() : 0);
+		ui->m_cam->m_bias = cam.GetCameraBias();
+		ui->m_cam->m_speed = cam.GetCameraSpeed();
 	}
 
 	ui->m_post->m_defrng = Post::CGLColorMap::m_defaultRngType;
+
+	ui->m_febio->SetLoadConfigFlag(m_pwnd->GetLoadConfigFlag());
+	ui->m_febio->SetConfigFileName(m_pwnd->GetConfigFileName());
 
 	ui->m_febio->SetSDKIncludePath(m_pwnd->GetSDKIncludePath());
 	ui->m_febio->SetSDKLibraryPath(m_pwnd->GetSDKLibraryPath());
@@ -1303,9 +1325,7 @@ void CDlgSettings::UpdateUI()
 
 void CDlgSettings::apply()
 {
-	CGLDocument* pdoc = m_pwnd->GetGLDocument();
-	CGLView* glview = m_pwnd->GetGLView();
-	GLViewSettings& view = glview->GetViewSettings();
+	GLViewSettings& view = ui->ops;
 
 	view.m_col1 = toGLColor(ui->m_bg->m_bg1);
 	view.m_col2 = toGLColor(ui->m_bg->m_bg2);
@@ -1321,9 +1341,9 @@ void CDlgSettings::apply()
 	view.m_bnorm = ui->m_display->m_bnormal;
 	view.m_scaleNormals = ui->m_display->m_scaleNormal;
 	view.m_showHighlights = ui->m_display->m_showHighlights;
+	view.m_identifyBackfacing = ui->m_display->m_identifyBackfacing;
 	view.m_nconv = ui->m_display->m_nconv;
 	view.m_transparencyMode = ui->m_display->m_ntrans;
-	view.m_bzsorting = ui->m_display->m_dozsorting;
 	view.m_defaultFGColorOption = ui->m_display->m_defaultFGColorOption;
 	view.m_defaultFGColor = toGLColor(ui->m_display->m_defaultFGColor);
 	view.m_tagFontSize = ui->m_display->m_tagFontSize;
@@ -1373,15 +1393,17 @@ void CDlgSettings::apply()
 	view.m_bLighting = ui->m_light->m_blight;
 	view.m_diffuse   = ui->m_light->m_diffuse;
 	view.m_ambient   = ui->m_light->m_ambient;
-	view.m_bShadows  = ui->m_light->m_bshadow;
-	view.m_shadow_intensity = ui->m_light->m_shadow;
 	view.m_light = ui->m_light->m_pos;
 	m_pwnd->SetEnvironmentMap(ui->m_light->m_envmap);
 	view.m_use_environment_map = ui->m_light->m_useEV;
 
-	GLCamera* cam = glview->GetCamera();
-	if (cam) cam->SetCameraBias(ui->m_cam->m_bias);
-	if (cam) cam->SetCameraSpeed(ui->m_cam->m_speed);
+	if (ui->doc && ui->doc->GetScene())
+	{
+		GLScene* scene = ui->doc->GetScene();
+		GLCamera& cam = scene->GetCamera();
+		cam.SetCameraBias(ui->m_cam->m_bias);
+		cam.SetCameraSpeed(ui->m_cam->m_speed);
+	}
 
 	Post::CGLColorMap::m_defaultRngType = ui->m_post->m_defrng;
 
@@ -1395,8 +1417,9 @@ void CDlgSettings::apply()
 	else if (nops == 1)
 	{
 		Units::SetUnitSystem(newUnit);
-		if (pdoc) {
-			pdoc->SetUnitSystem(newUnit); pdoc->SetModifiedFlag(true);
+		if (ui->doc) {
+			ui->doc->SetUnitSystem(newUnit); 
+			ui->doc->SetModifiedFlag(true);
 		}
 	}
 	else
@@ -1415,7 +1438,6 @@ void CDlgSettings::apply()
 	}
 
 	ui->m_map->Apply();
-	UpdateColormap();
 
 	CPaletteManager& PM = CPaletteManager::GetInstance();
 	int n = ui->m_pal->currentPalette();
@@ -1423,6 +1445,8 @@ void CDlgSettings::apply()
 
 	m_pwnd->GetDatabasePanel()->SetRepositoryFolder(ui->m_repo->repoPathEdit->text());
 
+	m_pwnd->SetLoadConfigFlag(ui->m_febio->GetLoadConfigFlag());
+	m_pwnd->SetConfigFileName(ui->m_febio->GetConfigFileName());
 	m_pwnd->SetSDKIncludePath(ui->m_febio->GetSDKIncludePath());
 	m_pwnd->SetSDKLibraryPath(ui->m_febio->GetSDKLibraryPath());
 	m_pwnd->SetCreatePluginPath(ui->m_febio->GetCreatePluginPath());
@@ -1443,28 +1467,11 @@ void CDlgSettings::onClicked(QAbstractButton* button)
 
 void CDlgSettings::onReset()
 {
-	CGLDocument* pdoc = m_pwnd->GetGLDocument();
-	CGLView* glview = m_pwnd->GetGLView();
-	GLViewSettings& view = glview->GetViewSettings();
+	GLViewSettings& view = ui->ops;
 	int ntheme = 0;
     if(qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark) ntheme = 1;
 	view.Defaults(ntheme);
 	UpdateSettings();
 	m_pwnd->RedrawGL();
 	UpdateUI();
-}
-
-void CDlgSettings::UpdateColormap()
-{
-	CPostDocument* doc = dynamic_cast<CPostDocument*>(m_pwnd->GetGLDocument());
-	if (doc == nullptr) return;
-	if (!doc->IsValid()) return;
-
-	Post::CGLModel* gm = doc->GetGLModel();
-	if (gm == nullptr) return;
-
-	Post::CGLColorMap* colmap = gm->GetColorMap();
-	colmap->m_Col.UpdateTexture();
-
-	m_pwnd->RedrawGL();
 }

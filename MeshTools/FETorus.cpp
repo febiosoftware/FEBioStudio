@@ -35,10 +35,8 @@ SOFTWARE.*/
 #include <vector>
 //using namespace std;
 
-FETorus::FETorus()
+FETorus::FETorus(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_nd = 2;
 	m_ns = 8;
 
@@ -48,20 +46,20 @@ FETorus::FETorus()
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
-FSMesh* FETorus::BuildMesh(GObject* po)
+FSMesh* FETorus::BuildMesh()
 {
-	m_pobj = dynamic_cast<GTorus*>(po);
-	if (m_pobj == nullptr) return nullptr;
-
 //	return BuildMeshLegacy();
 	return BuildMultiBlockMesh();
 }
 
 bool FETorus::BuildMultiBlock()
 {
+	GTorus* po = dynamic_cast<GTorus*>(&m_o);
+	if (po == 0) return false;
+
 	// get the object parameters
-	double Ro = m_pobj->GetFloatValue(GTorus::RIN);
-	double Ri = m_pobj->GetFloatValue(GTorus::ROUT);
+	double Ro = po->GetFloatValue(GTorus::RIN);
+	double Ri = po->GetFloatValue(GTorus::ROUT);
 
 	double a = Ri / sqrt(2.0);
 	double b = a * 0.5;
@@ -291,7 +289,7 @@ bool FETorus::BuildMultiBlock()
 
 FSMesh* FETorus::BuildMultiBlockMesh()
 {
-	BuildMultiBlock();
+	if (!BuildMultiBlock()) return nullptr;
 
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);
@@ -307,12 +305,13 @@ FSMesh* FETorus::BuildMultiBlockMesh()
 
 FSMesh* FETorus::BuildMeshLegacy()
 {
-	assert(m_pobj);
+	GTorus* po = dynamic_cast<GTorus*>(&m_o);
+	if (po == 0) return nullptr;
 
 	int i, j, k;
 
 	// get the object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double R0 = param.GetFloatValue(GTorus::RIN);
 	double R1 = param.GetFloatValue(GTorus::ROUT);
 
@@ -497,7 +496,6 @@ void FETorus::BuildFaces(FSMesh* pm)
 			FSFace& f = pm->Face(n);
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 4*(4*j/ns) + i/nd;
-			f.m_sid = 0;
 			f.n[0] = NodeIndex(i  ,j  );
 			f.n[1] = NodeIndex(i+1,j  );
 			f.n[2] = NodeIndex(i+1,j+1);

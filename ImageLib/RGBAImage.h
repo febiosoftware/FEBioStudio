@@ -34,7 +34,7 @@ class CRGBAImage
 {
 public:
 	CRGBAImage();
-	CRGBAImage(int nx, int ny);
+	CRGBAImage(int nx, int ny, const void* imgdata = nullptr);
 	CRGBAImage(const CRGBAImage& im);
 	virtual ~CRGBAImage();
 
@@ -45,11 +45,14 @@ public:
 	void Create(int nx, int ny);
 
 	uint8_t* GetBytes() { return m_pb; }
+	const uint8_t* GetBytes() const { return m_pb; }
 
 	uint8_t* GetPixel(int i, int j) { return m_pb + ((j*m_cx + i) << 2); }
 
-	int Width() { return m_cx; }
-	int Height() { return m_cy; }
+	int Width() const { return m_cx; }
+	int Height() const { return m_cy; }
+
+	bool isNull() const { return (m_pb == nullptr); }
 
 protected:
 	uint8_t*	m_pb;	// rgba image data

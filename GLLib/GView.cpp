@@ -32,11 +32,6 @@ CGView::CGView()
 { 
 	SetName("View"); 
 	m_nkey = -1;
-
-	m_bortho = false;
-	m_fnear = 1.f;
-	m_ffar = 50000.f;
-	m_fov = 45.f;
 }
 
 CGView::~CGView()
@@ -46,9 +41,6 @@ CGView::~CGView()
 
 void CGView::Reset()
 {
-	m_cam.SetTargetDistance(5.f);
-	m_cam.GetOrientation() = quatd(-1, vec3d(1,0,0));
-	m_cam.Update(true);
 	DeleteAllKeys();
 }
 
@@ -68,29 +60,6 @@ CGViewKey* CGView::AddCameraKey(GLCameraTransform& t, const std::string& name)
 	return key;
 }
 
-void CGView::SetCurrentKey(CGViewKey* pkey)
-{
-	if (m_key.empty()) return;
-	int N = CameraKeys();
-	for (int i=0; i<N; ++i)
-	{
-		if (m_key[i] == pkey)
-		{
-			SetCurrentKey(i);
-			break;
-		}
-	}
-}
-
-void CGView::SetCurrentKey(int i)
-{
-	if (m_key.empty()) return;
-	int N = CameraKeys();
-	if ((i<0)||(i>=N)) return;
-	m_nkey = i;
-	m_cam.SetTransform((*m_key[m_nkey]).transform);
-}
-
 void CGView::NextKey()
 {
 	if (m_nkey != -1)
@@ -98,7 +67,6 @@ void CGView::NextKey()
 		m_nkey++;
 		if (m_nkey >= (int)m_key.size()) m_nkey = 0;
 	}
-	m_cam.SetTransform((*m_key[m_nkey]).transform);
 }
 
 void CGView::PrevKey()
@@ -108,7 +76,6 @@ void CGView::PrevKey()
 		m_nkey--;
 		if (m_nkey < 0) m_nkey = (int)m_key.size() - 1;
 	}
-	m_cam.SetTransform((*m_key[m_nkey]).transform);
 }
 
 void CGView::DeleteKey(CGViewKey* pt)

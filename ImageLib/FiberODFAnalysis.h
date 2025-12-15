@@ -29,10 +29,11 @@ SOFTWARE.*/
 #include "ImageAnalysis.h"
 #include <GLLib/GLMesh.h>
 #include <FECore/vec3d.h>
-#include <GLWLib/GLWidget.h>
-#include <GLWLib/GLLegendBar.h>
+#include <FECore/matrix.h>
 #include <FSCore/ColorMap.h>
 #include <GLLib/ColorTexture.h>
+#include <vector>
+#include <memory>
 
 class matrix;
 
@@ -88,6 +89,13 @@ public:
 		DIVS, RANGE, USERMIN, USERMAX, BW_FRACTION, BW_STEEPNESS
 	};
 
+	enum MeshOption {
+		ODF_MESH,
+		ODF_REMESH,
+		EFD_MESH,
+		VM3_MESH
+	};
+
 public:
     CFiberODFAnalysis(CImageModel* img);
     ~CFiberODFAnalysis();
@@ -116,8 +124,13 @@ public:
 
 	void ProcessSelectedOnly(bool b) { m_processSelectedOnly = b; }
 
+	int Divisions() const { return m_ndivs; }
+
+	double RangeMax() const { return (double)m_map.RangeMax(); }
+	double RangeMin() const { return (double)m_map.RangeMin(); }
+
 public:
-	void renderODFMesh(GLRenderEngine& re, CODF* odf, GLCamera* cam);
+	void renderODFMesh(GLRenderEngine& re, CODF* odf, bool remeshOnly);
 
 private:
 	// clear all ODFs
@@ -150,6 +163,7 @@ private:
 		const vector<double>& beta0,
 		const vector<double>& odf,
 		const vector<vec3d>& x);
+
 
 private:
     Imp* m_imp;
@@ -185,8 +199,6 @@ private:
 	double	m_progress;
 	std::string	m_task;
 
-	CColorTexture	m_tex;
-	GLLegendBar* m_pbar;
 	CColorMap m_map;
 	CColorMap m_remeshMap;
 

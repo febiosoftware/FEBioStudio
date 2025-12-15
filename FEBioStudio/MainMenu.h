@@ -96,6 +96,7 @@ public:
 	QAction* actionMeshInspector;
 	QAction* actionMeshDiagnostic;
 	QAction* actionMaterialTest;
+	QAction* actionDistroVisual;
 
 	// VIEW menu
 	QAction* actionUndoViewChange;
@@ -105,9 +106,9 @@ public:
 	QAction* actionZoomExtents;
 	QAction* actionViewCapture;
 	QAction* actionShowGrid;
+	QAction* actionShowOverlay;
 	QAction* actionShowMeshLines;
 	QAction* actionShowEdgeLines;
-	QAction* actionBackfaceCulling;
 	QAction* actionViewSmooth;
 	QAction* actionShowNormals;
 	QAction* actionOrtho;
@@ -118,7 +119,7 @@ public:
 	QAction* actionTop;
 	QAction* actionBottom;
 	QAction* actionIsometric;
-	QAction* actionOptions;
+	QAction* actionSettings;
 	QAction* actionRenderMode;
 	QAction* actionShowFibers;
 	QAction* actionShowMatAxes;

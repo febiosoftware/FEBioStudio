@@ -35,8 +35,11 @@ SOFTWARE.*/
 #include <PostGL/GLMirrorPlane.h>
 #include <PostGL/GLModel.h>
 #include <ImageLib/ImageModel.h>
+#include <FSCore/ColorMapManager.h>
 
 using namespace Post;
+
+const GLCamera& GLPostSceneItem::GetCamera() const { return m_scene->GetCamera(); }
 
 void GLPostPlaneCutItem::render(GLRenderEngine& re, GLContext& rc)
 {
@@ -53,7 +56,7 @@ void GLPostPlaneCutItem::render(GLRenderEngine& re, GLContext& rc)
 
 	Post::CGLPlaneCutPlot::EnableClipPlanes(re);
 
-	GLCompositeSceneItem::render(re, rc);
+	GLPostSceneItem::render(re, rc);
 
 	Post::CGLPlaneCutPlot::DisableClipPlanes(re);
 }
@@ -72,7 +75,7 @@ void GLPostMirrorItem::render(GLRenderEngine& re, GLContext& rc)
 void GLPostMirrorItem::renderMirror(GLRenderEngine& re, GLContext& rc, int start, int end)
 {
 	// pass one
-	GLCompositeSceneItem::render(re, rc);
+	GLPostSceneItem::render(re, rc);
 
 	for (int i = start; i < end; ++i)
 	{
@@ -114,9 +117,15 @@ void GLPostModelItem::render(GLRenderEngine& re, GLContext& rc)
 	glm->m_nrender = vs.m_nrender + 1;
 	glm->m_bnorm = vs.m_bnorm;
 	glm->m_scaleNormals = vs.m_scaleNormals;
-	glm->m_doZSorting = vs.m_bzsorting;
 
-	re.disable(GLRenderEngine::CULLFACE);
+	if (glm->GetColorMap()->IsActive())
+	{
+		// create the texture
+		CGLColorMap* cm = glm->GetColorMap();
+		CColorTexture color;
+		color.Create(cm->GetColorMap(), cm->GetDivisions(), cm->GetColorSmooth());
+		m_tex = color.GetTexture();
+	}
 
 	// match the selection mode
 	SelectionType selectionMode = SELECT_FE_ELEMS;
@@ -141,7 +150,7 @@ void GLPostModelItem::render(GLRenderEngine& re, GLContext& rc)
 	Post::CGLColorMap* pcm = glm->GetColorMap();
 	if (pcm && pcm->ShowMinMaxMarkers())
 	{
-		RenderMinMaxMarkers(re, rc);
+		RenderMinMaxMarkers(re);
 	}
 
 	CGLPlaneCutPlot::DisableClipPlanes(re);
@@ -179,9 +188,7 @@ void GLPostModelItem::RenderModel(GLRenderEngine& re, GLContext& rc)
 	// render outline
 	if (rc.m_settings.m_bfeat || (rc.m_settings.m_nrender == RENDER_WIREFRAME))
 	{
-		rc.m_cam->LineDrawMode(true);
 		RenderOutline(re, rc);
-		rc.m_cam->LineDrawMode(false);
 	}
 
 	// render mesh lines
@@ -190,30 +197,26 @@ void GLPostModelItem::RenderModel(GLRenderEngine& re, GLContext& rc)
 		RenderMeshLines(re, rc);
 	}
 
-	// render the selected elements and faces
-	RenderSelection(re, rc);
-
 	// render the normals
-	if (glm.m_bnorm) RenderNormals(re, rc);
+	if (glm.m_bnorm) RenderNormals(re);
 
 	// render the ghost
-	if (glm.m_bghost) RenderGhost(re, rc);
+	if (glm.m_bghost) RenderGhost(re);
 
 	// render the edges
 	if (mode == SELECT_FE_EDGES)
 	{
-		rc.m_cam->LineDrawMode(true);
-		RenderEdges(re, rc);
-		rc.m_cam->LineDrawMode(false);
+		RenderEdges(re);
 	}
 
 	// render the nodes
 	if (mode == SELECT_FE_NODES)
 	{
-		rc.m_cam->LineDrawMode(true);
 		RenderNodes(re, rc);
-		rc.m_cam->LineDrawMode(false);
 	}
+
+	// render the selection
+	RenderSelection(re);
 }
 
 void GLPostModelItem::RenderMesh(GLRenderEngine& re, GLMesh& mesh, int surfId)
@@ -224,16 +227,6 @@ void GLPostModelItem::RenderMesh(GLRenderEngine& re, GLMesh& mesh, int surfId)
 		mesh.setModified(false);
 	}
 	re.renderGMesh(mesh, surfId, true);
-}
-
-void GLPostModelItem::RenderMeshEdges(GLRenderEngine& re, GLMesh& mesh)
-{
-	if (mesh.IsModified())
-	{
-		re.deleteCachedMesh(&mesh);
-		mesh.setModified(false);
-	}
-	re.renderGMeshEdges(mesh, true);
 }
 
 void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
@@ -257,25 +250,6 @@ void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 		{
 			if (n.IsExterior() || glm.m_brenderInteriorNodes) gn.tag = VISIBLE_FLAG;
 			if (n.IsSelected()) gn.tag |= SELECT_FLAG;
-		}
-	}
-
-	// see if backface-culling is enabled or not
-	if (rc.m_settings.m_bcull)
-	{
-		quatd q = rc.m_cam->GetOrientation();
-		vec3f f;
-		int NF = pm->Faces();
-		for (int i = 0; i < NF; ++i)
-		{
-			FSFace& face = pm->Face(i);
-			int n = face.Nodes();
-			for (int j = 0; j < n; ++j)
-			{
-				vec3d f = to_vec3d(face.m_nn[j]);
-				q.RotateVector(f);
-				if (f.z < 0) gm->Node(face.n[j]).tag = 0;
-			}
 		}
 	}
 
@@ -315,7 +289,7 @@ void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 	}
 }
 
-void GLPostModelItem::RenderEdges(GLRenderEngine& re, GLContext& rc)
+void GLPostModelItem::RenderEdges(GLRenderEngine& re)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
@@ -345,42 +319,9 @@ void GLPostModelItem::RenderEdges(GLRenderEngine& re, GLContext& rc)
 			}
 		}
 	}
-	lineMesh.Update();
 
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::Blue());
 	re.renderGMeshEdges(lineMesh, false);
-
-	// render selected edges
-	if (glm.GetSelectionType() == SELECT_FE_EDGES)
-	{
-		FEEdgeSelection* sel = dynamic_cast<FEEdgeSelection*>(m_scene->GetSelection());
-		if (sel && sel->Count())
-		{
-			GLMesh selMesh;
-			int n = sel->Count();
-			for (int i = 0; i < n; ++i)
-			{
-				FSEdge& edge = *sel->Edge(i);
-				r[0] = to_vec3f(mesh.Node(edge.n[0]).r);
-				r[1] = to_vec3f(mesh.Node(edge.n[1]).r);
-
-				switch (edge.Type())
-				{
-				case FE_EDGE2:
-					selMesh.AddEdge(r, 2, edge.m_gid);
-					break;
-				case FE_EDGE3:
-					r[2] = to_vec3f(mesh.Node(edge.n[2]).r);
-					selMesh.AddEdge(r, 3, edge.m_gid);
-					break;
-				}
-			}
-			selMesh.Update();
-
-			re.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow());
-			re.renderGMeshEdges(lineMesh, false);
-		}
-	}
 }
 
 void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
@@ -391,6 +332,8 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 
 	int defaultRenderMode = rc.m_settings.m_nrender;
 
+	bool frontOnly = rc.m_settings.m_identifyBackfacing;
+
 	CPostObject* po = glm.GetPostObject();
 	GLMesh* mesh = po->GetFERenderMesh();
 	if (mesh == nullptr) return;
@@ -398,7 +341,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 	std::deque<int> visibleSurfaces;
 	for (int i = 0; i < po->Faces(); ++i)
 	{
-		const GLMesh::PARTITION& p = mesh->Partition(i);
+		const GLMesh::SURFACE_PARTITION& p = mesh->SurfacePartition(i);
 		if (p.nf > 0)
 		{
 			int n0 = p.n0;
@@ -420,7 +363,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 
 	for (int i : visibleSurfaces)
 	{
-		const GLMesh::PARTITION& p = mesh->Partition(i);
+		const GLMesh::SURFACE_PARTITION& p = mesh->SurfacePartition(i);
 		int n0 = p.n0;
 		int matID = mesh->Face(n0).mid;
 		Post::Material& mat = *ps->GetMaterial(matID);
@@ -432,15 +375,15 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 				float alpha = mat.transparency;
 				GLColor c = GLColor::White();
 				c.a = (uint8_t)(255.f * alpha);
-				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
-				re.setTexture(glm.m_pcol->GetColorMap()->GetTexture());
+				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D, frontOnly);
+				re.setTexture(m_tex);
 			}
 			else
 			{
 				float alpha = mat.transparency;
-				GLColor c = glm.m_pcol->GetInactiveColor();
+				GLColor c = glm.m_colMap->GetInactiveColor();
 				c.a = (uint8_t)(255.f * alpha);
-				re.setMaterial(GLMaterial::PLASTIC, c);
+				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
 			}
 		}
 		else
@@ -448,7 +391,16 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 			float alpha = mat.transparency;
 			GLColor c = mat.diffuse;
 			c.a = (uint8_t)(255.f * alpha);
-			re.setMaterial(GLMaterial::PLASTIC, c);
+
+			GLMaterial gmat;
+			gmat.type = GLMaterial::PLASTIC;
+			gmat.diffuse = gmat.ambient = c;
+			gmat.specular = mat.specular;
+			gmat.frontOnly = frontOnly;
+			gmat.opacity = alpha;
+			gmat.shininess = mat.shininess;
+			gmat.reflection = mat.reflectivity;
+			re.setMaterial(gmat);
 		}
 
 		RenderMesh(re, *mesh, i);
@@ -464,6 +416,7 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 	bool colorMapEnabled = glm.GetColorMap()->IsActive();
 
 	int defaultRenderMode = rc.m_settings.m_nrender;
+	bool frontOnly = rc.m_settings.m_identifyBackfacing;
 
 	CPostObject* po = glm.GetPostObject();
 	if (po == nullptr) return;
@@ -475,9 +428,9 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 
 	// find the visible surfaces and sort them so that transparent surfaces are rendered last.
 	std::deque<int> visibleSurfaces;
-	for (int i = 0; i < mesh->Partitions(); ++i)
+	for (int i = 0; i < mesh->SurfacePartitions(); ++i)
 	{
-		const GLMesh::PARTITION& p = mesh->Partition(i);
+		const GLMesh::SURFACE_PARTITION& p = mesh->SurfacePartition(i);
 		if ((p.nf > 0) && (renderInnerSurfaces || (p.tag == 0)))
 		{
 			int n0 = p.n0;
@@ -499,7 +452,7 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 
 	for (int i : visibleSurfaces)
 	{
-		const GLMesh::PARTITION& p = mesh->Partition(i);
+		const GLMesh::SURFACE_PARTITION& p = mesh->SurfacePartition(i);
 		int n0 = p.n0;
 		int matID = mesh->Face(n0).mid;
 		Post::Material& mat = *ps->GetMaterial(matID);
@@ -511,15 +464,15 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 				float alpha = mat.transparency;
 				GLColor c = GLColor::White();
 				c.a = (uint8_t)(255.f * alpha);
-				re.setTexture(glm.m_pcol->GetColorMap()->GetTexture());
-				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
+				re.setTexture(m_tex);
+				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D, frontOnly);
 			}
 			else
 			{
 				float alpha = mat.transparency;
-				GLColor c = glm.m_pcol->GetInactiveColor();
+				GLColor c = glm.m_colMap->GetInactiveColor();
 				c.a = (uint8_t)(255.f * alpha);
-				re.setMaterial(GLMaterial::PLASTIC, c);
+				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
 			}
 		}
 		else
@@ -527,27 +480,38 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 			float alpha = mat.transparency;
 			GLColor c = mat.diffuse;
 			c.a = (uint8_t)(255.f * alpha);
-			re.setMaterial(GLMaterial::PLASTIC, c);
+
+			GLMaterial gmat;
+			gmat.type = GLMaterial::PLASTIC;
+			gmat.diffuse = gmat.ambient = c;
+			gmat.specular = mat.specular;
+			gmat.frontOnly = frontOnly;
+			gmat.opacity = alpha;
+			gmat.shininess = mat.shininess;
+			gmat.reflection = mat.reflectivity;
+			re.setMaterial(gmat);
 		}
 
 		RenderMesh(re, *mesh, i);
 	}
 }
 
-void GLPostModelItem::RenderSelection(GLRenderEngine& re, GLContext& rc)
+void GLPostModelItem::RenderSelection(GLRenderEngine& re)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
+	if (glm.m_selectionMesh == nullptr) return;
 
 	// render the selection surface
-	re.setMaterial(GLMaterial::OVERLAY, glm.m_sel_col);
-	re.renderGMesh(glm.m_selectionMesh, false);
+	GLColor c = glm.m_sel_col; c.a = 128;
+	re.setMaterial(GLMaterial::OVERLAY, c);
+	re.renderGMesh(*glm.m_selectionMesh);
 
 	// render the selection outlines
 	re.setColor(GLColor::Yellow());
-	re.renderGMeshEdges(glm.m_selectionMesh, false);
+	re.renderGMeshEdges(*glm.m_selectionMesh);
 }
 
-void GLPostModelItem::RenderNormals(GLRenderEngine& re, GLContext& rc)
+void GLPostModelItem::RenderNormals(GLRenderEngine& re)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
@@ -561,43 +525,46 @@ void GLPostModelItem::RenderNormals(GLRenderEngine& re, GLContext& rc)
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
 		const FSFace& face = pm->Face(i);
+		if (face.IsVisible())
+		{
+			vec3f p[2];
+			p[0] = vec3f(0, 0, 0);
+			vec3f fn = to_vec3f(pm->FaceNormal(face));
 
-		vec3f p[2];
-		p[0] = vec3f(0, 0, 0);
-		vec3f fn = face.m_fn;
+			vec3d c(0, 0, 0);
+			int nf = face.Nodes();
+			for (int j = 0; j < nf; ++j) c += pm->Node(face.n[j]).r;
+			c /= nf;
 
-		vec3d c(0, 0, 0);
-		int nf = face.Nodes();
-		for (int j = 0; j < nf; ++j) c += pm->Node(face.n[j]).r;
-		c /= nf;
+			p[0] = to_vec3f(c);
+			p[1] = p[0] + fn * R;
 
-		p[0] = to_vec3f(c);
-		p[1] = p[0] + fn * R;
+			lineMesh.AddEdge(p, 2);
 
-		lineMesh.AddEdge(p, 2);
+			float r = fabs(fn.x);
+			float g = fabs(fn.y);
+			float b = fabs(fn.z);
 
-		float r = fabs(fn.x);
-		float g = fabs(fn.y);
-		float b = fabs(fn.z);
-
-		GLMesh::EDGE& edge = lineMesh.Edge(lineMesh.Edges() - 1);
-		edge.c[0] = GLColor::White();
-		edge.c[1] = GLColor::FromRGBf(r, g, b);
+			GLMesh::EDGE& edge = lineMesh.Edge(lineMesh.Edges() - 1);
+			edge.c[0] = GLColor::White();
+			edge.c[1] = GLColor::FromRGBf(r, g, b);
+		}
 	}
 
-	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
-	re.renderGMeshEdges(lineMesh, false);
+	if (lineMesh.Edges() > 0)
+	{
+		re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
+		re.renderGMeshEdges(lineMesh, false);
+	}
 }
 
-void GLPostModelItem::RenderGhost(GLRenderEngine& re, GLContext& rc)
+void GLPostModelItem::RenderGhost(GLRenderEngine& re)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
 	FEPostModel* ps = m_scene->GetFSModel();
 	FSMeshBase* pm = glm.GetActiveMesh();
 	Post::FERefState* ref = glm.GetActiveState()->m_ref;
-
-	quatd q = rc.m_cam->GetOrientation();
 
 	double eps = cos(glm.GetSmoothingAngleRadians());
 
@@ -607,6 +574,7 @@ void GLPostModelItem::RenderGhost(GLRenderEngine& re, GLContext& rc)
 		FSFace& f = pm->Face(i);
 		if (f.IsVisible())
 		{
+			vec3d N1 = pm->FaceNormal(f);
 			int n = f.Edges();
 			for (int j = 0; j < n; ++j)
 			{
@@ -619,21 +587,18 @@ void GLPostModelItem::RenderGhost(GLRenderEngine& re, GLContext& rc)
 				else
 				{
 					FSFace& f2 = pm->Face(f.m_nbr[j]);
+					vec3d N2 = pm->FaceNormal(f2);
 					if (f.m_gid != f2.m_gid)
 					{
 						bdraw = true;
 					}
-					else if (f.m_fn * f2.m_fn <= eps)
+					else if (N1 * N2 <= eps)
 					{
 						bdraw = true;
 					}
 					else
 					{
-						vec3d n1 = to_vec3d(f.m_fn);
-						vec3d n2 = to_vec3d(f2.m_fn);
-						q.RotateVector(n1);
-						q.RotateVector(n2);
-						if (n1.z * n2.z <= 0)
+						if (N1.z * N2.z <= 0)
 						{
 							bdraw = true;
 						}
@@ -679,14 +644,13 @@ void GLPostModelItem::RenderOutline(GLRenderEngine& re, GLContext& rc)
 		pm->setModified(false);
 	}
 
-	for (int j = 0; j < po->Edges(); ++j)
-		re.renderGMeshEdges(*pm, j);
+	re.renderGMeshEdges(*pm);
 
 	if (rc.m_settings.m_nrender == RENDER_WIREFRAME)
 	{
 		Transform T;
 		re.setColor(GLColor(32, 0, 0));
-		re.renderGMeshOutline(*rc.m_cam, *pm, T);
+		re.renderGMeshOutline(GetCamera(), *pm, T);
 	}
 }
 
@@ -700,10 +664,30 @@ void GLPostModelItem::RenderMeshLines(GLRenderEngine& re, GLContext& rc)
 	GLMesh* mesh = po->GetFERenderMesh();
 	if (mesh == nullptr) return;
 
-	GLColor c = rc.m_settings.m_meshColor;
-	c.a = 128;
-	re.setMaterial(GLMaterial::CONSTANT, c);
-	RenderMeshEdges(re, *mesh);
+	Post::FEPostModel* fem = glm.GetFSModel();
+	if (fem)
+	{
+		assert(mesh->EdgePartitions() == fem->Materials());
+
+		if (mesh->IsModified())
+		{
+			re.deleteCachedMesh(mesh);
+			mesh->setModified(false);
+		}
+
+		for (int i = 0; i < fem->Materials(); ++i)
+		{
+			Post::Material* mat = fem->GetMaterial(i);
+			if (mat->bvisible && mat->bmesh)
+			{
+				GLColor c = mat->meshcol;
+				c.a = 128;
+
+				re.setMaterial(GLMaterial::CONSTANT, c);
+				re.renderGMeshEdges(*mesh, i, true);
+			}
+		}
+	}
 }
 
 void GLPostModelItem::RenderDiscrete(GLRenderEngine& re, GLContext& rc)
@@ -711,7 +695,7 @@ void GLPostModelItem::RenderDiscrete(GLRenderEngine& re, GLContext& rc)
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 	if (gm.ShowBeam2Solid())
 	{
-		RenderDiscreteAsSolid(re, rc);
+		RenderDiscreteAsSolid(re);
 	}
 	else
 	{
@@ -732,7 +716,6 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 
 	FSMesh& mesh = *gm.GetActiveMesh();
 
-	re.pushState();
 	int curMat = -1;
 	bool bvisible = true;
 
@@ -742,7 +725,7 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 	if (colmap && colmap->IsActive())
 	{
 		re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::TEXTURE_1D);
-		re.setTexture(colmap->GetColorMap()->GetTexture());
+		re.setTexture(m_tex);
 
 		re.begin(GLRenderEngine::LINES);
 		for (int i = 0; i < gm.DiscreteEdges(); ++i)
@@ -769,7 +752,7 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 	// loop over un-selected, inactive elements
 	if (gm.DiscreteEdges() > 0)
 	{
-		re.setMaterial(GLMaterial::CONSTANT, GLColor::White());
+		re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
 		curMat = -1;
 		re.begin(GLRenderEngine::LINES);
 		for (int i = 0; i < gm.DiscreteEdges(); ++i)
@@ -806,18 +789,15 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 		re.end();
 	}
 
-	re.popState();
-
 	re.setLineWidth(lineWidth);
 }
 
-void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
+void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re)
 {
 	Post::FEPostModel* ps = m_scene->GetFSModel();
 	if (ps == nullptr) return;
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 
-	re.pushState();
 	FSMesh& mesh = *gm.GetActiveMesh();
 	int curMat = -1;
 	bool bvisible = true;
@@ -851,7 +831,7 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 	if (colmap->IsActive())
 	{
 		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::TEXTURE_1D);
-		re.setTexture(colmap->GetColorMap()->GetTexture());
+		re.setTexture(m_tex);
 		for (int i = 0; i < gm.DiscreteEdges(); ++i)
 		{
 			GLEdge::EDGE& edge = gm.DiscreteEdge(i);
@@ -943,8 +923,6 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 			RenderDiscreteElementAsSolid(re, i, W);
 		}
 	}
-
-	re.popState();
 }
 
 void GLPostModelItem::RenderDiscreteElement(GLRenderEngine& re, int i)
@@ -1041,7 +1019,7 @@ void GLPostModelItem::RenderDiscreteElementAsSolid(GLRenderEngine& re, int i, do
 	}
 }
 
-void GLPostModelItem::RenderMinMaxMarkers(GLRenderEngine& re, GLContext& rc)
+void GLPostModelItem::RenderMinMaxMarkers(GLRenderEngine& re)
 {
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 
@@ -1051,11 +1029,8 @@ void GLPostModelItem::RenderMinMaxMarkers(GLRenderEngine& re, GLContext& rc)
 	vec3d rmin = pcm->GetMinPosition();
 	vec3d rmax = pcm->GetMaxPosition();
 
-	CColorTexture* tex = pcm->GetColorMap();
-	CColorMap& map = tex->ColorMap();
-
-	GLColor c0 = map.GetColor(0);
-	GLColor c1 = map.GetColor(map.Colors() - 1);
+	GLColor c0 = m_tex.sample(0.f);
+	GLColor c1 = m_tex.sample(1.f);
 
 	// TODO: Can I render this as tags instead of here
 	re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
@@ -1076,8 +1051,6 @@ void GLPostModelItem::RenderMinMaxMarkers(GLRenderEngine& re, GLContext& rc)
 	re.end();
 
 	re.setPointSize(pointSize);
-
-	re.popState();
 }
 
 void GLPostPlotItem::render(GLRenderEngine& re, GLContext& rc)
@@ -1105,10 +1078,9 @@ void GLPostObjectItem::render(GLRenderEngine& re, GLContext& rc)
 
 	if ((fem->PointObjects() == 0) && (fem->LineObjects() == 0)) return;
 
-	double scale = 0.05 * (double)rc.m_cam->GetTargetDistance();
+	double scale = 0.05 * (double)GetCamera().GetTargetDistance();
 	double R = 0.5 * scale;
 
-	re.pushState();
 	re.setMaterial(GLMaterial::OVERLAY, GLColor::Black());
 
 	bool renderRB = rc.m_settings.m_brigid;
@@ -1173,8 +1145,6 @@ void GLPostObjectItem::render(GLRenderEngine& re, GLContext& rc)
 			re.popTransform();
 		}
 	}
-
-	re.popState();
 }
 
 void GLPost3DImageItem::render(GLRenderEngine& re, GLContext& rc)
@@ -1234,16 +1204,6 @@ BOX CGLPostScene::GetBoundingBox()
 	return box;
 }
 
-BOX CGLPostScene::GetSelectionBox()
-{
-	BOX box;
-	if (m_doc && m_doc->IsValid())
-	{
-		box = m_doc->GetSelectionBox();
-	}
-	return box;
-}
-
 void CGLPostScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
@@ -1251,7 +1211,7 @@ void CGLPostScene::Render(GLRenderEngine& engine, GLContext& rc)
 	// build the scene
 	if (m_buildScene)
 	{
-		BuildScene(rc);
+		BuildScene();
 		m_buildScene = false;
 	}
 
@@ -1260,10 +1220,18 @@ void CGLPostScene::Render(GLRenderEngine& engine, GLContext& rc)
 
 	GLViewSettings& vs = rc.m_settings;
 
-	if (vs.m_use_environment_map) ActivateEnvironmentMap(engine);
+	GLColor c1, c2;
+	GLRenderEngine::GradientType orient = GLRenderEngine::HORIZONTAL;
+	switch (vs.m_nbgstyle)
+	{
+	case 0: c1 = c2 = vs.m_col1; break;
+	case 1: c1 = c2 = vs.m_col2; break;
+	case 2: c1 = vs.m_col1; c2 = vs.m_col2; orient = GLRenderEngine::HORIZONTAL; break;
+	case 3: c1 = vs.m_col1; c2 = vs.m_col2; orient = GLRenderEngine::VERTICAL; break;
+	}
+	engine.setBackgroundGradient(c1, c2, orient);
 
-	GLCamera& cam = *rc.m_cam;
-	engine.positionCamera(cam);
+	if (vs.m_use_environment_map) ActivateEnvironmentMap(engine);
 
 	// now render it
 	GLScene::Render(engine, rc);
@@ -1273,17 +1241,15 @@ void CGLPostScene::Render(GLRenderEngine& engine, GLContext& rc)
 	// update and render the tracking
 	if (m_btrack)
 	{
-		engine.pushState();
 		engine.setMaterial(GLMaterial::OVERLAY, GLColor(255, 0, 255));
 		glx::renderAxes(engine, m_trackScale, m_trgPos, m_trgRot);
-		engine.popState();
 	}
 
 	ClearTags();
 	if (rc.m_settings.m_bTags) CreateTags(rc);
 }
 
-void CGLPostScene::BuildScene(GLContext& rc)
+void CGLPostScene::BuildScene()
 {
 	clear();
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
@@ -1293,18 +1259,18 @@ void CGLPostScene::BuildScene(GLContext& rc)
 	GLPostPlaneCutItem* root = new GLPostPlaneCutItem(this);
 
 	GLPostMirrorItem* mirror = new GLPostMirrorItem(this);
-	root->addItem(mirror);
+	root->addChild(mirror);
 
-	mirror->addItem(new GLPostPlotItem(this));
+	mirror->addChild(new GLPostPlotItem(this));
 
-	mirror->addItem(new GLPostModelItem(this));
+	mirror->addChild(new GLPostModelItem(this));
 
-	mirror->addItem(new GLPostObjectItem(this));
+	mirror->addChild(new GLPostObjectItem(this));
 
 	for (int i = 0; i < m_doc->ImageModels(); ++i)
 	{
 		CImageModel* img = m_doc->GetImageModel(i);
-		root->addItem(new GLPost3DImageItem(img, this));
+		root->addChild(new GLPost3DImageItem(img, this));
 	}
 
 	addItem(root);
@@ -1613,4 +1579,40 @@ void CGLPostScene::ToggleTrackSelection()
 			m_trgRotDelta = quatd(0, vec3d(0, 0, 1));
 		}
 	}
+}
+
+LegendData CGLPostScene::GetLegendData(int n)
+{
+	LegendData l;
+	Post::CGLModel* glm = GetGLModel();
+	if (glm)
+	{
+		if (n == 0)
+		{
+			Post::CGLColorMap* pcm = glm->GetColorMap();
+			if (pcm && pcm->IsActive())
+			{
+				float rng[2];
+				pcm->GetRange(rng);
+				l.vmin = rng[0];
+				l.vmax = rng[1];
+				l.colormap = pcm->GetColorMap();
+				l.smooth = pcm->GetColorSmooth();
+				l.ndivs = pcm->GetDivisions();
+			}
+		}
+		else if (n == 1)
+		{
+			for (int i = 0; i < glm->Plots(); ++i)
+			{
+				Post::CGLPlot* plt = glm->Plot(i);
+				if (plt->IsActive())
+				{
+					l = plt->GetLegendData();
+					break;
+				}
+			}
+		}
+	}
+	return l;
 }

@@ -38,6 +38,9 @@ void Mesh::clear()
 	const size_t ALLOC_SIZE = 1024 * 1024;
 	triList.clear();
 	triList.reserve(ALLOC_SIZE);
+
+	lineList.clear();
+	lineList.reserve(ALLOC_SIZE);
 }
 
 void Mesh::addTri(rt::Tri& tri)
@@ -45,29 +48,39 @@ void Mesh::addTri(rt::Tri& tri)
 	triList.push_back(tri);
 }
 
-bool intersectTri(rt::Tri& tri, const Ray& ray, Intersect& intersect)
+void Mesh::addLine(rt::Line& line)
 {
-	const Vec3& fn = tri.fn;
-	Vec3* v = tri.r;
+	lineList.push_back(line);
+}
+
+void Mesh::addPoint(Point& p)
+{
+	pointList.push_back(p);
+}
+
+bool intersectTri(rt::Tri& tri, const gl::Ray& ray, Intersect& intersect)
+{
+	const gl::Vec3& fn = tri.fn;
+	gl::Vec3* v = tri.r;
 
 	// find the intersection of the point with the plane
-	const Vec3& o = ray.origin;
-	const Vec3& t = ray.direction;
+	const gl::Vec3& o = ray.origin;
+	const gl::Vec3& t = ray.direction;
 	double D = fn * t;
 	if (D == 0.0) return false;
 	double l = fn * (v[0] - o) / D;
 	if (l < 0) return false;
 
 	// find the natural coordinates
-	const Vec3 e1 = v[1] - v[0];
-	const Vec3 e2 = v[2] - v[0];
+	const gl::Vec3 e1 = v[1] - v[0];
+	const gl::Vec3 e2 = v[2] - v[0];
 	double A[3] = { e1 * e1, e2 * e2, e1 * e2 };
 	D = A[0] * A[1] - A[2] * A[2];
 	if (D == 0) return false;
 	double Ai[3] = { A[1] / D, A[0] / D, -A[2] / D};
 
-	Vec3 q = o + t * l;
-	const Vec3 qo = q - v[0];
+	gl::Vec3 q = o + t * l;
+	const gl::Vec3 qo = q - v[0];
 	double qe1 = qo * e1;
 	double qe2 = qo * e2;
 	double r = (qe1 * Ai[0] + qe2 * Ai[2]);
@@ -83,28 +96,28 @@ bool intersectTri(rt::Tri& tri, const Ray& ray, Intersect& intersect)
 	else return false;
 }
 
-bool intersectTri(rt::Tri& tri, const Vec3& a, const Vec3& b)
+bool intersectTri(rt::Tri& tri, const gl::Vec3& a, const gl::Vec3& b)
 {
-	const Vec3& fn = tri.fn;
-	Vec3* v = tri.r;
+	const gl::Vec3& fn = tri.fn;
+	gl::Vec3* v = tri.r;
 
 	// find the intersection of the point with the plane
-	const Vec3 t = b - a;
+	const gl::Vec3 t = b - a;
 	double D = fn * t;
 	if (D == 0.0) return false;
 	double l = fn * (v[0] - a) / D;
 	if ((l < 0) || (l > 1)) return false;
 
 	// find the natural coordinates
-	Vec3 e1 = v[1] - v[0];
-	Vec3 e2 = v[2] - v[0];
+	gl::Vec3 e1 = v[1] - v[0];
+	gl::Vec3 e2 = v[2] - v[0];
 	double A[3] = { e1 * e1, e2 * e2, e1 * e2};
 	D = A[0] * A[1] - A[2] * A[2];
 	if (D == 0) return false;
 	double Ai[3] = { A[1] / D, A[0] / D, -A[2] / D };
 
-	Vec3 q = a + t * l;
-	Vec3 q0 = q - v[0];
+	gl::Vec3 q = a + t * l;
+	gl::Vec3 q0 = q - v[0];
 	double q01 = q0 * e1;
 	double q02 = q0 * e2;
 	double r = q01 * Ai[0] + q02 * Ai[2];
@@ -121,9 +134,9 @@ T interpolate(T v[3], double r[2])
 	return v[0] * h0 + v[1] * h1 + v[2] * h2;
 }
 
-bool rt::intersect(Mesh& mesh, const Ray& ray, Point& point)
+bool rt::intersect(Mesh& mesh, const gl::Ray& ray, Point& point)
 {
-	Vec3 c = ray.origin;
+	gl::Vec3 c = ray.origin;
 	size_t imin = -1;
 	double dmin2 = 0;
 	Intersect q;
@@ -155,9 +168,9 @@ bool rt::intersect(Mesh& mesh, const Ray& ray, Point& point)
 	return (imin != -1);
 }
 
-bool insideBox(Box& box, rt::Tri& tri)
+bool insideBox(gl::Box& box, rt::Tri& tri)
 {
-	Vec3* v = tri.r;
+	gl::Vec3* v = tri.r;
 	if (box.isInside(v[0]) && box.isInside(v[1]) && box.isInside(v[2]))
 	{
 		return true;
@@ -165,27 +178,27 @@ bool insideBox(Box& box, rt::Tri& tri)
 	return false;
 }
 
-bool rt::intersectBox(Box& box, rt::Tri& tri)
+bool rt::intersectBox(gl::Box& box, rt::Tri& tri)
 {
 	// quick check to see if any of the triangle nodes are inside the box.
-	Vec3* v = tri.r;
+	gl::Vec3* v = tri.r;
 	if (box.isInside(v[0]) || box.isInside(v[1]) || box.isInside(v[2]))
 	{
 		return true;
 	}
 	// It's possible that the triangle is bigger than the box.
 	// Let's try the triangle's center
-	Vec3 c = (v[0] + v[1] + v[2]) / 3.0;
+	gl::Vec3 c = (v[0] + v[1] + v[2]) / 3.0;
 	if (box.isInside(c)) return true;
 
 	// ok, we'll do something more clever. 
 	// first, if all the box' nodes are on the same side of the triangle
 	// then the triangle cannot intersect the box.
-	const Vec3& N = tri.fn;
+	const gl::Vec3& N = tri.fn;
 	unsigned int ncase = 0;
 	for (int i = 0; i < 8; ++i)
 	{
-		Vec3 c = box.corner(i);
+		gl::Vec3 c = box.corner(i);
 		double l = (c - v[0]) * N;
 		if (l >= 0) ncase |= (1 << i);
 	}
@@ -195,8 +208,8 @@ bool rt::intersectBox(Box& box, rt::Tri& tri)
 	// Let's see if any of the triangle's edges intersect the box
 	for (int i = 0; i < 3; ++i)
 	{
-		Vec3 a = v[i];
-		Vec3 b = v[(i + 1) % 3];
+		gl::Vec3 a = v[i];
+		gl::Vec3 b = v[(i + 1) % 3];
 		if (box.intersect(a, b)) return true;
 	}
 
@@ -204,7 +217,7 @@ bool rt::intersectBox(Box& box, rt::Tri& tri)
 	// But let's see if any of the box's edges intersect the triangle. 
 	for (int i = 0; i < 12; ++i)
 	{
-		Vec3 a, b;
+		gl::Vec3 a, b;
 		box.edge(i, a, b);
 		if (intersectTri(tri, a, b)) return true;
 	}
@@ -213,23 +226,23 @@ bool rt::intersectBox(Box& box, rt::Tri& tri)
 	return false;
 }
 
-bool rt::intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt::Point& point)
+bool rt::intersectTriangles(std::vector<rt::Tri*>& tris, const gl::Ray& ray, rt::Point& point)
 {
 	int imin = -1;
 	double Dmin = 0;
 	Intersect p, q;
-	const Vec3& t = ray.direction;
-	const Vec3& o = q.point;
+	const gl::Vec3& t = ray.direction;
+	const gl::Vec3& o = q.point;
 	for (int i = 0; i < (int)tris.size(); ++i)
 	{
 		rt::Tri& tri = *tris[i];
-		Vec3* v = tri.r;
+		gl::Vec3* v = tri.r;
 		if ((imin == -1) || ((v[0] - o) * t <= 0) || ((v[1] - o) * t <= 0) || ((v[2] - o) * t <= 0))
 		{
-			if ((tri.id != ray.tri_id) && intersectTri(tri, ray, p))
+			if (intersectTri(tri, ray, p))
 			{
 				double D2 = (p.point - ray.origin).sqrLength();
-				if ((imin == -1) || (D2 < Dmin))
+				if ((D2 > 1e-12) && (((imin == -1) || (D2 < Dmin))))
 				{
 					imin = i;
 					Dmin = D2;
@@ -247,7 +260,6 @@ bool rt::intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt:
 		point.t = interpolate(tri.t, q.r);
 		point.c = interpolate(tri.c, q.r); point.c.clamp();
 		point.matid = tri.matid;
-		point.tri_id = tri.id;
 	}
 
 	return (imin != -1);

@@ -31,7 +31,7 @@ class GLRenderEngine;
 
 namespace Post {
 
-class CGLVectorPlot : public CGLLegendPlot 
+class CGLVectorPlot : public CGLPlot 
 {
 	enum { 
 		DATA_FIELD, 
@@ -111,13 +111,15 @@ public:
 
 	void Update() override;
 
-	void Activate(bool b) override;
+	LegendData GetLegendData() const override;
 
 private:
 	// render a vector n at position r
 	void RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v);
 
 	void UpdateState(int nstate);
+
+	void BuildMesh();
 
 protected:
 	float	m_scale;
@@ -152,5 +154,7 @@ protected:
 	vec2f			m_staticRange;
 
 	float			m_fscale;	// total scale factor for rendering
+
+	GLMesh* m_mesh = nullptr;
 };
 }

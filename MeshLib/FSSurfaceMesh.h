@@ -107,12 +107,10 @@ public:
 	int CountNodePartitions() const;
 	int CountEdgePartitions() const;
 	int CountFacePartitions() const;
-	int CountSmoothingGroups() const;
 
 	void UpdateNodePartitions();
 	void UpdateEdgePartitions();
 	void UpdateFacePartitions();
-	void UpdateSmoothingGroups();
 
 public:
 	void BuildEdges();
@@ -130,6 +128,10 @@ public:
 	void AutoPartitionNodes();
 
 	Mesh_Data& GetMeshData();
+
+private:
+	//! Calculate smoothing IDs based on face normals
+	void AutoPartitionFaces(double angleDegrees, bool creaseInternal = true);
 
 private:
 	// mesh data (used for data evaluation)

@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "GBaseObject.h"
+#include <GLLib/GLMaterial.h>
 #include <FSCore/box.h>
 #include <vector>
 
@@ -76,8 +77,12 @@ public:
 
 	//! Get object color
 	GLColor GetColor() const;
+
 	//! Set object color
 	void SetColor(const GLColor& c);
+
+	GLMaterial GetMaterial() const;
+	void SetMaterial(GLMaterial mat);
 
 	//! Collapse the transformation
 	void CollapseTransform();
@@ -141,9 +146,6 @@ public:
 
 	// --- G E O M E T R Y ---
 
-	// render the geometry of the object (not the FE mesh)
-//	virtual void Render(GLCanvas* pc);
-
 	//! Build the render mesh
 	virtual void BuildGMesh();
 
@@ -154,7 +156,7 @@ public:
 	GLMesh* GetFERenderMesh();
 
 	//! Get the local bounding box 
-	BOX GetLocalBox() const;
+	virtual BOX GetLocalBox() const;
 
 	//! Get the global bounding box
 	BOX GetGlobalBox() const;
@@ -202,7 +204,6 @@ public:
 	//! Update the FE render mesh
 	virtual void UpdateFERenderMesh();
 
-protected:
 	//! Set the render mesh
 	void SetRenderMesh(GLMesh* mesh);
 	//! Set the FE render mesh
@@ -298,9 +299,6 @@ public:
 
 	//! Set the object manipulator
 	void SetManipulator(GObjectManipulator* om);
-
-	//! Update mesh data
-	void UpdateMeshData();
 
 public:
 	//! Set the active object

@@ -24,17 +24,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLTriad.h"
-#ifdef WIN32
-#include <Windows.h>
-#endif
-
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
-#include <QPainter>
+#include <GLLib/glx.h>
+#include <GLLib/GLMeshBuilder.h>
+#include <QFontMetrics>
 #include "convert.h"
 
 GLTriad::GLTriad(int x, int y, int w, int h) : GLWidget(x, y, w, h)
@@ -43,141 +35,157 @@ GLTriad::GLTriad(int x, int y, int w, int h) : GLWidget(x, y, w, h)
 	m_bcoord_labels = true;
 }
 
-void GLTriad::draw(QPainter* painter)
+GLTriad::~GLTriad()
 {
-	painter->beginNativePainting();
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	GLfloat ones[] = { 1.f, 1.f, 1.f, 1.f };
-	GLfloat ambient[] = { 0.0f,0.0f,0.0f,1.f };
-	GLfloat specular[] = { 0.5f,0.5f,0.5f,1 };
-	GLfloat emission[] = { 0,0,0,1 };
-	GLfloat	light[] = { 0, 0, -1, 0 };
+	delete m_pm;
+}
 
-	int view[4];
-	glGetIntegerv(GL_VIEWPORT, view);
+void GLTriad::buildMesh()
+{
+	const double r0 = .05;
+	const double r1 = .15;
 
-	double DPR = painter->device()->devicePixelRatio();
+	GLMeshBuilder mb;
+	mb.start();
 
-	int x0 = (int)(DPR * x());
-	int y0 = view[3] - (int)(DPR * (y() + h()));
-	int x1 = x0 + (int)(DPR * w());
-	int y1 = view[3] - (int)(DPR * y());
-	if (x1 < x0) { x0 ^= x1; x1 ^= x0; x0 ^= x1; }
-	if (y1 < y0) { y0 ^= y1; y1 ^= y0; y0 ^= y1; }
+	mb.setMaterial(GLMaterial::PLASTIC, GLColor(255, 0, 0));
+	mb.pushTransform();
+	mb.rotate(90, 0, 1, 0);
+	glx::drawCylinder(mb, r0, .9, 5);
+	mb.translate(vec3d(0, 0, .8f));
+	glx::drawCone(mb, r1, 0.2, 10);
+	mb.popTransform();
 
-	glViewport(x0, y0, x1 - x0, y1 - y0);
+	mb.setMaterial(GLMaterial::PLASTIC, GLColor(0, 255, 0));
+	mb.pushTransform();
+	mb.rotate(-90, 1, 0, 0);
+	glx::drawCylinder(mb, r0, .9, 5);
+	mb.translate(vec3d(0, 0, .8f));
+	glx::drawCone(mb, r1, 0.2, 10);
+	mb.popTransform();
 
-	float ar = 1.f;
-	if (h() != 0) ar = fabs((float)w() / (float)h());
+	mb.setMaterial(GLMaterial::PLASTIC, GLColor(0, 0, 255));
+	mb.pushTransform();
+	glx::drawCylinder(mb, r0, .9, 5);
+	mb.translate(vec3d(0, 0, .8f));
+	glx::drawCone(mb, r1, 0.2, 10);
+	mb.popTransform();
 
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	float d = 1.2f;
-	if (ar >= 1.f)	gluOrtho2D(-d * ar, d * ar, -d, d); else gluOrtho2D(-d, d, -d / ar, d / ar);
+	mb.finish();
+	m_pm = mb.takeMesh(); assert(m_pm);
+}
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
+void GLTriad::draw(GLPainter* painter)
+{
+	GLWidget::draw(painter);
 
-	glClear(GL_DEPTH_BUFFER_BIT);
+	GLRenderEngine* re = painter->renderEngine();
 
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
+	int x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+	if (re)
+	{
+		painter->beginNativePainting();
 
-	glDisable(GL_CULL_FACE);
-	glFrontFace(GL_CW);
+		int oldView[4];
+		re->viewport(oldView);
 
-	glLightfv(GL_LIGHT0, GL_POSITION, light);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ones);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, ones);
+		re->setLightPosition(0, vec3f(0, 0, -1));
 
-	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
-	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 32);
+		// set the new viewport based on widget position and size
+		double DPR = painter->devicePixelRatio();
 
-	quatd q = m_rot;
-	vec3d r = q.GetVector();
-	float a = 180 * q.GetAngle() / PI;
+		x0 = (int)(DPR * x());
+		y0 = oldView[3] - (int)(DPR * (y() + h()));
+		x1 = x0 + (int)(DPR * w());
+		y1 = oldView[3] - (int)(DPR * y());
+		if (x1 < x0) { x0 ^= x1; x1 ^= x0; x0 ^= x1; }
+		if (y1 < y0) { y0 ^= y1; y1 ^= y0; y0 ^= y1; }
 
-	if ((a > 0) && (r.Length() > 0))
-		glRotatef(a, r.x, r.y, r.z);
+		int vp[4] = { x0, y0, x1 - x0, y1 - y0 };
+		re->setViewport(vp);
 
-	// create the cylinder object
-	glEnable(GL_LIGHTING);
-	glEnable(GL_COLOR_MATERIAL);
-	GLUquadricObj* pcyl = gluNewQuadric();
+		// set up the projection and modelview matrices
+		float ar = 1.f;
+		if (h() != 0) ar = fabs((float)w() / (float)h());
 
-	const GLdouble r0 = .05;
-	const GLdouble r1 = .15;
+		float d = 1.2f;
+		if (ar >= 1.f)	re->setOrthoProjection(-d * ar, d * ar, -d, d, -1, 1); else re->setOrthoProjection(-d, d, -d / ar, d / ar, -1, 1);
 
-	glPushMatrix();
-	glRotatef(90, 0, 1, 0);
-	glColor3ub(255, 0, 0);
-	gluCylinder(pcyl, r0, r0, .9, 5, 1);
-	glTranslatef(0, 0, .8f);
-	gluCylinder(pcyl, r1, 0, 0.2, 10, 1);
-	glPopMatrix();
+		re->pushTransform();
+		re->resetTransform();
 
-	glPushMatrix();
-	glRotatef(-90, 1, 0, 0);
-	glColor3ub(0, 255, 0);
-	gluCylinder(pcyl, r0, r0, .9, 5, 1);
-	glTranslatef(0, 0, .8f);
-	gluCylinder(pcyl, r1, 0, 0.2, 10, 1);
-	glPopMatrix();
+		re->setFrontFace(GLRenderEngine::FrontFace::CLOCKWISE);
 
-	glPushMatrix();
-	glColor3ub(0, 0, 255);
-	gluCylinder(pcyl, r0, r0, .9, 5, 1);
-	glTranslatef(0, 0, .8f);
-	gluCylinder(pcyl, r1, 0, 0.2, 10, 1);
-	glPopMatrix();
+		quatd q = m_rot;
+		vec3d r = q.GetVector();
+		float a = 180 * q.GetAngle() / PI;
 
-	gluDeleteQuadric(pcyl);
+		if ((a > 0) && (r.Length() > 0))
+			re->rotate(a, r.x, r.y, r.z);
 
-	// restore project matrix
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
+		if (m_pm == nullptr) buildMesh();
+		if (m_pm)
+		{
+			re->setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
+			re->renderGMesh(*m_pm);
+		}
 
-	// restore modelview matrix
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
+		// restore modelview matrix
+		re->popTransform();
 
-	// restore attributes
-	glPopAttrib();
+		// restore viewport
+		re->setViewport(oldView);
 
-	// restore viewport
-	glViewport(view[0], view[1], view[2], view[3]);
+		painter->endNativePainting();
 
-	painter->endNativePainting();
+		x0 /= DPR;
+		x1 /= DPR;
+		y0 = (oldView[3] - y0) / DPR;
+		y1 = (oldView[3] - y1) / DPR;
+	}
+	else
+	{
+		x0 = x();
+		x1 = x() + w();
+		y1 = y();
+		y0 = y() + h();
+	}
 
 	// restore identity matrix
 	if (m_bcoord_labels)
 	{
-		float a = 0.8f;
+		float a = 0.9f;
 		vec3d ex(a, 0.f, 0.f);
 		vec3d ey(0.f, a, 0.f);
 		vec3d ez(0.f, 0.f, a);
-		q.RotateVector(ex);
-		q.RotateVector(ey);
-		q.RotateVector(ez);
+		m_rot.RotateVector(ex);
+		m_rot.RotateVector(ey);
+		m_rot.RotateVector(ez);
 
-		x0 /= DPR;
-		x1 /= DPR;
-		y0 = (view[3] - y0) / DPR;
-		y1 = (view[3] - y1) / DPR;
+		QFontMetrics fm(m_font);
+		int ha = fm.horizontalAdvance('X') + 2;
+	
+		int X_x = x0 + (x1 - x0) * (ex.x + 1) * 0.5;
+		int X_y = y0 + (y1 - y0) * (ex.y + 1) * 0.5;
+		if (ex.x < 0) X_x -= ha;
+		if (ex.y < 0) X_y += ha;
+		
+		int Y_x = x0 + (x1 - x0) * (ey.x + 1) * 0.5;
+		int Y_y = y0 + (y1 - y0) * (ey.y + 1) * 0.5;
+		if (ey.x < 0) Y_x -= ha;
+		if (ey.y < 0) Y_y += ha;
 
-		ex.x = x0 + (x1 - x0) * (ex.x + 1) * 0.5; ex.y = y0 + (y1 - y0) * (ex.y + 1) * 0.5;
-		ey.x = x0 + (x1 - x0) * (ey.x + 1) * 0.5; ey.y = y0 + (y1 - y0) * (ey.y + 1) * 0.5;
-		ez.x = x0 + (x1 - x0) * (ez.x + 1) * 0.5; ez.y = y0 + (y1 - y0) * (ez.y + 1) * 0.5;
+		int Z_x = x0 + (x1 - x0) * (ez.x + 1) * 0.5;
+		int Z_y = y0 + (y1 - y0) * (ez.y + 1) * 0.5;
+		if (ez.x < 0) Z_x -= ha;
+		if (ez.y < 0) Z_y += ha;
+
+		GLColor fc = get_fg_color();
 
 		painter->setFont(m_font);
-		painter->setPen(toQColor(m_fgc));
-		painter->drawText(ex.x, ex.y, "X");
-		painter->drawText(ey.x, ey.y, "Y");
-		painter->drawText(ez.x, ez.y, "Z");
+		painter->setPen(toQColor(fc));
+		painter->drawText(X_x, X_y, "X");
+		painter->drawText(Y_x, Y_y, "Y");
+		painter->drawText(Z_x, Z_y, "Z");
 	}
 }

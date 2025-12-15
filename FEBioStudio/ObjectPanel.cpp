@@ -28,15 +28,15 @@ SOFTWARE.*/
 #include "ObjectPanel.h"
 #include <QPushButton>
 #include <QGridLayout>
-#include <QFormLayout>
 #include <QMenu>
 #include <QLineEdit>
 #include <QLabel>
-#include "CColorButton.h"
+#include "MatEditButton.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <GeomLib/GOCCObject.h>
 #include <GLWLib/convert.h>
 #include "MainWindow.h"
 #include "GLDocument.h"
@@ -47,7 +47,7 @@ public:
 	QMenu*			menu;
 	QLineEdit*		name;
 	QLabel*			type;
-	CColorButton*	color;
+	CMatEditButton*	mat;
 	CMainWindow*	m_wnd;
 
 public:
@@ -56,7 +56,7 @@ public:
 		name = new QLineEdit;
 		name->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
 		type = new QLabel;
-		color = new CColorButton;
+		mat = new CMatEditButton;
 
 		menu = new QMenu(w);
 		menu->setObjectName("menu");
@@ -70,13 +70,14 @@ public:
 
 		objGrid->addWidget(nameLabel, 0, 0);
 		objGrid->addWidget(name, 0, 1, 1, 2);
-		objGrid->addWidget(color, 0, 3);
+		objGrid->addWidget(mat, 0, 3, 2, 2);
 		objGrid->addWidget(typeLabel, 1, 0);
 		objGrid->addWidget(type, 1, 1);
 		objGrid->addWidget(pb, 1, 2);
+
 		w->setLayout(objGrid);
 
-		QObject::connect(color, SIGNAL(colorChanged(QColor)), w, SLOT(onColorChanged(QColor)));
+		QObject::connect(mat, SIGNAL(materialChanged(GLMaterial)), w, SLOT(onMaterialChanged(GLMaterial)));
 	}
 };
 
@@ -86,13 +87,13 @@ CObjectPanel::CObjectPanel(CMainWindow* wnd, QWidget* parent) : QWidget(parent),
 	ui->setup(this);
 }
 
-void CObjectPanel::onColorChanged(QColor c)
+void CObjectPanel::onMaterialChanged(GLMaterial mat)
 {
 	CGLDocument* doc = ui->m_wnd->GetGLDocument();
 	GObject* po = (doc ? doc->GetActiveObject() : nullptr);
 	if (po)
 	{
-		po->SetColor(toGLColor(c));
+		po->SetMaterial(mat);
 		ui->m_wnd->RedrawGL();
 	}
 }
@@ -140,12 +141,17 @@ void CObjectPanel::Update()
 			ui->menu->setEnabled(true);
 
 		}
+		else if (dynamic_cast<GOCCObject*>(po))
+		{
+			ui->menu->addAction("Editable Surface")->setData(CONVERT_TO_EDITABLE_SURFACE);
+			ui->menu->setEnabled(true);
+		}
 		else ui->menu->setEnabled(false);
 
 		if (isEnabled() == false) setEnabled(true);
 
 		ui->name->setText(QString::fromStdString(po->GetName()));
-		ui->color->setColor(toQColor(po->GetColor()));
+		ui->mat->setMaterial(po->GetMaterial());
 
 		std::string stype = doc->GetTypeString(po);
 		ui->type->setText(QString::fromStdString(stype));
@@ -155,6 +161,6 @@ void CObjectPanel::Update()
 		setEnabled(false);
 		ui->name->setText("");
 		ui->type->setText("");
-		ui->color->setColor(QColor(0,0,0));
+		ui->mat->setMaterial(GLMaterial());
 	}
 }

@@ -34,6 +34,8 @@ Ui::CMainWindow::CMainWindow()
 	m_settings.defaultUnits = 0;
 	m_settings.clearUndoOnSave = true;
 	m_settings.autoSaveInterval = 600;
+	m_settings.loadFEBioConfigFile = true;
+	m_settings.febioConfigFileName = "$(FEBioStudioDir)/febio.xml";
 }
 
 void Ui::CMainWindow::setupUi(::CMainWindow* wnd)
@@ -98,6 +100,9 @@ void Ui::CMainWindow::setupUi(::CMainWindow* wnd)
     QObject::connect(postPanel, &::CPostPanel::postTree_currentObjectChanged, imageSettingsPanel, &::CImageSettingsPanel::ModelTreeSelectionChanged);
     QObject::connect(postPanel, &::CPostPanel::postTree_currentObjectChanged, centralWidget->sliceView, &::CImageSliceView::ModelTreeSelectionChanged);
     QObject::connect(postPanel, &::CPostPanel::postTree_currentObjectChanged, centralWidget->timeView2D, &::C2DImageTimeView::ModelTreeSelectionChanged);
+
+	CGLView* glview = centralWidget->glw->GetGLView();
+	QObject::connect(glview, &CGLView::pointPicked, wnd, &::CMainWindow::on_glview_pointPicked);
 }
 
 QAction* Ui::CMainWindow::addAction(const QString& title, const QString& name, const QString& iconFile, bool bcheckable)
@@ -321,12 +326,19 @@ void Ui::CMainWindow::buildDockWidgets(::CMainWindow* wnd)
 	mainMenu->menuWindows->addAction(dock11->toggleViewAction());
 	m_wnd->tabifyDockWidget(dock4, dock11);
 
+	QDockWidget* dock12 = new QDockWidget("Properties", m_wnd); 
+	dock12->setObjectName("docProps");
+	docProps = new ::CDocPropsPanel(wnd, dock12);
+	dock12->setWidget(docProps);
+	mainMenu->menuWindows->addAction(dock12->toggleViewAction());
+	m_wnd->tabifyDockWidget(dock2, dock12);
+
 #ifdef HAS_PYTHON
-//	QDockWidget* dock12 = new QDockWidget("Python", m_wnd); dock12->setObjectName("dockPython");
-//	pythonToolsPanel = new ::CPythonToolsPanel(wnd, dock12);
-//	dock12->setWidget(pythonToolsPanel);
-//	mainMenu->menuWindows->addAction(dock12->toggleViewAction());
-//	m_wnd->tabifyDockWidget(dock3, dock12);
+//	QDockWidget* dock13 = new QDockWidget("Python", m_wnd); dock12->setObjectName("dockPython");
+//	pythonToolsPanel = new ::CPythonToolsPanel(wnd, dock13);
+//	dock13->setWidget(pythonToolsPanel);
+//	mainMenu->menuWindows->addAction(dock13->toggleViewAction());
+//	m_wnd->tabifyDockWidget(dock3, dock13);
 #endif
 
 	// make sure the file viewer is the visible tab
@@ -344,6 +356,7 @@ void Ui::CMainWindow::BuildConfigs()
 	m_configs.push_back(new CXMLConfig(this));
 	m_configs.push_back(new CMonitorConfig(this));
 	m_configs.push_back(new CFEBReportConfig(this));
+	m_configs.push_back(new CBatchRunConfig(this));
 
 	setUIConfig(Ui::Config::EMPTY_CONFIG);
 }
@@ -354,7 +367,7 @@ void Ui::CMainWindow::SetSelectionMode(int nselect)
 	{
 	case SELECT_OBJECT  : mainMenu->actionSelectObjects->trigger(); break;
 	case SELECT_PART    : mainMenu->actionSelectParts->trigger(); break;
-	case SELECT_FACE    : mainMenu->actionSelectSurfaces->trigger(); break;
+	case SELECT_SURF    : mainMenu->actionSelectSurfaces->trigger(); break;
 	case SELECT_EDGE    : mainMenu->actionSelectCurves->trigger(); break;
 	case SELECT_NODE    : mainMenu->actionSelectNodes->trigger(); break;
 	case SELECT_DISCRETE: mainMenu->actionSelectDiscrete->trigger(); break;

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FEGregoryPatch.h"
 #include <MeshLib/FSMesh.h>
 
-FEGregoryPatch::FEGregoryPatch(void)
+FEGregoryPatch::FEGregoryPatch(GObject& o) : FEMesher(o)
 {
 	m_w = m_h = 1;
 	m_nx = m_ny = 5;
@@ -46,7 +46,7 @@ FEGregoryPatch::~FEGregoryPatch(void)
 {
 }
 
-FSMesh* FEGregoryPatch::BuildMesh(GObject* po)
+FSMesh* FEGregoryPatch::BuildMesh()
 {
 	// first, build the patches
 	BuildPatches();

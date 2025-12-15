@@ -90,7 +90,7 @@ public:
 	void DeleteTaggedFaces(int tag);
 
 	// Delete tagged elements
-	void DeleteTaggedElements(int tag);
+	int DeleteTaggedElements(int tag);
 
 	// delete all elements of a part
 	FSMesh* DeletePart(FSMesh& mesh, int partId);
@@ -124,7 +124,7 @@ private:
 	void BuildFaces();
 	void BuildEdges();
 	void AutoPartitionElements();
-	void AutoPartitionSurface();
+	void AutoPartitionSurface(double smoothingAngle, bool creaseInternal);
 	void AutoPartitionEdges();
 	void AutoPartitionNodes();
 	FSMesh* DeleteTaggedParts(FSMesh& mesh, int tag);

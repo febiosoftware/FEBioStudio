@@ -60,9 +60,6 @@ public:
 	// get the bounding box of the entire scene
 	BOX GetBoundingBox() override;
 
-	// get the bounding box of the current selection
-	BOX GetSelectionBox() override;
-
 	// get the post model
 	Post::CGLModel* GetGLModel() { return m_glm; }
 
@@ -71,6 +68,8 @@ public:
 	bool AddDataField(const std::string& fieldName);
 
 	CPostObject* GetPostObject() { return m_glm->GetPostObject(); }
+
+	LegendData GetLegendData(int n) override;
 
 private:
 	void Clear();

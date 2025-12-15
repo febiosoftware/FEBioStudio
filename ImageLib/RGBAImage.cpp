@@ -35,26 +35,37 @@ SOFTWARE.*/
 
 CRGBAImage::CRGBAImage()
 {
-	m_pb = 0;
+	m_pb = nullptr;
 	m_cx = m_cy = 0;
 }
 
-CRGBAImage::CRGBAImage(int nx, int ny)
+CRGBAImage::CRGBAImage(int nx, int ny, const void* imgdata)
 {
-	m_pb = new uint8_t[nx*ny * 4];
-	for (int i = 0; i<nx*ny * 4; i++) m_pb[i] = 0;
-
 	m_cx = nx;
 	m_cy = ny;
+	m_pb = nullptr;
+
+	if (nx * ny > 0)
+	{
+		m_pb = new uint8_t[nx * ny * 4];
+
+		if (imgdata)
+			memcpy(m_pb, imgdata, 4 * nx * ny);
+		else
+			for (int i = 0; i < nx * ny * 4; i++) m_pb[i] = 0;
+	}
 }
 
 CRGBAImage::CRGBAImage(const CRGBAImage& im)
 {
 	m_cx = im.m_cx;
 	m_cy = im.m_cy;
-
-	m_pb = new uint8_t[m_cx*m_cy * 4];
-	memcpy(m_pb, im.m_pb, m_cx*m_cy * 4);
+	m_pb = nullptr;
+	if (m_cx * m_cy > 0)
+	{
+		m_pb = new uint8_t[m_cx * m_cy * 4];
+		memcpy(m_pb, im.m_pb, m_cx * m_cy * 4);
+	}
 }
 
 CRGBAImage& CRGBAImage::operator = (const CRGBAImage& im)
@@ -63,9 +74,12 @@ CRGBAImage& CRGBAImage::operator = (const CRGBAImage& im)
 
 	m_cx = im.m_cx;
 	m_cy = im.m_cy;
-
-	m_pb = new uint8_t[m_cx*m_cy * 4];
-	memcpy(m_pb, im.m_pb, m_cx*m_cy * 4);
+	m_pb = nullptr;
+	if (m_cx * m_cy > 0)
+	{
+		m_pb = new uint8_t[m_cx * m_cy * 4];
+		memcpy(m_pb, im.m_pb, m_cx * m_cy * 4);
+	}
 
 	return (*this);
 }
@@ -79,11 +93,14 @@ void CRGBAImage::Create(int nx, int ny)
 {
 	if (m_pb) delete[] m_pb;
 
-	m_pb = new uint8_t[nx*ny * 4];
-	for (int i = 0; i<nx*ny * 4; i++) m_pb[i] = 0;
-
 	m_cx = nx;
 	m_cy = ny;
+	m_pb = nullptr;
+	if (nx * ny > 0)
+	{
+		m_pb = new uint8_t[nx * ny * 4];
+		for (int i = 0; i < nx * ny * 4; i++) m_pb[i] = 0;
+	}
 }
 
 void CRGBAImage::StretchBlt(CRGBAImage& im)

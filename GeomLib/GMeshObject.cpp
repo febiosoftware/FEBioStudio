@@ -610,6 +610,9 @@ void GMeshObject::UpdateNodes()
 	// count how many nodes there are
 	int nodes = m.CountNodePartitions();
 
+	// see if the nr of nodes has changed
+	bool numberOfNodesChanged = (nodes != m_Node.size());
+
 	// figure out which node are still used
 	vector<int> tag(nodes, 0);
 	for (int i = 0; i < m.Nodes(); ++i)
@@ -667,6 +670,23 @@ void GMeshObject::UpdateNodes()
 
 	// sanity check
 	assert(m.CountNodePartitions() == Nodes());
+
+	// we need to clear the node lists of the parts and faces since there is no 
+	// way of knowing if they are still valid
+	if (numberOfNodesChanged)
+	{
+		for (int i = 0; i < Parts(); ++i)
+		{
+			GPart* pg = Part(i);
+			pg->m_node.clear();
+		}
+
+		for (int i = 0; i < Faces(); ++i)
+		{
+			GFace* pf = Face(i);
+			pf->m_node.clear();
+		}
+	}
 }
 
 // This function constructs the faces' nodelists, since for GMeshObject
@@ -822,18 +842,25 @@ void GMeshObject::BuildGMesh()
 	}
 
 	// create edges
-	int n[FSFace::MAX_NODES];
-	for (int i=0; i<pm->Edges(); ++i)
+	std::vector<std::deque<int>> edgeList(Edges());
+	int NC = pm->Edges();
+	for (int i = 0; i < NC; i++)
 	{
-		FSEdge& es = pm->Edge(i);
-		if (es.IsExterior())
+		const FSEdge& edge = pm->Edge(i);
+		if (edge.m_gid >= 0)
+			edgeList[edge.m_gid].push_back(i);
+	}
+
+	int n[FSFace::MAX_NODES];
+	for (int i = 0; i < Edges(); ++i)
+	{
+		gmesh->NewEdgePartition();
+		for (int l : edgeList[i])
 		{
-			n[0] = pm->Node(es.n[0]).m_ntag; assert(n[0] >= 0);
-			n[1] = pm->Node(es.n[1]).m_ntag; assert(n[1] >= 0);
-			if (es.n[2] != -1) { n[2] = pm->Node(es.n[2]).m_ntag; assert(n[2] >= 0); }
-			if (es.n[3] != -1) { n[3] = pm->Node(es.n[3]).m_ntag; assert(n[3] >= 0); }
-			assert(es.m_gid >= 0);
-			gmesh->AddEdge(n, es.Nodes(), es.m_gid);
+			FSEdge& edge = pm->Edge(l);
+			int ne = edge.Nodes();
+			for (int j = 0; j < ne; ++j) n[j] = pm->Node(edge.n[j]).m_ntag;
+			gmesh->AddEdge(n, ne, edge.m_gid);
 		}
 	}
 
@@ -848,13 +875,13 @@ void GMeshObject::BuildGMesh()
 
 	for (int i = 0; i < Faces(); ++i)
 	{
-		gmesh->NewPartition();
+		gmesh->NewSurfacePartition();
 		for (int l : faceList[i])
 		{
 			FSFace& fs = pm->Face(l);
 			int nf = fs.Nodes();
 			for (int j = 0; j < nf; ++j) n[j] = pm->Node(fs.n[j]).m_ntag;
-			gmesh->AddFace(n, nf, fs.m_gid, fs.m_sid, fs.IsExternal());
+			gmesh->AddFace(n, nf, fs.m_gid, fs.m_gid, fs.IsExternal());
 		}
 	}
 
@@ -875,8 +902,8 @@ GObject* GMeshObject::Clone()
 	// copy transform
 	po->CopyTransform(this);
 
-	// copy color
-	po->SetColor(GetColor());
+	// copy material
+	po->SetMaterial(GetMaterial());
 
 	//return the object
 	return po;
@@ -921,7 +948,8 @@ void GMeshObject::Load(IArchive& ar)
 			{
 				vec3d pos, scl;
 				quatd rot;
-				GLColor col;
+				GLMaterial mat;
+				mat.type = GLMaterial::PLASTIC;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
@@ -932,16 +960,23 @@ void GMeshObject::Load(IArchive& ar)
 					case CID_OBJ_POS: ar.read(pos); break;
 					case CID_OBJ_ROT: ar.read(rot); break;
 					case CID_OBJ_SCALE: ar.read(scl); break;
-					case CID_OBJ_COLOR: ar.read(col); break;
+					case CID_OBJ_COLOR: { ar.read(mat.diffuse); mat.ambient = mat.diffuse; } break;
 					case CID_OBJ_PARTS: ar.read(nparts); break;
 					case CID_OBJ_FACES: ar.read(nfaces); break;
 					case CID_OBJ_EDGES: ar.read(nedges); break;
 					case CID_OBJ_NODES: ar.read(nnodes); break;
+					case CID_MAT_AMBIENT   : ar.read(mat.ambient); break;
+					case CID_MAT_DIFFUSE   : ar.read(mat.diffuse); break;
+					case CID_MAT_SPECULAR  : ar.read(mat.specular); break;
+					case CID_MAT_EMISSION  : ar.read(mat.emission); break;
+					case CID_MAT_SHININESS : ar.read(mat.shininess); break;
+					case CID_MAT_OPACITY   : ar.read(mat.opacity); break;
+					case CID_MAT_REFLECTION: ar.read(mat.reflection); break;
 					}
 					ar.CloseChunk();
 				}
 
-				SetColor(col);
+				SetMaterial(mat);
 
 				Transform& transform = GetTransform();
 				transform.SetPosition(pos);
@@ -1292,9 +1327,13 @@ GMeshObject* GMeshObject::DetachSelection()
 
 GMeshObject* ExtractSelection(GObject* po)
 {
+	if (po == nullptr) return nullptr;
+
 	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return nullptr;
 
 	FSMesh* newMesh = pm->ExtractFaces(true);
+	if (newMesh == nullptr) return nullptr;
 
 	// create a new object for this mesh
 	GMeshObject* newObject = new GMeshObject(newMesh);
@@ -1340,7 +1379,7 @@ GMeshObject* ConvertToEditableMesh(GObject* po)
 
 	// copy data
 	pnew->CopyTransform(po);
-	pnew->SetColor(po->GetColor());
+	pnew->SetMaterial(po->GetMaterial());
 
 	// copy the selection state
 	if (po->IsSelected()) pnew->Select();

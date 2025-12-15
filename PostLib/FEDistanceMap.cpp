@@ -37,7 +37,10 @@ using namespace std;
 Post::FEDistanceMap::FEDistanceMap(Post::FEPostModel* fem, int flags) : Post::ModelDataField(fem, DATA_SCALAR, DATA_NODE, FACE_DATA, 0)
 { 
 	m_tol = 0.01; 
-	m_bsigned = false; 
+	m_bsigned = false;
+	m_flipPrimary = false;
+	m_flipSecondary = false;
+	m_nopt = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -49,6 +52,7 @@ Post::ModelDataField* Post::FEDistanceMap::Clone() const
 	pd->m_surf2 = m_surf2;
 	pd->m_tol = m_tol;
 	pd->m_bsigned = m_bsigned;
+	pd->m_nopt = m_nopt;
 	return pd;
 }
 
@@ -121,25 +125,32 @@ void Post::FEDistanceMap::Surface::BuildNodeList(FSMesh& mesh)
 }
 
 //-----------------------------------------------------------------------------
-void Post::FEDistanceMap::BuildNormalList(Post::FEDistanceMap::Surface& s)
+void Post::FEDistanceMap::BuildNormalList(Post::FEDistanceMap::Surface& s, bool flip)
 {
 	// get the mesh
 	FSMesh& mesh = *m_fem->GetFEMesh(0);
 
 	int NF = s.Faces();
 	int NN = s.Nodes();
-	s.m_norm.resize(NN);
+	s.m_norm.assign(NN, vec3f(0,0,0));
 
 	const int MN = FSFace::MAX_NODES;
 	for (int i=0; i<NF; ++i)
 	{
 		FSFace& f = mesh.Face(s.m_face[i]);
+		vec3f N = to_vec3f(mesh.FaceNormal(f));
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j) 
 		{
 			int n = s.m_lnode[MN*i + j]; assert(n>=0);
-			s.m_norm[n] = f.m_nn[j];
+			s.m_norm[n] += N;
 		}
+	}
+	for (int i = 0; i < NN; ++i) s.m_norm[i].Normalize();
+
+	if (flip)
+	{
+		for (int i = 0; i < NN; ++i) s.m_norm[i] = -s.m_norm[i];
 	}
 }
 
@@ -152,73 +163,101 @@ Post::FEMeshData* Post::FEDistanceMap::CreateData(Post::FEState* pstate)
 //-----------------------------------------------------------------------------
 void Post::FEDistanceMap::Apply()
 {
+	Init();
+
+	Post::FEPostModel& fem = *m_fem;
+	for (int n = 0; n < fem.GetStates(); ++n)
+	{
+		ApplyState(n);
+	}
+}
+
+void Post::FEDistanceMap::ApplyState(int n)
+{
+	// get the mesh
+	Post::FEPostModel& fem = *m_fem;
+	FSMesh& mesh = *fem.GetFEMesh(0);
+
+	const int MN = FSFace::MAX_NODES;
+
+	// get the field index
+	int nfield = FIELD_CODE(GetFieldID());
+
+	FEState* ps = fem.GetState(n);
+	Post::FEFaceData<float, DATA_NODE>* df = dynamic_cast<Post::FEFaceData<float, DATA_NODE>*>(&ps->m_Data[nfield]);
+
+	// loop over all nodes of surface 1
+	vector<float> a(m_surf1.Nodes());
+	#pragma omp parallel for
+	for (int i = 0; i < m_surf1.Nodes(); ++i)
+	{
+		int inode = m_surf1.m_node[i];
+		FSNode& node = mesh.Node(inode);
+		vec3f r = fem.NodePosition(inode, n);
+		Projection P = project(m_surf2, r, n);
+		a[i] = (P.q - r).Length();
+		if (m_bsigned)
+		{
+			if (m_nopt == 0) // new approach
+			{
+				double s = (P.q - r) * P.n;
+				if (s > 0) a[i] = -a[i];
+			}
+			else // old approach
+			{
+				double s = (P.q - r) * m_surf1.m_norm[i];
+				if (s < 0) a[i] = -a[i];
+			}
+		}
+	}
+	vector<int> nf1(m_surf1.Faces());
+	for (int i = 0; i < m_surf1.Faces(); ++i) nf1[i] = MN;
+	df->add(a, m_surf1.m_face, m_surf1.m_lnode, nf1);
+
+	// loop over all nodes of surface 2
+	vector<float> b(m_surf2.Nodes());
+    #pragma omp parallel for
+	for (int i = 0; i < m_surf2.Nodes(); ++i)
+	{
+		int inode = m_surf2.m_node[i];
+		FSNode& node = mesh.Node(inode);
+		vec3f r = fem.NodePosition(inode, n);
+		Projection P = project(m_surf1, r, n);
+		b[i] = (P.q - r).Length();
+		if (m_bsigned)
+		{
+			if (m_nopt == 0) // new approach
+			{
+				double s = (P.q - r) * P.n;
+				if (s > 0) b[i] = -b[i];
+			}
+			else
+			{
+				double s = (P.q - r) * m_surf2.m_norm[i];
+				if (s < 0) b[i] = -b[i];
+			}
+		}
+	}
+	vector<int> nf2(m_surf2.Faces());
+	for (int i = 0; i < m_surf2.Faces(); ++i) nf2[i] = MN;
+	df->add(b, m_surf2.m_face, m_surf2.m_lnode, nf2);
+}
+
+void Post::FEDistanceMap::Init()
+{
 	// store the model
 	Post::FEPostModel& fem = *m_fem;
 
 	// get the mesh
 	FSMesh& mesh = *fem.GetFEMesh(0);
 
-	const int MN = FSFace::MAX_NODES;
-
 	// build the node lists
 	m_surf1.BuildNodeList(mesh);
 	m_surf2.BuildNodeList(mesh);
 	int N = mesh.Nodes();
 
-	if (m_bsigned)
-	{
-		BuildNormalList(m_surf1);
-		BuildNormalList(m_surf2);
-	}
-
-	// get the field index
-	int nfield = FIELD_CODE(GetFieldID());
-
-	for (int n = 0; n < fem.GetStates(); ++n)
-	{
-		FEState* ps = fem.GetState(n);
-		Post::FEFaceData<float, DATA_NODE>* df = dynamic_cast<Post::FEFaceData<float, DATA_NODE>*>(&ps->m_Data[nfield]);
-
-		// loop over all nodes of surface 1
-		vector<float> a(m_surf1.Nodes());
-        #pragma omp parallel for
-		for (int i = 0; i < m_surf1.Nodes(); ++i)
-		{
-			int inode = m_surf1.m_node[i];
-			FSNode& node = mesh.Node(inode);
-			vec3f r = fem.NodePosition(inode, n);
-			Projection P = project(m_surf2, r, n);
-			a[i] = (P.q - r).Length();
-			if (m_bsigned)
-			{
-				double s = (P.q - r)*P.n;
-				if (s > 0) a[i] = -a[i];
-			}
-		}
-		vector<int> nf1(m_surf1.Faces());
-		for (int i = 0; i < m_surf1.Faces(); ++i) nf1[i] = MN;
-		df->add(a, m_surf1.m_face, m_surf1.m_lnode, nf1);
-
-		// loop over all nodes of surface 2
-		vector<float> b(m_surf2.Nodes());
-        #pragma omp parallel for
-		for (int i = 0; i < m_surf2.Nodes(); ++i)
-		{
-			int inode = m_surf2.m_node[i];
-			FSNode& node = mesh.Node(inode);
-			vec3f r = fem.NodePosition(inode, n);
-			Projection P = project(m_surf1, r, n);
-			b[i] = (P.q - r).Length();
-			if (m_bsigned)
-			{
-				double s = (P.q - r)*P.n;
-				if (s > 0) b[i] = -b[i];
-			}
-		}
-		vector<int> nf2(m_surf2.Faces());
-		for (int i = 0; i < m_surf2.Faces(); ++i) nf2[i] = MN;
-		df->add(b, m_surf2.m_face, m_surf2.m_lnode, nf2);
-	}
+	BuildNormalList(m_surf1, m_flipPrimary);
+	BuildNormalList(m_surf2, m_flipSecondary);
 }
 
 //-----------------------------------------------------------------------------
@@ -245,6 +284,7 @@ Post::FEDistanceMap::Projection Post::FEDistanceMap::project(Post::FEDistanceMap
 		}
 	}
 	P.q = q;
+	P.n = surf.m_norm[imin];
 
 	// Look into the nearest node's star first. 
 	bool found = false;

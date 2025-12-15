@@ -2194,7 +2194,7 @@ void FESurfaceNormal::eval(int n, vec3f* pv)
 		if ((n >= 0) && (n < mesh->Faces()))
 		{
 			FSFace& face = mesh->Face(n);
-			*pv = face.m_fn;
+			*pv = to_vec3f(mesh->FaceNormal(face));
 		}
 	}
 }

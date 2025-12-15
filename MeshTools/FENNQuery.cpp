@@ -46,10 +46,11 @@ FSNNQuery::~FSNNQuery()
 
 }
 
-void FSNNQuery::Init()
+bool FSNNQuery::Init()
 {
 	vec3d r0, r;
 	int N = (int)m_points.size();
+	if (N == 0) return false;
 
 	// pick a random point as pivot
 	r0 = m_q1 = m_points[0];
@@ -97,6 +98,8 @@ void FSNNQuery::Init()
 
 	// set the initial search item
 	m_imin = 0;
+
+	return true;
 }
 
 const vec3d& FSNNQuery::Find(const vec3d& x)

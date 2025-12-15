@@ -442,5 +442,9 @@ bool CImageModel::ExportSITKImage(const std::string& filename)
     C3DImage* im = Get3DImage();
 	if (im == nullptr) return false;
 
+#ifdef HAS_ITK
 	return WriteSITKImage(im, filename);
+#else
+    return false;
+#endif
 }

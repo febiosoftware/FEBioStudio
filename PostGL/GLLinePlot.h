@@ -34,7 +34,7 @@ namespace Post {
 
 //-----------------------------------------------------------------------------
 // Line rendering of imported line data
-class CGLLinePlot : public CGLLegendPlot
+class CGLLinePlot : public CGLPlot
 {
 	enum { DATA_FIELD, COLOR_MODE, SOLID_COLOR, COLOR_MAP, RENDER_MODE, LINE_WIDTH, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN, SHOW_ALWAYS, SHOW_LEGEND };
 

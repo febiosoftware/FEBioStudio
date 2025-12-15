@@ -24,15 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include <GL/glew.h>
-#ifdef __APPLE__
-#include <OpenGL/glu.h>
-#elif WIN32
-#include <Windows.h>
-#include <GL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
 #include "GLView.h"
 #include "MainWindow.h"
 #include <QApplication>
@@ -47,7 +38,6 @@ SOFTWARE.*/
 #include <math.h>
 #include <MeshLib/MeshTools.h>
 #include "GLViewTransform.h"
-#include <GLLib/glx.h>
 #include <GLLib/GDecoration.h>
 #include <GLLib/GLCamera.h>
 #include <GLLib/GLContext.h>
@@ -65,43 +55,13 @@ SOFTWARE.*/
 #include <GLWLib/GLLegendBar.h>
 #include <GLWLib/GLComposite.h>
 #include "GLModelScene.h"
+#include "GLViewScene.h"
+#include <GLLib/glx.h>
+#include <QPainterPath>
 
 using namespace std::chrono;
 
-static GLubyte poly_mask[128] = {
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170
-};
+GLViewSettings CGLView::m_view;
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt)
 {
@@ -185,121 +145,6 @@ bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt)
 	}
 
 	return false;
-}
-
-//=============================================================================
-bool SelectRegion::LineIntersects(int x0, int y0, int x1, int y1) const
-{
-	return (IsInside(x0, y0) || IsInside(x1, y1));
-}
-
-bool SelectRegion::TriangleIntersect(int x0, int y0, int x1, int y1, int x2, int y2) const
-{
-	return (LineIntersects(x0, y0, x1, y1) || LineIntersects(x1, y1, x2, y2) || LineIntersects(x2, y2, x0, y0));
-}
-
-//=============================================================================
-BoxRegion::BoxRegion(int x0, int x1, int y0, int y1)
-{
-	m_x0 = (x0<x1 ? x0 : x1); m_x1 = (x0<x1 ? x1 : x0);
-	m_y0 = (y0<y1 ? y0 : y1); m_y1 = (y0<y1 ? y1 : y0);
-}
-
-bool BoxRegion::IsInside(int x, int y) const
-{
-	return ((x >= m_x0) && (x <= m_x1) && (y >= m_y0) && (y <= m_y1));
-}
-
-bool BoxRegion::LineIntersects(int x0, int y0, int x1, int y1) const
-{
-	return intersectsRect(QPoint(x0, y0), QPoint(x1, y1), QRect(m_x0, m_y0, m_x1 - m_x0, m_y1 - m_y0));
-}
-
-CircleRegion::CircleRegion(int x0, int x1, int y0, int y1)
-{
-	m_xc = x0;
-	m_yc = y0;
-
-	double dx = (x1 - x0);
-	double dy = (y1 - y0);
-	m_R = (int)sqrt(dx*dx + dy*dy);
-}
-
-bool CircleRegion::IsInside(int x, int y) const
-{
-	double rx = x - m_xc;
-	double ry = y - m_yc;
-	int r = rx*rx + ry*ry;
-	return (r <= m_R*m_R);
-}
-
-bool CircleRegion::LineIntersects(int x0, int y0, int x1, int y1) const
-{
-	if (IsInside(x0, y0) || IsInside(x1, y1)) return true;
-
-	int tx = x1 - x0;
-	int ty = y1 - y0;
-
-	int D = tx*(m_xc - x0) + ty*(m_yc - y0);
-	int N = tx*tx + ty*ty;
-	if (N == 0) return false;
-
-	if ((D >= 0) && (D <= N))
-	{
-		int px = x0 + D*tx / N - m_xc;
-		int py = y0 + D*ty / N - m_yc;
-
-		if (px*px + py*py <= m_R*m_R) return true;
-	}
-	else return false;
-
-	return false;
-}
-
-FreeRegion::FreeRegion(vector<pair<int, int> >& pl) : m_pl(pl)
-{
-	if (m_pl.empty() == false)
-	{
-		vector<pair<int, int> >::iterator pi = m_pl.begin();
-		m_x0 = m_x1 = pi->first;
-		m_y0 = m_y1 = pi->second;
-		for (pi = m_pl.begin(); pi != m_pl.end(); ++pi)
-		{
-			int x = pi->first;
-			int y = pi->second;
-			if (x < m_x0) m_x0 = x; if (x > m_x1) m_x1 = x;
-			if (y < m_y0) m_y0 = y; if (y > m_y1) m_y1 = y;
-		}
-	}
-}
-
-bool FreeRegion::IsInside(int x, int y) const
-{
-	if (m_pl.empty()) return false;
-	if ((x < m_x0) || (x > m_x1) || (y < m_y0) || (y > m_y1))
-	{
-		return false;
-	}
-
-	int nint = 0;
-	int N = (int)m_pl.size();
-	for (int i = 0; i<N; ++i)
-	{
-		int ip1 = (i + 1) % N;
-		double x0 = (double)m_pl[i].first;
-		double y0 = (double)m_pl[i].second;
-		double x1 = (double)m_pl[ip1].first;
-		double y1 = (double)m_pl[ip1].second;
-
-		double yc = (double)y + 0.0001;
-
-		if (((y1>yc) && (y0<yc)) || ((y0>yc) && (y1<yc)))
-		{
-			double xi = x1 + ((x0 - x1)*(y1 - yc)) / (y1 - y0);
-			if (xi >(double)x) nint++;
-		}
-	}
-	return ((nint>0) && (nint % 2));
 }
 
 CGLPivot::CGLPivot(CGLView* view) : m_Ttor(view), m_Rtor(view), m_Stor(view)
@@ -436,6 +281,14 @@ public:
 			vs.m_bnorm = b->m_checked;
 			});
 		add_widget(w);
+
+		m_wireframe = w = new GLCheckBox(0, 0, 150, 25, "wireframe (w)");
+		w->add_event_handler([=](GLWidget* w, int nevent) {
+			GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
+			GLViewSettings& vs = glview->GetViewSettings();
+			vs.m_nrender = (b->m_checked ? RENDER_WIREFRAME : RENDER_SOLID);
+			});
+		add_widget(w);
 	}
 
 	void toggleMeshLines(bool b)
@@ -458,17 +311,30 @@ public:
 		m_showNormals->m_checked = b;
 	}
 
+	void toggleWireframe(bool b)
+	{
+		m_wireframe->m_checked = b;
+	}
+
 private:
 	CGLView* m_glview;
 	GLCheckBox* m_meshLines;
 	GLCheckBox* m_gridLines;
 	GLCheckBox* m_featureEdges;
 	GLCheckBox* m_showNormals;
+	GLCheckBox* m_wireframe;
 };
 
+void RenderBrush(QPainter& painter, int x, int y, double R)
+{
+	QPen oldPen = painter.pen();
+	painter.setPen(QPen(Qt::white, 2, Qt::DotLine));
+	painter.setBrush(Qt::NoBrush);
+	painter.drawEllipse(QPointF(x, y), R, R);
+}
 
 //-----------------------------------------------------------------------------
-CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this)
+CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : rhiSceneView(pwnd), m_pWnd(pwnd), m_pivot(this), m_select(this)
 {
 	m_bsnap = false;
 
@@ -508,20 +374,31 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 	m_ptriad = nullptr;
 	m_pframe = nullptr;
 	m_legend = nullptr;
+	m_legendPlot = nullptr;
+	m_menu = nullptr;
 }
 
 CGLView::~CGLView()
 {
 }
 
+void CGLView::repaint()
+{
+	requestUpdate();
+}
+void CGLView::update()
+{
+	requestUpdate();
+}
+
+QRect CGLView::rect() const
+{
+	return QRect(0, 0, width(), height());
+}
+
 void CGLView::AllocateDefaultWidgets(bool b)
 {
 	m_ballocDefaultWidgets = b;
-}
-
-std::string CGLView::GetOGLVersionString()
-{
-	return m_oglVersionString;
 }
 
 CGLDocument* CGLView::GetDocument()
@@ -539,12 +416,6 @@ void CGLView::UpdateCamera(bool hitCameraTarget)
 	}
 }
 
-void CGLView::resizeGL(int w, int h)
-{
-	QOpenGLWidget::resizeGL(w, h);
-	if (m_Widget) m_Widget->CheckWidgetBounds();
-}
-
 void CGLView::changeViewMode(View_Mode vm)
 {
 	GLScene* scene = GetActiveScene();
@@ -552,8 +423,10 @@ void CGLView::changeViewMode(View_Mode vm)
 
 	m_view.m_nview = vm;
 
+	GLCamera& cam = scene->GetCamera();
+
 	// switch to ortho view if we're not in it
-	bool bortho = scene->GetView().OrhographicProjection();
+	bool bortho = cam.IsOrtho();
 	if (bortho == false)
 	{
 		m_pWnd->toggleOrtho();
@@ -564,12 +437,7 @@ void CGLView::changeViewMode(View_Mode vm)
 
 void CGLView::SetColorMap(unsigned int n)
 {
-	m_colorMap.SetColorMap(n);
-}
-
-CColorMap& CGLView::GetColorMap()
-{
-	return m_colorMap.ColorMap();
+	if (m_legend) m_legend->SetColorGradient(n);
 }
 
 void CGLView::mousePressEvent(QMouseEvent* ev)
@@ -582,9 +450,13 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 	int x = (int)ev->position().x();
 	int y = (int)ev->position().y();
 
+	double dpr = devicePixelRatio();
+	int x_dpr = (int)(x * dpr);
+	int y_dpr = (int)(y * dpr);
+
 	// let the widget manager handle it first
 	GLWidget* pw = GLWidget::get_focus();
-	if (m_Widget && (m_Widget->handle(x, y, GLWEvent::GLW_PUSH) == 1))
+	if (m_Widget && (m_Widget->handle(x_dpr, y_dpr, GLWEvent::GLW_PUSH) == 1))
 	{
 		m_pWnd->UpdateFontToolbar();
 		repaint();
@@ -607,7 +479,10 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 	m_bshift = (ev->modifiers() & Qt::ShiftModifier   ? true : false);
 	m_bctrl  = (ev->modifiers() & Qt::ControlModifier ? true : false);
 
-	m_select.SetStateModifiers(m_bshift, m_bctrl);
+	GLViewSelector::SelectionMode mode = GLViewSelector::SELECT_REPLACE;
+	if (m_bctrl) mode = GLViewSelector::SELECT_SUBTRACT;
+	else if (m_bshift) mode = GLViewSelector::SELECT_ADD;
+	m_select.SetSelectionMode(mode);
 
 	Qt::MouseButton but = ev->button();
 
@@ -630,9 +505,13 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 			GPart* pg = PickPart(x, y);
 			if (pg)
 			{
-				pickColor->AssignColor(pg);
-				repaint();
-				return;
+				CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(pdoc);
+				if (modelDoc)
+				{
+					modelDoc->AssignColor(pg, toGLColor(pickColor->GetColor()));
+					repaint();
+					return;
+				}
 			}
 		}
 
@@ -646,7 +525,12 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 		return;
 	}
 
-	GLCamera& cam = pdoc->GetView()->GetCamera();
+	mouseIsPressed = true;
+
+	GLScene* scene = pdoc->GetScene();
+
+	GLCamera& cam = scene->GetCamera();
+	m_oldCam = cam;
 	cam.SetMoving(true);
 
 	if (ntrans == TRANSFORM_MOVE)
@@ -705,16 +589,18 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	bool but2 = (ev->buttons() & Qt::MiddleButton);
 	bool but3 = (ev->buttons() & Qt::RightButton);
 
-	m_select.SetStateModifiers(bshift, bctrl);
-
 	GLViewSettings& vs = GetViewSettings();
 
 	// get the mouse position
 	int x = ev->pos().x();
 	int y = ev->pos().y();
 
+	double dpr = devicePixelRatio();
+	int x_dpr = (int)(x * dpr);
+	int y_dpr = (int)(y * dpr);
+
 	// let the widget manager handle it first
-	if (but1 && (m_Widget && (m_Widget->handle(x, y, GLWEvent::GLW_DRAG) == 1)))
+	if (but1 && (m_Widget && (m_Widget->handle(x_dpr, y_dpr, GLWEvent::GLW_DRAG) == 1)))
 	{
 		repaint();
 		m_pWnd->UpdateFontToolbar();
@@ -738,7 +624,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				{
 				case SELECT_EDGE: HighlightEdge(x, y); break;
 				case SELECT_NODE: HighlightNode(x, y); break;
-				case SELECT_FACE: HighlightSurface(x, y); break;
+				case SELECT_SURF: HighlightSurface(x, y); break;
 				case SELECT_PART: HighlightPart(x, y); break;
 				}
 			}
@@ -758,7 +644,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 	AddRegionPoint(x, y);
 
-	GLCamera& cam = pdoc->GetView()->GetCamera();
+	GLCamera& cam = scene->GetCamera();
 
 	View_Mode viewMode = m_view.m_nview;
 
@@ -774,22 +660,25 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			}
 			else if (viewMode == VIEW_USER)
 			{
-				if (balt)
+				if (mouseIsPressed)
 				{
-					quatd qz = quatd((y - m_y1)*0.01f, vec3d(0, 0, 1));
-					cam.Orbit(qz);
-				}
-				else
-				{
-					quatd qx = quatd((y - m_y1)*0.01f, vec3d(1, 0, 0));
-					quatd qy = quatd((x - m_x1)*0.01f, vec3d(0, 1, 0));
+					if (balt)
+					{
+						quatd qz = quatd((y - m_y1) * 0.01f, vec3d(0, 0, 1));
+						cam.Orbit(qz);
+					}
+					else
+					{
+						quatd qx = quatd((y - m_y1) * 0.01f, vec3d(1, 0, 0));
+						quatd qy = quatd((x - m_x1) * 0.01f, vec3d(0, 1, 0));
 
-					cam.Orbit(qx);
-					cam.Orbit(qy);
+						cam.Orbit(qx);
+						cam.Orbit(qy);
+					}
+					update();
 				}
-				update();
 			}
-			else m_view.m_nview = VIEW_USER;
+			else SetViewMode(VIEW_USER);
 		}
 		else if ((but2 || (but3 && balt)) && !m_bsel)
 		{
@@ -816,8 +705,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			}
 			else
 			{
-				if (m_y1 > y) cam.Zoom(0.95f);
-				if (m_y1 < y) cam.Zoom(1.0f / 0.95f);
+				double f = 1.0 + 0.004 * (y - m_y1);
+				cam.Zoom(f);
 			}
 
 			update();
@@ -975,11 +864,18 @@ void CGLView::mouseDoubleClickEvent(QMouseEvent* ev)
 
 void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 {
+	bool mouseWasPressed = mouseIsPressed;
+	mouseIsPressed = false;
+
 	int x = (int)ev->position().x();
 	int y = (int)ev->position().y();
 
+	double dpr = devicePixelRatio();
+	int x_dpr = (int)(x * dpr);
+	int y_dpr = (int)(y * dpr);
+
 	// let the widget manager handle it first
-	if (m_Widget && (m_Widget->handle(x, y, GLWEvent::GLW_RELEASE) == 1))
+	if (m_Widget && (m_Widget->handle(x_dpr, y_dpr, GLWEvent::GLW_RELEASE) == 1))
 	{
 		ev->accept();
 		m_pWnd->UpdateFontToolbar();
@@ -1017,7 +913,8 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 	AddRegionPoint(x, y);
 
-	GLCamera& cam = pdoc->GetView()->GetCamera();
+	GLScene* scene = pdoc->GetScene();
+	GLCamera& cam = scene->GetCamera();
 	cam.SetMoving(false);
 
 	int pivotMode = m_pivot.GetSelectionMode();
@@ -1025,22 +922,27 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	{
 		if (but == Qt::LeftButton)
 		{
+			// allow for a small "deadzone" to simplify clicking with sensitive mice.
+			const int DELTA = 3; 
+
 			// if we are in selection mode, we need to see if 
 			// there is an object under the cursor
-			if (((m_x0==m_x1) && (m_y0==m_y1)) || m_bsel)
+			if (((abs(m_x0-m_x1)<=DELTA) && (abs(m_y0-m_y1)<=DELTA)) || m_bsel)
 			{
-				if ((m_x0 == m_x1) && (m_y0 == m_y1))
+				if (((abs(m_x0 - m_x1) <= DELTA) && (abs(m_y0 - m_y1) <= DELTA)))
 				{
+					int xc = (m_x0 + m_x1) / 2;
+					int yc = (m_y0 + m_y1) / 2;
 					if (item == ITEM_MESH) 
 					{
 						switch (nsel)
 						{
-						case SELECT_OBJECT  : m_select.SelectObjects (m_x0, m_y0); break;
-						case SELECT_PART    : m_select.SelectParts   (m_x0, m_y0); break;
-						case SELECT_FACE    : m_select.SelectSurfaces(m_x0, m_y0); break;
-						case SELECT_EDGE    : m_select.SelectEdges   (m_x0, m_y0); break;
-						case SELECT_NODE    : m_select.SelectNodes   (m_x0, m_y0); break;
-						case SELECT_DISCRETE: m_select.SelectDiscrete(m_x0, m_y0); break;
+						case SELECT_OBJECT  : m_select.SelectObjects (xc, yc); break;
+						case SELECT_PART    : m_select.SelectParts   (xc, yc); break;
+						case SELECT_SURF    : m_select.SelectSurfaces(xc, yc); break;
+						case SELECT_EDGE    : m_select.SelectEdges   (xc, yc); break;
+						case SELECT_NODE    : m_select.SelectNodes   (xc, yc); break;
+						case SELECT_DISCRETE: m_select.SelectDiscrete(xc, yc); break;
 						default:
 							ev->accept();
 							return ;
@@ -1050,21 +952,21 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 					{
 						if (meshMode == MESH_MODE_VOLUME)
 						{
-							if      (item == ITEM_ELEM) m_select.SelectFEElements(m_x0, m_y0);
-							else if (item == ITEM_FACE) m_select.SelectFEFaces(m_x0, m_y0);
-							else if (item == ITEM_EDGE) m_select.SelectFEEdges(m_x0, m_y0);
-							else if (item == ITEM_NODE) m_select.SelectFENodes(m_x0, m_y0);
+							if      (item == ITEM_ELEM) m_select.SelectFEElements(xc, yc);
+							else if (item == ITEM_FACE) m_select.SelectFEFaces   (xc, yc);
+							else if (item == ITEM_EDGE) m_select.SelectFEEdges   (xc, yc);
+							else if (item == ITEM_NODE) m_select.SelectFENodes   (xc, yc);
 						}
 						else
 						{
-							if      (item == ITEM_FACE) m_select.SelectSurfaceFaces(m_x0, m_y0);
-							else if (item == ITEM_EDGE) m_select.SelectSurfaceEdges(m_x0, m_y0);
-							else if (item == ITEM_NODE) m_select.SelectSurfaceNodes(m_x0, m_y0);
+							if      (item == ITEM_FACE) m_select.SelectSurfaceFaces(xc, yc);
+							else if (item == ITEM_EDGE) m_select.SelectSurfaceEdges(xc, yc);
+							else if (item == ITEM_NODE) m_select.SelectSurfaceNodes(xc, yc);
 						}
 					}
 
 					bool bok = false;
-					vec3d r = PickPoint(m_x0, m_y0, &bok);
+					vec3d r = PickPoint(xc, yc, &bok);
 					if (bok)
 					{
 						m_bpick = true;
@@ -1110,7 +1012,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 						{
 						case SELECT_OBJECT  : m_select.RegionSelectObjects (*preg); break;
 						case SELECT_PART    : m_select.RegionSelectParts   (*preg); break;
-						case SELECT_FACE    : m_select.RegionSelectSurfaces(*preg); break;
+						case SELECT_SURF    : m_select.RegionSelectSurfaces(*preg); break;
 						case SELECT_EDGE    : m_select.RegionSelectEdges   (*preg); break;
 						case SELECT_NODE    : m_select.RegionSelectNodes   (*preg); break;
 						case SELECT_DISCRETE: m_select.RegionSelectDiscrete(*preg); break;
@@ -1130,9 +1032,9 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 				emit selectionChanged();
 				m_pWnd->Update(0, false);
 			}
-			else
+			else if (mouseWasPressed)
 			{
-				CCmdChangeView* pcmd = new CCmdChangeView(pdoc->GetView(), cam);
+				CCmdChangeView* pcmd = new CCmdChangeView(&cam, cam);
 				cam = m_oldCam;
 				m_Cmd.DoCommand(pcmd);
 			}
@@ -1149,7 +1051,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 			}
 			else
 			{
-				CCmdChangeView* pcmd = new CCmdChangeView(pdoc->GetView(), cam);
+				CCmdChangeView* pcmd = new CCmdChangeView(&cam, cam);
 				cam = m_oldCam;
 				m_Cmd.DoCommand(pcmd);
 			}
@@ -1158,13 +1060,13 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 		{
 			if ((m_x0 == m_x1) && (m_y0 == m_y1))
 			{
-				QMenu menu(this);
+				QMenu menu(m_pWnd);
 				m_pWnd->BuildContextMenu(menu);
 				menu.exec(ev->globalPos());
 			}
 			else
 			{
-				CCmdChangeView* pcmd = new CCmdChangeView(pdoc->GetView(), cam);
+				CCmdChangeView* pcmd = new CCmdChangeView(&cam, cam);
 				cam = m_oldCam;
 				m_Cmd.DoCommand(pcmd);
 			}
@@ -1231,7 +1133,7 @@ void CGLView::wheelEvent(QWheelEvent* ev)
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
-	GLCamera& cam = scene->GetView().GetCamera();
+	GLCamera& cam = scene->GetCamera();
 
 	int pivotMode = m_pivot.GetSelectionMode();
 
@@ -1296,7 +1198,7 @@ bool CGLView::gestureEvent(QNativeGestureEvent* ev)
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return true;
 
-	GLCamera& cam = scene->GetView().GetCamera();
+	GLCamera& cam = scene->GetCamera();
 
     if (ev->gestureType() == Qt::ZoomNativeGesture) {
         if (ev->value() < 0) {
@@ -1321,7 +1223,9 @@ bool CGLView::event(QEvent* event)
 {
     if (event->type() == QEvent::NativeGesture)
         return gestureEvent(static_cast<QNativeGestureEvent*>(event));
-    return QOpenGLWidget::event(event);
+	if (event->type() == QEvent::Drop)
+		m_pWnd->onDropEvent(static_cast<QDropEvent*>(event));
+    return rhiSceneView::event(event);
 }
 
 void CGLView::keyPressEvent(QKeyEvent* ev)
@@ -1332,7 +1236,8 @@ void CGLView::keyPressEvent(QKeyEvent* ev)
 
 		double s = (ev->modifiers() & Qt::SHIFT ? -1 : 1);
 
-		GLCamera* cam = GetCamera();
+		GLScene* scene = GetActiveScene();
+		GLCamera& cam = scene->GetCamera();
 
 		quatd dq;
 		switch (ev->key())
@@ -1343,10 +1248,10 @@ void CGLView::keyPressEvent(QKeyEvent* ev)
 			break;
 		}
 
-		quatd q0 = cam->GetOrientation();
+		quatd q0 = cam.GetOrientation();
 		quatd q = q0 * dq * q0.Inverse();
 
-		cam->Orbit(q);
+		cam.Orbit(q);
 		update();
 	}
 	else if ((ev->key() == Qt::Key_Return) || (ev->key() == Qt::Key_Enter))
@@ -1354,55 +1259,82 @@ void CGLView::keyPressEvent(QKeyEvent* ev)
 		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 		if (doc && doc->SelectHighlightedItems())
 		{
+			ev->accept();
 			GLHighlighter::ClearHighlights();
 			repaint();
 		}
-		else ev->ignore();
 	}
-	else ev->ignore();
+
+	// pass it to the mainwindow
+	m_pWnd->keyPressEvent(ev);
 }
 
-void CGLView::initializeGL()
+void CGLView::customInit()
 {
-	CGLSceneView::initializeGL();
+	rhiSceneView::customInit();
 
-	glPolygonStipple(poly_mask);
+	QString msg;
+	msg += QString("backend = %1\n").arg(m_rhi->backendName());
+	msg += QString("driver  = %1\n").arg(QString(m_rhi->driverInfo().deviceName));
+	msg += QString("sample count = %1\n").arg(m_sc->sampleCount());
+	m_pWnd->AddLogEntry(msg);
+
+	GLRenderEngine* re = const_cast<GLRenderEngine*>(GetRenderEngine());
+	if (re)
+	{
+		rhiRenderer* rhirender = dynamic_cast<rhiRenderer*>(re);
+		if (rhirender)
+		{
+			QObject::connect(rhirender, &rhiRenderer::captureFrameReady, this, &CGLView::captureFrameReady);
+		}
+	}
 
 	if (m_ballocDefaultWidgets)
 	{
-		m_Widget = CGLWidgetManager::GetInstance(); assert(m_Widget);
-		m_Widget->AttachToView(this);
+		m_Widget = new CGLWidgetManager();
 
 		int Y = 0;
-		m_Widget->AddWidget(m_ptitle = new GLLabel(20, 20, 300, 50, ""), 0);
+		m_Widget->AddWidget(m_ptitle = new GLLabel(20, 20, 300, 50, ""));
 		m_ptitle->set_font_size(30);
 		m_ptitle->fit_to_size();
 		m_ptitle->set_label("$(filename)");
 		Y += m_ptitle->h();
 
-		m_Widget->AddWidget(m_psubtitle = new GLLabel(Y, 70, 300, 60, ""), 0);
+		m_Widget->AddWidget(m_psubtitle = new GLLabel(Y, 70, 300, 60, ""));
 		m_psubtitle->set_font_size(15);
 		m_psubtitle->fit_to_size();
 		m_psubtitle->set_label("$(datafield) $(units)\\nTime = $(time)");
 
-		m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150), 0);
+		m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150));
 		m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
 		
-		m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600), 0);
+		m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600));
 		m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
 		m_pframe->hide();
 
-		m_Widget->AddWidget(m_legend = new GLLegendBar(&m_colorMap, 0, 0, 120, 600), 0);
+		m_Widget->AddWidget(m_legend = new GLLegendBar(0, 0, 120, 600));
 		m_legend->align(GLW_ALIGN_RIGHT | GLW_ALIGN_VCENTER);
 		m_legend->hide();
 
+		m_Widget->AddWidget(m_legendPlot = new GLLegendBar(0, 0, 600, 120, GLLegendBar::ORIENT_HORIZONTAL));
+		m_legendPlot->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
+		m_legendPlot->hide();
+
 		m_menu = new GVContextMenu(this);
 		m_menu->align(GLW_ALIGN_RIGHT | GLW_ALIGN_TOP);
-		m_Widget->AddWidget(m_menu, 0);
-	}
+		m_Widget->AddWidget(m_menu);
 
-	const char* szv = (const char*) glGetString(GL_VERSION);
-	m_oglVersionString = szv;
+		// scale widgets according to device pixel ratio
+		double dpr = devicePixelRatio();
+		if (dpr != 1)
+		{
+			for (int i = 0; i < m_Widget->Widgets(); ++i)
+			{
+				GLWidget* pw = m_Widget->get(i);
+				pw->scale(dpr);
+			}
+		}
+	}
 
 	// initialize clipping planes
 	Post::CGLPlaneCutPlot::InitClipPlanes();
@@ -1422,6 +1354,11 @@ void CGLView::Reset()
     if(qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark) ntheme = 1;
 
 	m_view.Defaults(ntheme);
+
+	if (m_view.m_defaultFGColorOption == 0)
+	{
+		GLWidget::set_base_color(m_view.m_defaultFGColor);
+	}
 
 	GLHighlighter::ClearHighlights();
 	repaint();
@@ -1496,23 +1433,58 @@ QImage correct_premultiplied_image(const QImage& image)
 	return result;
 }
 
-
-QImage CGLView::CaptureScreen()
+void CGLView::CaptureScreen()
 {
-	QImage im = grabFramebuffer();
+	GLRenderEngine* re = const_cast<GLRenderEngine*>(GetRenderEngine());
+	if (re)
+	{
+		rhiRenderer* rhiRender = dynamic_cast<rhiRenderer*>(re);
+		if (rhiRender) rhiRender->setCaptureNextFrame(true);
+		frameCapturesRequested++;
+		requestUpdate();
+	}
+}
+
+void CGLView::captureFrameReady(QImage img)
+{
+	frameCapturesRequested--;
+	if (frameCapturesRequested < 0) frameCapturesRequested = 0;
 
 	if (m_pframe && m_pframe->visible())
 	{
 		// crop based on the capture frame
 		double dpr = devicePixelRatio();
-		im = im.copy((int)(dpr*m_pframe->x()), (int)(dpr*m_pframe->y()), (int)(dpr*m_pframe->w()), (int)(dpr*m_pframe->h()));
+		img = img.copy((int)(dpr*m_pframe->x()), (int)(dpr*m_pframe->y()), (int)(dpr*m_pframe->w()), (int)(dpr*m_pframe->h()));
 	}
 
 	// NOTE: The image returned from grabFrameBuffer has a format of QImage::Format_ARGB32_Premultiplied.
 	// But that does not appear to be correct and as a result an image with transparency will not be
 	// processed correctly. As a workaround, we modify the format by essentially stripping the alpha
 	// channel. This might be a bug in Qt so should revisit when we update to a newer version. 
-	return correct_premultiplied_image(im);
+
+	if (m_rhi->isYUpInFramebuffer())
+		img.mirror();
+
+//	correct_premultiplied_image(img);
+
+	if (m_recorder.IsRecording())
+	{
+		if (m_recorder.AddFrame(img) == false)
+		{
+			m_recorder.Stop();
+//			QMessageBox::critical(this, "FEBio Studio", "An error occurred while writing frame to video stream.");
+		}
+
+		if (m_stopRequested && (frameCapturesRequested == 0))
+		{
+			m_recorder.Stop();
+			m_stopRequested = false;
+			UnlockSafeFrame();
+			m_pWnd->UpdateTitle();
+		}
+	}
+	else if (!m_recorder.IsPaused())
+		emit captureFrameFinished(img);
 }
 
 void CGLView::updateView()
@@ -1520,163 +1492,184 @@ void CGLView::updateView()
 	repaint();
 }
 
-void CGLView::RenderDecorations()
+void CGLView::RenderDecorations(GLRenderEngine& re)
 {
 	if (m_deco.empty() == false)
 	{
-		m_ogl.pushState();
-		m_ogl.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow(), GLMaterial::NONE, false);
+		re.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow(), GLMaterial::NONE, false);
 		for (int i = 0; i < m_deco.size(); ++i)
 		{
-			m_deco[i]->render(m_ogl);
+			m_deco[i]->render(re);
 		}
-		m_ogl.popState();
 	}
 }
 
-void CGLView::RenderScene()
+bool CGLView::StartRecording()
 {
-	m_ogl.start();
-
-	GLScene* scene = GetActiveScene();
-	if (scene == nullptr)
+	if (m_recorder.HasRecording())
 	{
-		m_ogl.finish();
-		return;
+		if (m_recorder.IsRecording()) return false;
+
+		m_recorder.Start();
+		LockSafeFrame();
+		return true;
 	}
 
+	return false;
+}
+
+bool CGLView::PauseRecording()
+{
+	if (m_recorder.HasRecording())
+	{
+		if (m_recorder.IsRecording())
+		{
+			m_recorder.Pause();
+			return true;
+		}
+	}
+	return false;
+}
+
+bool CGLView::StopRecording()
+{
+	if (m_recorder.HasRecording())
+	{
+		if (m_recorder.IsRecording() || m_recorder.IsPaused())
+		{
+			m_stopRequested = true;
+			repaint();
+			return true;
+		}
+	}
+	return false;
+}
+
+void CGLView::onFrameFinished()
+{
+	rhiSceneView::onFrameFinished();
+
+	if (!m_recorder.IsRecording() || m_stopRequested)
+	{
+		if (frameCapturesRequested > 0)
+		{
+			// When the user requests a screen grab, on some backends it won't be
+			// available. So, we keep rerendering the scene until the screen grab is processed. 
+			requestUpdate();
+		}
+	}
+}
+
+void CGLView::RenderScene(GLRenderEngine& re)
+{
+	GLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
+
 	GLViewSettings& view = GetViewSettings();
+	GLColor c1, c2;
+	GLRenderEngine::GradientType orient = GLRenderEngine::HORIZONTAL;
+	switch (view.m_nbgstyle)
+	{
+	case 0: c1 = c2 = view.m_col1; break;
+	case 1: c1 = c2 = view.m_col2; break;
+	case 2: c1 = view.m_col1; c2 = view.m_col2; orient = GLRenderEngine::HORIZONTAL; break;
+	case 3: c1 = view.m_col1; c2 = view.m_col2; orient = GLRenderEngine::VERTICAL; break;
+	}
+	re.setBackgroundGradient(c1, c2, orient);
 
-	view.m_show3DCursor = false;
+	// position the light
+	vec3f lp = m_view.m_light; lp.Normalize();
+	re.setLightPosition(0, lp);
+	if (view.m_bLighting)
+	{
+		re.setLightEnabled(0, true);
+	}
+	else
+	{
+		re.setLightEnabled(0, false);
+	}
 
-	GLCamera& cam = scene->GetView().GetCamera();
-	cam.SetOrthoProjection(GetView()->OrhographicProjection());
+	GLCamera& cam = scene->GetCamera();
+	cam.MakeActive();
+	cam.SetOrthoProjection(cam.IsOrtho());
 
 	GLContext& rc = m_rc;
-	rc.m_w = width();
-	rc.m_h = height();
 	rc.m_cam = &cam;
 	rc.m_settings = view;
 
-	if (scene)
+	// TODO: move to scene's render function?
+	scene->PositionCameraInScene(re);
+
+	time_point<steady_clock> startTime = steady_clock::now();
+	scene->Render(re, rc);
+	time_point<steady_clock> stopTime = steady_clock::now();
+	double sec = duration_cast<duration<double>>(stopTime - startTime).count();
+	double fps = (sec != 0 ? 1.0 / sec : 0);
+
+	if (m_fps.size() >= 10) m_fps.pop_back();
+	m_fps.push_front(fps);
+	
+	RenderPivot(re);
+
+	RenderDecorations(re);
+
+	RenderOverlay(re, rc);
+
+	if (m_recorder.IsRecording() && !m_stopRequested)
 	{
-		time_point<steady_clock> startTime = steady_clock::now();
-		scene->Render(m_ogl, rc);
-		time_point<steady_clock> stopTime = steady_clock::now();
-		double sec = duration_cast<duration<double>>(stopTime - startTime).count();
-		double fps = (sec != 0 ? 1.0 / sec : 0);
-
-		if (m_fps.size() >= 50) m_fps.pop_back();
-		m_fps.push_front(fps);
-	}
-
-	m_ogl.positionCamera(cam);
-	RenderPivot();
-
-	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand();
-
-	if (view.m_bselbrush) RenderBrush();
-
-	RenderDecorations();
-
-	if (view.m_show3DCursor)
-	{
-		Render3DCursor();
-	}
-
-	RenderTags();
-
-	m_ogl.finish();
-
-	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(0, width(), height(), 0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	RenderCanvas(rc);
-
-	if (m_recorder.IsRecording())
-	{
-		glFlush();
-		QImage im = CaptureScreen();
-		if (m_recorder.AddFrame(im) == false)
+		rhiRenderer* rhiRender = dynamic_cast<rhiRenderer*>(&re);
+		if (rhiRender)
 		{
-			m_recorder.Stop();
-			QMessageBox::critical(this, "FEBio Studio", "An error occurred while writing frame to video stream.");
+			frameCapturesRequested++;
+			rhiRender->setCaptureNextFrame(true);
 		}
 	}
 }
 
-void CGLView::RenderCanvas(GLContext& rc)
+void CGLView::RenderOverlay(GLRenderEngine& re, GLContext& rc)
 {
-	// We must turn off culling before we use the QPainter, otherwise
-	// drawing using QPainter doesn't work correctly.
-	glDisable(GL_CULL_FACE);
+	rhiRenderer* rhiRender = dynamic_cast<rhiRenderer*>(&re);
+	if (rhiRender == nullptr) return;
+	rhiRender->useOverlayImage(renderOverlay);
+	if (!renderOverlay) return;
 
-	// render the GL widgets
-	QPainter painter(this);
+	// Create the overlay image that we'll paint in
+	QImage img(rhiRender->pixelSize(), QImage::Format_RGBA8888);
+	img.fill(QColor(255, 255, 255, 0));
+	QPainter painter(&img);
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
-	CGLDocument* doc = m_pWnd->GetGLDocument();
-	std::string renderString = doc->GetRenderString();
-	if (!renderString.empty())
-	{
-		painter.setPen(QPen(QColor::fromRgb(164, 164, 164)));
-		painter.drawText(0, 15, QString::fromStdString(renderString));
-	}
+	// compose the overlay image
+	RenderOverlayComponents(painter);
 
-	// draw the GL widgets
-	if (m_Widget)
-	{
-		// Update GLWidget string table for post rendering
-		// TODO: Query the doc for the values:
-		//       GLWidget::addToStringTable("$(filename)", m_doc->GetVariable("filename"));
-		CPostDocument* postDoc = m_pWnd->GetPostDocument();
-		if (postDoc)
-		{
-			GLWidget::addToStringTable("$(filename)", postDoc->GetDocFileName());
-			GLWidget::addToStringTable("$(datafield)", postDoc->GetFieldString());
-			GLWidget::addToStringTable("$(units)", postDoc->GetFieldUnits());
-			GLWidget::addToStringTable("$(time)", postDoc->GetTimeValue());
-		}
+	// all done with drawing
+	painter.end();
 
-		// update the triad
-		if (m_ptriad) m_ptriad->setOrientation(rc.m_cam->GetOrientation());
+	// the triad requires a bit of special handling
+	QRhiViewport vp = { (float)m_ptriad->x(), (float)m_ptriad->y(), (float)m_ptriad->w(), (float)m_ptriad->h() };
+	quatd q = rc.m_cam->GetOrientation();
+	QMatrix4x4 Q; Q.rotate(QQuaternion(q.w, q.x, q.y, q.z));
+	m_ptriad->setOrientation(q);
+	rhiRender->setTriadInfo(Q, vp);
 
-		if (m_ptitle)
-		{
-			if (doc->ShowTitle()) m_ptitle->show(); else m_ptitle->hide();
-		}
-		if (m_psubtitle)
-		{
-			if (doc->ShowSubtitle()) m_psubtitle->show(); else m_psubtitle->hide();
-		}
-		if (m_legend)
-		{
-			if (doc->ShowLegend())
-			{
-				double v[2];
-				doc->GetDataRange(v);
-				m_legend->SetRange((float)v[0], (float)v[1]);
-				m_legend->show();
-			}
-			else m_legend->hide();
+	// all done, send it to the renderer
+	rhiRender->setOverlayImage(img);
+}
 
-		}
-		if (m_menu)
-		{
-			// only show menu on model docs
-			if (dynamic_cast<CModelDocument*>(doc)) m_menu->show();
-			else m_menu->hide();
-		}
+void CGLView::RenderOverlayComponents(QPainter& painter)
+{
+	GLViewSettings& vs = GetViewSettings();
 
-		int layer = doc->GetWidgetLayer();
-		m_Widget->SetRenderLayer(layer);
-		m_Widget->DrawWidgets(&painter);
-	}
+	DrawWidgets(painter);
+	RenderTags(painter);
+
+	double dpr = devicePixelRatio();
+	int x_dpr = (int)(m_x1 * dpr);
+	int y_dpr = (int)(m_y1 * dpr);
+
+	if (vs.m_bselbrush) RenderBrush(painter, x_dpr, y_dpr, vs.m_brushSize*dpr);
+
+	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand(painter);
 
 	if (m_recorder.IsPaused())
 	{
@@ -1689,7 +1682,8 @@ void CGLView::RenderCanvas(GLContext& rc)
 		painter.drawText(rect(), "Recording paused", to);
 	}
 
-	// stop render stats
+	// show render stats
+	ShowFPS(m_showFPS);
 	if (m_showFPS)
 	{
 		double fps = 0;
@@ -1699,134 +1693,208 @@ void CGLView::RenderCanvas(GLContext& rc)
 			fps /= (m_fps.size());
 		}
 
+		const int fieldWidth = 8;
+
+		double dpr = devicePixelRatio();
+
 		QRect rt = rect();
+		rt.setWidth(rt.width() * dpr);
+		rt.setHeight(rt.height() * dpr);
 		QTextOption to;
 		QFont font = painter.font();
-		const int fontSize = 20;
-		font.setPixelSize(fontSize);
+		const int fontSize = (int)(16*dpr);
+		font.setFamily("consolas");
+		font.setPointSize(fontSize);
 		painter.setFont(font);
 		painter.setPen(QPen(Qt::red));
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
-		painter.drawText(rt, QString("FPS: %1").arg(fps, 0, 'f', 2), to);
+		painter.drawText(rt, QString("FPS:%1").arg(fps, fieldWidth, 'f', 2), to);
 
-		GLRenderStats stats = m_ogl.GetRenderStats();
-		int Y = rt.y() + fontSize + 5;
-		rt.setY(Y);
-		float tris = (float)stats.triangles;
-		if (tris < 1e3)
+		int Yinc = fontSize + (int)(5*dpr);
+
+		const GLRenderEngine* re = GetRenderEngine();
+		if (re)
 		{
-			painter.drawText(rt, QString("TRIs: %1").arg(stats.triangles), to);
+			QString t;
+			GLRenderStats stats = re->GetRenderStats();
+			const double MB = 1024.0 * 1024.0;
+			const double KB = 1024.0;
+
+			// triangles
+			int Y = rt.y() + Yinc;
+			rt.setY(Y);
+			float tris = (float)stats.triangles;
+			if (tris < KB)
+			{
+				t = QString("%1").arg(stats.triangles);
+			}
+			else
+			{
+				QChar suffix(' ');
+				if (tris > MB) { tris /= MB; suffix = 'M'; }
+				else if (tris > KB) { tris /= KB; suffix = 'K'; }
+				t = QString("%1%2").arg(tris, 0, 'g', 3).arg(suffix);
+			}
+			painter.drawText(rt, QString("Tris:%1").arg(t, fieldWidth), to);
+
+			// lines
+			Y += Yinc;
+			rt.setY(Y);
+			float lines = (float)stats.lines;
+			if (lines < KB)
+			{
+				t = QString("%1").arg(stats.lines);
+			}
+			else
+			{
+				QChar suffix(' ');
+				if (lines > MB) { lines /= MB; suffix = 'M'; }
+				else if (lines > KB) { lines /= KB; suffix = 'K'; }
+				t = QString("%1%2").arg(lines, 0, 'g', 3).arg(suffix);
+			}
+			painter.drawText(rt, QString("Lines:%1").arg(t, fieldWidth), to);
+
+			// points
+			Y += Yinc;
+			rt.setY(Y);
+			float points = (float)stats.points;
+			if (points < KB)
+			{
+				t = QString("%1").arg(stats.points);
+			}
+			else
+			{
+				QChar suffix(' ');
+				if (points > MB) { points /= MB; suffix = 'M'; }
+				else if (points > KB) { points /= KB; suffix = 'K'; }
+				t = QString("%1%2").arg(points, 0, 'g', 3).arg(suffix);
+			}
+			painter.drawText(rt, QString("Points:%1").arg(t, fieldWidth), to);
+
+			// caches
+			Y += Yinc;
+			rt.setY(Y);
+			t = QString("%1").arg(stats.cachedObjects);
+			painter.drawText(rt, QString("Caches:%1").arg(t, fieldWidth), to);
+
+			// upload
+			Y += Yinc;
+			rt.setY(Y);
+			double uploadMB = (double) stats.dataUploadSize / MB;
+			t = QString("%1MB").arg(uploadMB, 0, 'f', 3);
+			painter.drawText(rt, QString("upload:%1").arg(t, fieldWidth), to);
+
+			// scene stats
+			GLScene* scene = GetActiveScene();
+			if (scene)
+			{
+				painter.setPen(QPen(QColor(255, 128, 0)));
+				GLSceneStats stats = scene->GetStats();
+
+				Y += Yinc;
+				rt.setY(Y);
+				t = QString("%1").arg(stats.updates);
+				painter.drawText(rt, QString("updates:%1").arg(t, fieldWidth), to);
+
+				Y += Yinc;
+				rt.setY(Y);
+				t = QString("%1").arg(stats.rebuilds);
+				painter.drawText(rt, QString("rebuilds:%1").arg(t, fieldWidth), to);
+			}
 		}
-		else
-		{
-			QChar suffix(' ');
-			if (tris > 1e6) { tris /= 1e6; suffix = 'M'; }
-			else if (tris > 1e3) { tris /= 1e3; suffix = 'K'; }
-			painter.drawText(rt, QString("TRIs: %1%2").arg(tris, 0, 'f', 2).arg(suffix), to);
-		}
-		Y += fontSize + 5;
-		rt.setY(Y);
-		float lines = (float)stats.lines;
-		if (lines < 1e3)
-		{
-			painter.drawText(rt, QString("Lines: %1").arg(stats.lines), to);
-		}
-		else
-		{
-			QChar suffix(' ');
-			if (lines > 1e6) { lines /= 1e6; suffix = 'M'; }
-			else if (lines > 1e3) { lines /= 1e3; suffix = 'K'; }
-			painter.drawText(rt, QString("Lines: %1%2").arg(lines, 0, 'f', 2).arg(suffix), to);
-		}
-		Y += fontSize + 5;
-		rt.setY(Y);
-		float points = (float)stats.points;
-		if (points < 1e3)
-		{
-			painter.drawText(rt, QString("Points: %1").arg(stats.points), to);
-		}
-		else
-		{
-			QChar suffix(' ');
-			if (points > 1e6) { points /= 1e6; suffix = 'M'; }
-			else if (points > 1e3) { points /= 1e3; suffix = 'K'; }
-			painter.drawText(rt, QString("Points: %1%2").arg(points, 0, 'f', 2).arg(suffix), to);
-		}
-		Y += fontSize + 5;
-		rt.setY(Y);
-		painter.drawText(rt, QString("Caches: %1").arg(stats.cachedObjects), to);
 	}
-
-	painter.end();
 }
 
-void renderCircle(const vec3d& c, double R, int N)
+void CGLView::DrawWidgets(QPainter& painter)
 {
-	glBegin(GL_LINE_LOOP);
+	if (m_Widget == nullptr) return;
+	CGLDocument* doc = m_pWnd->GetGLDocument();
+	if (doc == nullptr) return;
+
+	// Update GLWidget string table for post rendering
+	CGLModelDocument* glDoc = dynamic_cast<CGLModelDocument*>(m_pWnd->GetDocument());
+	if (glDoc)
 	{
-		for (int i = 0; i < N; ++i)
-		{
-			double x = c.x + R * cos(i * 2 * PI / N);
-			double y = c.y + R * sin(i * 2 * PI / N);
-			glVertex3d(x, y, c.z);
-		}
+		GLWidget::addToStringTable("$(filename)", glDoc->GetDocFileName());
+		GLWidget::addToStringTable("$(datafield)", glDoc->GetFieldString());
+		GLWidget::addToStringTable("$(units)", glDoc->GetFieldUnits());
+		GLWidget::addToStringTable("$(time)", glDoc->GetCurrentTimeValue());
 	}
-	glEnd();
-}
 
-void CGLView::Render3DCursor()
-{
-	// only render if the 3D cursor is valid
-	// (i.e. the user picked something on the screen)
-	if (m_bpick == false) return;
+	GLViewScene* scene = dynamic_cast<GLViewScene*>(GetActiveScene());
 
-	vec3d r = Get3DCursor();
-	constexpr double R = 10.0;
+	// update the triad
+	if (m_ptriad) m_ptriad->setOrientation(scene->GetCamera().GetOrientation());
 
-	GLViewTransform transform(this);
+	if (m_ptitle)
+	{
+		if (doc->ShowTitle()) m_ptitle->show(); else m_ptitle->hide();
+	}
+	if (m_psubtitle)
+	{
+		if (doc->ShowSubtitle()) m_psubtitle->show(); else m_psubtitle->hide();
+	}
+	if (m_legend)
+	{
+		bool bshow = false;
+		if (scene)
+		{
+			LegendData l = scene->GetLegendData(0);
+			if (l.isValid())
+			{
+				m_legend->SetColorGradient(l.colormap);
+				m_legend->SetRange(l.vmin, l.vmax);
+				m_legend->SetDivisions(l.ndivs);
+				m_legend->SetSmoothTexture(l.smooth);
+				bshow = true;
+			}
+		}
 
-	const int W = width();
-	const int H = height();
-	const int c = R*0.5;
+		if (bshow) m_legend->show();
+		else m_legend->hide();
+	}
+	if (m_legendPlot)
+	{
+		bool bshow = false;
+		if (scene)
+		{
+			LegendData data = scene->GetLegendData(1);
+			if (data.isValid())
+			{
+				m_legendPlot->SetColorGradient(data.colormap);
+				m_legendPlot->SetRange((float)data.vmin, (float)data.vmax);
+				m_legendPlot->SetDivisions(data.ndivs);
+				m_legendPlot->SetSmoothTexture(data.smooth);
+				m_legendPlot->SetType(data.discrete ? GLLegendBar::DISCRETE : GLLegendBar::GRADIENT);
 
-	vec3d p = transform.WorldToScreen(r);
-	p.y = H - p.y;
-	p.z = 1;
+				if (data.title.empty()) {
+					m_legendPlot->set_label(nullptr); m_legendPlot->ShowTitle(false);
+				}
+				else {
+					m_legendPlot->copy_label(data.title.c_str());
+					m_legendPlot->ShowTitle(true);
+				}
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-//	glEnable(GL_LINE_STIPPLE);
-//	glLineStipple(1, 0xAAAA);
+				bshow = true;
+			}
+		}
+		if (bshow) m_legendPlot->show();
+		else m_legendPlot->hide();
+	}
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
+	// only show menu on model docs
+	bool isMenuVisible = (m_menu ? m_menu->visible() : false);
+	if (m_menu)
+	{
+		if (dynamic_cast<CModelDocument*>(doc) == nullptr)
+			m_menu->hide();
+	}
 
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	gluOrtho2D(0, width(), 0, height());
+	GLPainter glpainter(&painter, nullptr);
+	m_Widget->DrawWidgets(&glpainter);
 
-	glColor3ub(255, 164, 164);
-	glBegin(GL_LINES);
-	glVertex2d(p.x - R, p.y); glVertex2d(p.x - R + c, p.y);
-	glVertex2d(p.x + R, p.y); glVertex2d(p.x + R - c, p.y);
-	glVertex2d(p.x, p.y - R); glVertex2d(p.x, p.y - R + c);
-	glVertex2d(p.x, p.y + R); glVertex2d(p.x, p.y + R - c);
-	renderCircle(p, R, 36);
-	glEnd();
-
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-
-	glPopAttrib();
-}
-
-QPoint CGLView::DeviceToPhysical(int x, int y)
-{
-	double dpr = devicePixelRatio();
-	return QPoint((int)(dpr*x), m_viewport[3] - (int)(dpr * y));
+	// reset menu's visible status
+	if (m_menu && isMenuVisible) m_menu->show();
 }
 
 void CGLView::ShowMeshData(bool b)
@@ -1861,7 +1929,7 @@ void CGLView::ClearCommandStack()
 //-----------------------------------------------------------------------------
 // This function renders the manipulator at the current pivot
 //
-void CGLView::RenderPivot()
+void CGLView::RenderPivot(GLRenderEngine& re)
 {
 	CGLDocument* pdoc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
@@ -1879,7 +1947,8 @@ void CGLView::RenderPivot()
 	// this is where we place the manipulator
 	vec3d rp = GetPivotPosition();
 
-	GLCamera& cam = *GetCamera();
+	GLScene* scene = GetActiveScene();
+	GLCamera& cam = scene->GetCamera();
 
 	// determine the scale of the manipulator
 	// we make it depend on the target distanceso that the 
@@ -1887,10 +1956,10 @@ void CGLView::RenderPivot()
 	double d = 0.1*cam.GetTargetDistance();
 
 	// push the modelview matrix
-	glPushMatrix();
+	re.pushTransform();
 
 	// position the manipulator
-	glTranslatef((float)rp.x, (float)rp.y, (float)rp.z);
+	re.translate(rp);
 
 	// orient the manipulator
 	// (we always use local for post docs)
@@ -1898,22 +1967,20 @@ void CGLView::RenderPivot()
 	if (orient == COORD_LOCAL)
 	{
 		quatd q = ps->GetOrientation();
-		double w = 180.0*q.GetAngle() / PI;
-		vec3d r = q.GetVector();
-		if (w != 0) glRotated(w, r.x, r.y, r.z);
+		re.rotate(q);
 	}
 
 	// render the manipulator
 	int nitem = pdoc->GetItemMode();
 	int nsel = pdoc->GetSelectionMode();
 	bool bact = ps->IsMovable();
-	m_pivot.Render(m_ogl, ntrans, d, bact);
+	m_pivot.Render(re, ntrans, d, bact);
 
 	// restore the modelview matrix
-	glPopMatrix();
+	re.popTransform();
 }
 
-void CGLView::RenderRubberBand()
+void CGLView::RenderRubberBand(QPainter& painter)
 {
 	// Get the document
 	CGLDocument* pdoc = GetDocument();
@@ -1921,80 +1988,45 @@ void CGLView::RenderRubberBand()
 
 	int nstyle = pdoc->GetSelectionStyle();
 
-	// set the ortho
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(0, width(), height(), 0);
+	painter.setPen(QPen(Qt::white, 2, Qt::DotLine));
+	painter.setBrush(Qt::NoBrush);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	double dpr = devicePixelRatio();
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glColor3ub(255, 255, 255);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glLineStipple(1, (GLushort)0xF0F0);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_LINE_STIPPLE);
+	int x0 = (int)(dpr * m_x0);
+	int x1 = (int)(dpr * m_x1);
+	int y0 = (int)(dpr * m_y0);
+	int y1 = (int)(dpr * m_y1);
 
 	switch (nstyle)
 	{
-	case REGION_SELECT_BOX: glRecti(m_x0, m_y0, m_x1, m_y1); break;
+	case REGION_SELECT_BOX: 
+		painter.drawRect(x0, y0, x1-x0, y1-y0); 
+		break;
 	case REGION_SELECT_CIRCLE:
 		{
-			double dx = (m_x1 - m_x0);
-			double dy = (m_y1 - m_y0);
+			double dx = (x1 - x0);
+			double dy = (y1 - y0);
 			double R = sqrt(dx*dx + dy*dy);
-			renderCircle(vec3d(m_x0, m_y0, 0), R, 24);
+			painter.drawEllipse(QPointF(x0, y0), R, R);
 		}
 		break;
 	case REGION_SELECT_FREE:
 		{
-			glBegin(GL_LINE_STRIP);
+			QPainterPath path;
+			x0 = (int)(dpr * m_pl[0].first);
+			y0 = (int)(dpr * m_pl[0].second);
+			path.moveTo(QPoint(x0, y0));
+			for (int i = 1; i < m_pl.size(); ++i)
 			{
-				for (int i = 0; i<(int)m_pl.size(); ++i)
-				{
-					int x = m_pl[i].first;
-					int y = m_pl[i].second;
-					glVertex2i(x, y);
-				}
+				x1 = (int)(dpr * m_pl[i].first);
+				y1 = (int)(dpr * m_pl[i].second);
+				path.lineTo(x1, y1);
 			}
-			glEnd();
+			painter.drawPath(path);
 		}
 		break;
 	}
-
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glPopAttrib();
-}
-
-void CGLView::RenderBrush()
-{
-	// set the ortho
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(0, width(), height(), 0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glColor3ub(255, 255, 255);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glLineStipple(1, (GLushort)0xF0F0);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_LINE_STIPPLE);
-
-	double R = GetViewSettings().m_brushSize;
-	int n = (int)(R / 2);
-	if (n < 12) n = 12;
-	renderCircle(vec3d(m_x1, m_y1, 0), R, n);
-
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glPopAttrib();
 }
 
 void CGLView::ShowSafeFrame(bool b)
@@ -2010,6 +2042,8 @@ void CGLView::SetViewMode(View_Mode n)
 {
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
+
+	GLGrid& grid = scene->GetGrid();
 
 	GLViewSettings& view = GetViewSettings();
 	int c = view.m_nconv;
@@ -2034,7 +2068,7 @@ void CGLView::SetViewMode(View_Mode n)
             }
             
             view.m_nview = n;
-            scene->SetGridOrientation(q);
+            grid.SetOrientation(q);
             
             // set the camera orientation
             switch (n)
@@ -2068,8 +2102,8 @@ void CGLView::SetViewMode(View_Mode n)
             }
             
 			view.m_nview = n;
-			scene->SetGridOrientation(q);
-            
+			grid.SetOrientation(q);
+
             // set the camera orientation
             switch (n)
             {
@@ -2102,8 +2136,8 @@ void CGLView::SetViewMode(View_Mode n)
             }
             
 			view.m_nview = n;
-			scene->SetGridOrientation(q);
-            
+			grid.SetOrientation(q);
+
             // set the camera orientation
             switch (n)
             {
@@ -2122,6 +2156,21 @@ void CGLView::SetViewMode(View_Mode n)
 
 	scene->GetCamera().SetOrientation(q);
 
+	// determine the colors for the major axis
+	GLColor cx, cy;
+	switch (n)
+	{
+	case VIEW_USER:
+	case VIEW_ISOMETRIC:
+	case VIEW_TOP:
+	case VIEW_BOTTOM: cx = GLColor(200, 0, 0); cy = GLColor(0, 200, 0); break;
+	case VIEW_RIGHT:
+	case VIEW_LEFT:  cx = GLColor(0, 200, 0); cy = GLColor(0, 0, 255); break;
+	case VIEW_FRONT:
+	case VIEW_BACK:  cx = GLColor(200, 0, 0); cy = GLColor(0, 0, 255); break;
+	}
+	scene->GetGrid().SetAxesColors(cx, cy);
+
 	// set the camera target
 	//	m_Cam.SetTarget(vec3d(0,0,0));
 
@@ -2133,8 +2182,8 @@ void CGLView::TogglePerspective(bool b)
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
-	CGView& view = scene->GetView();
-	view.m_bortho = b;
+	GLCamera& cam = scene->GetCamera();
+	cam.SetOrthoProjection(b);
 	repaint();
 }
 
@@ -2181,8 +2230,6 @@ bool CGLView::SelectPivot(int x, int y)
 	// get the transformation mode
 	int ntrans = GetDocument()->GetTransformMode();
 
-	makeCurrent();
-
 	// get a new pivot mode
 	int newMode = m_pivot.Pick(ntrans, x, y);
 	return (newMode != oldMode);
@@ -2205,7 +2252,6 @@ void CGLView::HighlightEdge(int x, int y)
 	int nsize = 5 * model.Edges();
 	if (nsize == 0) return;
 
-	makeCurrent();
 	GLViewTransform transform(this);
 
 	int X = x;
@@ -2213,15 +2259,18 @@ void CGLView::HighlightEdge(int x, int y)
 	int S = 4;
 	QRect rt(X - S, Y - S, 2 * S, 2 * S);
 
-	int Objects = model.Objects();
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(GetActiveScene());
+	if (scene == nullptr) return;
+
 	GEdge* closestEdge = 0;
 	double zmin = 0.0;
-	for (int i = 0; i<Objects; ++i)
+	std::vector<GLObjectItem*> objItems = scene->GetGLObjectItems();
+	for (auto item : objItems)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		if (po->IsVisible())
 		{
-			Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 			GLMesh* mesh = po->GetRenderMesh(); assert(mesh);
 			if (mesh)
 			{
@@ -2272,7 +2321,6 @@ void CGLView::HighlightNode(int x, int y)
 	int nsize = 5 * model.Nodes();
 	if (nsize == 0) return;
 
-	makeCurrent();
 	GLViewTransform transform(this);
 
 	int X = x;
@@ -2327,7 +2375,6 @@ void CGLView::HighlightSurface(int x, int y)
 	int nsize = 5 * model.Edges();
 	if (nsize == 0) return;
 
-	makeCurrent();
 	GLViewTransform transform(this);
 
 	int X = x;
@@ -2339,17 +2386,21 @@ void CGLView::HighlightSurface(int x, int y)
 	Ray ray = transform.PointToRay(x, y);
 
 //	double* a = PlaneCoordinates();
-	int Objects = model.Objects();
 	GFace* closestSurface = nullptr;
 	double minDist = 0;
 	Intersection q;
-	for (int i = 0; i < Objects; ++i)
+
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(GetActiveScene());
+	if (scene == nullptr) return;
+
+	std::vector<GLObjectItem*> objItems = scene->GetGLObjectItems();
+	for (auto item : objItems)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		if (po->IsVisible())
 		{
 			Ray localRay;
-			Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 			localRay.origin = T.GlobalToLocal(ray.origin);
 			localRay.direction = T.GlobalToLocalNormal(ray.direction);
 			GLMesh* mesh = po->GetRenderMesh(); assert(mesh);
@@ -2361,7 +2412,7 @@ void CGLView::HighlightSurface(int x, int y)
 					GFace* gface = po->Face(k);
 					if (gface->IsVisible() && !gface->IsSelected())
 					{
-						const GLMesh::PARTITION& pk = mesh->Partition(k);
+						const GLMesh::SURFACE_PARTITION& pk = mesh->SurfacePartition(k);
 						int NF = pk.nf;
 						int N0 = pk.n0;
 						for (int j = 0; j < NF; ++j)
@@ -2411,7 +2462,6 @@ GPart* CGLView::PickPart(int x, int y)
 	if (model.Parts() == 0) return nullptr;
 
 	// convert the point to a ray
-	makeCurrent();
 	GLViewTransform transform(this);
 	Ray ray = transform.PointToRay(x, y);
 
@@ -2419,12 +2469,17 @@ GPart* CGLView::PickPart(int x, int y)
 	Intersection q;
 	double minDist = 0;
 //	double* a = PlaneCoordinates();
-	for (int i = 0; i < model.Objects(); ++i)
+
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(GetActiveScene());
+	if (scene == nullptr) return nullptr;
+
+	std::vector<GLObjectItem*> objItems = scene->GetGLObjectItems();
+	for (auto item : objItems)
 	{
-		GObject* po = model.Object(i);
+		GObject* po = item->GetGObject();
 		if (po->IsVisible())
 		{
-			Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 			GLMesh* mesh = po->GetRenderMesh();
 			if (mesh)
 			{
@@ -2498,6 +2553,13 @@ GLScene* CGLView::GetActiveScene()
 	return nullptr;
 }
 
+GLCamera* CGLView::GetCamera()
+{
+	GLScene* scene = GetActiveScene();
+	if (scene) return &scene->GetCamera();
+	return nullptr;
+}
+
 void CGLView::UpdateScene()
 {
 	GLScene* scene = GetActiveScene();
@@ -2512,14 +2574,13 @@ GObject* CGLView::GetActiveObject()
 
 vec3d CGLView::PickPoint(int x, int y, bool* success)
 {
-	makeCurrent();
 	GLViewTransform transform(this);
 
 	if (success) *success = false;
 	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return vec3d(0,0,0);
 
-	GLScene* scene = GetActiveScene();
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(GetActiveScene());
 	if (scene == nullptr) return vec3d(0, 0, 0);
 
 	GLViewSettings& view = GetViewSettings();
@@ -2549,12 +2610,14 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 	// convert the point to a ray
 	Ray ray = transform.PointToRay(x, y);
 
+
 	// get the active object
-	GObject* po = doc->GetActiveObject();
+	GLObjectItem* item = scene->GetActiveGLObjectItem();
+	GObject* po = (item ? item->GetGObject() : nullptr);
 	if (po && po->GetEditableMesh())
 	{
 		// convert to local coordinates
-		Transform& T = po->GetRenderTransform();
+		Transform T = item->GetTransform();
 		vec3d rl = T.GlobalToLocal(ray.origin);
 		vec3d nl = T.GlobalToLocalNormal(ray.direction);
 
@@ -2563,7 +2626,7 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 		if (FindIntersection(*mesh, rl, nl, q, view.m_snapToNode))
 		{
 			if (success) *success = true;
-			q = po->GetRenderTransform().LocalToGlobal(q);
+			q = T.LocalToGlobal(q);
 			return q;
 		}
 	}
@@ -2633,67 +2696,47 @@ quatd CGLView::GetPivotRotation()
 bool CGLView::GetPivotUserMode() const { return m_userPivot; }
 void CGLView::SetPivotUserMode(bool b) { m_userPivot = b; }
 
-void CGLView::RenderTags()
+void CGLView::RenderTags(QPainter& painter)
 {
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
+
+	GLViewTransform viewTransform(this);
 
 	const int MAX_TAGS = 100;
 	size_t ntags = scene->Tags();
 	if (ntags > MAX_TAGS) return;
 
-	// find out where the tags are on the screen
-	GLViewTransform transform(this);
-	for (int i = 0; i<ntags; i++)
+	for (int i = 0; i < ntags; i++)
 	{
 		GLTAG& tag = scene->Tag(i);
-		vec3d p = transform.WorldToScreen(tag.r);
+		vec3d p = viewTransform.WorldToScreen(tag.r);
 		tag.wx = p.x;
-		tag.wy = m_viewport[3] - p.y;
+		tag.wy = p.y;
 	}
 
-	// render the tags
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-
-	gluOrtho2D(0, m_viewport[2], 0, m_viewport[3]);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
+	int H = height();
 
 	double dpr = devicePixelRatio();
-	glBegin(GL_POINTS);
+	for (int i = 0; i< ntags; i++)
 	{
-		for (int i = 0; i< ntags; i++)
-		{
-			GLTAG& tag = scene->Tag(i);
-			int x = (int)(tag.wx * dpr);
-			int y = (int)(m_viewport[3] - dpr*(m_viewport[3] - tag.wy));
-			glColor3ub(0, 0, 0);
-			glVertex2f(x, y);
-			glColor3ub(tag.c.r, tag.c.g, tag.c.b);
-			glVertex2f(x - 1, y + 1);
-		}
+		GLTAG& tag = scene->Tag(i);
+		int x = (int)(tag.wx * dpr);
+		int y = (int)(tag.wy * dpr);
+		painter.setBrush(QColor(0,0,0));
+		painter.drawEllipse(QPoint(x, y), 4, 4);
+		painter.setBrush(toQColor(tag.c));
+		painter.drawEllipse(QPoint(x-1, y-1), 4, 4);
 	}
-	glEnd();
-
 	GLViewSettings& vs = GetViewSettings();
 
-	QPainter painter(this);
-	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-	painter.setFont(QFont("Helvetica", vs.m_tagFontSize));
+	painter.setFont(QFont("Helvetica", (int)(dpr*vs.m_tagFontSize)));
 	for (int i = 0; i<ntags; ++i)
 	{
 		GLTAG& tag = scene->Tag(i);
 
-		int x = tag.wx;
-		int y = height()*dpr - tag.wy;
+		int x = (int)(dpr*tag.wx);
+		int y = (int)(dpr*tag.wy);
 		painter.setPen(Qt::black);
 
 		painter.drawText(x + 3, y - 2, tag.sztag);
@@ -2703,18 +2746,6 @@ void CGLView::RenderTags()
 
 		painter.drawText(x + 2, y - 3, tag.sztag);
 	}
-
-	painter.end();
-
-	glPopAttrib();
-
-	// QPainter messes this up so reset it
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
 }
 
 QSize CGLView::GetSafeFrameSize() const
@@ -2751,7 +2782,7 @@ void CGLView::ToggleMeshLines(bool b)
 {
 	GLViewSettings& view = GetViewSettings();
 	view.m_bmesh = b;
-	m_menu->toggleMeshLines(b);
+	if (m_menu) m_menu->toggleMeshLines(b);
 	update();
 }
 
@@ -2759,7 +2790,7 @@ void CGLView::ToggleGridLines(bool b)
 {
 	GLViewSettings& view = GetViewSettings();
 	view.m_bgrid = b;
-	m_menu->toggleGridLines(b);
+	if (m_menu) m_menu->toggleGridLines(b);
 	update();
 }
 
@@ -2767,7 +2798,7 @@ void CGLView::ToggleFeatureEdges(bool b)
 {
 	GLViewSettings& view = GetViewSettings();
 	view.m_bfeat = b;
-	m_menu->toggleFeatureEdges(b);
+	if (m_menu) m_menu->toggleFeatureEdges(b);
 	update();
 }
 
@@ -2775,6 +2806,14 @@ void CGLView::ToggleNormals(bool b)
 {
 	GLViewSettings& view = GetViewSettings();
 	view.m_bnorm = b;
-	m_menu->toggleNormals(b);
+	if (m_menu) m_menu->toggleNormals(b);
+	update();
+}
+
+void CGLView::ToggleWireframe(bool b)
+{
+	GLViewSettings& view = GetViewSettings();
+	view.m_nrender = (b ? RENDER_WIREFRAME : RENDER_SOLID);
+	if (m_menu) m_menu->toggleWireframe(b);
 	update();
 }

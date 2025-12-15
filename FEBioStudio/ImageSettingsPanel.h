@@ -52,6 +52,10 @@ public:
 
     ~CImageParam();
 
+	double currentValue();
+
+	void setValue(double v);
+
 public slots:
     void updateParam();
 
@@ -94,6 +98,8 @@ public:
 
 public slots:
     void ImageModelChanged(CImageModel* model);
+	void on_ParamChanged();
+	void on_colorChanged(QColor c);
 
 signals:
     void ParamChanged();

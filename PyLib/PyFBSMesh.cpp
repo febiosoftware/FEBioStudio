@@ -94,6 +94,12 @@ void init_FSMesh(py::module_& m)
 
         .def("MeshPartitions", &FSMesh::MeshPartitions, DOC(FSMesh, MeshPartitions))
         .def("MeshPartition", &FSMesh::MeshPartition, py::return_value_policy::reference, DOC(FSMesh, MeshPartition))
+
+        .def("ElemSets", &FSMesh::FEElemSets, DOC(FSMesh, FEElemSets))
+        .def("ElemSet", &FSMesh::GetFEElemSet, py::return_value_policy::reference, DOC(FSMesh, GetFEElemSet))
+
+        .def("NodeSets", &FSMesh::FENodeSets, DOC(FSMesh, FENodeSets))
+        .def("NodeSet", &FSMesh::GetFENodeSet, py::return_value_policy::reference, DOC(FSMesh, GetFENodeSet))
         ;
 
 	py::class_<FSCurveMesh, FSLineMesh, std::unique_ptr<FSCurveMesh, py::nodelete>>(mesh, "CurveMesh", DOC(FSCurveMesh))
@@ -155,8 +161,6 @@ void init_FSMesh(py::module_& m)
 		.def("Edge", &FSFace::GetEdge, DOC(FSFace, GetEdge))
         .def("Type", &FSFace::Type, DOC(FSFace, Type))
         .def("SetType", &FSFace::SetType, DOC(FSFace, SetType))
-        .def("Normal", [](FSFace& self) { return to_vec3d(self.m_fn); }, "Get the face normal")
-        .def("NodeNormal", [](FSFace& self, int node) { return to_vec3d(self.m_nn[node]); }, "Get the normal vector at the specified node.")
         ;
 
     py::class_<FSEdge, FSMeshItem, std::unique_ptr<FSEdge, py::nodelete>>(mesh, "Edge", "Class representing a mesh edge.")

@@ -30,10 +30,8 @@ SOFTWARE.*/
 #include <MeshLib/FSMesh.h>
 
 //-----------------------------------------------------------------------------
-FEQuartDogBone::FEQuartDogBone()
+FEQuartDogBone::FEQuartDogBone(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_pobj = nullptr;
-
 	AddIntParam(10, "nx", "Nx");
 	AddIntParam(30, "ny", "Ny");
 	AddIntParam( 1, "nz", "Nz");
@@ -48,22 +46,25 @@ FEQuartDogBone::FEQuartDogBone()
 //-----------------------------------------------------------------------------
 bool FEQuartDogBone::BuildMultiBlock()
 {
+	GQuartDogBone* po = dynamic_cast<GQuartDogBone*>(&m_o);
+	if (po == nullptr) return false;
+
 	// see if we should do 4-block or 6-block
-	double cw = m_pobj->GetFloatValue(GQuartDogBone::CWIDTH);
-	double ch = m_pobj->GetFloatValue(GQuartDogBone::CHEIGHT);
-	double R = m_pobj->GetFloatValue(GQuartDogBone::RADIUS);
-	double W = m_pobj->GetFloatValue(GQuartDogBone::WING);
+	double cw = po->GetFloatValue(GQuartDogBone::CWIDTH);
+	double ch = po->GetFloatValue(GQuartDogBone::CHEIGHT);
+	double R = po->GetFloatValue(GQuartDogBone::RADIUS);
+	double W = po->GetFloatValue(GQuartDogBone::WING);
 
 	if (ch < cw - W - R) return BuildMultiBlockMesh4();
 	else return BuildMultiBlockMesh6();
 }
 
-FSMesh* FEQuartDogBone::BuildMesh(GObject* po)
+FSMesh* FEQuartDogBone::BuildMesh()
 {
-	m_pobj = dynamic_cast<GQuartDogBone*>(po);
-	if (m_pobj == nullptr) return nullptr;
+	GQuartDogBone* po = dynamic_cast<GQuartDogBone*>(&m_o);
+	if (po == nullptr) return nullptr;
 
-	BuildMultiBlock();
+	if (!BuildMultiBlock()) return nullptr;
 
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);
@@ -83,13 +84,16 @@ FSMesh* FEQuartDogBone::BuildMesh(GObject* po)
 //-----------------------------------------------------------------------------
 bool FEQuartDogBone::BuildMultiBlockMesh4()
 {
+	GQuartDogBone* po = dynamic_cast<GQuartDogBone*>(&m_o);
+	if (po == nullptr) return false;
+
 	// get parameters
-	double cw = m_pobj->GetFloatValue(GQuartDogBone::CWIDTH);
-	double ch = m_pobj->GetFloatValue(GQuartDogBone::CHEIGHT);
-	double R = m_pobj->GetFloatValue(GQuartDogBone::RADIUS);
-	double h = m_pobj->GetFloatValue(GQuartDogBone::DEPTH);
-	double L = m_pobj->GetFloatValue(GQuartDogBone::LENGTH);
-	double W = m_pobj->GetFloatValue(GQuartDogBone::WING);
+	double cw = po->GetFloatValue(GQuartDogBone::CWIDTH);
+	double ch = po->GetFloatValue(GQuartDogBone::CHEIGHT);
+	double R = po->GetFloatValue(GQuartDogBone::RADIUS);
+	double h = po->GetFloatValue(GQuartDogBone::DEPTH);
+	double L = po->GetFloatValue(GQuartDogBone::LENGTH);
+	double W = po->GetFloatValue(GQuartDogBone::WING);
 
 	double a = sqrt(2.0)*0.5;
 	double px = cw - W - R * a;
@@ -220,13 +224,16 @@ bool FEQuartDogBone::BuildMultiBlockMesh4()
 //-----------------------------------------------------------------------------
 bool FEQuartDogBone::BuildMultiBlockMesh6()
 {
+	GQuartDogBone* po = dynamic_cast<GQuartDogBone*>(&m_o);
+	if (po == nullptr) return false;
+
 	// get parameters
-	double cw = m_pobj->GetFloatValue(GQuartDogBone::CWIDTH);
-	double ch = m_pobj->GetFloatValue(GQuartDogBone::CHEIGHT);
-	double R = m_pobj->GetFloatValue(GQuartDogBone::RADIUS);
-	double h = m_pobj->GetFloatValue(GQuartDogBone::DEPTH);
-	double L = m_pobj->GetFloatValue(GQuartDogBone::LENGTH);
-	double W = m_pobj->GetFloatValue(GQuartDogBone::WING);
+	double cw = po->GetFloatValue(GQuartDogBone::CWIDTH);
+	double ch = po->GetFloatValue(GQuartDogBone::CHEIGHT);
+	double R = po->GetFloatValue(GQuartDogBone::RADIUS);
+	double h = po->GetFloatValue(GQuartDogBone::DEPTH);
+	double L = po->GetFloatValue(GQuartDogBone::LENGTH);
+	double W = po->GetFloatValue(GQuartDogBone::WING);
 
 	double a = sqrt(2.0)*0.5;
 	double px = cw - W - R * a;
@@ -387,9 +394,10 @@ bool FEQuartDogBone::BuildMultiBlockMesh6()
 //-----------------------------------------------------------------------------
 FSMesh* FEQuartDogBone::BuildMeshLegacy()
 {
-	assert(m_pobj);
+	GQuartDogBone* po = dynamic_cast<GQuartDogBone*>(&m_o);
+	if (po == nullptr) return nullptr;
 
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double cw = param.GetFloatValue(GQuartDogBone::CWIDTH );
 	double ch = param.GetFloatValue(GQuartDogBone::CHEIGHT);
 	double R  = param.GetFloatValue(GQuartDogBone::RADIUS );
@@ -557,15 +565,6 @@ FSMesh* FEQuartDogBone::BuildMeshLegacy()
 
 	// update the mesh
 	pm->BuildMesh();
-
-	// the Multi-block mesher will assign a different smoothing ID
-	// to each face, but we don't want that here. 
-	// For now, we autosmooth the mesh although we should think of a 
-	// better way
-	pm->AutoSmooth(60);
-
-	// finally, we update the normals and we are good to go
-	pm->UpdateNormals();
 
 	return pm;
 }

@@ -27,7 +27,6 @@ SOFTWARE.*/
 #include "FiberODFWidget.h"
 #include <QDialog>
 #include <QDialogButtonBox>
-//#include <QOpenGLFunctions>
 #include <QSizePolicy>
 #include <QTabWidget>
 #include <QTableWidget>
@@ -69,6 +68,7 @@ SOFTWARE.*/
 #include "PropertyList.h"
 #include <XML/XMLWriter.h>
 #include <GLWLib/GLTriad.h>
+#include <GLWLib/GLLegendBar.h>
 #include <GLLib/GLScene.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
@@ -77,48 +77,25 @@ using std::vector;
 using std::complex;
 using sphere = SpherePointsGenerator;
 
-void CODFScene::Render(GLRenderEngine& engine, GLContext& rc)
+CODFScene::CODFScene()
 {
-	if (m_w->m_analysis && m_w->m_ODF) m_w->m_analysis->renderODFMesh(engine, m_w->m_ODF, rc.m_cam);
+	m_ODF = nullptr;
+	m_analysis = nullptr;
+	GetCamera().SetTargetDistance(5);
+	GetCamera().Update(true);
 }
 
-void CODFScene::RenderCanvas(QPainter& painter, GLContext& rc)
+void CODFScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
-	m_w->m_ptriad->setOrientation(rc.m_cam->GetOrientation());
-	m_w->m_ptriad->draw(&painter);
+	engine.setLightPosition(0, vec3f(1, 1, 1));
+	PositionCameraInScene(engine);
+
+	if (m_analysis && m_ODF) m_analysis->renderODFMesh(engine, m_ODF, rc.m_cam->IsMoving());
 }
 
 BOX CODFScene::GetBoundingBox()
 {
 	return BOX(-2, -2, -2, 2, 2, 2);
-}
-
-BOX CODFScene::GetSelectionBox()
-{
-	return BOX();
-}
-
-CFiberGLWidget::CFiberGLWidget() : CGLManagedSceneView(new CODFScene(this)), m_ODF(nullptr), m_analysis(nullptr)
-{
-	setMouseTracking(true);
-	m_ptriad = new GLTriad(0, 0, 50, 50);
-	m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
-}
-
-void CFiberGLWidget::setAnalysis(CFiberODFAnalysis* analysis)
-{
-    m_analysis = analysis;
-}
-
-void CFiberGLWidget::setODF(CODF* odf)
-{
-    m_ODF = odf;
-}
-
-void CFiberGLWidget::RenderBackground()
-{
-	glClearColor(0.3f, 0.3f, 0.3f, 1.f);
-	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 class CODFPropertyList1 : public CPropertyList
@@ -317,7 +294,7 @@ public:
     QTabWidget* tabs;
     QComboBox* odfSelector;
     QCheckBox* odfCheck;
-    CFiberGLWidget* glWidget;
+    rhiSceneView* glWidget;
 
 	// tabs
 	ODFParamsWidget* odfParams;
@@ -347,9 +324,13 @@ public:
     QLineEdit* VM3_phi;
     QLineEdit* VM3_theta;
 
+	CODFScene* m_scene;
+
 public:
-    void setupUI(::CFiberODFWidget* parent)
+    void setupUI(::CFiberODFWidget* parent, ::CMainWindow* wnd)
     {
+		m_scene = new CODFScene;
+
         QVBoxLayout* layout = new QVBoxLayout;
         layout->setContentsMargins(0,0,0,0);
         
@@ -376,7 +357,11 @@ public:
         QVBoxLayout* odfTabLayout = new QVBoxLayout;
         odfTabLayout->setContentsMargins(0,0,0,0);
 
-        odfTabLayout->addWidget(glWidget = new CFiberGLWidget);
+		glWidget = new rhiSceneView(wnd);
+		glWidget->SetScene(m_scene);
+		QWidget* rhiw = QWidget::createWindowContainer(glWidget);
+		rhiw->setMinimumSize(QSize(300, 300));
+        odfTabLayout->addWidget(rhiw);
 
         odfTab->setLayout(odfTabLayout);
 //        tabs->addTab(odfTab, "ODF");
@@ -453,8 +438,8 @@ public:
 
     void update(CFiberODFAnalysis* analysis)
     {
-        glWidget->setAnalysis(analysis);
-        glWidget->setODF(nullptr);
+        m_scene->setAnalysis(analysis);
+        m_scene->setODF(nullptr);
 
         if(!analysis || analysis->ODFs() == 0)
         {
@@ -465,7 +450,7 @@ public:
         else if(analysis->ODFs() == 1)
         {
             odfSelector->hide();
-            glWidget->setODF(analysis->GetODF(0));
+			m_scene->setODF(analysis->GetODF(0));
 			odfParams->setAnalysis(analysis);
 			updateData(analysis);
 			showTabs();
@@ -482,7 +467,7 @@ public:
 
             odfSelector->blockSignals(false);
             odfSelector->setCurrentIndex(0);
-            glWidget->setODF(analysis->GetODF(0));
+			m_scene->setODF(analysis->GetODF(0));
             odfSelector->show();
 			odfParams->setAnalysis(analysis);
 
@@ -549,7 +534,7 @@ private:
 CFiberODFWidget::CFiberODFWidget(CMainWindow* wnd)
     : m_analysis(nullptr), ui(new Ui::CFiberODFWidget), m_wnd(wnd)
 {
-    ui->setupUI(this);
+    ui->setupUI(this, wnd);
 
     connect(ui->odfParams->m_runAll, &QAction::triggered, this, &CFiberODFWidget::on_runAll_triggered);
     connect(ui->odfParams->m_runSel, &QAction::triggered, this, &CFiberODFWidget::on_runSel_triggered);
@@ -708,8 +693,8 @@ void CFiberODFWidget::on_odfSelector_currentIndexChanged(int index)
 	ui->odfCheck->setChecked(odf->m_active);
 	ui->odfCheck->blockSignals(false);
 
-    ui->glWidget->setODF(odf);
-    ui->glWidget->repaint();
+    ui->m_scene->setODF(odf);
+    ui->glWidget->requestUpdate();
 	ui->updateData(m_analysis);
 	m_wnd->RedrawGL();
 }

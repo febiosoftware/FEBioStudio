@@ -46,8 +46,6 @@ public:
 
 	RECORDING_STATE GetRecordingState() const;
 
-	void SetVideoFormat(unsigned int fmt);
-
 	bool SetVideoStream(CAnimation* panim);
 
 	void Start();
@@ -61,7 +59,6 @@ public:
 	bool IsStopped() const;
 
 private:
-	unsigned int	m_videoFormat;
 	RECORDING_STATE	m_state;
 	CAnimation*		m_video;
 

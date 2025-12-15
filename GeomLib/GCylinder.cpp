@@ -86,7 +86,7 @@ void GCylinder::SetHeight(double H) { SetFloatValue(1, H); Update(); }
 //-----------------------------------------------------------------------------
 FEMesher* GCylinder::CreateDefaultMesher()
 {
-	return new FECylinder();
+	return new FECylinder(*this);
 }
 
 //-----------------------------------------------------------------------------
@@ -197,7 +197,7 @@ GCylinder2::GCylinder2() : GPrimitive(GCYLINDER2)
 //-----------------------------------------------------------------------------
 FEMesher* GCylinder2::CreateDefaultMesher()
 {
-	return new FECylinder2();
+	return new FECylinder2(*this);
 }
 
 //-----------------------------------------------------------------------------

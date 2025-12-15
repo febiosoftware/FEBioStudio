@@ -26,14 +26,13 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
-#include "GLWLib/GLLegendBar.h"
 #include <MeshLib/FSMesh.h>
 #include <MeshLib/FSFindElement.h>
 #include <GLLib/GLMesh.h>
 
 namespace Post {
 
-class CGLStreamLinePlot : public CGLLegendPlot
+class CGLStreamLinePlot : public CGLPlot
 {
 	enum { DATA_FIELD, COLOR_MAP, CLIP, STEP_SIZE, DENSITY, THRESHOLD, RANGE, DIVS, USER_MAX, USER_MIN };
 
@@ -83,6 +82,8 @@ public:
 	void UpdateStreamLines();
 
 	void ColorStreamLines();
+
+	LegendData GetLegendData() const override;
 
 public:
 	int GetVectorType() { return m_nvec; }

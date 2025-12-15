@@ -8,7 +8,6 @@ project(fbs)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_FILES_DIRECTORY ${CMAKE_BINARY_DIR}/CMakeFiles)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER Autogen)
@@ -23,6 +22,11 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   # Set the possible values of build type for cmake-gui
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+
+# OpenMP
+if(NOT WIN32)
+    find_package(OpenMP QUIET)
 endif()
 
 # Find pybind11
@@ -46,10 +50,6 @@ endif()
 
 if(NOT PYBIND11_DIR)
     message(FATAL_ERROR "Could not automatically locate pybind11. Please specify pybind11 directory in PYBIND11_DIR")
-endif()
-
-if(NOT WIN32)
-    find_package(OpenMP QUIET)
 endif()
 
 # TETGEN
@@ -129,7 +129,7 @@ if(WIN32)
     add_compile_options(/MP /openmp)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 11.0)
     add_compile_options(-fPIC)
 
     if(${OpenMP_CXX_FOUND})
@@ -147,7 +147,6 @@ else()
         link_libraries(${OpenMP_CXX_LIBRARIES})
     endif()
 endif()
-
 
 set(FEBioDir "" CACHE PATH "Path to the FEBio repo")
 
@@ -192,6 +191,12 @@ foreach(name IN LISTS FEBIO_LIBS)
 endforeach(name)
 
 add_subdirectory(${PYBIND11_DIR} ./pybind11)
+
+# Manually pull in include dirs for OpenMP on macOS
+if(APPLE)
+    target_include_directories(FEBioMech PRIVATE ${OpenMP_C_INCLUDE_DIRS} ${OMP_INC})
+    target_include_directories(GLLib PRIVATE ${OpenMP_C_INCLUDE_DIRS} ${OMP_INC})
+endif()
 
 find_package(ZLIB)
 

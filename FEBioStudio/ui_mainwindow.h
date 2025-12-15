@@ -92,6 +92,9 @@ SOFTWARE.*/
 #include "MainMenu.h"
 #include "PluginManager.h"
 #include <PyLib/PythonRunner.h>
+#include "FEBioBatchView.h"
+#include "DocPropsPanel.h"
+#include <ImageLib/RGBAImage.h>
 
 class QProcess;
 
@@ -112,29 +115,7 @@ public:
 
 	void dropEvent(QDropEvent* e) override
 	{
-		foreach(const QUrl & url, e->mimeData()->urls()) {
-			QString fileName = url.toLocalFile();
-
-			FileReader* fileReader = nullptr;
-
-			QFileInfo file(fileName);
-
-			// Create a file reader
-			// NOTE: For FEB files I prefer to open the file as a separate model,
-			// so I need this hack. 
-			if (file.suffix() != "feb") fileReader = m_wnd->CreateFileReader(fileName);
-
-			CDocument* doc = m_wnd->GetDocument();
-
-			// make sure we have one
-			if (fileReader && doc)
-			{
-				m_wnd->ReadFile(doc, fileName, fileReader, 0);
-			}
-			else {
-				m_wnd->OpenFile(fileName, false, false);
-			}
-		}
+		m_wnd->onDropEvent(e);
 	}
 
 private:
@@ -156,7 +137,8 @@ public:
 		IMG_SLICE,
 		TIME_VIEW_2D,
 		GL_VIEWER,
-		FEBREPORT_VIEW
+		FEBREPORT_VIEW,
+		BATCHRUN_VIEW,
 	};
 
 public:
@@ -170,6 +152,7 @@ public:
 	CImageSliceView* sliceView;
 	::C2DImageTimeView* timeView2D;
 	CFEBioReportView* febReportView;
+	FEBioBatchView* batchView;
 
 public:
 	CMainCentralWidget(CMainWindow* wnd) : m_wnd(wnd)
@@ -209,6 +192,10 @@ public:
 		febReportView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		stack->addWidget(febReportView);
 
+		batchView = new FEBioBatchView(wnd);
+		batchView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+		stack->addWidget(batchView);
+
 		centralLayout->addWidget(tab);
 		centralLayout->addWidget(stack);
 		setLayout(centralLayout);
@@ -243,6 +230,9 @@ struct FBS_SETTINGS
 	int		defaultUnits;	// default units used for new model and post documents
 	int		autoSaveInterval; // interval (in seconds) between autosaves
 
+	bool	loadFEBioConfigFile;	// load the FEBio config file on startup
+	QString	febioConfigFileName;	// the path to the default FEBio config file
+
 	QString FEBioSDKInc;	// path to FEBio SDK includes
 	QString FEBioSDKLib;	// path to FEBio SDK libraries
 	QString createPluginPath;	// default path to FEBio plugins
@@ -259,6 +249,7 @@ struct FBS_SETTINGS
 	QStringList m_recentImages;
 
 	QString m_envMapFile;
+	CRGBAImage m_envImg;
 
 	vector<CLaunchConfig*> m_launch_configs;
 };
@@ -288,6 +279,7 @@ public:
 	::CImageSettingsPanel* imageSettingsPanel;
 	CFEBioMonitorPanel* febioMonitor;
 	CFEBioMonitorView* febioMonitorView;
+	::CDocPropsPanel* docProps;
 
 	// additional windows
 	::CDlgFiberViz* fiberViz = nullptr;

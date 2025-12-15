@@ -57,7 +57,6 @@ void GLViewSettings::Defaults(int ntheme)
 	m_showDiscrete = true;
 	m_showRigidLabels = true;
 
-	m_bcull = false;
 	m_bconn = false;
 	m_bmax = true;
 	m_bpart = true;
@@ -101,14 +100,11 @@ void GLViewSettings::Defaults(int ntheme)
 	m_line_size = 1.0f;
 	m_bline_smooth = true;
 	m_bpoint_smooth = true;
-	m_bzsorting = true;
 
 	m_snapToGrid = true;
 	m_snapToNode = false;
 
 	m_bLighting = true;
-	m_bShadows = false;
-	m_shadow_intensity = 0.5f;
 	m_ambient = 0.09f;
 	m_diffuse = 0.8f;
 	m_use_environment_map = false;

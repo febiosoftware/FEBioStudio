@@ -33,10 +33,8 @@ SOFTWARE.*/
 // FETube
 //////////////////////////////////////////////////////////////////////
 
-FETube::FETube()
+FETube::FETube(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_nd = 8;
 	m_ns = 4;
 	m_nz = 8;
@@ -59,10 +57,10 @@ FETube::FETube()
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0Tet4\0Tet10\0");
 }
 
-FSMesh* FETube::BuildMesh(GObject* po)
+FSMesh* FETube::BuildMesh()
 {
-	m_pobj = dynamic_cast<GTube*>(po);
-	if (m_pobj == nullptr) return nullptr;
+	GTube* po = dynamic_cast<GTube*>(&m_o);
+	if (po == nullptr) return nullptr;
 
 //	return BuildMeshLegacy();
 	return BuildMultiBlockMesh();
@@ -71,9 +69,9 @@ FSMesh* FETube::BuildMesh(GObject* po)
 bool FETube::BuildMultiBlock()
 {
 	// get the geometry parameters
-	double R0 = m_pobj->GetFloatValue(GTube::RIN);
-	double R1 = m_pobj->GetFloatValue(GTube::ROUT);
-	double h = m_pobj->GetFloatValue(GTube::HEIGHT);
+	double R0 = m_o.GetFloatValue(GTube::RIN);
+	double R1 = m_o.GetFloatValue(GTube::ROUT);
+	double h  = m_o.GetFloatValue(GTube::HEIGHT);
 
 	// get mesh parameters
 	int nd = GetIntValue(NDIV);
@@ -219,12 +217,13 @@ FSMesh* FETube::BuildMultiBlockMesh()
 
 FSMesh* FETube::BuildMeshLegacy()
 {
-	assert(m_pobj);
+	GTube* po = dynamic_cast<GTube*>(&m_o);
+	if (po == nullptr) return nullptr;
 
 	int i, j, k, n;
 
 	// get object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double R0 = param.GetFloatValue(GTube::RIN);
 	double R1 = param.GetFloatValue(GTube::ROUT);
 	double h  = param.GetFloatValue(GTube::HEIGHT);
@@ -410,7 +409,6 @@ void FETube::BuildFaces(FSMesh* pm)
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4*i/nd;
 			f.m_gid = 4+4*i/nd;
-			f.m_sid = 0;
 			f.n[0] = NodeIndex(nr,   i,   j);
 			f.n[1] = NodeIndex(nr, i+1,   j);
 			f.n[2] = NodeIndex(nr, i+1, j+1);
@@ -427,7 +425,6 @@ void FETube::BuildFaces(FSMesh* pm)
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4 + 4*i/nd;
 			f.m_gid = 8 + 4*i/nd;
-			f.m_sid = 1;
 			f.n[0] = NodeIndex(0, i+1,   j);
 			f.n[1] = NodeIndex(0,   i,   j);
 			f.n[2] = NodeIndex(0,   i, j+1);
@@ -443,7 +440,6 @@ void FETube::BuildFaces(FSMesh* pm)
 			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 12+4*j/nd;
-			f.m_sid = 2;
 			f.n[0] = NodeIndex(i  ,   j, nz);
 			f.n[1] = NodeIndex(i+1,   j, nz);
 			f.n[2] = NodeIndex(i+1, j+1, nz);
@@ -460,7 +456,6 @@ void FETube::BuildFaces(FSMesh* pm)
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 8+4*j/nd;
 			f.m_gid = 4*j/nd;
-			f.m_sid = 3;
 			f.n[0] = NodeIndex(i+1,   j, 0);
 			f.n[1] = NodeIndex(  i,   j, 0);
 			f.n[2] = NodeIndex(  i, j+1, 0);
@@ -527,10 +522,8 @@ void FETube::BuildEdges(FSMesh* pm)
 // FETube2
 //////////////////////////////////////////////////////////////////////
 
-FETube2::FETube2()
+FETube2::FETube2(GObject& o) : FEMesher(o)
 {
-	m_pobj = nullptr;
-
 	m_nd = 8;
 	m_ns = 4;
 	m_nz = 8;
@@ -551,15 +544,15 @@ FETube2::FETube2()
 	AddBoolParam(m_br, "br", "R-mirrored bias");
 }
 
-FSMesh* FETube2::BuildMesh(GObject* po)
+FSMesh* FETube2::BuildMesh()
 {
-	m_pobj = dynamic_cast<GTube2*>(po); assert(m_pobj);
-	if (m_pobj == nullptr) return nullptr;
+	GTube2* po = dynamic_cast<GTube2*>(&m_o); assert(po);
+	if (po == nullptr) return nullptr;
 
 	int i, j, k, n;
 
 	// get object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double R0x = param.GetFloatValue(GTube2::RINX);
 	double R0y = param.GetFloatValue(GTube2::RINY);
 	double R1x = param.GetFloatValue(GTube2::ROUTX);
@@ -747,7 +740,6 @@ void FETube2::BuildFaces(FSMesh* pm)
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4*i/nd;
 			f.m_gid = 4+4*i/nd;
-			f.m_sid = 0;
 			f.n[0] = NodeIndex(nr,   i,   j);
 			f.n[1] = NodeIndex(nr, i+1,   j);
 			f.n[2] = NodeIndex(nr, i+1, j+1);
@@ -764,7 +756,6 @@ void FETube2::BuildFaces(FSMesh* pm)
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4 + 4*i/nd;
 			f.m_gid = 8 + 4*i/nd;
-			f.m_sid = 1;
 			f.n[0] = NodeIndex(0, i+1,   j);
 			f.n[1] = NodeIndex(0,   i,   j);
 			f.n[2] = NodeIndex(0,   i, j+1);
@@ -780,7 +771,6 @@ void FETube2::BuildFaces(FSMesh* pm)
 			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 12+4*j/nd;
-			f.m_sid = 2;
 			f.n[0] = NodeIndex(i  ,   j, nz);
 			f.n[1] = NodeIndex(i+1,   j, nz);
 			f.n[2] = NodeIndex(i+1, j+1, nz);
@@ -797,7 +787,6 @@ void FETube2::BuildFaces(FSMesh* pm)
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 8+4*j/nd;
 			f.m_gid = 4*j/nd;
-			f.m_sid = 3;
 			f.n[0] = NodeIndex(i+1,   j, 0);
 			f.n[1] = NodeIndex(  i,   j, 0);
 			f.n[2] = NodeIndex(  i, j+1, 0);

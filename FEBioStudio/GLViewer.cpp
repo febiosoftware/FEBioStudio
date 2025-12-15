@@ -36,6 +36,7 @@ CGLViewer::CGLViewer(::CMainWindow* wnd)
 
 	// create the GL view
 	glview = new CGLView(wnd); glview->setObjectName("glview");
+	glview->setRenderOverlay(true);
 
 	// create the GL control bar
 	glc = new CGLControlBar(wnd);
@@ -43,7 +44,12 @@ CGLViewer::CGLViewer(::CMainWindow* wnd)
 	glc->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Policy::Fixed);
 
 	// add it all to the layout
-	l->addWidget(glview);
+	QWidget* w = QWidget::createWindowContainer(glview);
+	w->setMinimumSize(200, 200);
+	w->setFocusPolicy(Qt::StrongFocus);
+	w->setAttribute(Qt::WA_NativeWindow);
+
+	l->addWidget(w);
 	l->addWidget(glc);
 	setLayout(l);
 

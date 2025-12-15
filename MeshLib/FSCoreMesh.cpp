@@ -162,21 +162,33 @@ double FSCoreMesh::ElementVolume(int iel)
 
 double FSCoreMesh::ElementVolume(const FSElement_& el)
 {
-	switch (el.Type())
-	{
-	case FE_HEX8   : return HexVolume(el); break;
-	case FE_HEX20  : return HexVolume(el); break;
-	case FE_HEX27  : return HexVolume(el); break;
-	case FE_TET4   : return TetVolume(el); break;
-	case FE_TET10  : return TetVolume(el); break;
-	case FE_TET15  : return TetVolume(el); break;
-	case FE_TET20  : return TetVolume(el); break;
-	case FE_PENTA6 : return PentaVolume(el); break;
-	case FE_PENTA15: return PentaVolume(el); break;
-	case FE_PYRA5  : return PyramidVolume(el); break;
-    case FE_PYRA13 : return PyramidVolume(el); break;
-    case FE_QUAD4  : return QuadVolume(el); break;
-	}
+    if (el.IsSolid()) {
+        switch (el.Type())
+        {
+            case FE_HEX8   : return HexVolume(el); break;
+            case FE_HEX20  : return HexVolume(el); break;
+            case FE_HEX27  : return HexVolume(el); break;
+            case FE_TET4   : return TetVolume(el); break;
+            case FE_TET10  : return TetVolume(el); break;
+            case FE_TET15  : return TetVolume(el); break;
+            case FE_TET20  : return TetVolume(el); break;
+            case FE_PENTA6 : return PentaVolume(el); break;
+            case FE_PENTA15: return PentaVolume(el); break;
+            case FE_PYRA5  : return PyramidVolume(el); break;
+            case FE_PYRA13 : return PyramidVolume(el); break;
+            case FE_QUAD4  : return QuadVolume(el); break;
+        }
+    }
+    else if (el.IsShell()) {
+        FSFace f;
+        el.GetShellFace(f);
+        double havg = 0;
+        for (int i=0; i<f.Nodes(); ++i)
+            havg += el.m_h[i];
+        havg /= f.Nodes();
+        if (havg == 0) havg = 1;
+        return FaceArea(f)*havg;
+    }
 
 	return 0.0;
 }
@@ -903,13 +915,14 @@ double FSCoreMesh::QuadVolume(const FSElement_& el)
     assert(el.Type() == FE_QUAD4);
 
     FSFace& face = Face(el.m_face[0]);
+	vec3d Nf = FaceNormal(face);
 
     vec3d rt[FSElement::MAX_NODES];
     vec3d Dt[FSElement::MAX_NODES];
     for (int i = 0; i < el.Nodes(); ++i)
     {
         rt[i] = m_Node[el.m_node[i]].r;
-        Dt[i] = to_vec3d(face.m_nn[i]*el.m_h[i]);
+        Dt[i] = Nf*el.m_h[i];
     }
 
     switch (el.Type())
@@ -1558,18 +1571,6 @@ int FSCoreMesh::CountElementPartitions() const
 		if (elem.m_gid > max_gid) max_gid = elem.m_gid;
 	}
 	return max_gid + 1;
-}
-
-//-----------------------------------------------------------------------------
-int FSCoreMesh::CountSmoothingGroups() const
-{
-	int max_sg = -1;
-	for (int i = 0; i<Faces(); ++i)
-	{
-		const FSFace& face = Face(i);
-		if (face.m_sid > max_sg) max_sg = face.m_sid;
-	}
-	return max_sg + 1;
 }
 
 //-----------------------------------------------------------------------------

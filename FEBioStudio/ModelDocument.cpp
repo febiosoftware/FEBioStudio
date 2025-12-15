@@ -123,7 +123,17 @@ CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd), m_skipPlugi
 	m_context = new CModelContext(this);
 
 	m_scene = new CGLModelScene(this);
-	m_scene->SetEnvironmentMap(wnd->GetEnvironmentMap().toStdString());
+
+	QString envMap = wnd->GetEnvironmentMap();
+	if (!envMap.isEmpty())
+	{
+		QImage img(envMap);
+		if (!img.isNull() && (img.format() == QImage::Format_RGB32))
+		{
+			CRGBAImage rgba(img.width(), img.height(), img.constBits());
+			m_scene->SetEnvironmentMap(rgba);
+		}
+	}
 
 	SetFileWriter(new CModelFileWriter(this));
 
@@ -355,6 +365,11 @@ void CModelDocument::DeleteObject(FSObject* po)
 		}
 		else if (dynamic_cast<FSModelComponent*>(po))
 			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)), po->GetName());
+		else if (dynamic_cast<GMaterial*>(po))
+		{
+			GMaterial* pmat = dynamic_cast<GMaterial*>(po);
+			DoCommand(new CCmdDeleteMaterial(pmat, fem));
+		}
 		else
 			DoCommand(new CCmdDeleteFSObject(po));
 	}
@@ -908,7 +923,7 @@ void CModelDocument::UpdateSelection()
 		{
 		case SELECT_OBJECT: m_psel = new GObjectSelection(gm); break;
 		case SELECT_PART: m_psel = new GPartSelection(gm); break;
-		case SELECT_FACE: m_psel = new GFaceSelection(gm); break;
+		case SELECT_SURF: m_psel = new GFaceSelection(gm); break;
 		case SELECT_EDGE: m_psel = new GEdgeSelection(gm); break;
 		case SELECT_NODE: m_psel = new GNodeSelection(gm); break;
 		case SELECT_DISCRETE: m_psel = new GDiscreteSelection(gm); break;
@@ -939,7 +954,10 @@ void CModelDocument::UpdateSelection()
 	}
 
 	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(GetScene());
-	if (scene) scene->UpdateSelectionMesh(m_psel);
+	if (scene) {
+		scene->UpdateSelectionMesh(m_psel);
+		scene->Update();
+	}
 
 	// update the window's toolbar to make sure it reflects the correct
 	// selection tool
@@ -986,7 +1004,7 @@ void CModelDocument::HideUnselected()
 			for (int i = 0; i<mdl->Objects(); ++i)
 				if (mdl->Object(i)->IsSelected() == false) po.push_back(mdl->Object(i));
 
-			DoCommand(new CCmdHideObject(po, true));
+			DoCommand(new CCmdHideObject(po));
 		}
 		else if (selMode == SELECT_PART)
 		{
@@ -1063,7 +1081,7 @@ void CModelDocument::SelectItems(FSObject* po, const std::vector<int>& l, int n)
 		{
 		case GO_NODE: SetSelectionMode(SELECT_NODE); pcmd = new CCmdSelectNode(mdl, l, false); break;
 		case GO_EDGE: SetSelectionMode(SELECT_EDGE); pcmd = new CCmdSelectEdge(mdl, l, false); break;
-		case GO_FACE: SetSelectionMode(SELECT_FACE); pcmd = new CCmdSelectSurface(mdl, l, false); break;
+		case GO_FACE: SetSelectionMode(SELECT_SURF); pcmd = new CCmdSelectSurface(mdl, l, false); break;
 		case GO_PART: SetSelectionMode(SELECT_PART); pcmd = new CCmdSelectPart(mdl, l, false); break;
 		default:
 			if (dynamic_cast<FSGroup*>(pl))
@@ -1235,7 +1253,7 @@ bool CModelDocument::SelectHighlightedItems()
 		}
 		else return false;
 	}
-	else if (selectMode == SelectionMode::SELECT_FACE)
+	else if (selectMode == SelectionMode::SELECT_SURF)
 	{
 		std::vector<GFace*> faceList = itemlist_cast<GFace>(items);
 		if (!faceList.empty())
@@ -1277,18 +1295,19 @@ void CModelDocument::ToggleActiveParts()
 {
 	if (GetSelectionMode() != SELECT_PART) return;
 
-	GObject* po = GetActiveObject();
-	if (po == nullptr) return;
-
-	vector<GPart*> selectedParts;
-	for (int i = 0; i < po->Parts(); ++i)
+	GPartSelection* sel = dynamic_cast<GPartSelection*>(GetCurrentSelection());
+	if (sel && (sel->Count() > 0))
 	{
-		GPart* pg = po->Part(i);
-		if (pg && pg->IsSelected()) selectedParts.push_back(pg);
+		vector<GPart*> selectedParts = sel->GetPartList();
+		DoCommand(new CCmdToggleActiveParts(selectedParts));
 	}
-	if (selectedParts.empty()) return;
+}
 
-	DoCommand(new CCmdToggleActiveParts(selectedParts));
+BOX CModelDocument::GetBoundingBox()
+{
+	BOX box;
+	if (GetGModel()) box = GetGModel()->GetBoundingBox();
+	return box;
 }
 
 CModelDocument* CreateNewModelDocument(CMainWindow* wnd, int moduleID, std::string name, int units)
@@ -1317,4 +1336,21 @@ CModelDocument* CreateDocumentFromTemplate(CMainWindow* wnd, int templateID, std
 	doc->SetDocTitle(name);
 	doc->SetUnitSystem(units);
 	return doc;
+}
+
+void CModelDocument::AssignColor(GPart* pg, GLColor c)
+{
+	OBJECT_COLOR_MODE mode = dynamic_cast<CGLModelScene*>(GetScene())->ObjectColorMode();
+
+	if (mode == OBJECT_COLOR_MODE::OBJECT_COLOR)
+	{
+		GObject* po = dynamic_cast<GObject*>(pg->Object());
+		if (po) po->SetColor(c);
+	}
+	else if (mode == OBJECT_COLOR_MODE::DEFAULT_COLOR)
+	{
+		int matID = pg->GetMaterialID();
+		GMaterial* mat = GetFSModel()->GetMaterialFromID(matID);
+		if (mat) mat->SetColor(c);
+	}
 }

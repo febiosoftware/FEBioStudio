@@ -31,7 +31,7 @@ SOFTWARE.*/
 
 namespace Post {
 
-class CGLSlicePlot : public CGLLegendPlot  
+class CGLSlicePlot : public CGLPlot  
 {
 	enum { 
 		DATA_FIELD, 
@@ -90,6 +90,8 @@ public:
 	bool UpdateData(bool bsave = true) override;
 
 	void Update() override;
+
+	LegendData GetLegendData() const override;
 
 protected:
 	int UpdateSlice(float ref, std::vector<std::pair<int, float> >& activeElements);

@@ -106,13 +106,13 @@ bool C3DImage::Create(int nx, int ny, int nz, uint8_t* data, int pixelType)
 	return true;
 }
 
-bool C3DImage::IsRGB()
+bool C3DImage::IsRGB() const
 {
     return m_pixelType == CImage::INT_RGB8 || m_pixelType == CImage::UINT_RGB8 
         || m_pixelType == CImage::INT_RGB16 || m_pixelType == CImage::UINT_RGB16;
 }
 
-std::string C3DImage::PixelTypeString()
+std::string C3DImage::PixelTypeString() const
 {
     switch (m_pixelType)
     {

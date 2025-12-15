@@ -42,9 +42,9 @@ using namespace std;
 	#include <tetgen.h>
 #endif
 
-REGISTER_CLASS3(FETetGenMesher, CLASS_MESHER, TetGen_Mesher, "tetgen", 0, 0);
+REGISTER_CLASS4(FETetGenMesher, CLASS_MESHER, TetGen_Mesher, "tetgen", GObject);
 
-FETetGenMesher::FETetGenMesher() : m_po(nullptr)
+FETetGenMesher::FETetGenMesher(GObject& o) : FEMesher(o)
 {
 	SetType(TetGen_Mesher);
 
@@ -94,10 +94,9 @@ int FETetGenMesher::ElementType()
 // and then passes this structure to tetgen which builds the tet mesh. On
 // a successful return the FE mesh is processed and partitioned. 
 //
-FSMesh* FETetGenMesher::BuildMesh(GObject* po)
+FSMesh* FETetGenMesher::BuildMesh()
 {
-	m_po = po;
-	GSurfaceMeshObject* surfObj = dynamic_cast<GSurfaceMeshObject*>(m_po);
+	GSurfaceMeshObject* surfObj = dynamic_cast<GSurfaceMeshObject*>(&m_o);
 	if (surfObj)
 	{
 		return CreateMesh(surfObj);
@@ -185,7 +184,7 @@ FSMesh* FETetGenMesher::BuildPLCMesh()
 
 	// Build a PLC from the object
 	PLC plc;
-	if (plc.Build(m_po, h) == false) return nullptr;
+	if (plc.Build(&m_o, h) == false) return nullptr;
 
 	int NN = plc.Nodes();
 	int NF = plc.Faces();
@@ -243,7 +242,7 @@ bool FETetGenMesher::build_tetgen_in(tetgenio& in)
 
 	// Build a PLC from the object
 	PLC plc;
-	if (plc.Build(m_po, h) == false) return false;
+	if (plc.Build(&m_o, h) == false) return false;
 
 	// all indices start from 0
 	in.firstnumber = 0;
@@ -328,7 +327,7 @@ bool FETetGenMesher::build_tetgen_in(tetgenio& in)
 bool FETetGenMesher::build_tetgen_in_remesh(tetgenio& in)
 {
 	// get the FE mesh
-	FSMesh& mesh = *m_po->GetFEMesh();
+	FSMesh& mesh = *m_o.GetFEMesh();
 
 	// make sure this is a tet mesh
 	for (int i=0; i<mesh.Elements(); ++i)
@@ -565,10 +564,10 @@ FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 					// get the GID of the face
 					FSFace& face = pmesh->Face(el.m_face[j]);
 					int faceId = face.m_gid;
-					if ((faceId >= 0) && (faceId < m_po->Faces()))
+					if ((faceId >= 0) && (faceId < m_o.Faces()))
 					{
 						// make sure this is an outside face
-						GFace& face = *m_po->Face(faceId);
+						GFace& face = *m_o.Face(faceId);
 						int pid = face.m_nPID[0];
 						if (face.m_nPID[1] == -1)
 						{
@@ -611,9 +610,6 @@ FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 		if (el.m_gid < 0) el.m_gid = 0;
 	}
 
-	// update faces
-	pmesh->SmoothByPartition();
-
 	// associate the FE nodes with the GNodes
 	double R2 = pmesh->GetBoundingBox().GetMaxExtent();
 	if (R2 == 0) R2 = 1.0; else R2 *= R2;	
@@ -622,9 +618,9 @@ FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 		FSNode& node = pmesh->Node(i);
 		vec3d& ri = node.r;
 		node.m_gid = -1;
-		for (j=0; j<m_po->Nodes(); ++j)
+		for (j=0; j<m_o.Nodes(); ++j)
 		{
-			GNode& gn = *m_po->Node(j);
+			GNode& gn = *m_o.Node(j);
 			vec3d& rj = gn.LocalPosition();
 			double L2 = (ri - rj).SqrLength();
 			if (L2/R2 < 1e-6) 
@@ -817,7 +813,6 @@ FSMesh* FETetGenMesher::build_tet10_mesh(FSMesh* pm)
 
 		f1.SetType(FE_FACE_TRI6);
 		f1.m_gid = f0.m_gid;
-		f1.m_sid = f0.m_sid;
 		f1.n[0] = f0.n[0];
 		f1.n[1] = f0.n[1];
 		f1.n[2] = f0.n[2];
@@ -1634,9 +1629,6 @@ FSMesh* FETetGenMesher::CreateMesh(GSurfaceMeshObject* surfObj)
 		UpdateElementPartitioning(surfObj, pmesh);
 	}
 
-	// update faces
-	pmesh->SmoothByPartition();
-
 	// associate the FE nodes with the GNodes
 	/*	GObject* po = pm->GetGObject();
 	double R2 = pmesh->GetBoundingBox().GetMaxExtent();
@@ -1807,7 +1799,7 @@ void FETetGenMesher::UpdateElementPartitioning(GObject* po, FSMesh* pmesh)
 }
 
 //=============================================================================
-FEConvexHullMesher::FEConvexHullMesher()
+FEConvexHullMesher::FEConvexHullMesher(GObject& o) : FEMesher(o)
 {
 
 }

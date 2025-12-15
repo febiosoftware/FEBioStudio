@@ -214,42 +214,8 @@ for item in ${docs[@]}; do
     cp $item $UPLOAD_DIR/doc
 done
 
-# Create SDK
-sdkDirs=(
-    FECore
-    FEBioMech
-    FEBioMix
-    FEBioFluid
-    FEBioRVE
-    FEBioPlot
-    FEBioXML
-    FEBioLib
-)
-
-sdkLibs=(
-    libfecore.so
-    libfebiomech.so
-    libfebiomix.so
-    libfebiofluid.so
-    libfebiorve.so
-    libfebioplot.a
-    libxml.a
-    libfebiolib.so
-)
-
-mkdir $RELEASE_DIR/sdk
-mkdir $RELEASE_DIR/sdk/include
-mkdir $RELEASE_DIR/sdk/lib
-
-for item in ${sdkDirs[@]}; do
-    mkdir $RELEASE_DIR/sdk/include/$item
-    cp $FEBIO_REPO/$item/*.h $RELEASE_DIR/sdk/include/$item
-    cp $FEBIO_REPO/$item/*.hpp $RELEASE_DIR/sdk/include/$item
-done
-
-for item in ${sdkLibs[@]}; do
-    cp $FEBIO_REPO/cmbuild/lib/$item $RELEASE_DIR/sdk/lib
-done
+# Copy sdk to release dir and zip it for upload
+cp -r $FEBIO_REPO/febio4-sdk $RELEASE_DIR/sdk
 
 cd $RELEASE_DIR/sdk
 zip -r $UPLOAD_DIR/sdk.zip include

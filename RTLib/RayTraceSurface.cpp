@@ -44,13 +44,13 @@ void RayTraceSurface::create(size_t W, size_t H)
 	if (d) delete d;
 	w = W;
 	h = H;
-	d = new float[w * h * 4];
-	memset(d, 0, w * h * 4);
+	d = new float[w * h * 5];
+	memset(d, 0, w * h * 5);
 }
 
 float* RayTraceSurface::value(size_t x, size_t y)
 {
-	return d + ((y * w + x) << 2);
+	return d + ((y * w + x)*5);
 }
 
 GLColor RayTraceSurface::colorValue(size_t x, size_t y)

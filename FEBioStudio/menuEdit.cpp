@@ -50,6 +50,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GCurveObject.h>
+#include <GeomLib/GeomTools.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/FEMeshOverlap.h>
 #include <MeshLib/FSFindElement.h>
@@ -240,7 +241,7 @@ void CMainWindow::on_actionClearSelection_triggered()
 			{
 			case SELECT_OBJECT  : doc->DoCommand(new CCmdSelectObject  (mdl, 0,    false), "<empty>"); break;
 			case SELECT_PART    : doc->DoCommand(new CCmdSelectPart    (mdl, 0, 0, false), "<empty>"); break;
-			case SELECT_FACE    : doc->DoCommand(new CCmdSelectSurface (mdl, 0, 0, false), "<empty>"); break;
+			case SELECT_SURF    : doc->DoCommand(new CCmdSelectSurface (mdl, 0, 0, false), "<empty>"); break;
 			case SELECT_EDGE    : doc->DoCommand(new CCmdSelectEdge    (mdl, 0, 0, false), "<empty>"); break;
 			case SELECT_NODE    : doc->DoCommand(new CCmdSelectNode    (mdl, 0, 0, false), "<empty>"); break;
 			case SELECT_DISCRETE: doc->DoCommand(new CCmdSelectDiscrete(mdl, 0, 0, false), "<empty>"); break;
@@ -468,6 +469,7 @@ void CMainWindow::on_actionHideUnselected_triggered()
 	{
 		Post::CGLModel& mdl = *postDoc->GetGLModel();
 		mdl.HideUnselectedElements();
+		mdl.UpdateMeshVisibility();
 		postDoc->UpdateSelection();
 		postDoc->UpdateFEModel();
 		RedrawGL();
@@ -552,6 +554,72 @@ vector<int> findNodesByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
 		if (box.IsInside(ri))
 		{
 			items.push_back(i);
+		}
+	}
+
+	return items;
+}
+
+vector<int> findEdgesByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
+{
+	BOX box(r0, r1);
+	vector<int> items;
+	for (int i = 0; i < pm->Edges(); ++i)
+	{
+		FSEdge& edge = pm->Edge(i);
+		for (int j = 0; j < edge.Nodes(); ++j)
+		{
+			int nj = edge.n[j];
+			vec3d rj = pm->NodePosition(nj);
+			if (box.IsInside(rj))
+			{
+				items.push_back(i);
+				break;
+			}
+		}
+	}
+
+	return items;
+}
+
+vector<int> findFacesByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
+{
+	BOX box(r0, r1);
+	vector<int> items;
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		FSFace& face = pm->Face(i);
+		for (int j = 0; j < face.Nodes(); ++j)
+		{
+			int nj = face.n[j];
+			vec3d rj = pm->NodePosition(nj);
+			if (box.IsInside(rj))
+			{
+				items.push_back(i);
+				break;
+			}
+		}
+	}
+
+	return items;
+}
+
+vector<int> findElemsByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
+{
+	BOX box(r0, r1);
+	vector<int> items;
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FSElement& el = pm->Element(i);
+		for (int j=0; j < el.Nodes(); ++j)
+		{
+			int nj = el.m_node[j];
+			vec3d rj = pm->NodePosition(nj);
+			if (box.IsInside(rj))
+			{
+				items.push_back(i);
+				break;
+			}
 		}
 	}
 
@@ -701,6 +769,9 @@ void CMainWindow::on_actionFind_triggered()
 			switch (nitem)
 			{
 			case ITEM_NODE: items = findNodesByRange(pm, dlg.m_min, dlg.m_max); break;
+			case ITEM_EDGE: items = findEdgesByRange(pm, dlg.m_min, dlg.m_max); break;
+			case ITEM_FACE: items = findFacesByRange(pm, dlg.m_min, dlg.m_max); break;
+			case ITEM_ELEM: items = findElemsByRange(pm, dlg.m_min, dlg.m_max); break;
 			}
 		}
 		else if (dlg.m_method == 3)
@@ -859,7 +930,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 		switch (nsel)
 		{
 		case SELECT_PART: snprintf(szname, sizeof szname, "Part%02d", nparts); break;
-		case SELECT_FACE: snprintf(szname, sizeof szname, "Surface%02d", nsurfs); break;
+		case SELECT_SURF: snprintf(szname, sizeof szname, "Surface%02d", nsurfs); break;
 		case SELECT_EDGE: snprintf(szname, sizeof szname, "EdgeSet%02d", nedges); break;
 		case SELECT_NODE: snprintf(szname, sizeof szname, "Nodeset%02d", nnodes); break;
 		default:
@@ -958,7 +1029,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 				UpdateModel(pg);
 			}
 			break;
-			case SELECT_FACE:
+			case SELECT_SURF:
 			{
 				GFaceList* pg = new GFaceList(mdl, dynamic_cast<GFaceSelection*>(psel));
 				pg->SetName(szname);
@@ -1074,11 +1145,23 @@ void CMainWindow::on_actionCollapseTransform_triggered()
 		return;
 	}
 
+	// make sure the objects are all editable meshes
+	std::vector<GMeshObject*> objList;
 	for (int i = 0; i < sel->Size(); ++i)
 	{
-		GObject* po = sel->Object(i);
-		po->CollapseTransform();
+		GMeshObject* po = dynamic_cast<GMeshObject*>(sel->Object(i));
+		if (po == nullptr)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Collapsing transforms can only be done on editable meshes.");
+			return;
+		}
+		objList.push_back(po);
 	}
+
+	// apply the collapse
+	// TODO: put this is a command
+	for (auto po : objList) po->CollapseTransform();
+
 	RedrawGL();
 }
 
@@ -1102,7 +1185,7 @@ void CMainWindow::on_actionClone_triggered()
 		GModel& m = *doc->GetGModel();
 
 		// clone the object
-		GObject* pco = m.CloneObject(po);
+		GObject* pco = GeomTools::CloneObject(po);
 		if (pco == 0)
 		{
 			QMessageBox::critical(this, "FEBio Studio", "Could not clone this object.");
@@ -1122,37 +1205,71 @@ void CMainWindow::on_actionClone_triggered()
 	}
 }
 
-static GObject* copyObject = nullptr;
+static std::vector<GObject*> copyObject;
+void clearCopiedObjects()
+{
+	for (auto po : copyObject) delete po;
+	copyObject.clear();
+}
 
 void CMainWindow::on_actionCopyObject_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	// get the active object
-	GObject* po = doc->GetActiveObject();
-	if (po == 0)
+	if (doc)
 	{
-		QMessageBox::critical(this, "FEBio Studio", "You need to select an object first.");
-		return;
+		// get the active object
+		GObjectSelection* sel = dynamic_cast<GObjectSelection*>(doc->GetCurrentSelection());
+		if (sel == nullptr)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "You need to select an object first.");
+			return;
+		}
+
+		clearCopiedObjects();
+
+		// clone the object
+		for (int i = 0; i < sel->Size(); ++i)
+		{
+			GObject* po = sel->Object(i);
+			GObject* pco = GeomTools::CloneObject(po);
+			if (pco == nullptr)
+			{
+				QMessageBox::critical(this, "FEBio Studio", "Could not clone the selection.");
+				return;
+			}
+
+			// copy the name
+			pco->SetName(po->GetName());
+
+			// store this object
+			copyObject.push_back(pco);
+		}
 	}
 
-	// get the model
-	GModel& m = *doc->GetGModel();
-
-	// clone the object
-	GObject* pco = m.CloneObject(po);
-	if (pco == nullptr)
+	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(GetDocument());
+	if (postDoc)
 	{
-		QMessageBox::critical(this, "FEBio Studio", "Could not clone this object.");
-		return;
+		GObject* po = postDoc->GetActiveObject();
+		if (po == nullptr)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Nothing to copy.");
+			return;
+		}
+
+		GObject* pco = po->Clone();
+		if (pco == nullptr)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Could not clone the object.");
+			return;
+		}
+
+		// copy the name
+		pco->SetName(po->GetName());
+
+		// store this object
+		clearCopiedObjects();
+		copyObject.push_back(pco);
 	}
-
-	// copy the name
-	pco->SetName(po->GetName());
-
-	// store this object
-	copyObject = pco;
 }
 
 void CMainWindow::on_actionPasteObject_triggered()
@@ -1160,7 +1277,7 @@ void CMainWindow::on_actionPasteObject_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	if (copyObject == nullptr)
+	if (copyObject.empty())
 	{
 		QMessageBox::critical(this, "FEBio Studio", "No object to paste.");
 		return;
@@ -1169,35 +1286,47 @@ void CMainWindow::on_actionPasteObject_triggered()
 	// get the model
 	GModel& m = *doc->GetGModel();
 
+	CCmdGroup* cmd = new CCmdGroup("Paste Objects");
+
 	// we need to make sure that the object has a unique name.
-	string nameBase = copyObject->GetName();
-	string name = nameBase;
-	GObject* po = nullptr;
-	do
+	BOX box;
+	for (int i=0; i<copyObject.size(); ++i)
 	{
-		po = m.FindObject(name);
-		int n = 1;
-		if (po)
+		GObject* pco = copyObject[i];
+		string nameBase = pco->GetName();
+		string name = nameBase;
+		GObject* po = nullptr;
+		do
 		{
-			stringstream ss;
-			ss << nameBase << "(" << n++ << ")";
-			name = ss.str();
-		}
-	} while (po);
-	copyObject->SetName(name);
+			po = m.FindObject(name);
+			int n = 1;
+			if (po)
+			{
+				stringstream ss;
+				ss << nameBase << "(" << n++ << ")";
+				name = ss.str();
+			}
+		} while (po);
+		pco->SetName(name);
 
-	// since the copy object was created in another model,
-	// it is possible that its items IDs are already used in this model. 
-	// therefore, we reindex the object
-	copyObject->Reindex();
+		// since the copy object was created in another model,
+		// it is possible that its items IDs are already used in this model. 
+		// therefore, we reindex the object
+		pco->Reindex();
 
-	// add and select the new object
-	doc->DoCommand(new CCmdAddAndSelectObject(&m, copyObject));
+		// add and select the new object
+		cmd->AddCommand(new CCmdAddObject(&m, pco));
+		copyObject[i] = nullptr;
+
+		box += pco->GetGlobalBox();
+	}
+	copyObject.clear();
+
+	doc->DoCommand(cmd);
+
 	GLScene* scene = doc->GetScene();
-	if (scene)
+	if (scene && box.IsValid())
 	{
-		BOX box = copyObject->GetGlobalBox();
-
 		double f = box.GetMaxExtent();
 		if (f == 0) f = 1;
 
@@ -1205,9 +1334,7 @@ void CMainWindow::on_actionPasteObject_triggered()
 
 		cam.SetTarget(box.Center());
 		cam.SetTargetDistance(2.0 * f);
-		cam.SetOrientation(copyObject->GetRenderTransform().GetRotationInverse());
 	}
-	copyObject = nullptr;
 
 	// update windows
 	Update(0, true);
@@ -1232,7 +1359,7 @@ void CMainWindow::on_actionCloneGrid_triggered()
 		GModel& m = *doc->GetGModel();
 
 		// clone the object
-		vector<GObject*> newObjects = m.CloneGrid(po, dlg.m_rangeX[0], dlg.m_rangeX[1], dlg.m_rangeY[0], dlg.m_rangeY[1], dlg.m_rangeZ[0], dlg.m_rangeZ[1], dlg.m_inc[0], dlg.m_inc[1], dlg.m_inc[2]);
+		vector<GObject*> newObjects = GeomTools::CloneGrid(po, dlg.m_rangeX[0], dlg.m_rangeX[1], dlg.m_rangeY[0], dlg.m_rangeY[1], dlg.m_rangeZ[0], dlg.m_rangeZ[1], dlg.m_inc[0], dlg.m_inc[1], dlg.m_inc[2]);
 		if (newObjects.empty())
 		{
 			QMessageBox::critical(this, "FEBio Studio", "Failed to grid clone this object");
@@ -1270,7 +1397,7 @@ void CMainWindow::on_actionCloneRevolve_triggered()
 	{
 		GModel& m = *doc->GetGModel();
 
-		vector<GObject*> newObjects = m.CloneRevolve(po, dlg.m_count, dlg.m_range, dlg.m_spiral, dlg.m_center, dlg.m_axis, dlg.m_rotateClones);
+		vector<GObject*> newObjects = GeomTools::CloneRevolve(po, dlg.m_count, dlg.m_range, dlg.m_spiral, dlg.m_center, dlg.m_axis, dlg.m_rotateClones);
 		if (newObjects.empty())
 		{
 			QMessageBox::critical(this, "FEBio Studio", "Failed to revolve clone this object");
@@ -1394,12 +1521,23 @@ void CMainWindow::on_actionDetach_triggered()
 		return;
 	}
 
+	GObject* poa = doc->GetActiveObject();
+	if (poa == nullptr)
+	{
+		QMessageBox::critical(this, "Detach Selection", "No object selected.");
+		return;
+	}
+
+	GMeshObject* po = dynamic_cast<GMeshObject*>(doc->GetActiveObject());
+	if (po == nullptr)
+	{
+		QMessageBox::critical(this, "Detach Selection", "The Detach tool only works with editable meshes.");
+		return;
+	}
+
 	CDlgDetachSelection dlg(this);
 	if (dlg.exec())
 	{
-		GMeshObject* po = dynamic_cast<GMeshObject*>(doc->GetActiveObject()); assert(po);
-		if (po == 0) return;
-
 		doc->SetCurrentSelection(nullptr);
 
 		// create a new object for this mesh
@@ -1429,23 +1567,39 @@ void CMainWindow::on_actionExtract_triggered()
 		return;
 	}
 
+	GObject* po = doc->GetActiveObject();
+	if (po == nullptr)
+	{
+		QMessageBox::critical(this, "Extract Selection", "No active object.");
+		return;
+	}
+
+	if (po->GetFEMesh() == nullptr)
+	{
+		QMessageBox::critical(this, "Extract Selection", "This tool only works for meshed objects.");
+		return;
+	}
+
 	CDlgExtractSelection dlg(this);
 	if (dlg.exec())
 	{
-		GObject* po = doc->GetActiveObject();
-		if (po == 0) return;
-
 		// create a new object for this mesh
 		GMeshObject* newObject = ExtractSelection(po);
+		if (newObject)
+		{
+			// give the object a new name
+			string newName = dlg.getName().toStdString();
+			newObject->SetName(newName);
 
-		// give the object a new name
-		string newName = dlg.getName().toStdString();
-		newObject->SetName(newName);
+			// add it to the pile
+			doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject), newObject->GetNameAndType());
 
-		// add it to the pile
-		doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject), newObject->GetNameAndType());
-
-		UpdateModel(newObject, true);
+			UpdateModel(newObject, true);
+		}
+		else
+		{
+			QMessageBox::critical(this, "Extract Selection", "Failed to extract selection.");
+		}
 	}
 }
 
@@ -1457,8 +1611,14 @@ void CMainWindow::on_actionPurge_triggered()
 	CDlgPurge dlg(this);
 	if (dlg.exec())
 	{
+		FSProject& prj = doc->GetProject();
 		FSModel* ps = doc->GetFSModel();
-		ps->Purge(dlg.getOption());
+		switch (dlg.getOption())
+		{
+		case 0: ps->Purge(); break;
+		case 1: prj.PurgeSelections(); break;
+		case 2: ps->RemoveUnusedItems(); break;
+		}
 		doc->ClearCommandStack();
 		doc->SetModifiedFlag(true);
 		UpdateModel();
@@ -1496,7 +1656,7 @@ void CMainWindow::on_actionSurfaceToFaces_triggered()
 	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	if (doc->GetSelectionMode() != SELECT_FACE) return;
+	if (doc->GetSelectionMode() != SELECT_SURF) return;
 
 	GObject* po = doc->GetActiveObject();
 	if (po == nullptr) return;
@@ -1794,8 +1954,13 @@ void CMainWindow::on_actionMeasureTool_triggered()
 
 void CMainWindow::on_actionPlaneCutTool_triggered()
 {
-	if (ui->planeCutTool == nullptr) ui->planeCutTool = new CDlgPlaneCut(this);
-	ui->planeCutTool->show();
+	CGLView* glv = GetGLView();
+	if (glv)
+	{
+		if (ui->planeCutTool == nullptr) ui->planeCutTool = new CDlgPlaneCut(this);
+		ui->planeCutTool->setData(&glv->GetViewSettings(), glv->GetActiveScene());
+		ui->planeCutTool->show();
+	}
 }
 
 void CMainWindow::on_actionPickColor_triggered()

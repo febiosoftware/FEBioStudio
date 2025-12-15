@@ -222,7 +222,6 @@ public:
 public:
 	int			m_lid;		//!< local ID (zero-based index into element array)
 	int			m_MatID;	//!< material id
-	float		m_tex;		//!< element texture coordinate
 
 public:
 	vec3d	m_fiber;	//!< fiber orientation \todo maybe I can add an element attribute section

@@ -32,7 +32,7 @@ using namespace Post;
 //-----------------------------------------------------------------------------
 CGLDisplacementMap::CGLDisplacementMap(CGLModel* po) : CGLDataMap(po)
 {
-	AddIntParam(0, "data_field")->SetEnumNames("@data_vec3");
+	AddIntParam(0, "data_field")->SetEnumNames("@data_vec3_exp");
 	AddVecParam(vec3d(1,1,1), "scale_factor");
 
 	char szname[128] = { 0 };
@@ -91,7 +91,6 @@ void CGLDisplacementMap::Activate(bool b)
 		Post::FERefState& ref = *state->m_ref;
 		FSMeshBase* pm = state->GetFEMesh();
 		for (int i = 0; i<pm->Nodes(); ++i) pm->Node(i).r = to_vec3d(ref.m_Node[i].m_rt);
-		pm->UpdateNormals();
 	}
 }
 
@@ -239,6 +238,5 @@ void CGLDisplacementMap::UpdateNodes()
 	}
 
 	// update the normals
-	pm->UpdateNormals();
     pm->UpdateBoundingBox();
 }

@@ -184,6 +184,8 @@ bool FECVDDecimationModifier::Initialize(FSSurfaceMesh* pm)
 	{
 		FSFace& fi = pm->Face(i);
 
+		vec3d Nf = pm->FaceNormal(i);
+
 		// get the nodal coordinates
 		r[0] = pm->Node(fi.n[0]).r;
 		r[1] = pm->Node(fi.n[1]).r;
@@ -204,7 +206,7 @@ bool FECVDDecimationModifier::Initialize(FSSurfaceMesh* pm)
 			{
 				//normal vector to the jth node of the face
 				//step -1
-				vec3d p = to_vec3d(fi.m_nn[j]);
+				vec3d p = Nf; // TODO: used to be the normal at the node
 				vec3d r0 = pm->Node(fi.n[j]).r;
 
 				//step -2 

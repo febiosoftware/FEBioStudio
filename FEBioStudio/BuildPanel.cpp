@@ -45,7 +45,7 @@ void CBuildPanel::Update(bool breset)
 	CWindowPanel* p = ui->currentPanel();
 	if (p) p->Update(breset);
 	CGLDocument* doc = ui->mainWindow->GetGLDocument();
-	if (doc)
+	if (doc && breset)
 	{
 		ui->mainWindow->UpdateGLControlBar();
 		doc->UpdateSelection();

@@ -140,20 +140,6 @@ FSMesh* MMGRemesh::RemeshTET4(FSMesh* pm)
 		return nullptr;
 	}
 
-	// build the GID to SID map. We will use this later to reassign the SID's to the faces
-	int NS = 0;
-	for (int i = 0; i < NF; ++i)
-	{
-		FSFace& f = pm->Face(i);
-		if (f.m_gid > NS) NS = f.m_gid;
-	}
-	vector<int> ST(NS+1, 0);
-	for (int i = 0; i < NF; ++i)
-	{
-		FSFace& f = pm->Face(i);
-		ST[f.m_gid] = f.m_sid;
-	}
-
 	// build the MMG mesh
 	for (int i = 0; i < NN; ++i)
 	{
@@ -323,7 +309,6 @@ FSMesh* MMGRemesh::RemeshTET4(FSMesh* pm)
 		f.SetType(FE_FACE_TRI3);
 		int* n = f.n;
 		MMG3D_Get_triangle(mmgMesh, n, n + 1, n + 2, &f.m_gid, NULL);
-		f.m_sid = ST[f.m_gid];
 		f.n[0]--;
 		f.n[1]--;
 		f.n[2]--;
@@ -393,20 +378,6 @@ FSMesh* MMGRemesh::RemeshTRI3(FSMesh* pm)
 		assert(false);
 		SetError("Error in MMGS_Set_meshSize");
 		return nullptr;
-	}
-
-	// build the GID to SID map. We will use this later to reassign the SID's to the faces
-	int NS = 0;
-	for (int i = 0; i < NF; ++i)
-	{
-		FSFace& f = pm->Face(i);
-		if (f.m_gid > NS) NS = f.m_gid;
-	}
-	vector<int> ST(NS + 1, 0);
-	for (int i = 0; i < NF; ++i)
-	{
-		FSFace& f = pm->Face(i);
-		ST[f.m_gid] = f.m_sid;
 	}
 
 	// build the MMG mesh
@@ -568,7 +539,6 @@ FSMesh* MMGRemesh::RemeshTRI3(FSMesh* pm)
 		f.n[0] = el.m_node[0];
 		f.n[1] = el.m_node[1];
 		f.n[2] = el.m_node[2];
-//		f.m_sid = ST[f.m_gid];
 	}
 	// get the edges
 	for (int i = 0; i < NC; ++i)
@@ -647,20 +617,6 @@ FSSurfaceMesh* MMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 		assert(false);
 		SetError("Error in MMGS_Set_meshSize");
 		return nullptr;
-	}
-
-	// build the GID to SID map. We will use this later to reassign the SID's to the faces
-	int NS = 0;
-	for (int i = 0; i < NF; ++i)
-	{
-		FSFace& f = pm->Face(i);
-		if (f.m_gid > NS) NS = f.m_gid;
-	}
-	vector<int> ST(NS + 1, 0);
-	for (int i = 0; i < NF; ++i)
-	{
-		FSFace& f = pm->Face(i);
-		ST[f.m_gid] = f.m_sid;
 	}
 
 	// build the MMG mesh
@@ -815,7 +771,6 @@ FSSurfaceMesh* MMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 		face.n[0]--;
 		face.n[1]--;
 		face.n[2]--;
-		if (face.m_gid <= NS) face.m_sid = ST[face.m_gid];
 	}
 	// get the edges
 	for (int i = 0; i < NC; ++i)
@@ -895,20 +850,6 @@ FSSurfaceMesh* MMG2DRemesh::Apply(FSSurfaceMesh* pm)
 		assert(false);
 		SetError("Error in MMG2D_Set_meshSize");
 		return nullptr;
-	}
-
-	// build the GID to SID map. We will use this later to reassign the SID's to the faces
-	int NS = 0;
-	for (int i = 0; i < NF; ++i)
-	{
-		FSFace& f = pm->Face(i);
-		if (f.m_gid > NS) NS = f.m_gid;
-	}
-	vector<int> ST(NS + 1, 0);
-	for (int i = 0; i < NF; ++i)
-	{
-		FSFace& f = pm->Face(i);
-		ST[f.m_gid] = f.m_sid;
 	}
 
 	// build the MMG mesh
@@ -1080,7 +1021,6 @@ FSSurfaceMesh* MMG2DRemesh::Apply(FSSurfaceMesh* pm)
 		face.n[0]--;
 		face.n[1]--;
 		face.n[2]--;
-		if (face.m_gid <= NS) face.m_sid = ST[face.m_gid];
 	}
 
 	// get the edges

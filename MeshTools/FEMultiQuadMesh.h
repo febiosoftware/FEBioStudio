@@ -37,7 +37,7 @@ class FEMultiQuadMesh : public FEMesher
 {
 public:
 	// constructor
-	FEMultiQuadMesh();
+	FEMultiQuadMesh(GObject& o);
 
 	// destructor
 	virtual ~FEMultiQuadMesh();
@@ -49,7 +49,7 @@ public:
 	void SetElementType(int elemType);
 
 	// build the mesh from the object
-	bool Build(GObject* po);
+	bool Build();
 
 	// build the multi-quad data
 	virtual bool BuildMultiQuad();
@@ -99,9 +99,6 @@ protected:
 
 	int GetFaceEdgeNodeIndex(MBFace& f, int ne, int i);
 
-private:
-	FSMesh* BuildMesh(GObject* po) override { return nullptr; }
-
 protected:
 	class MQPoint
 	{
@@ -132,7 +129,6 @@ private:
 	bool	m_bquadMesh;
 
 protected:
-	GObject*		m_po;
 	vector<MBFace>	m_MBFace;
 	vector<MBEdge>	m_MBEdge;
 	vector<MBNode>	m_MBNode;
@@ -149,10 +145,10 @@ class FEMultiQuadMesher : public FEMultiQuadMesh
 	enum { DIVS, ELEM_TYPE };
 
 public:
-	FEMultiQuadMesher();
+	FEMultiQuadMesher(GObject& o);
 
 	// build the mesh
-	FSMesh* BuildMesh(GObject* po) override;
+	FSMesh* BuildMesh() override;
 
 	bool BuildMultiQuad() override;
 

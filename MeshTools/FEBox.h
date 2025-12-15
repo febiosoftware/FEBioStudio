@@ -39,8 +39,8 @@ public:
 	enum { SIMPLE, BUTTERFLY3D, BUTTERFLY2D };
 
 public:
-	FEBoxMesher();
-	FSMesh* BuildMesh(GObject* po) override;
+	FEBoxMesher(GObject& o);
+	FSMesh* BuildMesh() override;
 
 public:
 	void SetResolution(int nx, int ny, int nz);
@@ -74,8 +74,6 @@ protected:
 	}
 
 protected:
-	GBox*	m_pobj;
-
 	int		m_ctype;
 	int		m_nelem;	// element type
 	double	m_r;

@@ -26,8 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLDataMap.h"
-#include <GLWLib/GLLegendBar.h>
-#include <GLLib/ColorTexture.h>
 
 namespace Post {
 
@@ -42,8 +40,6 @@ class CGLColorMap : public CGLDataMap
 public:
 	CGLColorMap(CGLModel* po);
 	~CGLColorMap();
-
-	CColorTexture* GetColorMap() { return &m_Col; }
 
 	void Update(int ntime, float dt, bool breset) override;
 
@@ -67,11 +63,17 @@ public:
 	void DisplayNodalValues(bool b) { m_bDispNodeVals = b; }
 	bool DisplayNodalValues() { return m_bDispNodeVals; }
 
-	bool ShowLegend() { return m_pbar->visible(); }
-	void ShowLegend(bool b) { if (b) m_pbar->show(); else m_pbar->hide(); }
+	bool ShowLegend() { return GetBoolValue(SHOW_LEGEND); }
+	void ShowLegend(bool b) { SetBoolValue(SHOW_LEGEND, b); }
 
-	bool GetColorSmooth();
-	void SetColorSmooth(bool b);
+	bool GetColorSmooth() { return GetBoolValue(DATA_SMOOTH); }
+	void SetColorSmooth(bool b) { SetBoolValue(DATA_SMOOTH, b); }
+
+	int GetColorMap() { return GetIntValue(COLOR_MAP); }
+	void SetColorMap(int n) { SetIntValue(COLOR_MAP, n); }
+
+	int GetDivisions() { return GetIntValue(RANGE_DIVS); }
+	void SetDivisions(int n) { SetIntValue(RANGE_DIVS, n); }
 
 	GLColor GetInactiveColor();
 
@@ -84,18 +86,20 @@ private:
 
 	void Update() override;
 
+	void UpdateRange(int n0, int n1, float dt, bool breset);
+
+	void UpdateRenderMesh(int n0, int n1, float dt);
+
 protected:
 	int		m_nfield;
 	bool	m_breset;	// reset the range when the field has changed
 	DATA_RANGE	m_range;	// range for legend
 	vec3d	m_rmin, m_rmax;	// global indicators of min, max
 
+	std::vector<float> m_nodeData;
+
 public:
 	bool	m_bDispNodeVals;	// render nodal values
-
-	CColorTexture	m_Col;	// colormap used for rendering
-
-	GLLegendBar*	m_pbar;	// the legend bar
 
 	static int	m_defaultRngType;
 };

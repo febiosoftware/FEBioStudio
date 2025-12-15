@@ -37,10 +37,8 @@ extern double gain2(double x, double r, double n);
 
 //-----------------------------------------------------------------------------
 // Constructor
-FECylinder::FECylinder()
+FECylinder::FECylinder(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_r = 0.5;
 	m_nd = m_ns = 4;
 	m_nz = 8;
@@ -68,11 +66,8 @@ FECylinder::FECylinder()
 
 //-----------------------------------------------------------------------------
 // Build the mesh
-FSMesh* FECylinder::BuildMesh(GObject* po)
+FSMesh* FECylinder::BuildMesh()
 {
-	m_pobj = dynamic_cast<GCylinder*>(po);
-	if (m_pobj == nullptr) return nullptr;
-
 	m_ctype = GetIntValue(CTYPE);
 	switch (m_ctype)
 	{
@@ -88,10 +83,11 @@ FSMesh* FECylinder::BuildMesh(GObject* po)
 //-----------------------------------------------------------------------------
 bool FECylinder::BuildMultiBlock()
 {
-	assert(m_pobj);
+	GCylinder* po = dynamic_cast<GCylinder*>(&m_o);
+	if (po == nullptr) return false;
 
 	// get the object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double h = param.GetFloatValue(GCylinder::HEIGHT);
 
 	// get the mesh parameters
@@ -331,12 +327,6 @@ FSMesh* FECylinder::BuildButterfly()
 	// create the MB
 	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
 
-	// the Multi-block mesher will assign a different smoothing ID
-	// to each face, but we don't want that here. 
-	// For now, we autosmooth the mesh although we should think of a 
-	// better way
-	pm->AutoSmooth(60);
-
 	return pm;
 }
 
@@ -344,12 +334,13 @@ FSMesh* FECylinder::BuildButterfly()
 // Build a wedged mesh
 FSMesh* FECylinder::BuildWedged()
 {
-	assert(m_pobj);
+	GCylinder* po = dynamic_cast<GCylinder*>(&m_o);
+	if (po == nullptr) return nullptr;
 
 	int i, j, k;
 
 	// get the object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double R1 = param.GetFloatValue(GCylinder::RADIUS);
 	double h = param.GetFloatValue(GCylinder::HEIGHT);
 
@@ -535,7 +526,6 @@ FSMesh* FECylinder::BuildWedged()
 			pf->SetType(FE_FACE_QUAD4);
 //			pf->m_gid = k/(m_nd/4);
 			pf->m_gid = k/(m_nd/4) + 1;
-			pf->m_sid = 0;
 			pf->n[0] = NodeIndex(i  , m_ns, k  );
 			pf->n[1] = NodeIndex(i  , m_ns, k+1);
 			pf->n[2] = NodeIndex(i+1, m_ns, k+1);
@@ -549,7 +539,6 @@ FSMesh* FECylinder::BuildWedged()
 		pf->SetType(FE_FACE_TRI3);
 //		pf->m_gid = 4;
 		pf->m_gid = 0;
-		pf->m_sid = 1;
 		pf->n[0] = NodeIndex(0, 0, 0);
 		pf->n[1] = NodeIndex(0, 1, k+1);
 		pf->n[2] = NodeIndex(0, 1, k);
@@ -561,7 +550,6 @@ FSMesh* FECylinder::BuildWedged()
 			pf->SetType(FE_FACE_QUAD4);
 			pf->m_gid = 0;
 //			pf->m_gid = 4;
-			pf->m_sid = 1;
 			pf->n[0] = NodeIndex(0,j  ,k+1);
 			pf->n[1] = NodeIndex(0,j+1,k+1);
 			pf->n[2] = NodeIndex(0,j+1,k  );
@@ -574,7 +562,6 @@ FSMesh* FECylinder::BuildWedged()
 	{
 		pf->SetType(FE_FACE_TRI3);
 		pf->m_gid = 5;
-		pf->m_sid = 2;
 		pf->n[0] = NodeIndex(m_nz, 0, 0);
 		pf->n[1] = NodeIndex(m_nz, 1, k);
 		pf->n[2] = NodeIndex(m_nz, 1, k+1);
@@ -585,7 +572,6 @@ FSMesh* FECylinder::BuildWedged()
 		{
 			pf->SetType(FE_FACE_QUAD4);
 			pf->m_gid = 5;
-			pf->m_sid = 2;
 			pf->n[0] = NodeIndex(m_nz,j  ,k  );
 			pf->n[1] = NodeIndex(m_nz,j+1,k  );
 			pf->n[2] = NodeIndex(m_nz,j+1,k+1);
@@ -631,10 +617,8 @@ FSMesh* FECylinder::BuildWedged()
 // C Y L I N D E R 2
 //=============================================================================
 // Constructor
-FECylinder2::FECylinder2()
+FECylinder2::FECylinder2(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_r = 0.5;
 	m_nd = m_ns = 4;
 	m_nz = 8;
@@ -658,13 +642,9 @@ FECylinder2::FECylinder2()
 	AddBoolParam(m_br, "br", "R-mirrored bias");
 }
 
-//-----------------------------------------------------------------------------
 // Build the mesh
-FSMesh* FECylinder2::BuildMesh(GObject* po)
+FSMesh* FECylinder2::BuildMesh()
 {
-	m_pobj = dynamic_cast<GCylinder2*>(po);
-	if (m_pobj == nullptr) return nullptr;
-
 	m_ctype = GetIntValue(CTYPE);
 	switch (m_ctype)
 	{
@@ -681,10 +661,11 @@ FSMesh* FECylinder2::BuildMesh(GObject* po)
 // Build a butterfly mesh
 FSMesh* FECylinder2::BuildButterfly()
 {
-	assert(m_pobj);
+	GCylinder2* po = dynamic_cast<GCylinder2*>(&m_o);
+	if (po == nullptr) return nullptr;
 
 	// get the object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double Rx = param.GetFloatValue(GCylinder2::RADIUSX);
 	double Ry = param.GetFloatValue(GCylinder2::RADIUSY);
 	double h  = param.GetFloatValue(GCylinder2::HEIGHT );
@@ -926,12 +907,6 @@ FSMesh* FECylinder2::BuildButterfly()
 	// update the mesh
 	pm->UpdateMesh();
 
-	// the Multi-block mesher will assign a different smoothing ID
-	// to each face, but we don't want that here. 
-	// For now, we autosmooth the mesh although we should think of a 
-	// better way
-	pm->AutoSmooth(60);
-
 	return pm;
 }
 
@@ -939,12 +914,13 @@ FSMesh* FECylinder2::BuildButterfly()
 // Build a wedged mesh
 FSMesh* FECylinder2::BuildWedged()
 {
-	assert(m_pobj);
+	GCylinder2* po = dynamic_cast<GCylinder2*>(&m_o);
+	if (po == nullptr) return nullptr;
 
 	int i, j, k;
 
 	// get the object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double Rx = param.GetFloatValue(GCylinder2::RADIUSX);
 	double Ry = param.GetFloatValue(GCylinder2::RADIUSY);
 	double h  = param.GetFloatValue(GCylinder2::HEIGHT );
@@ -1131,7 +1107,6 @@ FSMesh* FECylinder2::BuildWedged()
 			pf->SetType(FE_FACE_QUAD4);
 //			pf->m_gid = k/(m_nd/4);
 			pf->m_gid = k/(m_nd/4) + 1;
-			pf->m_sid = 0;
 			pf->n[0] = NodeIndex(i  , m_ns, k  );
 			pf->n[1] = NodeIndex(i  , m_ns, k+1);
 			pf->n[2] = NodeIndex(i+1, m_ns, k+1);
@@ -1145,7 +1120,6 @@ FSMesh* FECylinder2::BuildWedged()
 		pf->SetType(FE_FACE_TRI3);
 //		pf->m_gid = 4;
 		pf->m_gid = 0;
-		pf->m_sid = 1;
 		pf->n[0] = NodeIndex(0, 0, 0);
 		pf->n[1] = NodeIndex(0, 1, k+1);
 		pf->n[2] = NodeIndex(0, 1, k);
@@ -1157,7 +1131,6 @@ FSMesh* FECylinder2::BuildWedged()
 			pf->SetType(FE_FACE_QUAD4);
 			pf->m_gid = 0;
 //			pf->m_gid = 4;
-			pf->m_sid = 1;
 			pf->n[0] = NodeIndex(0,j  ,k+1);
 			pf->n[1] = NodeIndex(0,j+1,k+1);
 			pf->n[2] = NodeIndex(0,j+1,k  );
@@ -1170,7 +1143,6 @@ FSMesh* FECylinder2::BuildWedged()
 	{
 		pf->SetType(FE_FACE_TRI3);
 		pf->m_gid = 5;
-		pf->m_sid = 2;
 		pf->n[0] = NodeIndex(m_nz, 0, 0);
 		pf->n[1] = NodeIndex(m_nz, 1, k);
 		pf->n[2] = NodeIndex(m_nz, 1, k+1);
@@ -1181,7 +1153,6 @@ FSMesh* FECylinder2::BuildWedged()
 		{
 			pf->SetType(FE_FACE_QUAD4);
 			pf->m_gid = 5;
-			pf->m_sid = 2;
 			pf->n[0] = NodeIndex(m_nz,j  ,k  );
 			pf->n[1] = NodeIndex(m_nz,j+1,k  );
 			pf->n[2] = NodeIndex(m_nz,j+1,k+1);

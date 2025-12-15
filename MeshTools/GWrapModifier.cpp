@@ -228,15 +228,15 @@ void GWrapModifier::NormalProjection(GObject* ps, vector<vec3d>& DS, vector<int>
 	// calculate node normals
 	for (int ns = 0; ns < nsteps; ++ns)
 	{
-		vector<vec3d> N; 
-		N.assign(pm->Nodes(), vec3d(0,0,0));
+		vector<vec3d> N(pm->Nodes(), vec3d(0,0,0));
 		for (i=0; i<pm->Nodes(); ++i) pm->Node(i).m_ntag = 0;
 		for (i=0; i<pm->Faces(); ++i)
 		{
 			FSFace& f = pm->Face(i);
+			vec3d Nf = pm->FaceNormal(f);
 			for (j=0; j<f.Nodes(); ++j) 
 			{
-				N[f.n[j]] += to_vec3d(f.m_nn[j]);
+				N[f.n[j]] += Nf;
 				pm->Node(f.n[j]).m_ntag = 1;
 			}
 		}
@@ -295,7 +295,6 @@ void GWrapModifier::NormalProjection(GObject* ps, vector<vec3d>& DS, vector<int>
 				pm->Node(i).r += DS[i];
 			}
 		}
-		if (ns != nsteps - 1) pm->UpdateNormals();
 	}
 
 	// restore original nodal position

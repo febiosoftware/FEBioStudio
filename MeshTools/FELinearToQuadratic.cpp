@@ -550,7 +550,6 @@ FSMesh* FELinearToQuadratic::Apply(FSMesh* pm)
             case 3:
                 f1.SetType(FE_FACE_TRI6);
                 f1.m_gid = f0.m_gid;
-                f1.m_sid = f0.m_sid;
                 f1.n[0] = f0.n[0];
                 f1.n[1] = f0.n[1];
                 f1.n[2] = f0.n[2];
@@ -568,7 +567,6 @@ FSMesh* FELinearToQuadratic::Apply(FSMesh* pm)
             case 4:
                 f1.SetType(FE_FACE_QUAD8);
                 f1.m_gid = f0.m_gid;
-                f1.m_sid = f0.m_sid;
                 f1.n[0] = f0.n[0];
                 f1.n[1] = f0.n[1];
                 f1.n[2] = f0.n[2];
@@ -629,9 +627,6 @@ void FESolidSmooth::Apply(FSMesh* pmesh)
     vector<vec3d> rs; rs.assign(NN, vec3d(0,0,0));
     vector<int> tag; tag.assign(NN, 0);
     
-    // make sure normals are up to date
-    pmesh->UpdateNormals();
-    
     // tag all corner nodes
     // corner nodes = 1
     // edge nodes = 0
@@ -659,14 +654,9 @@ void FESolidSmooth::Apply(FSMesh* pmesh)
     }
     
     // calculate surface normals
-    vector<vec3d> sn; sn.assign(NN, vec3d(0,0,0));
-    for (int i=0; i<NF; ++i)
-    {
-        FSFace& f = pmesh->Face(i);
-        for (int j=0; j<f.Nodes(); ++j) sn[f.n[j]] += to_vec3d(f.m_nn[j]);
-    }
-    for (int i=0; i<NN; ++i) sn[i].Normalize();
-    
+	vector<vec3d> sn = pmesh->NodeNormals();
+	assert(sn.size() == NN);
+
     // build the node-node list
 	FSSurfaceNodeNodeList NNL(pmesh);
 
@@ -952,7 +942,6 @@ FSMesh* FEQuadraticToLinear::Apply(FSMesh* pm)
             default: break;
         }
         f1.m_gid = f0.m_gid;
-        f1.m_sid = f0.m_sid;
         for (int j=0; j<f1.Nodes(); ++j) {
             f1.n[j] = pm->Node(f0.n[j]).m_ntag;
             f1.m_nbr[j] = f0.m_nbr[j];

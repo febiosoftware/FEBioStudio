@@ -55,16 +55,14 @@ public:
 	//! Get the local positions of a face
 	void FaceNodeLocalPositions(const FSFace& f, vec3d* r) const;
 
+	//! Get the approximate normal of face
+	vec3d FaceNormal(const FSFace& f) const;
+	vec3d FaceNormal(int faceIndex) const;
+
+	// Calculate averaged node normals
+	std::vector<vec3d> NodeNormals() const;
+
 public:
-	//! Calculate smoothing IDs based on face normals
-	void AutoSmooth(double angleDegrees, bool creaseInternal = true);
-
-	//! Assign smoothing IDs based on surface partition
-	void SmoothByPartition();
-
-	//! Update the normals
-	void UpdateNormals();
-
 	//! Update item visibility
 	virtual void UpdateItemVisibility() {}
 
@@ -78,10 +76,6 @@ public:
 
 	//! Get the world positions of face nodes
 	void FaceNodePosition(const FSFace& f, vec3d* r) const;
-	//! Get the normals of face nodes
-	void FaceNodeNormals(const FSFace& f, vec3f* n) const;
-	//! Get the texture coordinates of face nodes
-	void FaceNodeTexCoords(const FSFace& f, float* t) const;
 
 	//! Clear the selection of all faces
 	void ClearFaceSelection();
@@ -136,6 +130,8 @@ protected:
 	void RemoveEdges(int ntag);
 	//! Remove faces with specified tag
 	void RemoveFaces(int ntag);
+
+	void AddFace(const FSFace& face);
 
 protected:
 	//! Vector of FE faces

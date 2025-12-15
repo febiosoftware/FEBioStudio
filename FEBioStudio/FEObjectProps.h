@@ -253,6 +253,7 @@ private:
 	CModelViewer* m_wnd;
 	FSProject& m_prj;
 	int	m_actionIndex;
+	int m_pltFormatIndex;
 };
 
 class CDiscreteObjectProps : public CFSObjectProps_T<GDiscreteObject>

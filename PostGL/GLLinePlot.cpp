@@ -73,13 +73,6 @@ CGLLinePlot::CGLLinePlot()
 
 	m_lineData = nullptr;
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
-	bar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
-	bar->copy_label(szname);
-	bar->ShowTitle(true);
-	bar->hide();
-	SetLegendBar(bar);
-
 	UpdateData(false);
 }
 
@@ -118,12 +111,6 @@ bool CGLLinePlot::UpdateData(bool bsave)
 		m_range.mintype = GetIntValue(MIN_RANGE_TYPE);
 		if (m_range.maxtype == RANGE_USER) m_range.max = GetFloatValue(USER_MAX);
 		if (m_range.mintype == RANGE_USER) m_range.min = GetFloatValue(USER_MIN);
-
-		if (GetLegendBar())
-		{
-			bool b = (m_showLegend && (m_ncolor != 0));
-			if (b) GetLegendBar()->show(); else GetLegendBar()->hide();
-		}
 
 		Update(GetModel()->CurrentTimeIndex(), 0.0, false);
 	}
@@ -179,16 +166,12 @@ void CGLLinePlot::Render(GLRenderEngine& re, GLContext& rc)
 		int NL = lineData.Lines();
 		if (NL > 0)
 		{
-			re.pushState();
+			switch (m_nmode)
 			{
-				switch (m_nmode)
-				{
-				case 0: RenderLines(re); break;
-				case 1: Render3DLines(re); break;
-				case 2: Render3DSmoothLines(re); break;
-				}
+			case 0: RenderLines(re); break;
+			case 1: Render3DLines(re); break;
+			case 2: Render3DSmoothLines(re); break;
 			}
-			re.popState();
 		}
 	}
 }
@@ -333,11 +316,6 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 	m_range.min = vmin;
 	m_range.max = vmax;
 
-	if (GetLegendBar())
-	{
-		GetLegendBar()->SetRange(m_range.min, m_range.max);
-	}
-
 	// update the meshes
 	switch (m_nmode)
 	{
@@ -379,7 +357,7 @@ void CGLLinePlot::UpdateLineMesh(FEState& s, int ntime)
 	}
 	else if (m_ncolor == COLOR_SEGMENT)
 	{
-		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+		const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
 		for (int i = 0; i < NL; ++i)
 		{
@@ -400,7 +378,7 @@ void CGLLinePlot::UpdateLineMesh(FEState& s, int ntime)
 	}
 	else
 	{
-		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+		const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
 		float vmin = m_range.min;
 		float vmax = m_range.max;
@@ -687,7 +665,7 @@ void CGLLinePlot::UpdateSmooth3DLines(FEState& s, int ntime)
 	float vmax = m_range.max;
 	if (vmin == vmax) vmax++;
 
-	CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
 	const int NSEG = 12; // length segments of smooth path
 	const int NDIV = 8; // radial divisions

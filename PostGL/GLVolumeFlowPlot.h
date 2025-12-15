@@ -31,7 +31,7 @@ SOFTWARE.*/
 
 namespace Post {
 
-class GLVolumeFlowPlot : public CGLLegendPlot
+class GLVolumeFlowPlot : public CGLPlot
 {
 	enum {DATA_FIELD, COLOR_MAP, SMOOTH_COLOR_MAP, RANGE_DIVISIONS, OPACITY_SCALE, OPACITY_STRENGTH, MESH_DIVISIONS, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN};
 
@@ -64,6 +64,8 @@ public:
 	void Update(int ntime, float dt, bool breset) override;
 
 	bool UpdateData(bool bsave = true) override;
+
+	LegendData GetLegendData() const override;
 
 private:
 	void CreateSlices(std::vector<Slice>& slice, const vec3d& normal);

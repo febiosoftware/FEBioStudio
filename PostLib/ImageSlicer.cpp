@@ -305,7 +305,6 @@ void CImageSlicer::Render(GLRenderEngine& re, GLContext& rc)
 
 	BOX box = GetImageModel()->GetBoundingBox();
 
-	re.pushState();
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::TEXTURE_2D, false);
 	re.setTexture(m_tex);
 
@@ -343,6 +342,4 @@ void CImageSlicer::Render(GLRenderEngine& re, GLContext& rc)
 		re.texCoord2d(1, 1); re.vertex(vec3d(x[3], y[3], z[3]));
 	}
 	re.end();
-
-	re.popState();
 }

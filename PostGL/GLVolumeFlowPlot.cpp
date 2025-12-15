@@ -56,7 +56,7 @@ GLVolumeFlowPlot::GLVolumeFlowPlot()
 	AddDoubleParam(0.2, "opacity_scale")->SetFloatRange(0.0, 1.0);
 	AddDoubleParam(1.0, "opacity_strength")->SetFloatRange(0.001, 0.999);
 	AddIntParam(1, "mesh_subdivisions")->SetIntRange(1, MAX_MESH_DIVS);
-	AddBoolParam(false, "show_legend");
+	AddBoolParam(true, "show_legend");
 	AddIntParam(0, "max_range_type")->SetEnumNames("dynamic\0static\0user\0");
 	AddDoubleParam(0, "user_max");
 	AddIntParam(0, "min_range_type")->SetEnumNames("dynamic\0static\0user\0");
@@ -70,11 +70,7 @@ GLVolumeFlowPlot::GLVolumeFlowPlot()
 	m_meshDivs = 1;
 	m_range.min = m_range.max = 0;
 	m_range.mintype = m_range.maxtype = RANGE_DYNAMIC;
-
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
-	bar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
-	bar->copy_label(szname);
-	SetLegendBar(bar);
+	m_range.valid = true;
 
 	UpdateData(false);
 }
@@ -91,11 +87,6 @@ bool GLVolumeFlowPlot::UpdateData(bool bsave)
 		if (m_alpha != GetFloatValue(OPACITY_SCALE)) { m_alpha = GetFloatValue(OPACITY_SCALE); update = true; };
 		if (m_gain != GetFloatValue(OPACITY_STRENGTH)) { m_gain = GetFloatValue(OPACITY_STRENGTH); update = true; };
 		if (m_meshDivs != GetIntValue(MESH_DIVISIONS)) { m_meshDivs = GetIntValue(MESH_DIVISIONS); update = true; };
-		if (GetLegendBar())
-		{
-			bool b = GetBoolValue(SHOW_LEGEND);
-			if (b) GetLegendBar()->show(); else GetLegendBar()->hide();
-		}
 		if (m_range.maxtype != GetIntValue(MAX_RANGE_TYPE)) { m_range.maxtype = GetIntValue(MAX_RANGE_TYPE); update = true; }
 		if (m_range.mintype != GetIntValue(MIN_RANGE_TYPE)) { m_range.mintype = GetIntValue(MIN_RANGE_TYPE); update = true; }
 		if (m_range.maxtype == RANGE_USER) m_range.max = GetFloatValue(USER_MAX);
@@ -115,10 +106,6 @@ bool GLVolumeFlowPlot::UpdateData(bool bsave)
 		SetFloatValue(OPACITY_SCALE, m_alpha);
 		SetFloatValue(OPACITY_STRENGTH, m_gain);
 		SetIntValue(MESH_DIVISIONS, m_meshDivs);
-		if (GetLegendBar())
-		{
-			SetBoolValue(SHOW_LEGEND, GetLegendBar()->visible());
-		}
 		SetIntValue(MAX_RANGE_TYPE, m_range.maxtype);
 		SetIntValue(MIN_RANGE_TYPE, m_range.mintype);
 		SetFloatValue(USER_MAX, m_range.max);
@@ -309,11 +296,6 @@ void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 	m_range.min = fmin;
 	m_range.max = fmax;
 	if (fmax == fmin) m_range.max += 1;
-
-	if (GetLegendBar())
-	{
-		GetLegendBar()->SetRange(m_range.min, m_range.max);
-	}
 }
 
 void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
@@ -440,8 +422,7 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
 
 void GLVolumeFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
-	re.pushState();
-	re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR, false);
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR, false);
 
 	// get view direction
 	vec3d view(0,0,1);
@@ -455,8 +436,6 @@ void GLVolumeFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 
 	// render the geometry
 	re.renderGMesh(m_mesh, false);
-
-	re.popState();
 }
 
 void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, GLMesh& mesh)
@@ -511,4 +490,22 @@ void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, G
 		}
 	}
 	mesh.Update();
+}
+
+LegendData GLVolumeFlowPlot::GetLegendData() const
+{
+	LegendData l;
+	bool showLegend = GetBoolValue(SHOW_LEGEND);
+	if (m_range.valid && showLegend)
+	{
+		l.discrete = false;
+		l.ndivs = m_nDivs;
+		l.vmin = m_range.min;
+		l.vmax = m_range.max;
+		l.smooth = true;
+		l.colormap = GetIntValue(COLOR_MAP);
+		l.title = GetName();
+	}
+
+	return l;
 }

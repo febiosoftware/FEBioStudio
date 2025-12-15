@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLStreamLinePlot.h"
-#include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <FSCore/ClassDescriptor.h>
@@ -76,13 +75,6 @@ CGLStreamLinePlot::CGLStreamLinePlot()
 	m_lastdt = 1.f;
 
 	m_Col.SetDivisions(10);
-
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::ORIENT_HORIZONTAL);
-	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	bar->SetType(GLLegendBar::GRADIENT);
-	bar->copy_label(szname);
-	bar->ShowTitle(true);
-	SetLegendBar(bar);
 
 	UpdateData(false);
 }
@@ -235,8 +227,6 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 		break;
 	}
 
-	GetLegendBar()->SetRange(m_crng.x, m_crng.y);
-
 	// update stream lines
 	UpdateStreamLines();
 
@@ -314,7 +304,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 		vf /= nf;
 
 		// see if this is a valid candidate for a seed
-		vec3f fn = f.m_fn;
+		vec3f fn = to_vec3f(mesh.FaceNormal(f));
 		if ((fn*vf < -vtol) && (m_prob[i] <= m_density))
 		{
 			// calculate the face center, this will be the seed
@@ -408,7 +398,7 @@ void CGLStreamLinePlot::ColorStreamLines()
 	if (Vmax == Vmin) Vmax++;
 
 	int ncol = m_Col.GetColorMap();
-	CColorMap& col = ColorMapManager::GetColorMap(ncol);
+	const CColorMap& col = ColorMapManager::GetColorMap(ncol);
 
 	int NSL = (int)m_streamLines.size();
 	for (int i=0; i<NSL; ++i)
@@ -461,4 +451,19 @@ void CGLStreamLinePlot::UpdateMesh()
 			}
 		}
 	}
+}
+
+LegendData CGLStreamLinePlot::GetLegendData() const
+{
+	LegendData l;
+
+	l.discrete = true;
+	l.ndivs = GetIntValue(DIVS);
+	l.vmin = m_crng.x;
+	l.vmax = m_crng.y;
+	l.smooth = false;
+	l.colormap = GetIntValue(COLOR_MAP);
+	l.title = GetName();
+	
+	return l;
 }

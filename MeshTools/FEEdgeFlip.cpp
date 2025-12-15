@@ -130,7 +130,6 @@ FSSurfaceMesh* FEEdgeFlip::Apply(FSSurfaceMesh* pm)
 
 	// update the new mesh data
 	newMesh->UpdateFaces();
-	newMesh->UpdateNormals();
 
 	// don't forget to clean up
 	Cleanup();

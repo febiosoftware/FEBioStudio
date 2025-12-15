@@ -29,7 +29,7 @@ SOFTWARE.*/
 
 namespace Post {
 
-class GLTensorPlot : public CGLLegendPlot
+class GLTensorPlot : public CGLPlot
 {
 	enum { DATA_FIELD, METHOD, COLOR_MAP, RANGE_DIVS, CLIP, SHOW_HIDDEN, SCALE, DENSITY, GLYPH, GLYPH_COLOR, SOLID_COLOR, AUTO_SCALE, NORMALIZE, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN };
 
@@ -111,6 +111,10 @@ protected:
 
 	void Update() override;
 
+	void BuildMesh();
+
+	LegendData GetLegendData() const override;
+
 protected:
 	int		m_ntensor;	// tensor field
 	int		m_nglyph;	// glyph type
@@ -138,5 +142,7 @@ protected:
 	int		m_lastTime;
 	float	m_lastDt;
 	int		m_lastCol;
+
+	GLMesh* m_mesh = nullptr;
 };
 }

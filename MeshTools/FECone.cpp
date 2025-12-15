@@ -37,14 +37,8 @@ SOFTWARE.*/
 #define max(a,b)            (((a) > (b)) ? (a) : (b))
 #endif
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-FECone::FECone()
+FECone::FECone(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_Rb = 0.5;
 	m_nd = m_ns = 4;
 	m_nz = 6;
@@ -73,10 +67,11 @@ extern double gain2(double x, double r, double n);
 
 bool FECone::BuildMultiBlock()
 {
-	assert(m_pobj);
+	GCone* po = dynamic_cast<GCone*>(&m_o);
+	if (po == nullptr) return false;
 
 	// get the object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double R0 = param.GetFloatValue(GCone::R0);
 	double R1 = param.GetFloatValue(GCone::R1);
 	double h = param.GetFloatValue(GCone::H);
@@ -283,12 +278,9 @@ bool FECone::BuildMultiBlock()
 	return true;
 }
 
-FSMesh* FECone::BuildMesh(GObject* po)
+FSMesh* FECone::BuildMesh()
 {
-	m_pobj = dynamic_cast<GCone*>(po);
-	if (m_pobj == nullptr) return nullptr;
-
-	BuildMultiBlock();
+	if (!BuildMultiBlock()) return nullptr;
 
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);
@@ -301,15 +293,11 @@ FSMesh* FECone::BuildMesh(GObject* po)
 
 	// create the MB
 	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
-
-	// update the mesh
-	pm->UpdateMesh();
-
-	// the Multi-block mesher will assign a different smoothing ID
-	// to each face, but we don't want that here. 
-	// For now, we autosmooth the mesh although we should think of a 
-	// better way
-	pm->AutoSmooth(60);
+	if (pm)
+	{
+		// update the mesh
+		pm->UpdateMesh();
+	}
 
 	return pm;
 }

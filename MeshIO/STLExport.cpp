@@ -51,7 +51,7 @@ void stl_write_solid(FILE* fp, FSMeshBase* pm, const char* solidName)
 	{
 		FSFace& face = pm->Face(i);
 
-		vec3d fn = to_vec3d(face.m_fn);
+		vec3d fn = pm->FaceNormal(face);
 
 		for (int j = 0; j < face.Nodes(); ++j)
 		{
@@ -63,9 +63,13 @@ void stl_write_solid(FILE* fp, FSMeshBase* pm, const char* solidName)
 		switch (face.Type())
 		{
 		case FE_FACE_TRI3:
+		case FE_FACE_TRI6:
+		case FE_FACE_TRI7:
 			stl_write_face(fp, fn, r[0], r[1], r[2]);
 			break;
 		case FE_FACE_QUAD4:
+		case FE_FACE_QUAD8:
+		case FE_FACE_QUAD9:
 			stl_write_face(fp, fn, r[0], r[1], r[2]);
 			stl_write_face(fp, fn, r[2], r[3], r[0]);
 			break;
@@ -90,7 +94,7 @@ bool stl_write_surface(FILE* fp, FSSurface* surf)
 	{
 		FSFace& face = *surf->GetFace(i);
 
-		vec3d fn = to_vec3d(face.m_fn);
+		vec3d fn = pm->FaceNormal(face);
 
 		for (int j = 0; j < face.Nodes(); ++j)
 		{
@@ -102,9 +106,13 @@ bool stl_write_surface(FILE* fp, FSSurface* surf)
 		switch (face.Type())
 		{
 		case FE_FACE_TRI3:
+		case FE_FACE_TRI6:
+		case FE_FACE_TRI7:
 			stl_write_face(fp, fn, r[0], r[1], r[2]);
 			break;
 		case FE_FACE_QUAD4:
+		case FE_FACE_QUAD8:
+		case FE_FACE_QUAD9:
 			stl_write_face(fp, fn, r[0], r[1], r[2]);
 			stl_write_face(fp, fn, r[2], r[3], r[0]);
 			break;

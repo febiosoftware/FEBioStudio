@@ -56,7 +56,8 @@ public:
 		m_glFaceMesh = nullptr;
 		m_objManip = nullptr;
 
-		m_col = GLColor(200, 200, 200);
+		m_mat.type = GLMaterial::PLASTIC;
+		m_mat.diffuse = m_mat.ambient = GLColor(200, 200, 200);
 
 		m_bValid = true;
 	}
@@ -72,7 +73,7 @@ public:
 
 public:
 	int	m_ntype = -1;	//!< object type identifier
-	GLColor	m_col;	//!< color of object
+	GLMaterial m_mat;	//!< color of object
 	bool	m_bValid;
 
 	FSMesh*		m_pmesh;	//!< the mesh that this object manages
@@ -151,14 +152,24 @@ bool GObject::CanDeleteMesh() const
 // return type of Object
 int GObject::GetType() const { return imp->m_ntype; }
 
-//-----------------------------------------------------------------------------
 // get/set object color
-GLColor GObject::GetColor() const { return imp->m_col; }
+GLColor GObject::GetColor() const { return imp->m_mat.diffuse; }
 
-//-----------------------------------------------------------------------------
 void GObject::SetColor(const GLColor& c) 
 { 
-	imp->m_col = c; 
+	imp->m_mat.ambient = c; 
+	imp->m_mat.diffuse = c; 
+}
+
+GLMaterial GObject::GetMaterial() const
+{
+	return imp->m_mat;
+}
+
+void GObject::SetMaterial(GLMaterial mat)
+{
+	imp->m_mat = mat;
+	SetRenderMesh(nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -242,7 +253,7 @@ void GObject::BuildFERenderMesh()
 		for (int i = 0; i < nsurf; i++)
 		{
 			std::deque<int>::iterator it = faceList[i].begin();
-			gm.NewPartition();
+			gm.NewSurfacePartition();
 			for (auto n : faceList[i])
 			{
 				const FSFace& face = pm->Face(n);
@@ -257,7 +268,7 @@ void GObject::BuildFERenderMesh()
 					int mid = -1;
 					if (eid >= 0) mid = pm->Element(eid).m_MatID;
 
-					gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), n, eid, mid);
+					gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_gid, face.IsExterior(), n, eid, mid);
 
 					int ne = face.Edges();
 					int n[FSEdge::MAX_NODES] = { -1 };
@@ -281,7 +292,7 @@ void GObject::BuildFERenderMesh()
 	for (int i = 0; i < NE; ++i)
 	{
 		FSElement& el = pm->Element(i);
-		if (el.IsVisible())
+		if (el.IsVisible() && !el.IsSelected())
 		{
 			int nf = el.Faces();
 			for (int j = 0; j < nf; ++j)
@@ -289,7 +300,7 @@ void GObject::BuildFERenderMesh()
 				if (el.m_nbr[j] >= 0)
 				{
 					FSElement& elj = pm->Element(el.m_nbr[j]);
-					if ((el.m_gid == elj.m_gid) && !elj.IsVisible())
+					if ((el.m_gid == elj.m_gid) && (!elj.IsVisible() || elj.IsSelected()))
 					{
 						partElems[el.m_gid].push_back(i);
 						break;
@@ -305,7 +316,7 @@ void GObject::BuildFERenderMesh()
 	for (int i = 0; i < nparts; ++i)
 	{
 		int ne = (int)partElems[i].size();
-		gm.NewPartition();
+		gm.NewSurfacePartition();
 		for (auto it = partElems[i].begin(); it != partElems[i].end(); ++it)
 		{
 			FSElement& el = pm->Element(*it); assert(el.IsVisible());
@@ -315,7 +326,7 @@ void GObject::BuildFERenderMesh()
 				if (el.m_nbr[j] >= 0)
 				{
 					FSElement& elj = pm->Element(el.m_nbr[j]);
-					if (!elj.IsVisible() && (el.m_gid == elj.m_gid))
+					if ((el.m_gid == elj.m_gid) && (!elj.IsVisible() || elj.IsSelected()))
 					{
 						el.GetFace(j, face);
 						gm.AddFace(face.n, face.Nodes(), maxSurfID + i, -1, false, -1, *it, el.m_MatID);
@@ -334,7 +345,6 @@ void GObject::BuildFERenderMesh()
 	}
 
 	gm.Update();
-	UpdateMeshData();
 }
 
 void GObject::UpdateFERenderMesh()
@@ -512,8 +522,11 @@ void GObject::UpdateGNodes()
 FSMesh* GObject::ReplaceFEMesh(FSMesh* pm)
 {
 	FSMesh* oldMesh = GetFEMesh();
-	pm->TakeItemLists(oldMesh);
-	pm->TakeMeshData(oldMesh);
+	if (pm)
+	{
+		pm->TakeItemLists(oldMesh);
+		pm->TakeMeshData(oldMesh);
+	}
 	SetFEMesh(pm);
 	return oldMesh;
 }
@@ -529,33 +542,53 @@ void GObject::ReplaceSurfaceMesh(FSSurfaceMesh* pm)
 //-----------------------------------------------------------------------------
 bool GObject::Update(bool b)
 {
+	// see if we need to update the parts
+	bool bupdateParts = false;
 	for (int i = 0; i < Parts(); ++i)
 	{
 		GPart* pg = Part(i);
-		pg->m_face.clear();
-		pg->m_node.clear();
-	}
-
-	for (int i = 0; i < Faces(); ++i)
-	{
-		GFace* pf = Face(i);
-		if (pf->m_nPID[0] >= 0) Part(pf->m_nPID[0])->m_face.push_back(i);
-		if (pf->m_nPID[1] >= 0) Part(pf->m_nPID[1])->m_face.push_back(i);
-		if (pf->m_nPID[2] >= 0) Part(pf->m_nPID[2])->m_face.push_back(i);
-	}
-
-	for (int i = 0; i < Parts(); ++i)
-	{
-		std::set<int> nodes;
-		GPart* pg = Part(i);
-		for (int j = 0; j < pg->Faces(); ++j)
+		if (pg->m_node.empty() || pg->m_face.empty())
 		{
-			GFace* pf = Face(pg->m_face[j]);
-			nodes.insert(pf->m_node.begin(), pf->m_node.end());
+			bupdateParts = true;
+			break;
+		}
+	}
+
+	if (bupdateParts)
+	{
+		for (int i = 0; i < Parts(); ++i)
+		{
+			GPart* pg = Part(i);
+			pg->m_face.clear();
+			pg->m_node.clear();
 		}
 
-		pg->m_node.insert(pg->m_node.end(), nodes.begin(), nodes.end());
+		for (int i = 0; i < Faces(); ++i)
+		{
+			GFace* pf = Face(i);
+			if (pf->m_nPID[0] >= 0) Part(pf->m_nPID[0])->m_face.push_back(i);
+			if (pf->m_nPID[1] >= 0) Part(pf->m_nPID[1])->m_face.push_back(i);
+			if (pf->m_nPID[2] >= 0) Part(pf->m_nPID[2])->m_face.push_back(i);
+		}
 
+		for (int i = 0; i < Parts(); ++i)
+		{
+			std::set<int> nodes;
+			GPart* pg = Part(i);
+			for (int j = 0; j < pg->Faces(); ++j)
+			{
+				GFace* pf = Face(pg->m_face[j]);
+				nodes.insert(pf->m_node.begin(), pf->m_node.end());
+			}
+
+			pg->m_node.insert(pg->m_node.end(), nodes.begin(), nodes.end());
+		}
+	}
+
+	// this just updates the bounding box of each part
+	for (int i = 0; i < Parts(); ++i)
+	{
+		GPart* pg = Part(i);
 		pg->Update(false);
 	}
 
@@ -593,7 +626,7 @@ FSMesh* GObject::BuildMesh()
 		// keep a pointer to the old mesh since some mesher use the old
 		// mesh to create a new mesh
 		FSMesh* pold = imp->m_pmesh;
-		SetFEMesh(imp->m_pMesher->BuildMesh(this));
+		SetFEMesh(imp->m_pMesher->BuildMesh());
 
 		// now it is safe to delete the old mesh
 		if (pold) delete pold;
@@ -628,6 +661,11 @@ BOX GObject::GetLocalBox() const
 	{
 		b = BOX(m_Node[0]->LocalPosition(), m_Node[0]->LocalPosition());
 		for (int i = 1; i<N; ++i) b += m_Node[i]->LocalPosition();
+	}
+	else if (GetFEMesh())
+	{
+		const FSMesh* pm = GetFEMesh();
+		b = pm->GetBoundingBox();
 	}
 	return b;
 }
@@ -742,9 +780,26 @@ void GObject::Show()
 
 	// show all the parts
 	for (int i=0; i<Parts(); ++i) Part(i)->ShowItem();
+	for (int i=0; i<Faces(); ++i) Face(i)->ShowItem();
+	for (int i=0; i<Edges(); ++i) Edge(i)->ShowItem();
+	for (int i=0; i<Nodes(); ++i) Node(i)->ShowItem();
 
-	// Update visibility of child items
-	UpdateItemVisibility();
+	// Update visibility of mesh
+	FSMesh* mesh = GetFEMesh();
+	if (mesh)
+	{
+		int NE = mesh->Elements();
+		for (int i = 0; i < NE; ++i)
+		{
+			FSElement& el = mesh->Element(i);
+			el.Show();
+			el.Unhide();
+		}
+		mesh->UpdateItemVisibility();
+	}
+
+	SetRenderMesh(nullptr);
+	SetFERenderMesh(nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -896,7 +951,19 @@ void GObject::Save(OArchive &ar)
 		ar.WriteChunk(CID_OBJ_POS, GetTransform().GetPosition());
 		ar.WriteChunk(CID_OBJ_ROT, GetTransform().GetRotation());
 		ar.WriteChunk(CID_OBJ_SCALE, GetTransform().GetScale());
-		ar.WriteChunk(CID_OBJ_COLOR, GetColor());
+
+		// TODO: remove this line. Keeping this for now so files created with this version will still
+		// show up properly in slightly older builds
+		ar.WriteChunk(CID_OBJ_COLOR, GetColor()); 
+
+		GLMaterial mat = GetMaterial();
+		ar.WriteChunk(CID_MAT_AMBIENT   , mat.ambient);
+		ar.WriteChunk(CID_MAT_DIFFUSE   , mat.diffuse);
+		ar.WriteChunk(CID_MAT_SPECULAR  , mat.specular);
+		ar.WriteChunk(CID_MAT_EMISSION  , mat.emission);
+		ar.WriteChunk(CID_MAT_SHININESS , mat.shininess);
+		ar.WriteChunk(CID_MAT_OPACITY   , mat.opacity);
+		ar.WriteChunk(CID_MAT_REFLECTION, mat.reflection);
 
 		int nparts = Parts();
 		int nfaces = Faces();
@@ -1058,7 +1125,8 @@ void GObject::Load(IArchive& ar)
 		{
 			vec3d pos, scl;
 			quatd rot;
-			GLColor col;
+			GLMaterial mat;
+			mat.type = GLMaterial::PLASTIC;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
@@ -1069,16 +1137,23 @@ void GObject::Load(IArchive& ar)
 				case CID_OBJ_POS: ar.read(pos); break;
 				case CID_OBJ_ROT: ar.read(rot); break;
 				case CID_OBJ_SCALE: ar.read(scl); break;
-				case CID_OBJ_COLOR: ar.read(col); break;
+				case CID_OBJ_COLOR: { ar.read(mat.diffuse); mat.ambient = mat.diffuse; } break;
 				case CID_OBJ_PARTS: ar.read(nparts); break;
 				case CID_OBJ_FACES: ar.read(nfaces); break;
 				case CID_OBJ_EDGES: ar.read(nedges); break;
 				case CID_OBJ_NODES: ar.read(nnodes); break;
+				case CID_MAT_AMBIENT   : ar.read(mat.ambient); break;
+				case CID_MAT_DIFFUSE   : ar.read(mat.diffuse); break;
+				case CID_MAT_SPECULAR  : ar.read(mat.specular); break;
+				case CID_MAT_EMISSION  : ar.read(mat.emission); break;
+				case CID_MAT_SHININESS : ar.read(mat.shininess); break;
+				case CID_MAT_OPACITY   : ar.read(mat.opacity); break;
+				case CID_MAT_REFLECTION: ar.read(mat.reflection); break;
 				}
 				ar.CloseChunk();
 			}
 
-			SetColor(col);
+			SetMaterial(mat);
 
 			Transform& transform = GetTransform();
 			transform.SetPosition(pos);
@@ -1209,13 +1284,13 @@ void GObject::Load(IArchive& ar)
 				case 0: break;	// use default mesher
 				case 1:
 				{
-					FEMesher* mesher = new FETetGenMesher();
+					FEMesher* mesher = new FETetGenMesher(*this);
 					SetFEMesher(mesher);
 				}
 				break;
 				default:
 				{
-					FEMesher* mesher = FSCore::CreateClassFromID<FEMesher>(CLASS_MESHER, ntype);
+					FEMesher* mesher = FSCore::CreateClassFromID<FEMesher, GObject>(CLASS_MESHER, ntype, this);
 					assert(mesher);
 					if (mesher == nullptr) throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
 					SetFEMesher(mesher);
@@ -1326,97 +1401,4 @@ GObjectManipulator::~GObjectManipulator()
 GObject* GObjectManipulator::GetObject()
 {
 	return m_po;
-}
-
-void GObject::UpdateMeshData()
-{
-	GLMesh* gmsh = GetFERenderMesh();
-	if (gmsh == nullptr) return;
-
-	FSMesh* pm = GetFEMesh();
-	if (pm == nullptr) return;
-
-	Mesh_Data& data = pm->GetMeshData();
-	if (!data.IsValid()) return;
-
-	double vmin, vmax;
-	data.GetValueRange(vmin, vmax);
-	if (vmax == vmin) vmax++;
-
-	int NN = pm->Nodes();
-	vector<double> val(NN, 0);
-
-	CColorMap map;
-	map.SetRange((float)vmin, (float)vmax);
-
-	int NF = gmsh->Faces();
-	for (int i = 0; i < NF; ++i)
-	{
-		GLMesh::FACE& fi = gmsh->Face(i);
-		int fid = fi.fid;
-		FSFace* pf = pm->FacePtr(fid);
-		if (pf)
-		{
-			FSFace& face = *pf;
-			FSElement& el = pm->Element(face.m_elem[0].eid);
-			GPart* pg = Part(el.m_gid);
-			if (pg && (pg->IsVisible() == false) && (face.m_elem[1].eid != -1))
-			{
-				FSElement& el1 = pm->Element(face.m_elem[1].eid);
-				pg = Part(el1.m_gid);
-			}
-
-			if (pg && pg->IsVisible())
-			{
-				if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
-				{
-					int fnl[FSElement::MAX_NODES];
-					int nn = el.GetLocalFaceIndices(face.m_elem[0].lid, fnl);
-					assert(nn == face.Nodes());
-
-					int nf = face.Nodes();
-					for (int j = 0; j < nf; ++j)
-					{
-						double vj = data.GetElementValue(face.m_elem[0].eid, fnl[j]);
-						val[face.n[j]] = vj;
-					}
-
-					for (int j = 0; j < 3; ++j)
-					{
-						double vj = val[fi.n[j]];
-						fi.c[j] = map.map(vj);
-					}
-				}
-				else
-				{
-					GLColor col(212, 212, 212);
-					for (int j = 0; j < 3; ++j) fi.c[j] = col;
-				}
-			}
-		}
-		else if (fi.eid >= 0)
-		{
-			FSElement& el = pm->Element(fi.eid);
-			if (data.GetElementDataTag(fi.eid) > 0)
-			{
-				int ne = el.Nodes();
-				for (int j = 0; j < ne; ++j)
-				{
-					double vj = data.GetElementValue(fi.eid, j);
-					val[el.m_node[j]] = vj;
-				}
-
-				for (int j = 0; j < 3; ++j)
-				{
-					double vj = val[fi.n[j]];
-					fi.c[j] = map.map(vj);
-				}
-			}
-			else
-			{
-				GLColor col(212, 212, 212);
-				for (int j = 0; j < 3; ++j) fi.c[j] = col;
-			}
-		}
-	}
 }

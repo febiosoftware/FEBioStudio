@@ -35,9 +35,9 @@ public:
 	enum { T, NDIV, NSEG };
 
 public:
-	FEShellTorus();
+	FEShellTorus(GObject& o);
 	
-	FSMesh* BuildMesh(GObject* po) override;
+	FSMesh* BuildMesh() override;
 
 protected:
 	void BuildNodes(FSMesh* pm);
@@ -47,8 +47,6 @@ protected:
 	int NodeIndex(int i, int j) { return (i%(4*m_nd))*(4*m_ns) + j%(4*m_ns); }
 
 protected:
-	GTorus*		m_pobj;
-
 	double	m_t;
 	int		m_nd, m_ns;
 };

@@ -50,6 +50,7 @@ SOFTWARE.*/
 #include "GLHighlighter.h"
 #include <QStyleFactory>
 #include <QStyleHints>
+#include <QDropEvent>
 #include "GraphWindow.h"
 #include <PostGL/GLModel.h>
 #include "DlgWidgetProps.h"
@@ -111,6 +112,7 @@ SOFTWARE.*/
 #include "modelcheck.h"
 #include "DlgListMaterials.h"
 #include "DlgMissingPlugins.h"
+#include "FEBioBatchDoc.h"
 
 extern GLColor col[];
 
@@ -128,6 +130,52 @@ private:
 	CMainWindow* wnd;
 };
 
+static QRhi::Implementation MapToValidAPI(GraphicsAPI graphicsApi)
+{
+	// map to RHI implementation
+	QRhi::Implementation api = QRhi::Null;
+	switch (graphicsApi)
+	{
+	case GraphicsAPI::API_OPENGL: api = QRhi::OpenGLES2; break;
+	case GraphicsAPI::API_VULKAN: api = QRhi::Vulkan; break;
+	case GraphicsAPI::API_METAL: api = QRhi::Metal; break;
+	case GraphicsAPI::API_DIRECT3D11: api = QRhi::D3D11; break;
+	case GraphicsAPI::API_DIRECT3D12: api = QRhi::D3D12; break;
+	default:
+		break;
+	}
+
+	// Use platform-specific defaults
+#if defined(Q_OS_WIN)
+	if ((api == QRhi::Null) ||
+		((api != QRhi::D3D11) && (api != QRhi::D3D12) && (api != QRhi::Vulkan) && (api != QRhi::OpenGLES2)))
+	{
+		api = QRhi::OpenGLES2;
+	}
+#endif
+
+	// Always use Metal on Apple platforms
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+	if ((api == QRhi::Null) ||
+		((api != QRhi::Metal) && (api != QRhi::OpenGLES2)))
+	{
+//		api = QRhi::Metal; // TODO: Restore this when 3D textures are working on Metal
+		api = QRhi::OpenGLES2;
+	}
+#endif
+
+	// On Linux, prefer Vulkan if available
+#if defined(Q_OS_LINUX)
+	if ((api == QRhi::Null) ||
+		((api != QRhi::Vulkan) && (api != QRhi::OpenGLES2)))
+	{
+		api = QRhi::OpenGLES2;
+	}
+#endif
+
+	return api;
+}
+
 //-----------------------------------------------------------------------------
 CMainWindow* CMainWindow::m_mainWnd = nullptr;
 
@@ -138,7 +186,7 @@ CMainWindow* CMainWindow::GetInstance()
 }
 
 //-----------------------------------------------------------------------------
-CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
+CMainWindow::CMainWindow(bool reset, GraphicsAPI api, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
 {
 	m_mainWnd = this;
 
@@ -146,6 +194,12 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	// Set locale to avoid issues with reading and writing feb files in other languages.
 	std::locale::global(std::locale::classic());
 #endif
+
+    // Preserve user's language and territory but use the C locale for everything else
+    // this standardizes number formatting. 
+    QLocale locale;
+    QLocale forcedLocale(locale.language(), locale.territory());
+    QLocale::setDefault(forcedLocale);
 
 	m_DocManager = new CDocManager();
 
@@ -156,6 +210,10 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	// Instantiate IconProvider singleton
 	CIconProvider::Instantiate(devicePixelRatio());
 
+	// initialize RHI
+	QRhi::Implementation rhiAPI = MapToValidAPI(api);
+	RhiWindow::InitRHI(rhiAPI);
+	
 	// setup the GUI
 	ui->setupUi(this);
 
@@ -185,6 +243,15 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	// load templates
 	TemplateManager::Init();
 
+	// configure FEBio library
+	if (ui->m_settings.loadFEBioConfigFile)
+	{
+		std::string fileName = ui->m_settings.febioConfigFileName.toStdString();
+		FSDir dir(fileName);
+		std::string filepath = dir.expandMacros();
+		FEBio::ConfigureFEBio(filepath.c_str());
+	}
+
 	// Start AutoSave Timer
 	ui->m_autoSaveTimer = new QTimer(this);
 	QObject::connect(ui->m_autoSaveTimer, &QTimer::timeout, this, &CMainWindow::autosave);
@@ -202,10 +269,16 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	FSLogger::SetOutput(new FSMainWindowOutput(this));
 
+	// Don't load plugins in Debug mode since plugins are usually built in Release mode
+	// and mixing Debug and Release code can lead to all kinds of problems.
+#ifdef NDEBUG
     ui->m_pluginManager.LoadXML();
     ui->m_pluginManager.LoadAllPlugins();
+#endif
     ui->m_pluginManager.ReadDatabase();
     ui->m_pluginManager.Connect();
+
+	QObject::connect(GetGLView(), &CGLView::captureFrameFinished, this, &CMainWindow::onCaptureFrameFinished);
 }
 
 //-----------------------------------------------------------------------------
@@ -1143,6 +1216,8 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->Update();
 
+	if (ui->docProps->isVisible() && (psend != ui->docProps)) ui->docProps->Update(breset);
+
 	UpdateGraphs(breset);
 }
 
@@ -1624,6 +1699,33 @@ void CMainWindow::closeEvent(QCloseEvent* ev)
 	}
 }
 
+void CMainWindow::onDropEvent(QDropEvent* e)
+{
+	foreach(const QUrl & url, e->mimeData()->urls()) {
+		QString fileName = url.toLocalFile();
+
+		FileReader* fileReader = nullptr;
+
+		QFileInfo file(fileName);
+
+		// Create a file reader
+		// NOTE: For FEB files I prefer to open the file as a separate model,
+		// so I need this hack. 
+		if (file.suffix() != "feb") fileReader = CreateFileReader(fileName);
+
+		CDocument* doc = GetDocument();
+
+		// make sure we have one
+		if (fileReader && doc)
+		{
+			ReadFile(doc, fileName, fileReader, 0);
+		}
+		else {
+			OpenFile(fileName, false, false);
+		}
+	}
+}
+
 void CMainWindow::keyPressEvent(QKeyEvent* ev)
 {
 	if ((ev->key() == Qt::Key_Backtab) || (ev->key() == Qt::Key_Tab))
@@ -1720,6 +1822,23 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 			RedrawGL();
 		}
 	}
+	else if ((ev->key() == Qt::Key_F1))
+	{
+		if (ev->modifiers() & Qt::ControlModifier)
+		{
+			ev->accept();
+			CModelDocument* doc = GetModelDocument();
+			if (doc)
+			{
+				GLScene* scene = doc->GetScene();
+				if (scene)
+				{
+					scene->Update();
+					RedrawGL();
+				}
+			}
+		}
+	}
 }
 
 void CMainWindow::SetCurrentFolder(const QString& folder)
@@ -1735,12 +1854,17 @@ FEBioStudioProject* CMainWindow::GetProject()
 
 void CMainWindow::setAutoSaveInterval(int interval)
 {
-	ui->m_settings.autoSaveInterval = interval;
+	if (interval < 0) interval = 0;
+	if ((interval != 0) && (interval < 60)) interval = 60; // minimum is 1 minute
 
-	ui->m_autoSaveTimer->stop();
-	if (ui->m_settings.autoSaveInterval > 0)
+	ui->m_settings.autoSaveInterval = interval;
+	if (ui->m_autoSaveTimer)
 	{
-		ui->m_autoSaveTimer->start(ui->m_settings.autoSaveInterval * 1000);
+		ui->m_autoSaveTimer->stop();
+		if (ui->m_settings.autoSaveInterval > 0)
+		{
+			ui->m_autoSaveTimer->start(ui->m_settings.autoSaveInterval * 1000);
+		}
 	}
 }
 
@@ -1774,6 +1898,12 @@ int CMainWindow::GetDefaultUnitSystem() const
 {
 	return ui->m_settings.defaultUnits;
 }
+
+bool CMainWindow::GetLoadConfigFlag() { return ui->m_settings.loadFEBioConfigFile; }
+QString CMainWindow::GetConfigFileName() { return ui->m_settings.febioConfigFileName; }
+
+void CMainWindow::SetLoadConfigFlag(bool b) { ui->m_settings.loadFEBioConfigFile = b; }
+void CMainWindow::SetConfigFileName(QString s) { ui->m_settings.febioConfigFileName = s; }
 
 void CMainWindow::writeSettings()
 {
@@ -1809,7 +1939,6 @@ void CMainWindow::writeSettings()
 		settings.setValue("meshColor", vs.m_meshColor.to_uint());
 		settings.setValue("normalsScaleFactor", vs.m_scaleNormals);
 		settings.setValue("multiViewProjection", vs.m_nconv);
-		settings.setValue("improvedTransparency", vs.m_bzsorting);
 		settings.setValue("showGrid", vs.m_bgrid);
 		settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
 		settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
@@ -1817,16 +1946,17 @@ void CMainWindow::writeSettings()
 		settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
 
 		// FEBio
+		settings.setValue("loadFEBioConfigFile", ui->m_settings.loadFEBioConfigFile);
+		settings.setValue("febioConfigFileName", ui->m_settings.febioConfigFileName);
 		settings.setValue("FEBioSDKInclude", ui->m_settings.FEBioSDKInc);
 		settings.setValue("FEBioSDKLibrary", ui->m_settings.FEBioSDKLib);
 		settings.setValue("createPluginPath", ui->m_settings.createPluginPath);
 
 		// Lighting
 		settings.setValue("lighting", vs.m_bLighting);
-		settings.setValue("shadows", vs.m_bShadows);
-		settings.setValue("shadowIntensity", vs.m_shadow_intensity);
 		settings.setValue("lightDirection", Vec3fToString(vs.m_light));
 		settings.setValue("environmentMap", fbs.m_envMapFile);
+		settings.setValue("useEnvironmentMap", vs.m_use_environment_map);
 
 		// Physics
 		settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
@@ -1909,7 +2039,7 @@ void CMainWindow::writeSettings()
 		settings.remove("");
 		for (int i = 0; i < n; ++i)
 		{
-			CColorMap& c = ColorMapManager::GetColorMap(ColorMapManager::USER + i);
+			const CColorMap& c = ColorMapManager::GetColorMap(ColorMapManager::USER + i);
 			string sname = ColorMapManager::GetColorMapName(ColorMapManager::USER + i);
 			settings.beginGroup(QString::fromStdString(sname));
 			{
@@ -1972,7 +2102,6 @@ void CMainWindow::readSettings()
 		if (vs.m_meshColor.a == 0) vs.m_meshColor.a = 64;
 		vs.m_scaleNormals = settings.value("normalsScaleFactor", vs.m_scaleNormals).toDouble();
 		vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
-		vs.m_bzsorting = settings.value("improvedTransparency", vs.m_bzsorting).toBool();
 		vs.m_bgrid = settings.value("showGrid", vs.m_bgrid).toBool();
 		vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
 		vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor.to_uint()).toInt());
@@ -1981,6 +2110,8 @@ void CMainWindow::readSettings()
 		GLWidget::set_default_font(font);
 
 		// FEBio
+		ui->m_settings.loadFEBioConfigFile = settings.value("loadFEBioConfigFile", true).toBool();
+		ui->m_settings.febioConfigFileName = settings.value("febioConfigFileName", ui->m_settings.febioConfigFileName).toString();
 		QString defaultSDK = QFileInfo(QApplication::applicationDirPath() + QString(REL_ROOT) + "sdk/").absoluteFilePath();
 		ui->m_settings.FEBioSDKInc = settings.value("FEBioSDKInclude", defaultSDK + "include").toString();
 		ui->m_settings.FEBioSDKLib = settings.value("FEBioSDKLibrary", defaultSDK + "lib").toString();
@@ -1988,11 +2119,12 @@ void CMainWindow::readSettings()
 
 		// Lighting
 		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
-		vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
-		vs.m_shadow_intensity = settings.value("shadowIntensity", vs.m_shadow_intensity).toFloat();
 		vs.m_light = StringToVec3f(settings.value("lightDirection", "{0.5,0.5,1}").toString());
 		QString envmap = settings.value("environmentMap").toString();
 		fbs.m_envMapFile = envmap;
+		vs.m_use_environment_map = settings.value("useEnvironmentMap", false).toBool();
+
+		if (envmap.isEmpty()) vs.m_use_environment_map = false;
 
 		// Physics
 		vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
@@ -2007,7 +2139,8 @@ void CMainWindow::readSettings()
 
 		// UI
 		vs.m_apply = settings.value("emulateApply", vs.m_apply).toBool();
-		ui->m_settings.autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
+		int autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
+		setAutoSaveInterval(autoSaveInterval);
 
 		// Units
 		ui->m_settings.defaultUnits = settings.value("defaultUnits", 0).toInt();
@@ -2144,7 +2277,6 @@ void CMainWindow::UpdateToolbar()
 {
 	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
-
 	if (doc->IsValid() == false) return;
 
 	CMainMenu* menu = ui->mainMenu;
@@ -2154,8 +2286,12 @@ void CMainWindow::UpdateToolbar()
 	if (view.m_bmesh  != menu->actionShowMeshLines->isChecked()) menu->actionShowMeshLines->trigger();
 	if (view.m_bgrid  != menu->actionShowGrid->isChecked()) menu->actionShowGrid->trigger();
 
-	CGView& gv = *doc->GetView();
-	if (gv.m_bortho != menu->actionOrtho->isChecked()) menu->actionOrtho->trigger();
+	GLScene* scene = doc->GetScene();
+	if (scene)
+	{
+		GLCamera& cam = scene->GetCamera();
+		if (cam.IsOrtho() != menu->actionOrtho->isChecked()) menu->actionOrtho->trigger();
+	}
 
 	if (ui->buildToolBar->isVisible())
 	{
@@ -2267,10 +2403,16 @@ void CMainWindow::UpdateUIConfig()
 	{
 		ui->setUIConfig(Ui::Config::FEBREPORT_CONFIG);
 	}
+	else if (dynamic_cast<FEBioBatchDoc*>(doc))
+	{
+		ui->setUIConfig(Ui::Config::BATCHRUN_CONFIG);
+	}
 	else
 	{
 		ui->setUIConfig(Ui::Config::EMPTY_CONFIG);
 	}
+
+	Update(0, true);
 }
 
 //-----------------------------------------------------------------------------
@@ -2494,7 +2636,7 @@ void CMainWindow::on_actionSelectSurfaces_toggled(bool b)
 	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
-	if (b) doc->SetSelectionMode(SELECT_FACE);
+	if (b) doc->SetSelectionMode(SELECT_SURF);
 	Update();
 }
 
@@ -2681,8 +2823,15 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 {
 	CMainMenu* mainMenu = ui->mainMenu;
 
+	CModelDocument* doc = GetModelDocument();
+
 	menu.addAction(mainMenu->actionZoomSelect);
-	menu.addAction(mainMenu->actionShowGrid);
+
+	if (doc)
+	{
+		// only show the grid option on the build side
+		menu.addAction(mainMenu->actionShowGrid);
+	}
 	menu.addAction(mainMenu->actionShowMeshLines);
 	menu.addAction(mainMenu->actionShowEdgeLines);
 	menu.addAction(mainMenu->actionOrtho);
@@ -2701,7 +2850,6 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 
 	menu.addAction(mainMenu->actionRenderMode);
 
-	CModelDocument* doc = GetModelDocument();
 	if (doc)
 	{
 		menu.addAction(mainMenu->actionShowNormals);
@@ -2745,7 +2893,20 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 			menu.addAction(colorMode->menuAction());
 		}
 	}
-	menu.addAction(mainMenu->actionOptions);
+
+	CPostDocument* pdoc = GetPostDocument();
+	if (pdoc)
+	{
+		GLViewSettings& vs = GetGLView()->GetViewSettings();
+		QMenu* colorMode = new QMenu("Color mode");
+		QAction* a;
+		a = colorMode->addAction("Identify backfacing surfaces"); a->setCheckable(true); if (vs.m_identifyBackfacing) a->setChecked(true);
+		a->setData(0xFF);
+		QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
+		menu.addAction(colorMode->menuAction());
+	}
+
+	menu.addAction(mainMenu->actionSettings);
 }
 
 //-----------------------------------------------------------------------------
@@ -2763,20 +2924,22 @@ void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
 //-----------------------------------------------------------------------------
 void CMainWindow::OnSelectObjectColorMode(QAction* ac)
 {
-	CModelDocument* doc = GetModelDocument();
-	if (doc == nullptr) return;
-
-	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(doc->GetScene());
-	if (scene == nullptr) return;
-
 	int data = ac->data().toInt();
 
-	if      (data == OBJECT_COLOR_MODE::DEFAULT_COLOR ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::DEFAULT_COLOR );
-	else if (data == OBJECT_COLOR_MODE::OBJECT_COLOR  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::OBJECT_COLOR  );
-	else if (data == OBJECT_COLOR_MODE::MATERIAL_TYPE ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::MATERIAL_TYPE );
-	else if (data == OBJECT_COLOR_MODE::FSELEMENT_TYPE) scene->SetObjectColorMode(OBJECT_COLOR_MODE::FSELEMENT_TYPE);
-	else if (data == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::PHYSICS_TYPE  );
-	else if (data == 0xFF)
+	CModelDocument* doc = GetModelDocument();
+	if (doc)
+	{
+		CGLModelScene* scene = dynamic_cast<CGLModelScene*>(doc->GetScene());
+		if (scene == nullptr) return;
+
+		if      (data == OBJECT_COLOR_MODE::DEFAULT_COLOR ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::DEFAULT_COLOR);
+		else if (data == OBJECT_COLOR_MODE::OBJECT_COLOR  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::OBJECT_COLOR);
+		else if (data == OBJECT_COLOR_MODE::MATERIAL_TYPE ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::MATERIAL_TYPE);
+		else if (data == OBJECT_COLOR_MODE::FSELEMENT_TYPE) scene->SetObjectColorMode(OBJECT_COLOR_MODE::FSELEMENT_TYPE);
+		else if (data == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::PHYSICS_TYPE);
+	}
+
+	if (data == 0xFF)
 	{
 		GLViewSettings& vs = GetGLView()->GetViewSettings();
 		vs.m_identifyBackfacing = !vs.m_identifyBackfacing;
@@ -3299,7 +3462,7 @@ QStringList CMainWindow::GetRecentFileList()
 	return ui->m_settings.m_recentFiles;
 }
 
-QString CMainWindow::GetEnvironmentMap()
+QString CMainWindow::GetEnvironmentMap() const
 {
 	return ui->m_settings.m_envMapFile;
 }
@@ -3307,6 +3470,31 @@ QString CMainWindow::GetEnvironmentMap()
 void CMainWindow::SetEnvironmentMap(const QString& filename)
 {
 	ui->m_settings.m_envMapFile = filename;
+}
+
+bool CMainWindow::IsEnvironmentMapEnabled()
+{
+	CGLView* glv = GetGLView();
+	if (glv) return glv->GetViewSettings().m_use_environment_map;
+	else return false;
+}
+
+CRGBAImage CMainWindow::GetEnvironmentMapImage()
+{
+	if (ui->m_settings.m_envImg.isNull())
+	{
+		QString file = GetEnvironmentMap();
+		if (!file.isEmpty())
+		{
+			QImage img(file);
+			if (!img.isNull())
+			{
+				QImage::Format format = img.format();
+				ui->m_settings.m_envImg = CRGBAImage(img.width(), img.height(), img.constBits());
+			}
+		}
+	}
+	return ui->m_settings.m_envImg;
 }
 
 QStringList CMainWindow::GetRecentProjectsList()
@@ -3367,7 +3555,7 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 
 	if (dlg.exec())
 	{
-		std::string name = imgModel->GetImageSource()->GetName();
+		std::string name = imgModel->GetName();
 		if (name.empty())
 		{
 			std::stringstream ss;
@@ -3393,7 +3581,7 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 		GLScene* scene = doc->GetScene();
 		if (scene)
 		{
-			scene->ZoomTo(imgModel->GetBoundingBox());
+			scene->GetCamera().ZoomToBox(imgModel->GetBoundingBox());
 			RedrawGL();
 		}
 		return true;
@@ -3433,7 +3621,7 @@ void CMainWindow::on_doCommand(QString msg)
 
 void CMainWindow::on_selectionChanged()
 {
-//	ReportSelection();
+	ReportSelection();
 }
 
 CPluginManager* CMainWindow::GetPluginManager() { return &ui->m_pluginManager; }

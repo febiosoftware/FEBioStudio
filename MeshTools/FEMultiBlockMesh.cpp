@@ -62,22 +62,10 @@ MBBlock& MBBlock::SetZoning(double gx, double gy, double gz, bool bx, bool by, b
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-FEMultiBlockMesh::FEMultiBlockMesh()
+FEMultiBlockMesh::FEMultiBlockMesh(GObject& o) : FEMesher(o)
 {
 	m_pm = nullptr;
 	m_elemType = FE_HEX8;
-}
-
-//-----------------------------------------------------------------------------
-FEMultiBlockMesh::FEMultiBlockMesh(const FEMultiBlockMesh& mb)
-{
-	CopyFrom(mb);
-}
-
-//-----------------------------------------------------------------------------
-void FEMultiBlockMesh::operator = (const FEMultiBlockMesh& mb)
-{
-	CopyFrom(mb);
 }
 
 //-----------------------------------------------------------------------------
@@ -582,7 +570,6 @@ void FEMultiBlockMesh::BuildFEFaces(FSMesh* pm)
 				{
 					FSFace* pf = pm->FacePtr(faces++);
 					pf->m_gid = F.m_gid;
-					pf->m_sid = (F.m_sid < 0 ? F.m_gid : F.m_sid);
 					switch (m_elemType)
 					{
 					case FE_HEX8 : pf->SetType(FE_FACE_QUAD4); break;
@@ -1704,7 +1691,7 @@ bool FEMultiBlockMesh::SetNodeWeights(std::vector<double>& w)
 }
 
 //==============================================================
-FEMultiBlockMesher::FEMultiBlockMesher() : m_po(nullptr)
+FEMultiBlockMesher::FEMultiBlockMesher(GObject& o) : FEMultiBlockMesh(o)
 {
 	AddDoubleParam(0.1, "h", "Element size");
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
@@ -1712,11 +1699,12 @@ FEMultiBlockMesher::FEMultiBlockMesher() : m_po(nullptr)
 
 bool FEMultiBlockMesher::BuildMultiBlock()
 {
-	if (m_po == nullptr) return false;
+	GMultiBox* po = dynamic_cast<GMultiBox*>(&m_o);
+	if (po == nullptr) return false;
 
 	ClearMB();
 
-	GMultiBox& o = *m_po;
+	GMultiBox& o = *po;
 	for (int i=0; i<o.Nodes(); ++i)
 	{
 		GNode* n = o.Node(i);
@@ -1770,11 +1758,11 @@ bool FEMultiBlockMesher::BuildMultiBlock()
 	return true;
 }
 
-FSMesh* FEMultiBlockMesher::BuildMesh(GObject* po)
+FSMesh* FEMultiBlockMesher::BuildMesh()
 {
-	m_po = dynamic_cast<GMultiBox*>(po);
-	if (m_po == nullptr) return nullptr;
-	GMultiBox& o = *m_po;
+	GMultiBox* po = dynamic_cast<GMultiBox*>(&m_o);
+	if (po == nullptr) return nullptr;
+	GMultiBox& o = *po;
 
 	// rebuild the multiblock data
 	BuildMultiBlock();
@@ -1988,7 +1976,7 @@ FSMesh* FESetMBWeight::Apply(GObject* po, FESelection* sel)
 		}
 
 		// don't call po->BuildMesh() since that deletes the current mesh
-		return po->GetFEMesher()->BuildMesh(po);
+		return po->GetFEMesher()->BuildMesh();
 	}
 	else if (dynamic_cast<GMultiPatch*>(po))
 	{
@@ -2019,7 +2007,7 @@ FSMesh* FESetMBWeight::Apply(GObject* po, FESelection* sel)
 		}
 
 		// don't call po->BuildMesh() since that deletes the current mesh
-		return po->GetFEMesher()->BuildMesh(po);
+		return po->GetFEMesher()->BuildMesh();
 	}
 
 	return nullptr;

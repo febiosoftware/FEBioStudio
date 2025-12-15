@@ -387,17 +387,18 @@ void CImageMapTool::OnCreate()
                 // We want the normal to point inward.
                 int negate = inPart1 ? -1 : 1;
 
+				vec3f Nf = to_vec3f(mesh->FaceNormal(currentFace));
                 for(int j = 0; j < currentFace.Nodes(); j++)
                 {
                     int nodeID = currentFace.n[j];
 
                     try
                     {
-                        normals.at(nodeID) += currentFace.m_nn[j]*negate;
+                        normals.at(nodeID) += Nf*negate;
                     }
                     catch(...)
                     {
-                        normals[nodeID] = currentFace.m_nn[j]*negate;
+                        normals[nodeID] = Nf*negate;
                     }
                 }
             }

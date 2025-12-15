@@ -26,6 +26,7 @@
 
 #pragma once
 #include "Tool.h"
+#include "RegistrationTool.h"
 #include <QtCore>
 
 class ICPRegistrationToolUI;

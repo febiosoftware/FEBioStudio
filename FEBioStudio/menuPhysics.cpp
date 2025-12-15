@@ -86,6 +86,7 @@ void CMainWindow::on_actionAddNodalBC_triggered()
 
 			// figure out the selection
 			FESelection* psel = doc->GetCurrentSelection();
+			FSItemListBuilder* items = nullptr;
 			if (psel && psel->Size())
 			{
 				int ntype = psel->Type();
@@ -98,20 +99,19 @@ void CMainWindow::on_actionAddNodalBC_triggered()
 				case SELECT_FE_EDGES:
 				case SELECT_FE_NODES:
 					{
-						FSItemListBuilder* items = psel->CreateItemList();
-						if (items)
-						{
-							items->SetName(name);
-							gm.AddNamedSelection(items);
-							pbc->SetItemList(items);
-						}
+						items = psel->CreateItemList();
+						if (items) items->SetName(name);
 					}
 					break;
 				}
 			}
 
+			CCmdGroup* cmd = new CCmdGroup("Add Nodal BC");
+			if (items) cmd->AddCommand(new CCmdAddNamedSelection(gm, items));
+
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetNameAndType());
+			cmd->AddCommand(new CCmdAddBC(step, pbc, items));
+			doc->DoCommand(cmd, pbc->GetNameAndType());
 			UpdateModel(pbc);
 		}
 	}
@@ -141,6 +141,7 @@ void CMainWindow::on_actionAddSurfaceBC_triggered()
 			pbc->SetName(name);
 
 			// figure out the selection
+			FSItemListBuilder* items = nullptr;
 			FESelection* psel = doc->GetCurrentSelection();
 			if (psel && psel->Size())
 			{
@@ -150,20 +151,19 @@ void CMainWindow::on_actionAddSurfaceBC_triggered()
 				case SELECT_SURFACES:
 				case SELECT_FE_FACES:
 				{
-					FSItemListBuilder* items = psel->CreateItemList();
-					if (items)
-					{
-						items->SetName(name);
-						gm.AddNamedSelection(items);
-						pbc->SetItemList(items);
-					}
+					items = psel->CreateItemList();
+					if (items) items->SetName(name);
 				}
 				break;
 				}
 			}
 
+			CCmdGroup* cmd = new CCmdGroup("Add Surface BC");
+			if (items) cmd->AddCommand(new CCmdAddNamedSelection(gm, items));
+
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetNameAndType());
+			cmd->AddCommand(new CCmdAddBC(step, pbc, items));
+			doc->DoCommand(cmd, pbc->GetNameAndType());
 			UpdateModel(pbc);
 		}
 	}
@@ -224,6 +224,7 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 
 			// figure out the selection
 			FESelection* psel = doc->GetCurrentSelection();
+			FSItemListBuilder* items = nullptr;
 			if (psel && psel->Size())
 			{
 				int ntype = psel->Type();
@@ -236,20 +237,19 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 				case SELECT_FE_EDGES:
 				case SELECT_FE_NODES:
 				{
-					FSItemListBuilder* items = psel->CreateItemList();
-					if (items)
-					{
-						items->SetName(name);
-						gm.AddNamedSelection(items);
-						pnl->SetItemList(items);
-					}
+					items = psel->CreateItemList();
+					if (items) items->SetName(name);
 				}
 				break;
 				}
 			}
 
+			CCmdGroup* cmd = new CCmdGroup("Add Nodal Load");
+			if (items) cmd->AddCommand(new CCmdAddNamedSelection(gm, items));
+
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddLoad(step, pnl), pnl->GetNameAndType());
+			cmd->AddCommand(new CCmdAddLoad(step, pnl, items));
+			doc->DoCommand(cmd, pnl->GetNameAndType());
 			UpdateModel(pnl);
 		}
 	}
@@ -280,6 +280,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 
 			// figure out the selection
 			FESelection* psel = doc->GetCurrentSelection();
+			FSItemListBuilder* items = nullptr;
 			if (psel && psel->Size())
 			{
 				int ntype = psel->Type();
@@ -288,20 +289,19 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 				case SELECT_SURFACES:
 				case SELECT_FE_FACES:
 					{
-						FSItemListBuilder* items = psel->CreateItemList();
-						if (items)
-						{
-							items->SetName(name);
-							gm.AddNamedSelection(items);
-							psl->SetItemList(items);
-						}
+						items = psel->CreateItemList();
+						if (items) items->SetName(name);
 					}
 					break;
 				}
 			}
 
+			CCmdGroup* cmd = new CCmdGroup("Add Surface Load");
+			if (items) cmd->AddCommand(new CCmdAddNamedSelection(gm, items));
+
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddLoad(step, psl), psl->GetNameAndType());
+			cmd->AddCommand(new CCmdAddLoad(step, psl, items));
+			doc->DoCommand(cmd, psl->GetNameAndType());
 			UpdateModel(psl);
 		}
 	}
@@ -390,23 +390,23 @@ void CMainWindow::on_actionAddIC_triggered()
 
 			// figure out the selection
 			FESelection* psel = doc->GetCurrentSelection();
+			FSItemListBuilder* items = nullptr;
 			if (psel && psel->Size())
 			{
 				int itemType = pic->GetMeshItemType();
 				if (psel->Supports(itemType))
 				{
-					FSItemListBuilder* items = psel->CreateItemList();
-					if (items)
-					{
-						items->SetName(name);
-						gm.AddNamedSelection(items);
-						pic->SetItemList(items);
-					}
+					items = psel->CreateItemList();
+					if (items) items->SetName(name);
 				}
 			}
 
+			CCmdGroup* cmd = new CCmdGroup("Add IC");
+			if (items) cmd->AddCommand(new CCmdAddNamedSelection(gm, items));
+
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddIC(step, pic), pic->GetNameAndType());
+			cmd->AddCommand(new CCmdAddIC(step, pic, items));
+			doc->DoCommand(cmd, pic->GetNameAndType());
 			UpdateModel(pic);
 		}
 	}
@@ -524,6 +524,7 @@ void CMainWindow::on_actionAddSurfaceNLC_triggered()
 
 			// figure out the selection
 			FESelection* psel = doc->GetCurrentSelection();
+			FSItemListBuilder* items = nullptr;
 			if (psel && psel->Size())
 			{
 				int ntype = psel->Type();
@@ -532,17 +533,19 @@ void CMainWindow::on_actionAddSurfaceNLC_triggered()
 				case SELECT_SURFACES:
 				case SELECT_FE_FACES:
 				{
-					FSItemListBuilder* items = psel->CreateItemList();
-					items->SetName(name);
-					gm.AddNamedSelection(items);
-					pi->SetItemList(items);
+					items = psel->CreateItemList();
+					if (items) items->SetName(name);
 				}
 				break;
 				}
 			}
 
+			CCmdGroup* cmd = new CCmdGroup("Add Surface NLC");
+			if (items) cmd->AddCommand(new CCmdAddNamedSelection(gm, items));
+
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetNameAndType());
+			cmd->AddCommand(new CCmdAddConstraint(step, pi, items));
+			doc->DoCommand(cmd, pi->GetNameAndType());
 			UpdateModel(pi);
 		}
 	}

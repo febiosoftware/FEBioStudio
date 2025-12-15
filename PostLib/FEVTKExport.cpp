@@ -268,7 +268,7 @@ void FEVTKExport::WritePoints(FEState* ps)
 	{
 		if (m.Node(j).m_ntag != -1)
 		{
-			vec3f& r = ps->m_NODE[j].m_rt;
+			vec3f r = ps->NodePosition(j);
 			fprintf(m_fp, "%g %g %g ", r.x, r.y, r.z);
 			k++;
 		}
@@ -360,7 +360,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 	for (int n = 0; n<NDATA; ++n, ++pd)
 	{
 		ModelDataField& data = *(*pd);
-		if ((data.DataClass() == NODE_DATA) && (data.Flags() & EXPORT_DATA))
+		if (data.DataClass() == NODE_DATA)
 		{
 			FEMeshData& meshData = ps->m_Data[n];
 			char szname[256];
@@ -425,7 +425,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 		}
 
 		// --- E L E M E N T   P O I N T   D A T A ---
-		if ((data.DataClass() == ELEM_DATA) && (data.Flags() & EXPORT_DATA))
+		if (data.DataClass() == ELEM_DATA)
 		{
 			FEMeshData& meshData = ps->m_Data[n];
 			DATA_FORMAT dfmt = meshData.GetFormat();
@@ -504,7 +504,7 @@ void FEVTKExport::WriteCellData(FEState* ps)
     for (int n=0; n<NDATA; ++n, ++pd)
     {
         ModelDataField& data = *(*pd);
-        if ((data.DataClass() == ELEM_DATA))// && (data.Flags() & EXPORT_DATA))
+        if (data.DataClass() == ELEM_DATA)
         {
 			FEMeshData& meshData = ps->m_Data[n];
             DATA_FORMAT dfmt = meshData.GetFormat();
@@ -631,37 +631,42 @@ bool FEVTKExport::FillNodeDataArray(vector<float>& val, Post::FEMeshData& meshDa
 
 	if (ntype == DATA_SCALAR)
 	{
-		FENodeData<float>& data = dynamic_cast<FENodeData<float>&>(meshData);
+		FENodeData<float>* data = dynamic_cast<FENodeData<float>*>(&meshData);
+		if (data == nullptr) return false;
 		val.assign(NN, 0.f);
-		for (int i=0; i<NN; ++i) val[i] = data[i];
+		for (int i=0; i<NN; ++i) val[i] = (*data)[i];
 	}
 	else if (ntype == DATA_VEC3)
 	{
-		FENodeData<vec3f>& data = dynamic_cast<FENodeData<vec3f>&>(meshData);
+		FENodeData<vec3f>* data = dynamic_cast<FENodeData<vec3f>*>(&meshData);
+		if (data == nullptr) return false;
 		val.assign(NN*3, 0.f);
-		for (int i=0; i<NN; ++i) write_data(val, i, data[i]);
+		for (int i=0; i<NN; ++i) write_data(val, i, (*data)[i]);
 	}
 	else if (ntype == DATA_MAT3S)
 	{
-		FENodeData<mat3fs>& data = dynamic_cast<FENodeData<mat3fs>&>(meshData);
+		FENodeData<mat3fs>* data = dynamic_cast<FENodeData<mat3fs>*>(&meshData);
+		if (data == nullptr) return false;
 		val.assign(NN*6, 0.f);
-		for (int i=0; i<NN; ++i) write_data(val, i, data[i]);
+		for (int i=0; i<NN; ++i) write_data(val, i, (*data)[i]);
 	}
 	else if (ntype == DATA_MAT3SD)
 	{
-		FENodeData<mat3fd>& data = dynamic_cast<FENodeData<mat3fd>&>(meshData);
+		FENodeData<mat3fd>* data = dynamic_cast<FENodeData<mat3fd>*>(&meshData);
+		if (data == nullptr) return false;
 		val.assign(NN*3, 0.f);
-		for (int i=0; i<NN; ++i) write_data(val, i, data[i]);
+		for (int i=0; i<NN; ++i) write_data(val, i, (*data)[i]);
 	}
 	else if (ntype == DATA_ARRAY)
 	{
-		FENodeArrayData& data = dynamic_cast<FENodeArrayData&>(meshData);
-		int nc = data.components();
+		FENodeArrayData* data = dynamic_cast<FENodeArrayData*>(&meshData);
+		if (data == nullptr) return false;
+		int nc = data->components();
 		val.assign(NN * nc, 0.f);
 		int m = 0;
 		for (int n = 0; n < nc; ++n)
 		{
-			for (int i = 0; i < NN; ++i) val[m++] = data.eval(i, n);
+			for (int i = 0; i < NN; ++i) val[m++] = (*data).eval(i, n);
 		}
 	}
 	else return false;

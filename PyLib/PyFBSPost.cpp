@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <PostLib/constants.h>
 #include <PostLib/FEDistanceMap.h>
 #include <PostLib/DataFilter.h>
+#include <PostLib/FEVTKExport.h>
 #include "DocHeaders/PyPostDocs.h"
 
 #ifndef PY_EXTERNAL
@@ -193,10 +194,23 @@ void init_FBSPost(py::module& m)
 
 	py::class_<FEDistanceMap, ModelDataField, std::unique_ptr<FEDistanceMap, py::nodelete>>(post, "DistanceMap")
 		.def(py::init<FEPostModel*, int>())
+        .def("Init", &FEDistanceMap::Init)
 		.def("SetSelection1", &FEDistanceMap::SetSelection1)
 		.def("SetSelection2", &FEDistanceMap::SetSelection2)
 		.def("SetSigned", &FEDistanceMap::SetSigned)
+		.def("FlipPrimary", &FEDistanceMap::FlipPrimary)
+		.def("FlipSecondary", &FEDistanceMap::FlipSecondary)
+		.def("SetMethod", &FEDistanceMap::SetMethod)
 		.def("Apply", &FEDistanceMap::Apply)
+        .def("ApplyState", &FEDistanceMap::ApplyState)
+		;
+
+	py::class_<FEVTKExport>(post, "vtkExport", "class for exporting post-model to vtk file")
+		.def(py::init<>())
+		.def("ExportAllStates", &FEVTKExport::ExportAllStates)
+		.def("ExportSelectedElementsOnly", &FEVTKExport::ExportSelectedElementsOnly)
+		.def("WriteSeriesFile", &FEVTKExport::WriteSeriesFile)
+		.def("Save", &FEVTKExport::Save)
 		;
 }
 

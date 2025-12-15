@@ -43,6 +43,7 @@ public:
 	{
 		vec3f	r;		// nodal position
 		vec3f	n;		// normal (but not really)
+		vec3f	t;		// texture coordinate
 		GLColor c;
 		int		tag = 0;	// multipurpose tag
 		int		pid = 0;	// GNode parent local ID
@@ -67,7 +68,7 @@ public:
 		bool	bext = true;	// external flag
 		int		tag = 0;	// multipurpose tag
 		int		n[3];	// nodes
-		int		nbr[3];	// neighbor faces
+		int		nbr[3] = { -1,-1,-1 };	// neighbor faces
 		vec3f	fn;		// face normal
 		vec3f	vn[3];	// node normals
 		vec3f	vr[3];	// nodal coordinates
@@ -75,25 +76,40 @@ public:
 		vec3f	t[3];	// texture coordinates
 	};
 
-	struct PARTITION
+	struct SURFACE_PARTITION
 	{
 		int n0 = 0; // start index into face list
 		int nf = 0; // nr of faces in partition
 		int tag = 0; // used to define partition attributes such as whether it's internal/external
 	};
 
+	struct EDGE_PARTITION
+	{
+		int n0 = 0; // start index into edge list
+		int ne = 0; // nr of edges in partition
+		int tag = 0; // used to define partition attributes such as whether it's internal/external
+	};
+
 public:
 	GLMesh(void);
+	GLMesh(const GLMesh& m);
+	GLMesh& operator = (const GLMesh& m);
 	virtual ~GLMesh(void);
 
 	void Create(int nodes, int faces, int edges = 0);
 	void Clear();
 
-	void NewPartition(int tag = 0);
+	void NewSurfacePartition(int tag = 0);
 
-	void AutoPartition();
+	void NewEdgePartition(int tag = 0);
 
-	virtual void Update();
+	void AutoSurfacePartition();
+
+	void AutoEdgePartition();
+
+	void PartitionSurfaceByTags();
+
+	void Update(bool updateNormals = true);
 
 	bool IsModified() const { return m_isModified; }
 
@@ -111,18 +127,18 @@ public:
 
 	bool IsEmpty() const { return m_Node.empty(); }
 
-	BOX GetBoundingBox() { return m_box; }
+	BOX GetBoundingBox() const { return m_box; }
 
 	void Attach(GLMesh& m, bool bupdate = true);
 
 	void AutoSmooth(double angleDegrees);
 
 public:
-	size_t Partitions() const { return m_FIL.size(); }
-	const PARTITION& Partition(size_t n) const { return m_FIL[n]; }
+	size_t SurfacePartitions() const { return m_FIL.size(); }
+	const SURFACE_PARTITION& SurfacePartition(size_t n) const { return m_FIL[n]; }
 
-	size_t EILs() const { return m_EIL.size(); }
-	const std::pair<int, int>& EIL(size_t n) const { return m_EIL[n]; }
+	size_t EdgePartitions() const { return m_EIL.size(); }
+	const EDGE_PARTITION& EdgePartition(size_t n) const { return m_EIL[n]; }
 
 public:
 	int	AddNode(const vec3f& r, int groupID = 0);
@@ -130,7 +146,10 @@ public:
 
 	int	AddNode(const vec3f& r, GLColor c);
 
+	int AddNode(const NODE& nd);
+
 public:
+	void AddEdge(int n0, int n1, int groupID = 0);
 	void AddEdge(int* n, int nodes, int groupID = 0);
 	void AddEdge(vec3f* r, int nodes, int groupID = 0);
 
@@ -148,6 +167,8 @@ public:
 	void AddFace(vec3f r[3], vec3f n[3], GLColor c);
 	void AddFace(vec3f r[3], vec3f n[3], float tex, GLColor c);
 	void AddFace(vec3f r[3], vec3f n[3], float tex[3], GLColor c);
+	int AddFace(vec3f r[3], vec3f n[3], vec3f tex[3], GLColor c[3], int tag = 0);
+	int AddFace(int nodes[3], vec3f n[3], vec3f tex[3], GLColor c[3], int tag = 0);
 	void AddFace(vec3f r[3], GLColor c[3]);
 	void AddFace(vec3f r[3], float t[3]);
 	void AddFace(vec3f r[3], vec3f t[3]);
@@ -158,14 +179,19 @@ public:
 protected:
 	void FindNeighbors();
 
+	bool ValidatePartitions();
+
 public:
 	void UpdateBoundingBox();
 	void UpdateNormals();
 
 	void setModified(bool b) { m_isModified = b; }
 
+	unsigned int GetUID() const { return m_uid; }
+
 private:
 	int AddFace(const FACE& face);
+	int AddEdge(const EDGE& edge);
 
 protected:
 	BOX				m_box;
@@ -174,9 +200,11 @@ protected:
 	vector<FACE>	m_Face;
 
 private:
-	vector<PARTITION>		m_FIL;
-	vector<pair<int, int> >	m_EIL;
+	vector<SURFACE_PARTITION>	m_FIL;
+	vector<EDGE_PARTITION>		m_EIL;
 
 	bool m_isModified = false;
 	bool m_hasNeighborList = false;
+
+	unsigned int m_uid; // unique ID
 };

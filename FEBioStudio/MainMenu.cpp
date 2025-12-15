@@ -62,6 +62,9 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	QAction* actionConvertFsm2Feb = createAction("FSM to FEB ...", "actionConvertFsm2Feb");
 	QAction* actionConvertGeo = createAction("Geometry Files ...", "actionConvertGeo");
 	QAction* actionExit = createAction("Exit", "actionExit");
+	
+	QAction* actionNewBatch  = createAction("New Batch ...", "actionNewBatch");
+	QAction* actionOpenBatch = createAction("Open Batch File ...", "actionOpenBatch");
 
 	// --- Edit menu actions ---
 	actionUndo = createAction("Undo", "actionUndo", "undo"); actionUndo->setShortcuts(QKeySequence::Undo);
@@ -165,10 +168,11 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	QAction* actionUnitConverter = createAction("Unit Converter ...", "actionUnitConverter");
 	QAction* actionRotationConverter = createAction("Rotation Converter ...", "actionRotationConverter");
 	actionMaterialTest = createAction("Material test ...", "actionMaterialTest");
+	actionDistroVisual = createAction("Distribution visualizer ...", "actionDistroVisual");
 	QAction* actionKinemat = createAction("Kinemat ...", "actionKinemat");
 	QAction* actionPlotMix = createAction("Plotmix ...", "actionPlotMix");
 	QAction* actionPython = createAction("Python editor ...", "actionEditPython");
-	actionOptions = createAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F12);
+	actionSettings = createAction("Settings ...", "actionSettings"); actionSettings->setShortcut(Qt::Key_F12);
 
 	QAction* actionLayerInfo = createAction("Print Layer Info", "actionLayerInfo"); actionLayerInfo->setShortcut(Qt::AltModifier | Qt::Key_L);
 
@@ -235,14 +239,14 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	// --- View menu ---
 	actionUndoViewChange = createAction("Undo View Change", "actionUndoViewChange"); actionUndoViewChange->setShortcut(Qt::ControlModifier | Qt::Key_U);
 	actionRedoViewChange = createAction("Redo View Change", "actionRedoViewChange"); actionRedoViewChange->setShortcut(Qt::ControlModifier | Qt::Key_R);
-	actionShowGVContext = createAction("Show GV context menu", "actionShowGVContext");  actionShowGVContext->setShortcut(Qt::Key_F4);
+	actionShowGVContext = createAction("Show GV context menu", "actionShowGVContext");  actionShowGVContext->setShortcut(Qt::Key_V);
 	actionZoomSelect = createAction("Zoom to Selection", "actionZoomSelect"); actionZoomSelect->setShortcut(Qt::Key_F);
 	actionZoomExtents = createAction("Zoom to Selection", "actionZoomExtents");
 	actionViewCapture = createAction("Show Capture Frame", "actionViewCapture"); actionViewCapture->setCheckable(true); actionViewCapture->setShortcut(Qt::Key_0);
 	actionShowGrid = createAction("Show Grid", "actionShowGrid"); actionShowGrid->setCheckable(true); actionShowGrid->setChecked(true); actionShowGrid->setShortcut(Qt::Key_G);
+	actionShowOverlay = createAction("Toggle Overlay", "actionToggleOverlay"); actionShowOverlay->setCheckable(true); actionShowOverlay->setChecked(true); actionShowOverlay->setShortcut(Qt::Key_O);
 	actionShowMeshLines = createAction("Show Mesh Lines", "actionShowMeshLines", "show_mesh"); actionShowMeshLines->setCheckable(true); actionShowMeshLines->setChecked(true); actionShowMeshLines->setShortcut(Qt::Key_M);
 	actionShowEdgeLines = createAction("Show Edge Lines", "actionShowEdgeLines"); actionShowEdgeLines->setCheckable(true); actionShowEdgeLines->setChecked(true); actionShowEdgeLines->setShortcut(Qt::Key_Z);
-	actionBackfaceCulling = createAction("Backface Culling", "actionBackfaceCulling"); actionBackfaceCulling->setCheckable(true);
 	actionViewSmooth = createAction("Color Smoothing", "actionViewSmooth"); actionViewSmooth->setShortcut(Qt::Key_C); actionViewSmooth->setCheckable(true);
 	actionOrtho = createAction("Orthographic Projection", "actionOrtho"); actionOrtho->setCheckable(true); actionOrtho->setShortcut(Qt::Key_P);
 	actionShowNormals = createAction("Show Normals", "actionShowNormals"); actionShowNormals->setCheckable(true); actionShowNormals->setShortcut(Qt::Key_N);
@@ -411,6 +415,13 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 
 	menuFile->addAction(ConvertMenu->menuAction());
 	menuFile->addSeparator();
+
+	QMenu* BatchMenu = new QMenu("Batch Run");
+	BatchMenu->addAction(actionNewBatch);
+	BatchMenu->addAction(actionOpenBatch);
+	menuFile->addAction(BatchMenu->menuAction());
+	menuFile->addSeparator();
+
 	menuFile->addAction(actionExit);
 
 	QMenu* moreSelection = new QMenu("More selection options");
@@ -470,6 +481,8 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuEditPost->addSeparator();
 	menuEditPost->addAction(actionFind);
 	menuEditPost->addAction(actionSelectRange);
+	menuEditPost->addSeparator();
+	menuEditPost->addAction(actionCopyObject);
 
 	// Edit (txt) menu
 	menuBar->addAction(menuEditTxt->menuAction());
@@ -580,10 +593,11 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuTools->addAction(actionUnitConverter);
 	menuTools->addAction(actionElasticityConvertor);
 	menuTools->addAction(actionMaterialTest);
+	menuTools->addAction(actionDistroVisual);
 	menuTools->addAction(actionKinemat);
 	menuTools->addAction(actionPlotMix);
 	menuTools->addAction(actionPython);
-	menuTools->addAction(actionOptions);
+	menuTools->addAction(actionSettings);
 
 	// View menu
 	menuBar->addAction(menuView->menuAction());
@@ -595,11 +609,11 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuView->addAction(actionOrtho);
 	menuView->addAction(actionShowNormals);
 	menuView->addAction(actionViewCapture);
+	menuView->addAction(actionShowOverlay);
 	menuView->addSeparator();
 	menuView->addAction(actionShowGrid);
 	menuView->addAction(actionShowMeshLines);
 	menuView->addAction(actionShowEdgeLines);
-	menuView->addAction(actionBackfaceCulling);
 	menuView->addAction(actionViewSmooth);
 	menuView->addAction(actionRenderMode);
 	menuView->addAction(actionShowFibers);

@@ -121,10 +121,6 @@ void GLPlotHelicalAxis::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_mdl == nullptr) return;
 
-	re.pushState();
-	re.disable(GLRenderEngine::StateFlag::LIGHTING);
-	re.disable(GLRenderEngine::StateFlag::DEPTHTEST);
-
 	BOX box = m_mdl->GetFSModel()->GetBoundingBox();
 	re.pushTransform();
 
@@ -140,7 +136,6 @@ void GLPlotHelicalAxis::Render(GLRenderEngine& re, GLContext& rc)
 	glx::renderHelicalAxis(re, R*s);
 
 	re.popTransform();
-	re.popState();
 }
 
 void GLPlotHelicalAxis::Update()

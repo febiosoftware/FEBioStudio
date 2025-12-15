@@ -148,6 +148,7 @@ public:
 		checkDuplicateEdges(); testCount++;
 		checkDuplicateFaces(); testCount++;
 		checkDuplicateElements(); testCount++;
+		checkDegenerateEdges(); testCount++;
 		checkElementNeighbors(); testCount++;
 		checkFaceNeighbors(); testCount++;
 		checkEdgeNeighbors(); testCount++;
@@ -167,6 +168,7 @@ public:
 	void checkDuplicateEdges();
 	void checkDuplicateFaces();
 	void checkDuplicateElements();
+	void checkDegenerateEdges();
 	void checkElementNeighbors();
 	void checkFaceNeighbors();
 	void checkEdgeNeighbors();
@@ -621,6 +623,23 @@ void CDlgMeshDiagnosticsUI::checkDuplicateElements()
 
 	if (duplicates == 0) log("No duplicate elements found.");
 	else logError(QString("%1 duplicate elements found.").arg(duplicates));
+}
+
+void CDlgMeshDiagnosticsUI::checkDegenerateEdges()
+{
+	FSMesh& mesh = *obj->GetFEMesh();
+	int nerr = 0;
+	const int NE = mesh.Edges();
+	for (int i=0; i<NE; ++i)
+	{
+		FSEdge& edge = mesh.Edge(i);
+		if (edge.n[0] == edge.n[1])
+		{
+			nerr++;
+		}
+	}
+	if (nerr == 0) log("No degenerate edges found.");
+	else logError(QString("%1 degenerate edges found.").arg(nerr));
 }
 
 void CDlgMeshDiagnosticsUI::checkElementNeighbors()

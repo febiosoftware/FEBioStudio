@@ -87,6 +87,8 @@ void Ui::CEmptyConfig::Apply()
 	ui->imageSettingsPanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+	ui->docProps->parentWidget()->hide();
+
 #ifdef HAS_PYTHON
 //    ui->pythonToolsPanel->parentWidget()->hide();
 #endif
@@ -130,6 +132,8 @@ void Ui::CHTMLConfig::Apply()
 	ui->imageSettingsPanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+	ui->docProps->parentWidget()->hide();
+
 #ifdef HAS_PYTHON
 //    ui->pythonToolsPanel->parentWidget()->hide();
 #endif
@@ -208,6 +212,8 @@ void Ui::CModelConfig::Apply()
 	ui->timePanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+	ui->docProps->parentWidget()->hide();
+
 #ifdef HAS_PYTHON
 //    ui->pythonToolsPanel->parentWidget()->show();
 #endif
@@ -276,6 +282,8 @@ void Ui::CPostConfig::Apply()
 	ui->infoPanel->parentWidget()->show();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+	ui->docProps->parentWidget()->hide();
+
 #ifdef HAS_PYTHON
 //    ui->pythonToolsPanel->parentWidget()->show();
 #endif
@@ -330,6 +338,8 @@ void Ui::CTextConfig::Apply()
 	ui->imageSettingsPanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+	ui->docProps->parentWidget()->hide();
+
 #ifdef HAS_PYTHON
 //    ui->pythonToolsPanel->parentWidget()->hide();
 #endif
@@ -384,6 +394,7 @@ void Ui::CXMLConfig::Apply()
 			ui->imageSettingsPanel->parentWidget()->hide();
 			ui->febioMonitor->parentWidget()->hide();
 			ui->febioMonitorView->parentWidget()->hide();
+			ui->docProps->parentWidget()->hide();
 
 			for (int index = 1; index < ui->xmlToolbar->actions().size(); index++)
 			{
@@ -419,6 +430,8 @@ void Ui::CXMLConfig::Apply()
 			ui->imageSettingsPanel->parentWidget()->hide();
 			ui->febioMonitor->parentWidget()->hide();
 			ui->febioMonitorView->parentWidget()->hide();
+			ui->docProps->parentWidget()->hide();
+
 #ifdef HAS_PYTHON
 //            ui->pythonToolsPanel->parentWidget()->hide();
 #endif
@@ -472,6 +485,7 @@ void Ui::CMonitorConfig::Apply()
 
 	ui->febioMonitorView->parentWidget()->show();
 	ui->febioMonitorView->parentWidget()->raise();
+	ui->docProps->parentWidget()->hide();
 
 	ui->m_wnd->ShowLogPanel();
 	ui->logPanel->ShowLog(::CLogPanel::FEBIO_LOG);
@@ -512,4 +526,44 @@ void Ui::CFEBReportConfig::Apply()
 	ui->timePanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+	ui->docProps->parentWidget()->hide();
+}
+
+// Configure for app document
+void Ui::CBatchRunConfig::Apply()
+{
+	CUIConfig::Apply();
+
+	ui->setActiveCentralView(CMainCentralWidget::BATCHRUN_VIEW);
+
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(false);
+	ui->mainMenu->menuView->menuAction()->setVisible(false);
+	ui->mainMenu->menuFEBio->menuAction()->setVisible(false);
+
+	ui->buildToolBar->hide();
+	ui->postToolBar->hide();
+	ui->imageToolBar->hide();
+	ui->pFontToolBar->hide();
+	ui->xmlToolbar->hide();
+	ui->monitorToolBar->hide();
+
+	ui->centralWidget->glw->ShowControlBar();
+
+	ui->modelViewer->parentWidget()->hide();
+	ui->buildPanel->parentWidget()->hide();
+	ui->postPanel->parentWidget()->hide();
+	ui->timePanel->parentWidget()->hide();
+	ui->infoPanel->parentWidget()->hide();
+	ui->imageSettingsPanel->parentWidget()->hide();
+	ui->timePanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
+	ui->febioMonitorView->parentWidget()->hide();
+	ui->logPanel->parentWidget()->show();
+	ui->docProps->parentWidget()->hide();
 }

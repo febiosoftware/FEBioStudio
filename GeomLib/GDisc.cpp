@@ -97,7 +97,7 @@ void GDisc::SetRadius(double R) { SetFloatValue(RADIUS, R); }
 //-----------------------------------------------------------------------------
 FEMesher* GDisc::CreateDefaultMesher()
 {
-	return new FEShellDisc();
+	return new FEShellDisc(*this);
 }
 
 //-----------------------------------------------------------------------------

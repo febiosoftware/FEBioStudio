@@ -29,9 +29,8 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <MeshLib/FSMesh.h>
 
-FETruncatedEllipsoid::FETruncatedEllipsoid()
+FETruncatedEllipsoid::FETruncatedEllipsoid(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_pobj = nullptr;
 	m_ns = 6;
 	m_nz = 6;
 	m_nr = 1;
@@ -50,13 +49,13 @@ FETruncatedEllipsoid::FETruncatedEllipsoid()
 
 extern double gain2(double x, double r, double n);
 
-FSMesh* FETruncatedEllipsoid::BuildMesh(GObject* po)
+FSMesh* FETruncatedEllipsoid::BuildMesh()
 {
-	m_pobj = dynamic_cast<GTruncatedEllipsoid*>(po);
-	if (m_pobj == nullptr) return nullptr;
+	GTruncatedEllipsoid* po = dynamic_cast<GTruncatedEllipsoid*>(&m_o);
+	if (po == nullptr) return nullptr;
 
 	// get object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double Ra = param.GetFloatValue(GTruncatedEllipsoid::RA);
 	double Rb = param.GetFloatValue(GTruncatedEllipsoid::RB);
 	double Rc = param.GetFloatValue(GTruncatedEllipsoid::RC);

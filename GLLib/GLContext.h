@@ -38,8 +38,5 @@ public:
 
 public:
 	GLCamera*	m_cam;
-	int			m_x, m_y;
-	int			m_w, m_h;
-
 	GLViewSettings	m_settings;
 };

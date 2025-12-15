@@ -146,38 +146,21 @@ void CMainWindow::on_actionRecordNew_triggered()
 
 void CMainWindow::on_actionRecordStart_triggered()
 {
-	GLScreenRecorder& recorder = GetGLView()->GetScreenRecorder();
-	if (recorder.HasRecording())
-	{
-		recorder.Start();
-		GetGLView()->LockSafeFrame();
-		UpdateTitle();
-	}
-	else QMessageBox::information(this, "FEBio Studio", "You need to create a new video file before you can start recording");
+	if (!GetGLView()->StartRecording())
+		QMessageBox::information(this, "FEBio Studio", "You need to create a new video file before you can start recording");
+	UpdateTitle();
 }
 
 void CMainWindow::on_actionRecordPause_triggered()
 {
-	GLScreenRecorder& recorder = GetGLView()->GetScreenRecorder();
-	if (recorder.HasRecording())
-	{
-		if (recorder.IsRecording())
-		{
-			recorder.Pause();
-			UpdateTitle();
-		}
-	}
-	else QMessageBox::information(this, "FEBio Studio", "You need to create a new video file first.");
+	if (!GetGLView()->PauseRecording())
+		QMessageBox::information(this, "FEBio Studio", "You need to create a new video file first.");
+	UpdateTitle();
 }
 
 void CMainWindow::on_actionRecordStop_triggered()
 {
-	GLScreenRecorder& recorder = GetGLView()->GetScreenRecorder();
-	if (!recorder.IsStopped())
-	{
-		recorder.Stop();
-		UpdateTitle();
-		GetGLView()->UnlockSafeFrame();
-	}
-	else QMessageBox::information(this, "FEBio Studio", "You need to create a new video file first.");
+	if (!GetGLView()->StopRecording())
+		QMessageBox::information(this, "FEBio Studio", "You need to create a new video file first.");
+	UpdateTitle();
 }

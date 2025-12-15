@@ -123,7 +123,6 @@ public:
 	int CountEdgePartitions() const;
 	int CountFacePartitions() const;
 	int CountElementPartitions() const;
-	int CountSmoothingGroups() const;
 };
 
 inline FSElement_* FSCoreMesh::ElementPtr(int n) { return ((n >= 0) && (n<Elements()) ? &ElementRef(n) : 0); }

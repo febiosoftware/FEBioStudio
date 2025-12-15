@@ -97,7 +97,7 @@ GPatch::GPatch() : GShellPrimitive(GPATCH)
 //-----------------------------------------------------------------------------
 FEMesher* GPatch::CreateDefaultMesher()
 {
-	return new FEShellPatch();
+	return new FEShellPatch(*this);
 }
 
 //-----------------------------------------------------------------------------

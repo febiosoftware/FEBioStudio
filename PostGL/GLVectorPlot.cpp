@@ -27,11 +27,11 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLVectorPlot.h"
 #include "PostLib/constants.h"
-#include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
 #include <FSCore/ColorMapManager.h>
+#include <GLLib/GLMeshBuilder.h>
 using namespace Post;
 
 //////////////////////////////////////////////////////////////////////
@@ -94,15 +94,6 @@ CGLVectorPlot::CGLVectorPlot()
 	m_usr[0] = 0.0;
 	m_usr[1] = 1.0;
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
-	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	bar->SetOrientation(GLLegendBar::ORIENT_HORIZONTAL);
-	bar->copy_label(szname);
-	SetLegendBar(bar);
-
-	bar->hide();
-	bar->ShowTitle(true);
-
 	UpdateData(false);
 }
 
@@ -126,14 +117,6 @@ bool CGLVectorPlot::UpdateData(bool bsave)
 		m_rngType = GetIntValue(RANGE_TYPE);
 		m_usr[1] = GetFloatValue(USER_MAX);
 		m_usr[0] = GetFloatValue(USER_MIN);
-
-		GLLegendBar* bar = GetLegendBar();
-		if ((m_ncol == 0) || !IsActive()) bar->hide();
-		else
-		{
-			bar->SetRange(m_crng.x, m_crng.y);
-			bar->show();
-		}
 
 		Update();
 	}
@@ -165,8 +148,34 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_nvec == -1) return;
 
-	// store attributes
-	re.pushState();
+	if (m_mesh == nullptr)
+	{
+		BuildMesh();
+
+		// we do this in the rare case that the new mesh is allocated on the exact same address
+		// as the old one
+		if (m_mesh) re.deleteCachedMesh(m_mesh);
+	}
+	if (m_mesh)
+	{
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
+
+		if (m_nglyph == GLYPH_LINE)
+			re.renderGMeshEdges(*m_mesh);
+		else
+			re.renderGMesh(*m_mesh);
+	}
+}
+
+void CGLVectorPlot::BuildMesh()
+{
+	if (m_mesh)
+	{
+		delete m_mesh;
+		m_mesh = nullptr;
+	}
+
+	GLMeshBuilder re;
 
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
@@ -194,6 +203,8 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 
 		m_fscale *= autoscale;
 	}
+
+	re.beginShape();
 
 	if (m_nglyph == GLYPH_LINE)
 	{
@@ -316,8 +327,9 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 		}
 	}
 
-	// restore attributes
-	re.popState();
+	re.endShape();
+
+	m_mesh = re.takeMesh();
 }
 
 void CGLVectorPlot::RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v)
@@ -325,7 +337,7 @@ void CGLVectorPlot::RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v)
 	float L = v.Length();
 	if (L == 0.f) return;
 
-	CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
 	float fmin = m_crng.x;
 	float fmax = m_crng.y;
@@ -406,20 +418,11 @@ void CGLVectorPlot::Update()
 	Update(m_lastTime, m_lastDt, false);
 }
 
-void CGLVectorPlot::Activate(bool b)
-{
-	CGLLegendPlot::Activate(b);
-	GLLegendBar* bar = GetLegendBar();
-	if ((m_ncol == 0) || !IsActive()) bar->hide();
-	else
-	{
-		bar->SetRange(m_crng.x, m_crng.y);
-		bar->show();
-	}
-}
-
 void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 {
+	delete m_mesh;
+	m_mesh = nullptr;
+
 	if (breset) { m_map.Clear(); m_rng.clear(); m_val.clear(); }
 
 	m_lastTime = ntime;
@@ -525,10 +528,6 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 		break;
 	}
 	if (m_crng.x == m_crng.y) m_crng.y++;
-
-	// update the color bar's range
-	GLLegendBar* bar = GetLegendBar();
-	bar->SetRange(m_crng.x, m_crng.y);
 }
 
 void CGLVectorPlot::UpdateState(int nstate)
@@ -581,4 +580,23 @@ void CGLVectorPlot::UpdateState(int nstate)
 
 		if (rng.y == rng.x) ++rng.y;
 	}
+}
+
+LegendData CGLVectorPlot::GetLegendData() const
+{
+	LegendData l;
+
+	int glyphCol = GetIntValue(GLYPH_COLOR);
+	if (glyphCol == 1)
+	{
+		l.discrete = false;
+		l.ndivs = 10;
+		l.vmin = m_crng.x;
+		l.vmax = m_crng.y;
+		l.smooth = true;
+		l.colormap = GetIntValue(COLOR_MAP);
+		l.title = GetName();
+	}
+
+	return l;
 }

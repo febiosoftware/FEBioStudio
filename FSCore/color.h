@@ -50,7 +50,7 @@ public:
 	}
 
 	//! Color addition operator - adds RGB components
-	GLColor operator + (GLColor& c)
+	GLColor operator + (const GLColor& c)
 	{
 		return GLColor(r + c.r, g + c.g, b + c.b);
 	}

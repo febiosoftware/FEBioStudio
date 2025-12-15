@@ -27,17 +27,17 @@ SOFTWARE.*/
 #include <GeomLib/GCurveObject.h>
 #include <MeshLib/FSMesh.h>
 
-FSCurveObjectMesher::FSCurveObjectMesher() : m_po(nullptr)
+FSCurveObjectMesher::FSCurveObjectMesher(GObject& o) : FEMesher(o)
 {
 	AddDoubleParam(0, "element size");
 	AddIntParam(0, "element type")->SetEnumNames("linear\0quadratic\0");
 }
 
-FSMesh* FSCurveObjectMesher::BuildMesh(GObject* po)
+FSMesh* FSCurveObjectMesher::BuildMesh()
 {
-	m_po = dynamic_cast<GCurveObject*>(po);
-	if (m_po == nullptr) return nullptr;
-	if (m_po->Edges() == 0) return nullptr;
+	GCurveObject* po = dynamic_cast<GCurveObject*>(&m_o);
+	if (po == nullptr) return nullptr;
+	if (po->Edges() == 0) return nullptr;
 
 	double elemSize = GetFloatValue(0);
 	int elemType = GetIntValue(1);
@@ -45,16 +45,16 @@ FSMesh* FSCurveObjectMesher::BuildMesh(GObject* po)
 	// calculate mesh size
 	int totalElems = 0;
 	int totalNodes = 0;
-	for (int i = 0; i < m_po->Nodes(); ++i)
+	for (int i = 0; i < po->Nodes(); ++i)
 	{
-		GNode* gn = m_po->Node(i);
+		GNode* gn = po->Node(i);
 		if (gn->Type() != NODE_SHAPE) totalNodes++;
 	}
 
-	std::vector<int> elemsPerEdge(m_po->Edges(), 0);
-	for (int n = 0; n < m_po->Edges(); ++n)
+	std::vector<int> elemsPerEdge(po->Edges(), 0);
+	for (int n = 0; n < po->Edges(); ++n)
 	{
-		GEdge* edge = m_po->Edge(n);
+		GEdge* edge = po->Edge(n);
 
 		// get the number of elements, based on element size
 		double L = edge->Length();
@@ -75,9 +75,9 @@ FSMesh* FSCurveObjectMesher::BuildMesh(GObject* po)
 
 	// process geometry nodes
 	int nodeIndex = 0;
-	for (int i = 0; i < m_po->Nodes(); ++i)
+	for (int i = 0; i < po->Nodes(); ++i)
 	{
-		GNode* gn = m_po->Node(i);
+		GNode* gn = po->Node(i);
 		if (gn->Type() != NODE_SHAPE)
 		{
 			FSNode& node = mesh->Node(nodeIndex);
@@ -91,9 +91,9 @@ FSMesh* FSCurveObjectMesher::BuildMesh(GObject* po)
 
 	// process geometry edges
 	int elemIndex = 0;
-	for (int n=0; n<m_po->Edges(); ++n)
+	for (int n=0; n<po->Edges(); ++n)
 	{
-		GEdge* edge = m_po->Edge(n);
+		GEdge* edge = po->Edge(n);
 
 		int na = edge->Node(0)->GetNodeIndex(); assert(na >= 0);
 		int nb = edge->Node(1)->GetNodeIndex(); assert(nb >= 0);

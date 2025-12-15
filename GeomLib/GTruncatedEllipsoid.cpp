@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 GTruncatedEllipsoid::GTruncatedEllipsoid() : GPrimitive(GTRUNC_ELLIPSOID)
 {
-	SetFEMesher(new FETruncatedEllipsoid());
+	SetFEMesher(CreateDefaultMesher());
 	m_Ra = m_Rb = m_Rc = 1.0;
 	m_wt = 0.1;
 	m_vend = 0.0;
@@ -47,7 +47,7 @@ GTruncatedEllipsoid::GTruncatedEllipsoid() : GPrimitive(GTRUNC_ELLIPSOID)
 //-----------------------------------------------------------------------------
 FEMesher* GTruncatedEllipsoid::CreateDefaultMesher()
 {
-	return new FETruncatedEllipsoid();
+	return new FETruncatedEllipsoid(*this);
 }
 
 bool GTruncatedEllipsoid::Update(bool b)

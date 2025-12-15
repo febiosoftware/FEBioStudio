@@ -56,6 +56,10 @@ public:
 
 	FSMesh* GetMesh() { return m_pm; }
 
+	int operator [] (size_t n) const { return m_Elem[n]; }
+
+	void GetNodeList(std::vector<int>& node, std::vector<int>& lnode);
+
 protected:
 	FSMesh*		m_pm;
 	int			m_nmat;	// material index

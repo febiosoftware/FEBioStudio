@@ -209,9 +209,7 @@ void init_FBSModel(py::module& m)
         .def("DeleteAllSteps", &FSModel::DeleteAllSteps, DOC(FSModel, DeleteAllSteps))
         .def("DeleteAllLoadControllers", &FSModel::DeleteAllLoadControllers, DOC(FSModel, DeleteAllLoadControllers))
         .def("DeleteAllMeshDataGenerators", &FSModel::DeleteAllMeshDataGenerators, DOC(FSModel, DeleteAllMeshDataGenerators))
-
         .def("ClearSelections", &FSModel::ClearSelections, DOC(FSModel, ClearSelections))
-        .def("New", &FSModel::New, DOC(FSModel, New))
 
         // --- material functions ---
 		.def("AddMaterial", [](FSModel& self, const std::string& name, const std::string& type) { return AddMaterial(self, name, type); })

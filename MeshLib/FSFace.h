@@ -167,21 +167,9 @@ public:
 	//! neighbour faces
 	int		m_nbr[4];
 
-	//! face normal
-	vec3f	m_fn;
-	//! node normals
-	vec3f	m_nn[MAX_NODES];
-	//! smoothing ID
-	int		m_sid;
-
-	// TODO: move texture coordinates elsewhere
-	//! nodal 1D-texture coordinates
-	float	m_tex[MAX_NODES];
-	//! element texture coordinate
-	float	m_texe;
-
 	//! the elements to which this face belongs
 	ELEM_REF	m_elem[3];
+
 	//! the edges (interior faces don't have edges!)
 	int			m_edge[4];
 };

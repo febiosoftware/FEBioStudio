@@ -35,10 +35,8 @@ SOFTWARE.*/
 #include <MeshLib/FSMesh.h>
 #include "FEMultiQuadMesh.h"
 
-FEShellPatch::FEShellPatch()
+FEShellPatch::FEShellPatch(GObject& o) : FEMultiQuadMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_t = 0.01;
 	m_nx = m_ny = 10;
 
@@ -48,10 +46,10 @@ FEShellPatch::FEShellPatch()
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FSMesh* FEShellPatch::BuildMesh(GObject* po)
+FSMesh* FEShellPatch::BuildMesh()
 {
-	m_pobj = dynamic_cast<GPatch*>(po);
-	if (m_pobj == nullptr) return nullptr;
+	GPatch* po = dynamic_cast<GPatch*>(&m_o);
+	if (po == nullptr) return nullptr;
 
 	// get mesh parameters
 	m_nx = GetIntValue(NX);
@@ -73,7 +71,7 @@ FSMesh* FEShellPatch::BuildMesh(GObject* po)
 
 	// assign shell thickness to section
 	double t = GetFloatValue(T);
-	GPart* part = m_pobj->Part(0); assert(part);
+	GPart* part = po->Part(0); assert(part);
 	GShellSection* shellSection = dynamic_cast<GShellSection*>(part->GetSection());
 	if (shellSection) shellSection->SetShellThickness(t);
 	else pm->SetUniformShellThickness(t);
@@ -86,7 +84,7 @@ bool FEShellPatch::BuildMultiQuad()
 	ClearMQ();
 
 	// create the MB nodes
-	Build(m_pobj);
+	Build();
 	SetFaceSizes(0, m_nx, m_ny);
 
 	return true;
@@ -96,10 +94,8 @@ bool FEShellPatch::BuildMultiQuad()
 // FECylndricalPatch
 //////////////////////////////////////////////////////////////////////
 
-FECylndricalPatch::FECylndricalPatch()
+FECylndricalPatch::FECylndricalPatch(GObject& o) : FEMultiQuadMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_t = 0.01;
 	m_nx = m_ny = 10;
 
@@ -109,11 +105,8 @@ FECylndricalPatch::FECylndricalPatch()
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FSMesh* FECylndricalPatch::BuildMesh(GObject* po)
+FSMesh* FECylndricalPatch::BuildMesh()
 {
-	m_pobj = dynamic_cast<GCylindricalPatch*>(po);
-	if (m_pobj == nullptr) return nullptr;
-
 	if (BuildMultiQuad() == false) return nullptr;
 
 	int elemType = GetIntValue(ELEM_TYPE);
@@ -140,7 +133,7 @@ bool FECylndricalPatch::BuildMultiQuad()
 	ClearMQ();
 
 	// build the quad mesh data
-	Build(m_pobj);
+	Build();
 
 	// set sizes
 	int nx = GetIntValue(NX);

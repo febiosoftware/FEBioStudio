@@ -85,7 +85,7 @@ void CTimelinePanel::Update(bool reset)
 			int ntime = doc->GetActiveState();
 			ui->timeline->setSelection(ntime);
 
-			double ftime = doc->GetTimeValue();
+			double ftime = doc->GetCurrentTimeValue();
 			ui->timeline->setCurrentTime(ftime);
 		}
 		else ui->timeline->clearData();

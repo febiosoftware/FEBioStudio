@@ -172,10 +172,8 @@ void glx::drawSphere(GLRenderEngine& re, const vec3d& c, float R)
 	re.popTransform();
 }
 
-void glx::drawSphere(GLRenderEngine& re, float R)
+void glx::drawSphere(GLRenderEngine& re, float R, int M, int N)
 {
-	const int M = 10;
-	const int N = 16;
 	for (int j = 0; j < M; ++j)
 	{
 		double th0 = -0.5 * PI + PI * j / (double)M;
@@ -904,7 +902,6 @@ void glx::renderBox(GLRenderEngine& re, const BOX& bbox, GLColor col, bool parti
 	BOX box = bbox;
 	box.Scale(scale);
 
-	re.pushState();
 	re.setMaterial(GLMaterial::CONSTANT, col);
 
 	GLMesh mesh;
@@ -975,8 +972,6 @@ void glx::renderBox(GLRenderEngine& re, const BOX& bbox, GLColor col, bool parti
 	}
 
 	re.renderGMeshEdges(mesh, false);
-
-	re.popState();
 }
 
 void glx::renderHelicalAxis(GLRenderEngine& re, double R)
@@ -1006,9 +1001,9 @@ void glx::renderHelicalAxis(GLRenderEngine& re, double R)
 
 void glx::renderGlyph(GLRenderEngine& re, glx::GlyphType glyph, float scale, GLColor c)
 {
-	re.pushState();
-	re.setMaterial(GLMaterial::CONSTANT, c);
-
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::White(), GLMaterial::VERTEX_COLOR);
+	re.beginShape();
+	re.setColor(c);
 	switch (glyph)
 	{
 	case GlyphType::RIGID_BODY: glx::renderRigidBody(re, scale); break;
@@ -1021,7 +1016,5 @@ void glx::renderGlyph(GLRenderEngine& re, glx::GlyphType glyph, float scale, GLC
 	case GlyphType::RIGID_LOCK: glx::renderRigidLock(re, scale); break;
 	case GlyphType::HELICAL_AXIS: glx::renderHelicalAxis(re, scale); break;
 	}
-
-	// restore attributes
-	re.popState();
+	re.endShape();
 }

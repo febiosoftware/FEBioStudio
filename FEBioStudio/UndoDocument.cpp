@@ -101,7 +101,7 @@ void CUndoDocument::AddCommand(CCommand* pcmd, const std::string& s)
 	FSLogger::Write("Executing command: " + msg + "\n");
 
 	m_pCmd->AddCommand(pcmd);
-	SetModifiedFlag();
+	if (pcmd->HasFlag(CCommand::MODIFIES_DOC)) SetModifiedFlag();
 	Update();
 }
 
@@ -121,7 +121,10 @@ bool CUndoDocument::DoCommand(CCommand* pcmd, const std::string& s)
 	FSLogger::Write("Executing command: " + msg + "\n");
 
 	bool ret = m_pCmd->DoCommand(pcmd);
-	SetModifiedFlag();
+	if (ret && pcmd->HasFlag(CCommand::MODIFIES_DOC))
+	{
+		SetModifiedFlag();
+	}
 	Update();
 	return ret;
 }

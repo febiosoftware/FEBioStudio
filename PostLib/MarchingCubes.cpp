@@ -227,8 +227,10 @@ void CMarchingCubes::CreateSurface()
 	C3DImage& im3d = *m_8bitImage;
 
 	BOX b = im.GetBoundingBox();
-	vec3f r0 = to_vec3f(b.r0());
-	vec3f r1 = to_vec3f(b.r1());
+	m_box = b;
+	double W = b.Width();
+	double H = b.Height();
+	double D = b.Depth();
 
 	int NX = im3d.Width();
 	int NY = im3d.Height();
@@ -307,14 +309,14 @@ void CMarchingCubes::CreateSurface()
 					if ((ncase != 0) && (ncase != 255))
 					{
 						// get the corners
-						r[0].x = r0.x + i      *dxi; r[0].y = r0.y + j      *dyi; r[0].z = r0.z + k      *dzi;
-						r[1].x = r0.x + (i + 1)*dxi; r[1].y = r0.y + j      *dyi; r[1].z = r0.z + k      *dzi;
-						r[2].x = r0.x + (i + 1)*dxi; r[2].y = r0.y + (j + 1)*dyi; r[2].z = r0.z + k      *dzi;
-						r[3].x = r0.x + i      *dxi; r[3].y = r0.y + (j + 1)*dyi; r[3].z = r0.z + k      *dzi;
-						r[4].x = r0.x + i      *dxi; r[4].y = r0.y + j      *dyi; r[4].z = r0.z + (k + 1)*dzi;
-						r[5].x = r0.x + (i + 1)*dxi; r[5].y = r0.y + j      *dyi; r[5].z = r0.z + (k + 1)*dzi;
-						r[6].x = r0.x + (i + 1)*dxi; r[6].y = r0.y + (j + 1)*dyi; r[6].z = r0.z + (k + 1)*dzi;
-						r[7].x = r0.x + i      *dxi; r[7].y = r0.y + (j + 1)*dyi; r[7].z = r0.z + (k + 1)*dzi;
+						r[0].x = i      *dxi; r[0].y = j      *dyi; r[0].z = k      *dzi;
+						r[1].x = (i + 1)*dxi; r[1].y = j      *dyi; r[1].z = k      *dzi;
+						r[2].x = (i + 1)*dxi; r[2].y = (j + 1)*dyi; r[2].z = k      *dzi;
+						r[3].x = i      *dxi; r[3].y = (j + 1)*dyi; r[3].z = k      *dzi;
+						r[4].x = i      *dxi; r[4].y = j      *dyi; r[4].z = (k + 1)*dzi;
+						r[5].x = (i + 1)*dxi; r[5].y = j      *dyi; r[5].z = (k + 1)*dzi;
+						r[6].x = (i + 1)*dxi; r[6].y = (j + 1)*dyi; r[6].z = (k + 1)*dzi;
+						r[7].x = i      *dxi; r[7].y = (j + 1)*dyi; r[7].z = (k + 1)*dzi;
 
 						// calculate gradients
 						if (m_bsmooth)
@@ -399,7 +401,7 @@ void CMarchingCubes::CreateSurface()
 		{
 			vec3f faceNormal(1.f, 0.f, 0.f);
 
-			float x = (i == 0 ? r0.x : r1.x);
+			float x = (i == 0 ? 0 : W);
 
 			for (int k = 0; k < NZ - 1; k++)
 			{
@@ -412,10 +414,10 @@ void CMarchingCubes::CreateSurface()
 					val[3] = im3d.GetByte(i, j, k + 1);
 
 					// get the corners
-					r[0].x = x; r[0].y = r0.y + j      *dyi; r[0].z = r0.z + k*dzi;
-					r[1].x = x; r[1].y = r0.y + (j + 1)*dyi; r[1].z = r0.z + k*dzi;
-					r[2].x = x; r[2].y = r0.y + (j + 1)*dyi; r[2].z = r0.z + (k + 1)*dzi;
-					r[3].x = x; r[3].y = r0.y + j      *dyi; r[3].z = r0.z + (k + 1)*dzi;
+					r[0].x = x; r[0].y = j      *dyi; r[0].z = k*dzi;
+					r[1].x = x; r[1].y = (j + 1)*dyi; r[1].z = k*dzi;
+					r[2].x = x; r[2].y = (j + 1)*dyi; r[2].z = (k + 1)*dzi;
+					r[3].x = x; r[3].y = j      *dyi; r[3].z = (k + 1)*dzi;
 
 					// add the triangles
 					AddSurfaceTris(mesh, val, r, faceNormal);
@@ -428,7 +430,7 @@ void CMarchingCubes::CreateSurface()
 		{
 			vec3f faceNormal(0.f, -1.f, 0.f);
 
-			float y = (j == 0 ? r0.y : r1.y);
+			float y = (j == 0 ? 0 : H);
 
 			for (int k = 0; k < NZ - 1; k++)
 			{
@@ -441,10 +443,10 @@ void CMarchingCubes::CreateSurface()
 					val[3] = im3d.GetByte(i  , j, k + 1);
 
 					// get the corners
-					r[0].x = r0.x + i    *dxi; r[0].y = y; r[0].z = r0.z + k*dzi;
-					r[1].x = r0.x + (i+1)*dxi; r[1].y = y; r[1].z = r0.z + k*dzi;
-					r[2].x = r0.x + (i+1)*dxi; r[2].y = y; r[2].z = r0.z + (k + 1)*dzi;
-					r[3].x = r0.x + i    *dxi; r[3].y = y; r[3].z = r0.z + (k + 1)*dzi;
+					r[0].x = i    *dxi; r[0].y = y; r[0].z = k*dzi;
+					r[1].x = (i+1)*dxi; r[1].y = y; r[1].z = k*dzi;
+					r[2].x = (i+1)*dxi; r[2].y = y; r[2].z = (k + 1)*dzi;
+					r[3].x = i    *dxi; r[3].y = y; r[3].z = (k + 1)*dzi;
 
 					// add the triangles
 					AddSurfaceTris(mesh, val, r, faceNormal);
@@ -457,7 +459,7 @@ void CMarchingCubes::CreateSurface()
 		{
 			vec3f faceNormal(0.f, 0.f, 1.f);
 
-			float z = (k == 0 ? r0.z : r1.z);
+			float z = (k == 0 ? 0 : D);
 
 			for (int j = 0; j < NY - 1; ++j)
 			{
@@ -470,10 +472,10 @@ void CMarchingCubes::CreateSurface()
 					val[3] = im3d.GetByte(i    , j + 1, k);
 
 					// get the corners
-					r[0].x = r0.x + i      *dxi; r[0].y = r0.y + j      *dyi; r[0].z = z;
-					r[1].x = r0.x + (i + 1)*dxi; r[1].y = r0.y + j      *dyi; r[1].z = z;
-					r[2].x = r0.x + (i + 1)*dxi; r[2].y = r0.y + (j + 1)*dyi; r[2].z = z;
-					r[3].x = r0.x + i      *dxi; r[3].y = r0.y + (j + 1)*dyi; r[3].z = z;
+					r[0].x = i      *dxi; r[0].y = j      *dyi; r[0].z = z;
+					r[1].x = (i + 1)*dxi; r[1].y = j      *dyi; r[1].z = z;
+					r[2].x = (i + 1)*dxi; r[2].y = (j + 1)*dyi; r[2].z = z;
+					r[3].x = i      *dxi; r[3].y = (j + 1)*dyi; r[3].z = z;
 
 					// add the triangles
 					AddSurfaceTris(mesh, val, r, faceNormal);
@@ -491,7 +493,7 @@ void CMarchingCubes::CreateSurface()
 		Post::TriMesh::TRI& face = mesh.Face(i);
 		m_mesh->AddFace(face.m_node, face.m_norm, m_col);
 	}
-	m_mesh->Update();
+	m_mesh->Update(false);
 }
 
 void CMarchingCubes::AddSurfaceTris(TriMesh& mesh, uint8_t val[4], vec3f r[4], const vec3f& faceNormal)
@@ -555,6 +557,14 @@ void CMarchingCubes::SetIsoValue(float v)
 
 void CMarchingCubes::Render(GLRenderEngine& re, GLContext& rc)
 {
+	// see if we may need to update the surface
+	CImageModel* mdl = GetImageModel();
+	if (mdl && (mdl->GetBoundingBox() != m_box))
+	{
+		// let's rebuild the surface.
+		Create();
+	}
+
 	if (m_mesh)
 	{
 		re.setMaterial(GLMaterial::PLASTIC, m_col, GLMaterial::NONE, false);
@@ -581,8 +591,6 @@ bool CMarchingCubes::GetMesh(FSMesh& mesh)
 		face.n[1] = 3 * i + 1;
 		face.n[2] = 3 * i + 2;
 	}
-
-	mesh.UpdateNormals();
 
 	return true;
 }

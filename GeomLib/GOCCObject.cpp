@@ -72,12 +72,12 @@ public:
 GOCCObject::GOCCObject(int type) : GObject(type)
 {
 	m_occ = new OCC_Data;
-	SetFEMesher(new NetGenOCCMesher());
+	SetFEMesher(new NetGenOCCMesher(*this));
 }
 
 FEMesher* GOCCObject::CreateDefaultMesher()
 {
-	return new NetGenOCCMesher();
+	return new NetGenOCCMesher(*this);
 }
 
 void GOCCObject::SetShape(TopoDS_Shape& shape, bool bupdate)
@@ -109,31 +109,46 @@ void GOCCObject::BuildGObject()
 {
 	ClearAll();
 #ifdef HAS_OCC
+
+	TopoDS_Shape& shape = m_occ->m_shape;
+
 	// build nodes
-	for (TopExp_Explorer anExpSF(m_occ->m_shape, TopAbs_VERTEX); anExpSF.More(); anExpSF.Next())
+	TopTools_IndexedMapOfShape vertexMap;
+	TopExp::MapShapes(shape, TopAbs_VERTEX, vertexMap);
+	for (int i = 1; i <= vertexMap.Extent(); ++i)
 	{
-		const TopoDS_Vertex& vertex = TopoDS::Vertex(anExpSF.Current());
+		const TopoDS_Vertex& vertex = TopoDS::Vertex(vertexMap(i));
 		gp_Pnt p = BRep_Tool::Pnt(vertex);
 		AddNode(vec3d(p.X(), p.Y(), p.Z()));
 	}
 
 	// build edges
-	// NOTE: It looks like OCC is counting edges on each face. (so for a box, we would have 24 edges, instead of 12)
-	int iedge = 0;
-	for (TopExp_Explorer anExpSF(m_occ->m_shape, TopAbs_EDGE); anExpSF.More(); anExpSF.Next(), iedge++)
+	TopTools_IndexedMapOfShape edgeMap;
+	TopExp::MapShapes(shape, TopAbs_EDGE, edgeMap);
+
+	for (int i = 1; i <= edgeMap.Extent(); ++i)
 	{
-//		TopoDS_Edge edge = TopoDS::Edge(anExpSF.Current());
+		const TopoDS_Edge& occEdge = TopoDS::Edge(edgeMap(i));
+
+		// Get the two vertices of the edge
+		TopoDS_Vertex V1, V2;
+		TopExp::Vertices(occEdge, V1, V2);
+
+		// Get the vertex indices in the unique vertex map (note that these are 1-based)
+		int n0 = vertexMap.FindIndex(V1) - 1;
+		int n1 = vertexMap.FindIndex(V2) - 1;
+
 		GEdge* edge = new GEdge(this);
 		edge->SetID(GEdge::CreateUniqueID());
-		edge->SetLocalID(iedge);
-		edge->m_node[0] = -1;
-		edge->m_node[1] = -1;
+		edge->m_node[0] = n0;
+		edge->m_node[1] = n1;
 		AddEdge(edge);
 	}
 
 	// build faces
-	int iface = 0;
-	for (TopExp_Explorer anExpSF(m_occ->m_shape, TopAbs_FACE); anExpSF.More(); anExpSF.Next(), iface++)
+	TopTools_IndexedMapOfShape faceMap;
+	TopExp::MapShapes(shape, TopAbs_FACE, faceMap);
+	for (int i = 1; i <= faceMap.Extent(); ++i)
 	{
 		GFace* face = new GFace(this);
 		face->m_nPID[0] = 0;
@@ -155,39 +170,46 @@ void GOCCObject::BuildGObject()
 void GOCCObject::BuildGMesh()
 {
 #ifdef HAS_OCC
+	TopoDS_Shape& shape = m_occ->m_shape;
+
 	// Generate a mesh
-	BRepMesh_IncrementalMesh aMesh(m_occ->m_shape, 0.1, true, 0.25);
+	BRepMesh_IncrementalMesh aMesh(shape, 0.1, true, 0.25);
 
 	// count the nodes and triangles
 	Standard_Integer aNbNodes = 0;
 	Standard_Integer aNbTriangles = 0;
+	Standard_Integer aNbEdges = 0;
+
+	TopTools_IndexedMapOfShape edgeMap;
+	TopExp::MapShapes(shape, TopAbs_EDGE, edgeMap);
 
 	// calculate total number of the nodes and triangles
-	for (TopExp_Explorer anExpSF(m_occ->m_shape, TopAbs_FACE); anExpSF.More(); anExpSF.Next())
+	TopTools_IndexedMapOfShape faceMap;
+	TopExp::MapShapes(shape, TopAbs_FACE, faceMap);
+	for (int i = 1; i <= faceMap.Extent(); ++i)
 	{
+		const TopoDS_Face& face = TopoDS::Face(faceMap(i));
 		TopLoc_Location aLoc;
-		Handle(Poly_Triangulation) aTriangulation = BRep_Tool::Triangulation(TopoDS::Face(anExpSF.Current()), aLoc);
+		Handle(Poly_Triangulation) aTriangulation = BRep_Tool::Triangulation(face, aLoc);
 		if (!aTriangulation.IsNull())
 		{
 			aNbNodes += aTriangulation->NbNodes();
 			aNbTriangles += aTriangulation->NbTriangles();
 		}
-	}
 
-	// count edges
-	int aNbEdges = 0;
-	for (TopExp_Explorer anExpSF(m_occ->m_shape, TopAbs_EDGE); anExpSF.More(); anExpSF.Next())
-	{
-		const TopoDS_Edge& aEdge = TopoDS::Edge(anExpSF.Current());
+		// count edges
+		for (TopExp_Explorer anExpSF(face, TopAbs_EDGE); anExpSF.More(); anExpSF.Next())
+		{
+			const TopoDS_Edge& aEdge = TopoDS::Edge(anExpSF.Current());
 
-		//try to find PolygonOnTriangulation
-		Handle(Poly_PolygonOnTriangulation) aPT;
-		Handle(Poly_Triangulation) aT;
-		TopLoc_Location aL;
-		BRep_Tool::PolygonOnTriangulation(aEdge, aPT, aT, aL);
+			//try to find PolygonOnTriangulation
+			Handle(Poly_PolygonOnTriangulation) aPT;
+			BRep_Tool::PolygonOnTriangulation(aEdge, aPT, aTriangulation, aLoc);
 
-		Standard_Integer nbNodes = aPT->NbNodes();
-		for (Standard_Integer j = 1; j < nbNodes; j++, aNbEdges++) {
+			if (!aPT.IsNull()) {
+				Standard_Integer nbNodes = aPT->NbNodes();
+				aNbEdges += (nbNodes - 1);
+			}
 		}
 	}
 
@@ -197,11 +219,10 @@ void GOCCObject::BuildGMesh()
 
 	Standard_Integer aNodeOffset = 0;
 	Standard_Integer aTriangleOffet = 0;
-	int edges = 0, edgeID = 0;
-	int faceId = 0;
-	for (TopExp_Explorer anExpSF(m_occ->m_shape, TopAbs_FACE); anExpSF.More(); anExpSF.Next(), faceId++)
+	int edges = 0;
+	for (int i = 1; i <= faceMap.Extent(); ++i)
 	{
-		TopoDS_Face face = TopoDS::Face(anExpSF.Current());
+		const TopoDS_Face& face = TopoDS::Face(faceMap(i));
 
 		TopLoc_Location aLoc;
 		Handle(Poly_Triangulation) aTriangulation = BRep_Tool::Triangulation(face, aLoc);
@@ -217,7 +238,7 @@ void GOCCObject::BuildGMesh()
 		}
 
 		// copy triangles
-		const TopAbs_Orientation anOrientation = anExpSF.Current().Orientation();
+		const TopAbs_Orientation anOrientation = face.Orientation();
 		for (Standard_Integer aTriIter = 1; aTriIter <= aTriangulation->NbTriangles(); ++aTriIter)
 		{
 			Poly_Triangle aTri = aTriangulation->Triangle(aTriIter);
@@ -236,8 +257,8 @@ void GOCCObject::BuildGMesh()
 			face.n[0] = anId[0] + aNodeOffset-1;
 			face.n[1] = anId[1] + aNodeOffset-1;
 			face.n[2] = anId[2] + aNodeOffset-1;
-			face.pid = faceId;
-			face.sid = faceId;
+			face.pid = i-1;
+			face.sid = i-1;
 		}
 
 		for (TopExp_Explorer edgeExp(face, TopAbs_EDGE); edgeExp.More(); edgeExp.Next())
@@ -246,12 +267,12 @@ void GOCCObject::BuildGMesh()
 
 			//try to find PolygonOnTriangulation
 			Handle(Poly_PolygonOnTriangulation) aPT;
-			Handle(Poly_Triangulation) aT;
-			TopLoc_Location aL;
-			aPT = BRep_Tool::PolygonOnTriangulation(aEdge, aTriangulation, aL);
+			aPT = BRep_Tool::PolygonOnTriangulation(aEdge, aTriangulation, aLoc);
 
 			if (aPT.IsNull() == false)
 			{
+				int globalIdx = edgeMap.FindIndex(aEdge) - 1; assert(globalIdx >= 0);
+
 				Standard_Integer nbNodes = aPT->NbNodes();
 				const TColStd_Array1OfInteger& nodeList = aPT->Nodes();
 				for (Standard_Integer j = 1; j < nbNodes; j++, edges++) {
@@ -261,7 +282,7 @@ void GOCCObject::BuildGMesh()
 					GLMesh::EDGE& edge = gmesh->Edge(edges);
 					edge.n[0] = inode0 - 1 + aNodeOffset;
 					edge.n[1] = inode1 - 1 + aNodeOffset;
-					edge.pid = edgeID++;
+					edge.pid = globalIdx;
 				}
 			}
 		}
@@ -470,6 +491,11 @@ GOCCObject* MergeOCCObjects(std::vector<GOCCObject*> occlist)
 	aBuilder.SetIntersect(true);
 	aBuilder.SetAvoidInternalShapes(false);
 	aBuilder.Perform();
+	if (aBuilder.HasErrors())
+	{
+		return nullptr;
+	}
+
 	TopoDS_Shape solid = aBuilder.Shape();
 	GOCCObject* occ = new GOCCObject;
 	occ->SetShape(solid);

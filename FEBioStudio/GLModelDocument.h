@@ -35,10 +35,16 @@ namespace Post {
 class CGLModelDocument : public CGLDocument
 {
 public:
-	CGLModelDocument(CMainWindow* wnd) : CGLDocument(wnd) {}
+	CGLModelDocument(CMainWindow* wnd);
 
 	virtual Post::CGLModel* GetGLModel() = 0;
 
 	virtual Post::FEPostModel* GetFSModel() = 0;
 
+	BOX GetBoundingBox() override;
+
+public: // fields for displaying in GLView
+	float GetCurrentTimeValue();
+	std::string GetFieldString();
+	std::string GetFieldUnits();
 };

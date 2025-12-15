@@ -47,7 +47,7 @@ public:
 	virtual ~FSNNQuery();
 
 	//! initialize search structures
-	void Init();
+	bool Init();
 
 	//! find the neirest neighbour's index of x
 	int FindIndex(const vec3d& x);

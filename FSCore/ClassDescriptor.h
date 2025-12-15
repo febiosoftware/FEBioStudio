@@ -102,7 +102,7 @@ public:
 	void SetConstructorArgument(T* arg) { m_arg = arg; }
 
 protected:
-	T* m_arg;
+	T* m_arg = nullptr;
 };
 
 template <class theClass, class ctorArg> class ClassDescriptor_T2 : public ClassDescriptorWithCtorArg<ctorArg>
@@ -113,7 +113,11 @@ public:
 	using ClassDescriptor::m_ncount;
 	using ClassDescriptorWithCtorArg<ctorArg>::m_arg;
 	
-	FSObject* CreateInstance() { m_ncount++; return new theClass(*m_arg); }
+	FSObject* CreateInstance() { 
+		m_ncount++; 
+		assert(m_arg);
+		return new theClass(*m_arg); 
+	}
 
 	bool IsType(FSObject* po) { return (dynamic_cast<theClass*>(po) != 0); }
 };
@@ -134,6 +138,7 @@ public:
 	static FSObject* CreateClassFromID(Class_Type classType, int cid);
 
 	static ClassDescriptor* FindClassDescriptor(Class_Type classType, const char* typeStr);
+	static ClassDescriptor* FindClassDescriptorFromID(Class_Type classType, int cid);
 
 private:
 	static ClassKernel*	m_pInst;
@@ -165,8 +170,8 @@ public:
 #define REGISTER_CLASS3(theClass, theType, theClassId, theName, theResource, theFlag) \
 	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T<theClass>(theType, theClassId, theName, theResource, theFlag));
 
-#define REGISTER_CLASS4(theClass, theType, theName, theCtorArg) \
-	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T2<theClass, theCtorArg>(theType, -1, theName, 0, 0));
+#define REGISTER_CLASS4(theClass, theType, theClassId, theName, theCtorArg) \
+	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T2<theClass, theCtorArg>(theType, theClassId, theName, 0, 0));
 
 namespace FSCore {
 
@@ -220,6 +225,28 @@ namespace FSCore {
 				return nullptr;
 			}
 			else return pt;
+		}
+		else return nullptr;
+	}
+
+	template <class T, class A> T* CreateClassFromID(Class_Type classType, int cid, A* ctorArg)
+	{
+		ClassDescriptorWithCtorArg<A>* pcd = dynamic_cast<ClassDescriptorWithCtorArg<A>*>(ClassKernel::FindClassDescriptorFromID(classType, cid));
+		if (pcd)
+		{
+			pcd->SetConstructorArgument(ctorArg);
+			FSObject* po = pcd->Create();
+			if (po)
+			{
+				T* pt = dynamic_cast<T*>(po);
+				if (pt == nullptr)
+				{
+					delete po;
+					return nullptr;
+				}
+				else return pt;
+			}
+			else return nullptr;
 		}
 		else return nullptr;
 	}

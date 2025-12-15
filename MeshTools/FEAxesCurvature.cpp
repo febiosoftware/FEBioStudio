@@ -295,7 +295,7 @@ void FEAxesCurvature::Curvature(FSMesh* pm)
                     // find curvature at this location
                     vec2d kappa;
                     vec3d theta[2];
-                    vec3d faceNorm = to_vec3d(fdata[i].m_fn);
+                    vec3d faceNorm = pm->FaceNormal(fdata[i]);
                     spline.SurfaceCurvature(uv.x(), uv.y(), faceNorm, kappa, theta);
                     vec3d xn = (theta[0] ^ theta[1]).Normalize();
                     mat3d X(theta[0].x, theta[1].x, xn.x,
@@ -334,9 +334,9 @@ void FEAxesCurvature::Curvature(FSMesh* pm)
                 {
                     // get centroid of face
                     vec3d c = ctr[i];
-                    
-                    vec3d faceNorm = to_vec3d(fdata[i].m_fn);
-                    
+
+                    vec3d faceNorm = pm->FaceNormal(fdata[i]);
+
                     // get closest point on quadric (using norm)
                     vec3d p = quadric.ClosestPoint(c,faceNorm);
                     

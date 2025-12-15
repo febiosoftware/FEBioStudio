@@ -53,7 +53,7 @@ GLMesh* GLMesher::CreateMesh()
 		for (int j = 0; j < NF; ++j)
 		{
 			GFace& f = *o.Face(j);
-			gmesh->NewPartition();
+			gmesh->NewSurfacePartition();
 
 			switch (f.m_ntype)
 			{
@@ -69,7 +69,7 @@ GLMesh* GLMesher::CreateMesh()
 		}
 
 		gmesh->Update();
-		assert(gmesh->Partitions() == NF);
+		assert(gmesh->SurfacePartitions() == NF);
 	}
 	else
 	{
@@ -80,6 +80,7 @@ GLMesh* GLMesher::CreateMesh()
 			for (int i = 0; i < NC; ++i)
 			{
 				GEdge& e = *o.Edge(i);
+				gmesh->NewEdgePartition(i);
 				switch (e.Type())
 				{
 				case EDGE_LINE: BuildEdgeLine(gmesh, e); break;

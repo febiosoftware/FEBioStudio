@@ -128,7 +128,7 @@ protected:
 class CCmdAddConstraint : public CCommand
 {
 public:
-	CCmdAddConstraint(FSStep* ps, FSModelConstraint* pmc);
+	CCmdAddConstraint(FSStep* ps, FSModelConstraint* pmc, FSItemListBuilder* items = nullptr);
 	~CCmdAddConstraint();
 
 	void Execute();
@@ -137,6 +137,7 @@ public:
 protected:
 	FSStep*				m_ps;
 	FSModelConstraint*	m_pmc;
+	FSItemListBuilder*	m_itemList;
 	bool				m_bdel;
 };
 
@@ -388,8 +389,8 @@ protected:
 class CCmdAddBC : public CCommand
 {
 public:
-	CCmdAddBC(FSStep* ps, FSBoundaryCondition* pbc) : CCommand("Add Boundary Condition") { m_ps = ps; m_pbc = pbc; m_bdel = true; }
-	~CCmdAddBC() { if (m_bdel) delete m_pbc; }
+	CCmdAddBC(FSStep* ps, FSBoundaryCondition* pbc, FSItemListBuilder* item = nullptr);
+	~CCmdAddBC();
 
 	void Execute();
 	void UnExecute();
@@ -398,21 +399,23 @@ protected:
 	FSStep*					m_ps;
 	FSBoundaryCondition*	m_pbc;
 	bool					m_bdel;
+	FSItemListBuilder* m_itemList;
 };
 
 //-----------------------------------------------------------------------------
 class CCmdAddIC : public CCommand
 {
 public:
-	CCmdAddIC(FSStep* ps, FSInitialCondition* pic) : CCommand("Add Initial Condition") { m_ps = ps; m_pic = pic; m_bdel = true; }
-	~CCmdAddIC() { if (m_bdel) delete m_pic; }
+	CCmdAddIC(FSStep* ps, FSInitialCondition* pic, FSItemListBuilder* items = nullptr);
+	~CCmdAddIC();
 
-	void Execute();
-	void UnExecute();
+	void Execute() override;
+	void UnExecute() override;
 
 protected:
 	FSStep*					m_ps;
 	FSInitialCondition*		m_pic;
+	FSItemListBuilder*		m_itemList;
 	bool					m_bdel;
 };
 
@@ -420,8 +423,8 @@ protected:
 class CCmdAddLoad : public CCommand
 {
 public:
-	CCmdAddLoad(FSStep* ps, FSLoad* pfc) : CCommand("Add Load") { m_ps = ps; m_pfc = pfc; m_bdel = true; }
-	~CCmdAddLoad() { if (m_bdel) delete m_pfc; }
+	CCmdAddLoad(FSStep* ps, FSLoad* pfc, FSItemListBuilder* items = nullptr);
+	~CCmdAddLoad();
 
 	void Execute();
 	void UnExecute();
@@ -429,6 +432,7 @@ public:
 protected:
 	FSStep*		m_ps;
 	FSLoad*		m_pfc;
+	FSItemListBuilder* m_itemList;
 	bool		m_bdel;
 };
 
@@ -686,7 +690,6 @@ protected:
 	GModel*			m_model;	// pointer to model
 	std::vector<int>		m_nsurf;	// list of surfaces to select
 	std::vector<bool>	m_bold;		// old selection state of surfaces
-	bool			m_badd;		// add to current selection
 };
 
 //-----------------------------------------------------------------------------
@@ -722,7 +725,6 @@ protected:
 	GModel*			m_model;	// pointer to model
 	std::vector<int>		m_nedge;	// list of edges to select
 	std::vector<bool>	m_bold;		// old selection state of surfaces
-	bool			m_badd;		// add to current selection
 };
 
 //-----------------------------------------------------------------------------
@@ -758,7 +760,6 @@ protected:
 	GModel*			m_model;	// pointer to model
 	std::vector<int>		m_node;		// list of edges to select
 	std::vector<bool>	m_bold;		// old selection state of surfaces
-	bool			m_badd;		// add to current selection
 };
 
 //-----------------------------------------------------------------------------
@@ -853,7 +854,6 @@ public:
 
 protected:
 	CGLDocument*	m_doc;
-	int	m_item;
 };
 
 //-----------------------------------------------------------------------------
@@ -892,7 +892,6 @@ protected:
 	FSMesh* m_mesh;
 	bool*	m_ptag;	// old selecion state of elements
 	int*	m_pel;	// array of element indics we need to select
-	bool	m_badd; // add to selection or not
 	int		m_N;	// nr of elements to select
 };
 
@@ -932,7 +931,6 @@ protected:
 	FSMeshBase* m_pm;
 	bool*	m_ptag;	// old selecion state of faces
 	int*	m_pface;	// array of face indics we need to select
-	bool	m_badd; // add to selection or not
 	int		m_N;	// nr of faces to select
 };
 
@@ -972,7 +970,6 @@ protected:
 	FSLineMesh*	m_pm;
 	bool*	m_ptag;		// old selecion state of edges
 	int*	m_pedge;	// array of edge indices we need to select
-	bool	m_badd;		// add to selection or not
 	int		m_N;		// nr of faces to select
 };
 
@@ -1012,7 +1009,6 @@ protected:
 	FSLineMesh* m_mesh;
 	bool*	m_ptag;	// old selecion state of nodes
 	int*	m_pn;	// array of nodes indices we need to select
-	bool	m_badd; // add to selection or not
 	int		m_N;	// nr of nodes to select
 };
 
@@ -1053,19 +1049,30 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+class CCmdShowObject : public CCommand
+{
+public:
+	CCmdShowObject(GObject* po);
+	CCmdShowObject(std::vector<GObject*> po);
+
+	void Execute() override;
+	void UnExecute() override;
+
+protected:
+	std::vector<GObject*>	m_pobj;
+};
 
 class CCmdHideObject : public CCommand
 {
 public:
-	CCmdHideObject(GObject* po, bool bhide);
-	CCmdHideObject(std::vector<GObject*> po, bool bhide);
+	CCmdHideObject(GObject* po);
+	CCmdHideObject(std::vector<GObject*> po);
 
-	void Execute();
-	void UnExecute();
+	void Execute() override;
+	void UnExecute() override;
 
 protected:
 	std::vector<GObject*>	m_pobj;
-	bool				m_bhide;
 };
 
 //-----------------------------------------------------------------------------
@@ -1267,15 +1274,15 @@ protected:
 class CCmdChangeView : public CCommand
 {
 public:
-	CCmdChangeView(CGView* pview, GLCamera cam);
+	CCmdChangeView(GLCamera* oldCam, const GLCamera& newCam);
 	~CCmdChangeView();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	CGView*		m_pview;
-	GLCamera	m_cam;
+	GLCamera* m_cam = nullptr;
+	GLCamera  m_newCam;
 };
 
 //-----------------------------------------------------------------------------
@@ -1477,6 +1484,28 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+class CCmdAddNamedSelection : public CCommand
+{
+public:
+	CCmdAddNamedSelection(GModel& mdl, FSItemListBuilder* item);
+	~CCmdAddNamedSelection();
+
+	void Execute() override;
+	void UnExecute() override;
+
+private:
+	GModel& gm;
+	FSItemListBuilder* itemList;
+
+	FSObject* parentOfList;
+	size_t insertPos;
+
+	bool bdel = true;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdDeleteFSObject;
+
 class CCmdRemoveItemListBuilder : public CCommand
 {
 public:
@@ -1489,6 +1518,7 @@ public:
 private:
 	FSItemListBuilder*	m_pitem;
 	IHasItemLists*		m_pmc;
+	CCmdDeleteFSObject* m_cmd;
 	int	m_index;
 };
 
@@ -1538,6 +1568,24 @@ protected:
 	FSObject*	m_parent;
 	bool		m_delObject;
 	size_t		m_insertPos;
+};
+
+class CCmdDeleteMaterial : public CCommand
+{
+public:
+	CCmdDeleteMaterial(GMaterial* mat, FSModel& fem);
+	~CCmdDeleteMaterial();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	GMaterial*	m_mat;
+	FSObject*	m_parent;
+	FSModel&	m_fem;
+	bool		m_delMaterial;
+	size_t		m_insertPos;
+	std::vector<GPart*> m_partList;
 };
 
 class CCmdRemoveMeshData : public CCommand

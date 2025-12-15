@@ -48,8 +48,10 @@ bool STLimport::read_line(char* szline, const char* sz)
 	if (fgets(szline, 255, m_fp) == 0) return false;
 
 	// remove leading white space
+	// We also check for negative ASCII values. This can happen
+	// if this turns out to be a binary STL file after all.
 	int n = 0;
-	while (isspace(szline[n])) ++n;
+	while ((szline[n] < 0) || (isspace(szline[n]))) ++n;
 	if (n != 0)
 	{
 		char* ch = szline + n;
@@ -218,8 +220,6 @@ bool STLimport::read_binary(const char* szfile)
 // Build the FE model
 GObject* STLimport::build_mesh()
 {
-	int i;
-
 	// number of facets
 	int NF = (int)m_Face.size();
 
@@ -231,10 +231,12 @@ GObject* STLimport::build_mesh()
 	vec3d r1(b.x1, b.y1, b.z1);
 
 	// create the box partition
-	int NB = m_NB = (int) pow((double) (NF*3), 0.17) + 1;
+	int NB = m_NB = (int) pow((double) (NF*3), 0.25) + 1;
+	if (NB < 1) NB = 1;
+	if (NB > 50) NB = 50;
 	m_BL.resize(NB*NB*NB);
 	int n = 0;
-	for (i=0; i<NB; ++i)
+	for (int i=0; i<NB; ++i)
 		for (int j=0; j<NB; ++j)
 			for (int k=0; k<NB; ++k)
 			{
@@ -254,7 +256,7 @@ GObject* STLimport::build_mesh()
 	// create the nodes
 	std::list<FACET>::iterator pf = m_Face.begin();
 	int nid = 0;
-	for (i=0; i<NF; ++i, ++pf)
+	for (int i=0; i<NF; ++i, ++pf)
 	{
 		FACET& f = *pf;
         vec3d v1 = vec3d(f.v1[0], f.v1[1], f.v1[2]); f.n[0] = find_node(v1);
@@ -269,7 +271,7 @@ GObject* STLimport::build_mesh()
 	pm->Create(NN, 0, NF);
 
 	// create nodes
-	for (i=0; i<NN; ++i)
+	for (int i=0; i<NN; ++i)
 	{
 		vec3d& ri = m_Node[i].r;
 		FSNode& node = pm->Node(i);
@@ -278,7 +280,7 @@ GObject* STLimport::build_mesh()
 
 	// create elements
 	std::list<FACET>::iterator is = m_Face.begin();
-	for (i=0; i<NF; ++i, ++is)
+	for (int i=0; i<NF; ++i, ++is)
 	{
 		FACET& f = *is;
 		int n = f.nid;

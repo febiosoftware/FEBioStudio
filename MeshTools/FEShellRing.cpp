@@ -34,10 +34,8 @@ SOFTWARE.*/
 #include <MeshLib/FSMesh.h>
 #include "FEMultiQuadMesh.h"
 
-FEShellRing::FEShellRing()
+FEShellRing::FEShellRing(GObject& o) : FEMultiQuadMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_t = 0.01;
 	m_ns = 16;
 	m_nr = 8;
@@ -48,10 +46,10 @@ FEShellRing::FEShellRing()
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FSMesh* FEShellRing::BuildMesh(GObject* po)
+FSMesh* FEShellRing::BuildMesh()
 {
-	m_pobj = dynamic_cast<GRing*>(po);
-	if (m_pobj == nullptr) return nullptr;
+	GRing* po = dynamic_cast<GRing*>(&m_o);
+	if (po == nullptr) return nullptr;
 
 	if (BuildMultiQuad() == false) return nullptr;
 
@@ -70,7 +68,7 @@ FSMesh* FEShellRing::BuildMesh(GObject* po)
 
 	// assign shell thickness to section
 	double t = GetFloatValue(T);
-	GPart* part = m_pobj->Part(0); assert(part);
+	GPart* part = po->Part(0); assert(part);
 	GShellSection* shellSection = dynamic_cast<GShellSection*>(part->GetSection());
 	if (shellSection) shellSection->SetShellThickness(t);
 	else pm->SetUniformShellThickness(t);
@@ -83,7 +81,7 @@ bool FEShellRing::BuildMultiQuad()
 	ClearMQ();
 
 	// build the mesh data structures
-	Build(m_pobj);
+	Build();
 
 	// set discretization
 	int nd = GetIntValue(NDIV); if (nd < 1) nd = 1;

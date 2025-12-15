@@ -33,15 +33,8 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <MeshLib/FSMesh.h>
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-
-FESphere::FESphere()
+FESphere::FESphere(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_r = 0.5;
 
 	m_nseg = m_ndiv = 4;
@@ -66,10 +59,11 @@ FESphere::FESphere()
 
 bool FESphere::BuildMultiBlock()
 {
-	assert(m_pobj);
+	GSphere* po = dynamic_cast<GSphere*>(&m_o);
+	if (po == nullptr) return false;
 
 	// get the object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double R1 = param.GetFloatValue(GSphere::RADIUS);
 
 	// get parameters
@@ -345,12 +339,12 @@ bool FESphere::BuildMultiBlock()
 	return true;
 }
 
-FSMesh* FESphere::BuildMesh(GObject* po)
+FSMesh* FESphere::BuildMesh()
 {
-	m_pobj = dynamic_cast<GSphere*>(po);
-	if (m_pobj == nullptr) return nullptr;
+	GSphere* po = dynamic_cast<GSphere*>(&m_o);
+	if (po == nullptr) return nullptr;
 
-	BuildMultiBlock();
+	if (!BuildMultiBlock()) return nullptr;
 
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);
@@ -363,14 +357,6 @@ FSMesh* FESphere::BuildMesh(GObject* po)
 
 	// create the MB
 	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
-
-	// the Multi-block mesher will assign a different smoothing ID
-	// to each face, but we don't want that here. Instead we assign
-	// to each face the same smoothing ID
-	for (int i=0; i<pm->Faces(); ++i) pm->Face(i).m_sid = 0;
-
-	// finally, we update the normals and we are good to go
-	pm->UpdateNormals();
 
 	return pm;
 }

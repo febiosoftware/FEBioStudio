@@ -81,6 +81,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include "DlgImportData.h"
 #include <FEMLib/FSProject.h>
+#include <GLLib/GLScene.h>
 
 //-----------------------------------------------------------------------------
 class CModelProps : public CPropertyList
@@ -1043,8 +1044,9 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	CGViewKey* pkey = dynamic_cast<CGViewKey*>(po);
 	if (pkey)
 	{
-		CGView* view = GetActiveDocument()->GetView();
-		view->SetCurrentKey(pkey);
+		GLScene* scene = GetActiveDocument()->GetScene();
+		GLCamera& cam = scene->GetCamera();
+		cam.SetTransform(pkey->transform);
 		GetMainWindow()->RedrawGL();
 	}
 
@@ -1121,12 +1123,7 @@ void CPostModelPanel::on_nameEdit_editingFinished()
 	if (item) item->setText(0, name);
 
 	FSObject* po = selectedObject();
-	if (dynamic_cast<Post::CGLLegendPlot*>(po))
-	{
-		Post::CGLLegendPlot* plot = dynamic_cast<Post::CGLLegendPlot*>(po); assert(plot);
-		if (plot) plot->ChangeName(name.toStdString());
-	}
-	else if (po)
+	if (po)
 	{
 		po->SetName(name.toStdString());
 	}
@@ -1434,16 +1431,22 @@ void CPostModelPanel::OnHideElements()
 {
 	FSObject* po = ui->currentObject();
 	if (po == nullptr) return;
+	
 	CGLModelDocument* pdoc = GetActiveDocument();
-	FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
+	if (pdoc == nullptr) return;
+
+	GObject* pgo = pdoc->GetActiveObject();
+	if ((pgo == nullptr) || (pgo->GetFEMesh() == nullptr)) return;
 
 	FSElemSet* pg = dynamic_cast<FSElemSet*>(po);
-	if (pg)
+	if (pg && (pg->size() > 0))
 	{
 		vector<int> items = pg->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
-		pdoc->DoCommand(new CCmdHideElements(mesh, pgl));
+
+		assert(pg->GetMesh() == pgo->GetFEMesh());
+		pdoc->DoCommand(new CCmdHideElements(pgo, pgl));
 	}
 
 	GetMainWindow()->RedrawGL();

@@ -130,10 +130,10 @@ public:
 	enum { ELSIZE, QUALITY, ELTYPE, SPLIT_FACES, HOLE, HOLE_COORD };
 
 public:
-	FETetGenMesher();
+	FETetGenMesher(GObject& o);
 
 	// build the mesh
-	FSMesh*	BuildMesh(GObject* po) override;
+	FSMesh*	BuildMesh() override;
 
 	double ElementSize();
 
@@ -149,9 +149,6 @@ public:
 
 private:
 	void UpdateElementPartitioning(GObject* po, FSMesh* pm);
-
-protected:
-	GObject*	m_po;	// TODO: move this to base class
 
 #ifdef TETLIBRARY
 public:
@@ -170,9 +167,9 @@ protected:
 class FEConvexHullMesher : public FEMesher
 {
 public:
-	FEConvexHullMesher();
+	FEConvexHullMesher(GObject& o);
 	FSMesh* Create(const std::vector<vec3d>& pointCloud);
 
 protected:
-	FSMesh* BuildMesh(GObject* po) override { return nullptr; }
+	FSMesh* BuildMesh() override { return nullptr; }
 };

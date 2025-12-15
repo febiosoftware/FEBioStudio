@@ -29,9 +29,8 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include "FEModifier.h"
 
-FECylinderInBox::FECylinderInBox()
+FECylinderInBox::FECylinderInBox(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_po = nullptr;
 	m_nx = 10;
 	m_ny = 10;
 	m_nz = 10;
@@ -62,13 +61,14 @@ FECylinderInBox::FECylinderInBox()
 //-----------------------------------------------------------------------------
 bool FECylinderInBox::BuildMultiBlock()
 {
-	assert(m_po);
+	GCylinderInBox* po = dynamic_cast<GCylinderInBox*>(&m_o);
+	if (po == 0) return false;
 
 	// get the object parameters
-	double W = m_po->GetFloatValue(GCylinderInBox::WIDTH );
-	double H = m_po->GetFloatValue(GCylinderInBox::HEIGHT);
-	double D = m_po->GetFloatValue(GCylinderInBox::DEPTH );
-	double R = m_po->GetFloatValue(GCylinderInBox::RADIUS);
+	double W = po->GetFloatValue(GCylinderInBox::WIDTH );
+	double H = po->GetFloatValue(GCylinderInBox::HEIGHT);
+	double D = po->GetFloatValue(GCylinderInBox::DEPTH );
+	double R = po->GetFloatValue(GCylinderInBox::RADIUS);
 
 	double w = W*0.5;
 	double h = H*0.5;
@@ -179,12 +179,9 @@ bool FECylinderInBox::BuildMultiBlock()
 	return true;
 }
 
-FSMesh* FECylinderInBox::BuildMesh(GObject* po)
+FSMesh* FECylinderInBox::BuildMesh()
 {
-	m_po = dynamic_cast<GCylinderInBox*>(po);
-	if (m_po == nullptr) return nullptr;
-
-	BuildMultiBlock();
+	if (!BuildMultiBlock()) return nullptr;
 
 	// set element type
 	int nelem = GetIntValue(NELEM);
@@ -197,12 +194,6 @@ FSMesh* FECylinderInBox::BuildMesh(GObject* po)
 
 	// create the MB
 	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
-
-	// the Multi-block mesher will assign a different smoothing ID
-	// to each face, but we don't want that here. 
-	// For now, we autosmooth the mesh although we should think of a 
-	// better way
-	pm->AutoSmooth(60);
 
 	return pm;
 }

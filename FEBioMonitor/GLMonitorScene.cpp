@@ -66,22 +66,6 @@ void CGLMonitorScene::Clear()
 void CGLMonitorScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
 	QMutexLocker lock(&m_mutex);
-
-/*
-	// TODO: This was moved to CGLView and will be handled differently 
-	int nfield = m_glm->GetColorMap()->GetEvalField();
-	std::string dataFieldName = m_postModel->GetDataManager()->getDataString(nfield, Post::Data_Tensor_Type::TENSOR_SCALAR);
-
-
-	// Update GLWidget string table for post rendering
-	QString febFile = QString::fromStdString(m_doc->GetFEBioInputFile());
-	QFileInfo fi(febFile);
-	QString filename = fi.fileName();
-	GLWidget::addToStringTable("$(filename)", filename.toStdString());
-	GLWidget::addToStringTable("$(datafield)", dataFieldName);
-	//	GLWidget::addToStringTable("$(units)", m_doc->GetFieldUnits());
-	GLWidget::addToStringTable("$(time)", m_postModel->CurrentTime());
-*/
 	CGLPostScene::Render(engine, rc);
 }
 
@@ -314,7 +298,6 @@ void CGLMonitorScene::BuildMesh()
 
 		Post::Material m;
 		m.diffuse = c;
-		m.ambient = c;
 		m.specular = GLColor(128, 128, 128);
 		m.emission = GLColor(0, 0, 0);
 		m.shininess = 0.5f;
@@ -369,15 +352,15 @@ Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem
 	{
 		switch (dataType)
 		{
-		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FENodeData<float  > >(fem, Post::EXPORT_DATA); break;
-		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FENodeData<vec3f  > >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FENodeData<mat3fs > >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FENodeData<mat3fd > >(fem, Post::EXPORT_DATA); break;
-		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FENodeData<tens4fs> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FENodeData<mat3f  > >(fem, Post::EXPORT_DATA); break;
+		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FENodeData<float  > >(fem); break;
+		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FENodeData<vec3f  > >(fem); break;
+		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FENodeData<mat3fs > >(fem); break;
+		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FENodeData<mat3fd > >(fem); break;
+		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FENodeData<tens4fs> >(fem); break;
+		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FENodeData<mat3f  > >(fem); break;
 		case PLT_ARRAY:
 		{
-			Post::FEArrayDataField* data = new Post::FEArrayDataField(fem, NODE_DATA, DATA_ITEM, Post::EXPORT_DATA);
+			Post::FEArrayDataField* data = new Post::FEArrayDataField(fem, NODE_DATA, DATA_ITEM);
 			data->SetArraySize(ps->GetArraysize());
 			data->SetArrayNames(ps->GetArrayNames());
 			pdf = data;
@@ -392,12 +375,12 @@ Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem
 	{
 		switch (dataType)
 		{
-		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs, DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  , DATA_ITEM> >(fem); break;
+		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  , DATA_ITEM> >(fem); break;
+		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs , DATA_ITEM> >(fem); break;
+		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd , DATA_ITEM> >(fem); break;
+		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs, DATA_ITEM> >(fem); break;
+		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  , DATA_ITEM> >(fem); break;
 		default:
 			assert(false);
 			break;
@@ -407,12 +390,12 @@ Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem
 	{
 		switch (dataType)
 		{
-		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  , DATA_MULT> >(fem, Post::EXPORT_DATA); break;
-		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  , DATA_MULT> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs , DATA_MULT> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd , DATA_MULT> >(fem, Post::EXPORT_DATA); break;
-		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs, DATA_MULT> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  , DATA_MULT> >(fem, Post::EXPORT_DATA); break;
+		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  , DATA_MULT> >(fem); break;
+		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  , DATA_MULT> >(fem); break;
+		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs , DATA_MULT> >(fem); break;
+		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd , DATA_MULT> >(fem); break;
+		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs, DATA_MULT> >(fem); break;
+		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  , DATA_MULT> >(fem); break;
 		default:
 			assert(false);
 			break;
@@ -422,12 +405,12 @@ Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem
 	{
 		switch (dataType)
 		{
-		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEFaceData<float  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEFaceData<vec3f  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3fs , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3fd , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEFaceData<tens4fs, DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3f  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEFaceData<float  , DATA_ITEM> >(fem); break;
+		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEFaceData<vec3f  , DATA_ITEM> >(fem); break;
+		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3fs , DATA_ITEM> >(fem); break;
+		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3fd , DATA_ITEM> >(fem); break;
+		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEFaceData<tens4fs, DATA_ITEM> >(fem); break;
+		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3f  , DATA_ITEM> >(fem); break;
 		default:
 			assert(false);
 			break;
@@ -586,8 +569,6 @@ void CGLMonitorScene::UpdateScene()
 		ps->GetFEMesh()->Node(i).r = to_vec3d(ps->m_NODE[i].m_rt);
 	}
 	m_postModel->UpdateMeshState(m_postModel->CurrentTimeIndex());
-	ps->GetFEMesh()->UpdateNormals();
-
 	m_postModel->UpdateBoundingBox();
 	m_glm->Update(true);
 }
@@ -784,6 +765,7 @@ void CGLMonitorScene::UpdateDomainData(FEPlotData* pd, Post::FEMeshData& meshDat
 				}
 				else assert(false);
 			}
+			else elementCounter += NE;
 		}
 		else elementCounter += NE;
 	}
@@ -893,14 +875,24 @@ BOX CGLMonitorScene::GetBoundingBox()
 	return m_postModel->GetBoundingBox();
 }
 
-
-BOX CGLMonitorScene::GetSelectionBox()
+LegendData CGLMonitorScene::GetLegendData(int n)
 {
-	Post::CGLModel* mdl = GetGLModel();
-	if (mdl == nullptr) return BOX(-1, -1, -1, 1, 1, 1);
+	LegendData l;
 
-	FESelection* sel = m_fmdoc->GetCurrentSelection();
-	if (sel) return sel->GetBoundingBox();
+	if (n == 0)
+	{
+		Post::CGLColorMap* pcm = GetGLModel()->GetColorMap();
+		if (pcm && pcm->IsActive())
+		{
+			float rng[2];
+			pcm->GetRange(rng);
+			l.vmin = rng[0];
+			l.vmax = rng[1];
+			l.colormap = pcm->GetColorMap();
+			l.smooth = pcm->GetColorSmooth();
+			l.ndivs = pcm->GetDivisions();
+		}
+	}
 
-	return BOX();
+	return l;
 }

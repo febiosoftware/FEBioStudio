@@ -24,8 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLLabel.h"
-#include <QPainter>
-#include "convert.h"
+#include <QFontMetrics>
 
 GLLabel::GLLabel(int x, int y, int w, int h, const char* szlabel) : GLWidget(x, y, w, h, szlabel)
 {
@@ -46,8 +45,26 @@ void GLLabel::fit_to_size()
 	}
 }
 
-void GLLabel::draw(QPainter* painter)
+void GLLabel::draw(GLPainter* painter)
 {
+	// see if we need to resize the label to fit the text
+	std::string label;
+	if (m_szlabel)
+	{
+		label = processLabel();
+		if ((label.size() > 0) && !has_focus())
+		{
+			QFontMetricsF fm(m_font);
+			QSizeF size = fm.size(Qt::TextExpandTabs, QString::fromStdString(label));
+			if ((size.width() > w() - 2*m_margin) || (size.height() > h() - 2 * m_margin))
+			{
+				resize(x(), y(), size.width() + 2 * m_margin, size.height() + 2 * m_margin);
+			}
+		}
+	}
+
+	GLWidget::draw(painter);
+
 	int x0 = m_x;
 	int y0 = m_y;
 	int x1 = m_x + m_w;
@@ -60,7 +77,7 @@ void GLLabel::draw(QPainter* painter)
 	int w = m_w - 2 * m_margin;
 	int h = m_h - 2 * m_margin;
 
-	if (m_szlabel)
+	if (label.size() > 0)
 	{
 		// set the align flag
 		int flags = Qt::AlignVCenter;
@@ -71,7 +88,6 @@ void GLLabel::draw(QPainter* painter)
 		case RightJustified: flags |= Qt::AlignRight; break;
 		}
 
-		std::string label = processLabel();
 		if (m_bshadow)
 		{
 			int dx = m_font.pointSize() / 10 + 1;
@@ -79,8 +95,9 @@ void GLLabel::draw(QPainter* painter)
 			painter->setFont(m_font);
 			painter->drawText(x0 + dx, y0 + dx, w, h, flags, QString::fromStdString(label));
 		}
+		GLColor fc = get_fg_color();
 		QPen pen = painter->pen();
-		pen.setColor(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
+		pen.setColor(QColor(fc.r, fc.g, fc.b));
 		painter->setFont(m_font);
 		painter->setPen(pen);
 		painter->drawText(x0, y0, w, h, flags, QString::fromStdString(label));

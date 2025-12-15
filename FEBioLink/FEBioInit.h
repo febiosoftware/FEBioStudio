@@ -27,4 +27,6 @@ SOFTWARE.*/
 
 namespace FEBio {
 	void InitFEBioLibrary();
+
+	bool ConfigureFEBio(const char* szfilename);
 }

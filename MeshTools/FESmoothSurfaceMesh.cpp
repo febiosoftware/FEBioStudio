@@ -37,6 +37,7 @@ FESmoothSurfaceMesh::FESmoothSurfaceMesh() : FESurfaceModifier("Smooth")
 	AddDoubleParam(0.0, "lambda");
 	AddBoolParam(false, "preserve shape");
 	AddBoolParam(false, "preserve edges");
+    AddBoolParam(false, "selection only");
 }
 
 FSSurfaceMesh* FESmoothSurfaceMesh::Apply(FSSurfaceMesh* pm)
@@ -47,23 +48,38 @@ FSSurfaceMesh* FESmoothSurfaceMesh::Apply(FSSurfaceMesh* pm)
 	// apply smoothing
 	bool bshape = GetBoolValue(2);
 	bool bedge = GetBoolValue(3);
-	ShapeSmoothMesh(*newMesh, *pm, bshape, bedge);
+    bool bselo = GetBoolValue(4);
+	ShapeSmoothMesh(*newMesh, *pm, bshape, bedge, bselo);
 
 	// all done
 	return newMesh;
 }
 
-void FESmoothSurfaceMesh::ShapeSmoothMesh(FSSurfaceMesh& mesh, const FSSurfaceMesh& backMesh, bool preserveShape, bool preserveEdges)
+void FESmoothSurfaceMesh::ShapeSmoothMesh(FSSurfaceMesh& mesh, const FSSurfaceMesh& backMesh, bool preserveShape, bool preserveEdges, bool selectionOnly)
 {
 	int niter = GetIntValue(0);
 	double w = GetFloatValue(1);
 	int N = mesh.Nodes();
 
 	std::vector<int> faceIDs(N, -1);
-
+    
 	// smooth node positions
 	for (int n = 0; n<niter; ++n)
 	{
+		// tag all selected nodes
+		mesh.TagAllNodes(1);
+		if (selectionOnly) {
+			for (int i = 0; i < mesh.Faces(); ++i) {
+				FSFace& face = mesh.Face(i);
+				if (!face.IsSelected()) {
+					for (int j = 0; j < face.Nodes(); ++j) {
+						FSNode& node = mesh.Node(face.n[j]);
+						node.m_ntag = 0;
+					}
+				}
+			}
+		}
+
 		// clear tags
 		// first = count of how often a node was visited
 		// second = ID (edge or face) that the nodes should be back-projected to
@@ -73,10 +89,10 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FSSurfaceMesh& mesh, const FSSurfaceMe
 		std::vector<vec3d> newPos(N, vec3d(0, 0, 0));
 
 		// tag all immovable nodes
-		if (preserveShape || preserveEdges)
+		if (preserveShape || preserveEdges || selectionOnly)
 		{
 			for (int i = 0; i<N; ++i)
-				if (mesh.Node(i).m_gid >= 0)
+				if ((mesh.Node(i).m_gid >= 0) || (mesh.Node(i).m_ntag == 0))
 				{
 					newPos[i] = mesh.Node(i).r;
 					tag[i].first = -1;

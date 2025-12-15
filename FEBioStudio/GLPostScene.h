@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "Document.h"
-#include <GLLib/GLScene.h>
+#include "GLViewScene.h"
 
 class CGLModelDocument;
 class CGLPostScene;
@@ -43,6 +43,8 @@ class GLPostSceneItem : public GLSceneItem
 public:
 	GLPostSceneItem(CGLPostScene* scene) : m_scene(scene) {}
 
+	const GLCamera& GetCamera() const;
+
 protected:
 	CGLPostScene* m_scene;
 };
@@ -56,24 +58,26 @@ public:
 private:
 	void RenderModel(GLRenderEngine& re, GLContext& rc);
 	void RenderNodes(GLRenderEngine& re, GLContext& rc);
-	void RenderEdges(GLRenderEngine& re, GLContext& rc);
+	void RenderEdges(GLRenderEngine& re);
 	void RenderFaces(GLRenderEngine& re, GLContext& rc);
 	void RenderElems(GLRenderEngine& re, GLContext& rc);
-	void RenderSelection(GLRenderEngine& re, GLContext& rc);
-	void RenderNormals(GLRenderEngine& re, GLContext& rc);
+	void RenderSelection(GLRenderEngine& re);
+	void RenderNormals(GLRenderEngine& re);
 	void RenderOutline(GLRenderEngine& re, GLContext& rc);
-	void RenderGhost(GLRenderEngine& re, GLContext& rc);
+	void RenderGhost(GLRenderEngine& re);
 	void RenderMeshLines(GLRenderEngine& re, GLContext& rc);
 	void RenderDiscrete(GLRenderEngine& re, GLContext& rc);
 	void RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc);
-	void RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc);
-	void RenderMinMaxMarkers(GLRenderEngine& re, GLContext& rc);
+	void RenderDiscreteAsSolid(GLRenderEngine& re);
+	void RenderMinMaxMarkers(GLRenderEngine& re);
 	void RenderDiscreteElement(GLRenderEngine& re, int n);
 	void RenderDiscreteElementAsSolid(GLRenderEngine& re, int n, double W);
 
 private:
 	void RenderMesh(GLRenderEngine& re, GLMesh& mesh, int surfId);
-	void RenderMeshEdges(GLRenderEngine& re, GLMesh& mesh);
+
+private:
+	GLTexture1D	m_tex;
 };
 
 class GLPostPlotItem : public GLPostSceneItem
@@ -83,29 +87,23 @@ public:
 	void render(GLRenderEngine& re, GLContext& rc) override;
 };
 
-class GLPostPlaneCutItem : public GLCompositeSceneItem
+class GLPostPlaneCutItem : public GLPostSceneItem
 {
 public:
-	GLPostPlaneCutItem(CGLPostScene* scene) : m_scene(scene) {}
+	GLPostPlaneCutItem(CGLPostScene* scene) : GLPostSceneItem(scene) {}
 
 	void render(GLRenderEngine& re, GLContext& rc) override;
-
-private:
-	CGLPostScene* m_scene;
 };
 
-class GLPostMirrorItem : public GLCompositeSceneItem
+class GLPostMirrorItem : public GLPostSceneItem
 {
 public:
-	GLPostMirrorItem(CGLPostScene* scene) : m_scene(scene) {}
+	GLPostMirrorItem(CGLPostScene* scene) : GLPostSceneItem(scene) {}
 
 	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
 	void renderMirror(GLRenderEngine& re, GLContext& rc, int start, int end);
-
-private:
-	CGLPostScene* m_scene;
 };
 
 class GLPostObjectItem : public GLPostSceneItem
@@ -126,7 +124,7 @@ private:
 	CImageModel* m_img;
 };
 
-class CGLPostScene : public GLScene
+class CGLPostScene : public GLViewScene
 {
 public:
 	CGLPostScene(CGLModelDocument* doc);
@@ -134,8 +132,6 @@ public:
 	void Render(GLRenderEngine& engine, GLContext& rc) override;
 
 	BOX GetBoundingBox() override;
-
-	BOX GetSelectionBox() override;
 
 	void ToggleTrackSelection();
 
@@ -149,13 +145,15 @@ public:
 
 	void Update() override;
 
+	LegendData GetLegendData(int n) override;
+
 private:
 	void CreateTags(GLContext& rc);
 
 	void UpdateTracking();
 
 private:
-	void BuildScene(GLContext& rc);
+	void BuildScene();
 
 private:
 	CGLModelDocument* m_doc;

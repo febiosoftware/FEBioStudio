@@ -572,6 +572,33 @@ GPart* GModel::Part(int n)
 	return 0;
 }
 
+std::vector<GPart*> GModel::AllParts()
+{
+	std::vector<GPart*> parts;
+	for (int i = 0; i < Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		for (int j = 0; j < po->Parts(); ++j)
+			parts.push_back(po->Part(j));
+	}
+	return parts;
+}
+
+std::vector<GPart*> GModel::AllParts(std::function<bool(const GPart* pg)> filter)
+{
+	std::vector<GPart*> parts;
+	for (int i = 0; i < Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		for (int j = 0; j < po->Parts(); ++j)
+		{
+			GPart* pg = po->Part(j);
+			if (filter(pg)) parts.push_back(pg);
+		}
+	}
+	return parts;
+}
+
 //-----------------------------------------------------------------------------
 GPart* GModel::FindPart(int nid)
 {
@@ -1663,14 +1690,6 @@ void GModel::ShowObjects(const vector<int>& objList, bool bshow)
         for (int i : objList) Object(i)->Hide();
 }
 
-void GModel::ShowObject(GObject* po, bool bshow)
-{
-	if (bshow)
-		po->Show();
-	else
-		po->Hide();
-}
-
 //-----------------------------------------------------------------------------
 void GModel::SelectObjects(const vector<int>& objList)
 {
@@ -1800,151 +1819,13 @@ bool GModel::DeleteParts(std::vector<GPart*>& partList)
 
 void GModel::ShowAllObjects()
 {
-	for (int i = 0; i<Objects(); ++i) ShowObject(Object(i));
+	for (int i = 0; i<Objects(); ++i) Object(i)->Show();
 }
 
 //-----------------------------------------------------------------------------
 void GModel::ShowAllParts(GObject* po)
 {
 	if (po) po->ShowAllParts();
-}
-
-//-----------------------------------------------------------------------------
-GObject* GModel::CloneObject(GObject *po)
-{
-	if (po == nullptr) return nullptr;
-
-	// clone counter
-	static int n = 1;
-
-	// clone the object
-	GObject* pco = po->Clone();
-	if (pco == 0) return 0;
-
-	pco->CopyTransform(po);
-	pco->SetColor(po->GetColor());
-
-	// set a new name
-	char sz[256];
-	sprintf(sz, "Clone%02d", n++);
-	pco->SetName(sz);
-
-	// copy material assignments
-	assert(pco->Parts() == po->Parts());
-	if (pco->Parts() == po->Parts())
-	{
-		int NP = po->Parts();
-		for (int i = 0; i<NP; ++i)
-		{
-			GPart* srcPart = po->Part(i);
-			GPart* dstPart = pco->Part(i);
-
-			dstPart->SetMaterialID(srcPart->GetMaterialID());
-		}
-	}
-
-	return pco;
-}
-
-vector<GObject*> GModel::CloneGrid(GObject* po, int x0, int x1, int y0, int y1, int z0, int z1, double dx, double dy, double dz)
-{
-	// clone counter
-	static int n = 1;
-
-	// sanity checks
-	if (x1 < x0) { int tmp = x0; x0 = x1; x1 = tmp; }
-	if (y1 < y0) { int tmp = y0; y0 = y1; y1 = tmp; }
-	if (z1 < z0) { int tmp = z0; z0 = z1; z1 = tmp; }
-
-	// list of cloned objects
-	vector<GObject*> newObjects;
-
-	for (int i = x0; i <= x1; ++i)
-		for (int j = y0; j <= y1; ++j)
-			for (int k = z0; k <= z1; ++k)
-				if ((i != 0) || (j != 0) || (k != 0))
-				{
-					// clone the object
-					GObject* pco = po->Clone();
-					if (pco == 0) return newObjects;
-
-					// set a new name
-					char sz[256];
-					sprintf(sz, "GridClone%02d", n++);
-					pco->SetName(sz);
-
-					// copy material assignments
-					assert(pco->Parts() == po->Parts());
-					if (pco->Parts() == po->Parts())
-					{
-						int NP = po->Parts();
-						for (int i = 0; i<NP; ++i)
-						{
-							GPart* srcPart = po->Part(i);
-							GPart* dstPart = pco->Part(i);
-
-							dstPart->SetMaterialID(srcPart->GetMaterialID());
-						}
-					}
-
-					// apply transform
-					pco->GetTransform().Translate(vec3d(i*dx, j*dy, k*dz));
-
-					newObjects.push_back(pco);
-				}
-
-	return newObjects;
-}
-
-//-----------------------------------------------------------------------------
-vector<GObject*> GModel::CloneRevolve(GObject* po, int count, double range, double spiral, const vec3d& center, const vec3d& axis, bool rotateClones)
-{
-	// clone counter
-	static int n = 1;
-
-	vector<GObject*> newObjects;
-
-	// make sure there is work to do
-	if (count <= 0) return newObjects;
-
-	// get the source object's position
-	vec3d r = po->GetTransform().GetPosition();
-
-	vec3d normAxis = axis.Normalized();
-
-	// create clones
-	for (int i = 0; i<count; ++i)
-	{
-		double w = DEG2RAD*((i + 1) * range / (count + 1));
-
-		double d = (i + 1)*spiral / count;
-
-		quatd Q = quatd(w, axis);
-
-		// clone the object
-		GObject* pco = po->Clone();
-		if (pco == 0) return newObjects;
-
-		// set a new name
-		char sz[256];
-		sprintf(sz, "RevolveClone%02d", n++);
-		pco->SetName(sz);
-
-		// calculate new positions
-		if (rotateClones) pco->GetTransform().Rotate(Q, center);
-		else
-		{
-			vec3d pos = center + Q*(r - center);
-			pco->GetTransform().SetPosition(pos);
-		}
-		pco->GetTransform().Translate(normAxis * d);
-
-		// add the object
-		newObjects.push_back(pco);
-	}
-
-	// all done
-	return newObjects;
 }
 
 //-----------------------------------------------------------------------------
@@ -2212,9 +2093,6 @@ GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newOb
 			newObject->Part(np)->SetMaterialID(po->Part(j)->GetMaterialID());
 		}
 	}
-
-	// TODO: Figure out a way to retain the original smoothing groups during merge.
-	newObject->GetEditableMesh()->SmoothByPartition();
 
 	return newObject;
 }

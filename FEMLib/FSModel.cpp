@@ -43,6 +43,7 @@ SOFTWARE.*/
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include <map>
 #include <cstring>
 using namespace std;
 
@@ -183,11 +184,10 @@ std::string defaultStepName(FSModel* fem, FSStep* ps)
 	return ss.str();
 }
 
-//-----------------------------------------------------------------------------
 FSModel::FSModel() : m_skipGeometry(false)
 {
-	m_pModel = new GModel(this);
-	New();
+	m_GMdl = std::make_unique<GModel>(this);
+	Reset();
 
 	// define degrees of freedom
 	m_DOF.clear();
@@ -238,13 +238,11 @@ FSModel::FSModel() : m_skipGeometry(false)
 	m_MLT_offset = 0;
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::ClearVariables()
 {
 	m_DOF.clear();
 }
 
-//-----------------------------------------------------------------------------
 FEDOFVariable* FSModel::AddVariable(const std::string& varName)
 {
 	FEDOFVariable var(varName);
@@ -252,7 +250,6 @@ FEDOFVariable* FSModel::AddVariable(const std::string& varName)
 	return &m_DOF[m_DOF.size() - 1];
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::GetVariableIndex(const char* sz)
 {
 	for (int i=0; i<(int)m_DOF.size(); ++i)
@@ -263,7 +260,6 @@ int FSModel::GetVariableIndex(const char* sz)
 	return -1;
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::GetDOFIndex(const char* sz)
 {
     int idx = -1;
@@ -278,14 +274,12 @@ int FSModel::GetDOFIndex(const char* sz)
     return -1;
 }
 
-//-----------------------------------------------------------------------------
 FEDOFVariable& FSModel::GetVariable(const char* sz)
 {
 	int nvar = GetVariableIndex(sz);
 	return m_DOF[nvar];
 }
 
-//-----------------------------------------------------------------------------
 const char* FSModel::GetDOFSymbol(int n) const
 {
 	if (n < 0) { assert(false); return nullptr; }
@@ -305,7 +299,6 @@ const char* FSModel::GetDOFSymbol(int n) const
 	return nullptr;
 }
 
-//-----------------------------------------------------------------------------
 const char* FSModel::GetDOFName(int n) const
 {
 	if (n < 0) { return "(invalid)"; }
@@ -325,14 +318,11 @@ const char* FSModel::GetDOFName(int n) const
 	return nullptr;
 }
 
-//-----------------------------------------------------------------------------
 FSModel::~FSModel()
 {
 	Clear();
-	delete m_pModel;
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::ClearSolutes()
 {
 	if (m_Sol.IsEmpty() == false)
@@ -343,7 +333,6 @@ void FSModel::ClearSolutes()
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::AddSolute(const std::string& name, int z, double M, double d)
 {
 	SoluteData* s = new SoluteData;
@@ -361,7 +350,6 @@ void FSModel::AddSolute(const std::string& name, int z, double M, double d)
 	var.AddDOF(name, sz);
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::GetRigidMaterialNames(char* szbuf)
 {
 	char* ch = szbuf;
@@ -378,7 +366,6 @@ void FSModel::GetRigidMaterialNames(char* szbuf)
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::GetVariableNames(const char* szvar, char* szbuf)
 {
 	char var[512] = {0};
@@ -432,7 +419,6 @@ void FSModel::GetVariableNames(const char* szvar, char* szbuf)
 }
 
 
-//-----------------------------------------------------------------------------
 const char* FSModel::GetVariableName(const char* szvar, int n, bool longName)
 {
 	if (szvar[0] != '$') return nullptr;
@@ -462,8 +448,8 @@ const char* FSModel::GetVariableName(const char* szvar, int n, bool longName)
 			return m_Sol[n]->GetName().c_str();
 		else
 		{
-			n -= m_Sol.Size();
-			if ((n >= 0) && (n < m_SBM.Size()))
+			n -= (int)m_Sol.Size();
+			if ((n >= 0) && (n < (int)m_SBM.Size()))
 				return m_SBM[n]->GetName().c_str();
 			else
 				return "(invalid)";
@@ -515,7 +501,6 @@ const char* FSModel::GetVariableName(const char* szvar, int n, bool longName)
 	return nullptr;
 }
 
-//-----------------------------------------------------------------------------
 const char* FSModel::GetEnumKey(const Param& param, bool longName)
 {
 	const char* szenum = param.GetEnumNames();
@@ -539,7 +524,6 @@ const char* FSModel::GetEnumKey(const Param& param, bool longName)
 	return ch;
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::GetEnumValue(const Param& param)
 {
 	const char* szenum = param.GetEnumNames(); assert(szenum);
@@ -577,7 +561,6 @@ int FSModel::GetEnumValue(const Param& param)
 	return param.GetIntValue();
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::GetEnumIndex(const Param& param)
 {
 	const char* szenum = param.GetEnumNames();
@@ -601,11 +584,11 @@ int FSModel::GetEnumIndex(const Param& param)
 		}
 		else if (strcmp(szenum, "$(species)") == 0)
 		{
-			if ((n >= 0) && (n < m_Sol.Size())) return n;
+			if ((n >= 0) && (n < (int)m_Sol.Size())) return n;
 			else
 			{
-				n -= m_Sol.Size();
-				if ((n >= 0) && (n < m_SBM.Size())) return n + m_Sol.Size();
+				n -= (int)m_Sol.Size();
+				if ((n >= 0) && (n < (int)m_SBM.Size())) return n + (int)m_Sol.Size();
 			}
 		}
 		else if (strcmp(szenum, "$(rigid_materials)") == 0)
@@ -628,7 +611,6 @@ int FSModel::GetEnumIndex(const Param& param)
 	return n;
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::GetDOFNames(FEDOFVariable& var, char* szbuf)
 {
 	char* ch = szbuf;
@@ -641,7 +623,6 @@ void FSModel::GetDOFNames(FEDOFVariable& var, char* szbuf)
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::GetDOFNames(FEDOFVariable& var, vector<string>& dofList)
 {
 	dofList.clear();
@@ -652,7 +633,6 @@ void FSModel::GetDOFNames(FEDOFVariable& var, vector<string>& dofList)
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::GetDOFSymbols(FEDOFVariable& var, vector<string>& dofList)
 {
 	dofList.clear();
@@ -678,7 +658,6 @@ void FSModel::GetDOFSymbols(FEDOFVariable& var, vector<string>& dofList)
 	}
 }
 
-//-----------------------------------------------------------------------------
 bool FSModel::GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum)
 {
 	assert(szbuf);
@@ -700,7 +679,7 @@ bool FSModel::GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum
 				{
 					const char* dofname = GetDOFSymbol(l[i]); assert(dofname);
 					strcat(sz, dofname);
-					int n = strlen(sz);
+					int n = (int)strlen(sz);
 					if (i != l.size() - 1) sz[n] = ',';
 					sz += n + 1;
 				}
@@ -717,7 +696,7 @@ bool FSModel::GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum
 				for (int i = 0; i < l.size(); ++i)
 				{
 					strcat(sz, dofList[l[i]].c_str());
-					int n = strlen(sz);
+					int n = (int)strlen(sz);
 					if (i != l.size() - 1) sz[n] = ',';
 					sz += n + 1;
 				}
@@ -730,7 +709,6 @@ bool FSModel::GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum
 	return false;
 }
 
-//-----------------------------------------------------------------------------
 bool FSModel::SetEnumIndex(Param& param, int index)
 {
 	const char* szvar = param.GetEnumNames();
@@ -772,7 +750,6 @@ bool FSModel::SetEnumIndex(Param& param, int index)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 bool FSModel::SetEnumValue(Param& param, int nvalue)
 {
 	const char* szvar = param.GetEnumNames();
@@ -820,7 +797,6 @@ bool FSModel::SetEnumValue(Param& param, int nvalue)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 bool FSModel::SetEnumKey(Param& param, const std::string& key)
 {
 	const char* szvar = param.GetEnumNames();
@@ -907,7 +883,7 @@ bool FSModel::SetEnumKey(Param& param, const std::string& key)
 		const char* szvarname = szvar + 11;
 		char tmp[256] = { 0 };
 		strcpy(tmp, szvar + 11);
-		int l = strlen(tmp);
+		int l = (int)strlen(tmp);
 		tmp[l - 1] = 0;
 
 		int i = GetVariableIndex(tmp);
@@ -942,7 +918,6 @@ bool FSModel::SetEnumKey(Param& param, const std::string& key)
 	return false;
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::GetSoluteNames(char* szbuf)
 {
 	char* ch = szbuf;
@@ -955,7 +930,6 @@ void FSModel::GetSoluteNames(char* szbuf)
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::GetSBMNames(char* szbuf)
 {
 	char* ch = szbuf;
@@ -968,7 +942,6 @@ void FSModel::GetSBMNames(char* szbuf)
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::GetSpeciesNames(char* szbuf)
 {
 	// get the solute names
@@ -984,7 +957,6 @@ void FSModel::GetSpeciesNames(char* szbuf)
 	GetSBMNames(szbuf);
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::FindSolute(const char* sz)
 {
 	string sol(sz);
@@ -995,19 +967,16 @@ int FSModel::FindSolute(const char* sz)
 	return -1;
 }
 
-//-----------------------------------------------------------------------------
 SoluteData& FSModel::GetSoluteData(int i)
 { 
 	return *m_Sol[i]; 
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::Solutes()
 { 
 	return (int)m_Sol.Size(); 
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::RemoveSolute(int n)
 {
 	delete m_Sol[n];
@@ -1025,7 +994,6 @@ void FSModel::RemoveSolute(int n)
 	}
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::FindSBM(const char* sz)
 {
 	string sbm(sz);
@@ -1036,19 +1004,16 @@ int FSModel::FindSBM(const char* sz)
 	return -1;
 }
 
-//-----------------------------------------------------------------------------
 SoluteData& FSModel::GetSBMData(int i)
 { 
 	return *m_SBM[i]; 
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::SBMs()
 { 
 	return (int)m_SBM.Size(); 
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::AddSBM(const std::string& name, int z, double M, double d)
 {
 	SoluteData* s = new SoluteData;
@@ -1059,19 +1024,16 @@ void FSModel::AddSBM(const std::string& name, int z, double M, double d)
 	m_SBM.Add(s);
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::ClearSBMs()
 {
 	m_SBM.Clear();
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::RemoveSBM(int n)
 {
 	delete m_SBM[n];
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::Reactions()
 {
     int n = 0;
@@ -1084,7 +1046,6 @@ int FSModel::Reactions()
     return n;
 }
 
-//-----------------------------------------------------------------------------
 FSReactionMaterial* FSModel::GetReaction(int id)
 {
     int n = -1;
@@ -1104,7 +1065,6 @@ FSReactionMaterial* FSModel::GetReaction(int id)
     return NULL;
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::ReplaceMaterial(GMaterial *pold, GMaterial *pnew)
 {
 	// find the old material
@@ -1120,9 +1080,9 @@ void FSModel::ReplaceMaterial(GMaterial *pold, GMaterial *pnew)
 	}
 
 	// replace all occurences of this material
-	for (int i=0; i<m_pModel->Objects(); ++i)
+	for (int i=0; i< m_GMdl->Objects(); ++i)
 	{
-		GObject* po = m_pModel->Object(i);
+		GObject* po = m_GMdl->Object(i);
 		for (int j=0; j<po->Parts(); ++j)
 		{
 			GPart* pp = po->Part(j);
@@ -1136,9 +1096,9 @@ void FSModel::ReplaceMaterial(GMaterial *pold, GMaterial *pnew)
 
 bool FSModel::CanDeleteMaterial(GMaterial* pmat)
 {
-	for (int i=0; i<m_pModel->Objects(); ++i)
+	for (int i=0; i< m_GMdl->Objects(); ++i)
 	{
-		GObject* po = m_pModel->Object(i);
+		GObject* po = m_GMdl->Object(i);
 		for (int j=0; j<po->Parts(); ++j)
 		{
 			GPart* pp = po->Part(j);
@@ -1175,9 +1135,9 @@ int FSModel::Materials()
 int FSModel::DeleteMaterial(GMaterial* pmat)
 {
 	// first, we see if this material being used by a mesh
-	for (int i = 0; i<m_pModel->Objects(); ++i)
+	for (int i = 0; i< m_GMdl->Objects(); ++i)
 	{
-		GObject* po = m_pModel->Object(i);
+		GObject* po = m_GMdl->Object(i);
 		bool needsUpdate = false;
 		for (int j = 0; j<po->Parts(); ++j)
 		{
@@ -1192,7 +1152,7 @@ int FSModel::DeleteMaterial(GMaterial* pmat)
 		if (needsUpdate) po->UpdateFEElementMatIDs();
 	}
 	ClearMLT();
-	return m_pMat.Remove(pmat);
+	return (int)m_pMat.Remove(pmat);
 }
 
 void FSModel::ClearMLT()
@@ -1240,7 +1200,6 @@ GMaterial* FSModel::GetMaterialFromID(int id)
 	return m_MLT[id];
 }
 
-//-----------------------------------------------------------------------------
 // find a material from its name
 GMaterial* FSModel::FindMaterial(const string& name)
 {
@@ -1254,6 +1213,7 @@ GMaterial* FSModel::FindMaterial(const string& name)
 
 void FSModel::AssignMaterial(GObject* po, GMaterial* mat)
 {
+	ClearMLT();
 	int matID = (mat ? mat->GetID() : -1);
 	for (int i = 0; i < po->Parts(); ++i)
 	{
@@ -1266,6 +1226,7 @@ void FSModel::AssignMaterial(GObject* po, GMaterial* mat)
 
 void FSModel::AssignMaterial(GPart* pg, GMaterial* mat)
 {
+	ClearMLT();
 	int matID = (mat ? mat->GetID() : -1);
 	pg->SetMaterialID(matID);
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
@@ -1275,6 +1236,7 @@ void FSModel::AssignMaterial(GPart* pg, GMaterial* mat)
 
 void FSModel::AssignMaterial(const std::vector<GPart*>& partList, GMaterial* mat)
 {
+	ClearMLT();
 	int matID = (mat ? mat->GetID() : -1);
 	std::set<GObject*> obj;
 	for (auto pg : partList)
@@ -1289,6 +1251,7 @@ void FSModel::AssignMaterial(const std::vector<GPart*>& partList, GMaterial* mat
 void FSModel::AssignMaterial(const std::vector<GPart*>& partList, const std::vector<GMaterial*>& matList)
 {
 	if (partList.size() != matList.size()) { assert(false); return; }
+	ClearMLT();
 
 	std::set<GObject*> obj;
 	for (int i=0; i<partList.size(); ++i)
@@ -1342,16 +1305,34 @@ void FSModel::UpdateMaterialPositions()
 	for (int i = 0; i < gm.Objects(); ++i)
 	{
 		GObject* po = gm.Object(i);
-		for (int j = 0; j < po->Parts(); ++j)
+		Transform T = po->GetTransform();
+		FSMesh* mesh = po->GetFEMesh();
+		GMaterial* mat = nullptr;
+		int partID = -1;
+		if (mesh)
 		{
-			GPart* pg = po->Part(j);
-			if (pg)
+			int NE = mesh->Elements();
+			for (int j=0; j<NE; ++j)
 			{
-				GMaterial* mat = GetMaterialFromID(pg->GetMaterialID());
-				if (mat)
+				FSElement& el = mesh->Element(j);
+				if ((el.m_gid >= 0) && (el.m_gid < po->Parts()))
 				{
-					mat->m_pos += pg->GetGlobalBox().Center();
-					tag[mat]++;
+					if (partID != el.m_gid)
+					{
+						partID = el.m_gid;
+						GPart* pg = po->Part(partID);
+						if (pg)
+						{
+							mat = GetMaterialFromID(pg->GetMaterialID());
+						}
+						else mat = nullptr;
+					}
+
+					if (mat)
+					{
+						mat->m_pos += T.LocalToGlobal(mesh->ElementCenter(el));
+						tag[mat]++;
+					}
 				}
 			}
 		}
@@ -1365,7 +1346,6 @@ void FSModel::UpdateMaterialPositions()
 	}
 }
 
-//-----------------------------------------------------------------------------
 FSRigidConnector* FSModel::GetRigidConnectorFromID(int id)
 {
     // don't bother looking of ID is invalid
@@ -1382,8 +1362,6 @@ FSRigidConnector* FSModel::GetRigidConnectorFromID(int id)
     return 0;
 }
 
-//-----------------------------------------------------------------------------
-
 void FSModel::Clear()
 {
 	// clear all data variables
@@ -1397,15 +1375,14 @@ void FSModel::Clear()
 	m_pStep.Clear();
 
 	// remove all meshes
-	m_pModel->Clear();
+	m_GMdl->Clear();
 
 	// clear all solutes and SBMS
 	ClearSolutes();
 	ClearSBMs();
 }
 
-//-----------------------------------------------------------------------------
-void FSModel::New()
+void FSModel::Reset()
 {
 	// clear FE data
 	Clear();
@@ -1414,7 +1391,6 @@ void FSModel::New()
 	m_pStep.Add(new FSInitialStep(this));
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::CountMeshDataFields()
 {
 	// count the mesh data fields on the meshes
@@ -1433,7 +1409,6 @@ int FSModel::CountMeshDataFields()
 	return total;
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::Save(OArchive& ar)
 {
 	// save model data
@@ -1525,12 +1500,12 @@ void FSModel::Save(OArchive& ar)
 	}
 
 	// save the geometry
-	int nobjs = m_pModel->Objects() + m_pModel->DiscreteObjects();
+	int nobjs = m_GMdl->Objects() + m_GMdl->DiscreteObjects();
 	if (nobjs > 0)
 	{
 		ar.BeginChunk(CID_GEOMETRY_SECTION);
 		{
-			m_pModel->Save(ar);
+			m_GMdl->Save(ar);
 		}
 		ar.EndChunk();
 	}
@@ -1594,8 +1569,6 @@ void FSModel::Save(OArchive& ar)
 	}
 }
 
-//-----------------------------------------------------------------------------
-
 void FSModel::Load(IArchive& ar)
 {
 	TRACE("FSModel::Load");
@@ -1603,7 +1576,7 @@ void FSModel::Load(IArchive& ar)
 	// clear the model
 	Clear();
 
-    m_pModel->SetLoadOnlyDiscreteFlag(m_skipGeometry);
+	m_GMdl->SetLoadOnlyDiscreteFlag(m_skipGeometry);
 
 	// read the model data
 	while (IArchive::IO_OK == ar.OpenChunk())
@@ -1615,7 +1588,7 @@ void FSModel::Load(IArchive& ar)
 		case CID_FEM_SOLUTE_DATA     : LoadSoluteData(ar); break;
         case CID_FEM_SBM_DATA        : LoadSBMData(ar); break;
 		case CID_MATERIAL_SECTION    : LoadMaterials(ar); break;
-		case CID_GEOMETRY_SECTION    : m_pModel->Load(ar); break;
+		case CID_GEOMETRY_SECTION    : m_GMdl->Load(ar); break;
 		case CID_STEP_SECTION        : LoadSteps(ar); break;
 		case CID_LOAD_CONTROLLER_LIST: LoadLoadControllers(ar); break;
 		case CID_MESHDATA_LIST       : LoadMeshDataGenerators(ar); break;
@@ -1625,7 +1598,6 @@ void FSModel::Load(IArchive& ar)
 	UpdateMaterialPositions();
 }
 
-//-----------------------------------------------------------------------------
 // reads the model data
 void FSModel::LoadData(IArchive& ar)
 {
@@ -1656,7 +1628,6 @@ void FSModel::LoadData(IArchive& ar)
 	}
 }
 
-//-----------------------------------------------------------------------------
 // Load solute data
 void FSModel::LoadSoluteData(IArchive& ar)
 {
@@ -1686,7 +1657,6 @@ void FSModel::LoadSoluteData(IArchive& ar)
 	}
 }
 
-//-----------------------------------------------------------------------------
 // Load solid-bound molecule data
 void FSModel::LoadSBMData(IArchive& ar)
 {
@@ -1716,7 +1686,6 @@ void FSModel::LoadSBMData(IArchive& ar)
 	}
 }
 
-//-----------------------------------------------------------------------------
 // reads the steps from the input file
 void FSModel::LoadSteps(IArchive& ar)
 {
@@ -1754,7 +1723,6 @@ void FSModel::LoadSteps(IArchive& ar)
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::LoadMeshDataGenerators(IArchive& ar)
 {
 	assert(MeshDataGenerators() == 0);
@@ -1781,7 +1749,6 @@ void FSModel::LoadMeshDataGenerators(IArchive& ar)
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::LoadLoadControllers(IArchive& ar)
 {
 	assert(LoadControllers() == 0);
@@ -1797,7 +1764,6 @@ void FSModel::LoadLoadControllers(IArchive& ar)
 	}
 }
 
-//-----------------------------------------------------------------------------
 // reads materials from archive
 void FSModel::LoadMaterials(IArchive& ar)
 {
@@ -1900,31 +1866,26 @@ void FSModel::LoadMaterials(IArchive& ar)
 	}
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::Steps()
 { 
 	return (int)m_pStep.Size(); 
 }
 
-//-----------------------------------------------------------------------------
 FSStep* FSModel::GetStep(int i)
 { 
 	return m_pStep[i]; 
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::AddStep(FSStep* ps)
 { 
 	m_pStep.Add(ps); 
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::InsertStep(int n, FSStep* ps)
 { 
 	m_pStep.Insert(n, ps); 
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::SwapSteps(FSStep* ps0, FSStep* ps1)
 {
 	int n0 = GetStepIndex(ps0);
@@ -1941,13 +1902,11 @@ void FSModel::SwapSteps(FSStep* ps0, FSStep* ps1)
 	}
 }
 
-//-----------------------------------------------------------------------------
 FSStep* FSModel::ReplaceStep(int i, FSStep* newStep)
 {
 	return m_pStep.Replace(i, newStep);
 }
 
-//-----------------------------------------------------------------------------
 FSStep* FSModel::FindStep(int nid)
 {
 	for (int i=0; i<(int) m_pStep.Size(); ++i)
@@ -1955,10 +1914,9 @@ FSStep* FSModel::FindStep(int nid)
 		if (m_pStep[i]->GetID() == nid) return m_pStep[i];
 	}
 	assert(false);
-	return 0;
+	return nullptr;
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::GetStepIndex(FSStep* ps)
 {
 	for (int i = 0; i < (int)m_pStep.Size(); ++i)
@@ -1968,20 +1926,18 @@ int FSModel::GetStepIndex(FSStep* ps)
 	return -1;
 }
 
-//-----------------------------------------------------------------------------
 
 int FSModel::DeleteStep(FSStep* ps)
 {
-	return m_pStep.Remove(ps);
+	return (int)m_pStep.Remove(ps);
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::DeleteAllMaterials()
 {
 	// reset all objects materials
-	for (int i = 0; i<m_pModel->Objects(); ++i)
+	for (int i = 0; i< m_GMdl->Objects(); ++i)
 	{
-		GObject* po = m_pModel->Object(i);
+		GObject* po = m_GMdl->Object(i);
 		AssignMaterial(po, nullptr);
 	}
 
@@ -1990,7 +1946,6 @@ void FSModel::DeleteAllMaterials()
 	ClearMLT();
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::DeleteAllBC()
 {
 	for (int i=0; i<Steps(); ++i)
@@ -2000,7 +1955,6 @@ void FSModel::DeleteAllBC()
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::DeleteAllLoads()
 {
 	for (int i = 0; i<Steps(); ++i)
@@ -2010,7 +1964,6 @@ void FSModel::DeleteAllLoads()
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::DeleteAllIC()
 {
 	for (int i = 0; i<Steps(); ++i)
@@ -2020,7 +1973,6 @@ void FSModel::DeleteAllIC()
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::DeleteAllContact()
 {
 	for (int i = 0; i<Steps(); ++i)
@@ -2030,7 +1982,6 @@ void FSModel::DeleteAllContact()
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::DeleteAllConstraints()
 {
 	for (int i = 0; i<Steps(); ++i)
@@ -2040,7 +1991,6 @@ void FSModel::DeleteAllConstraints()
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::DeleteAllRigidLoads()
 {
 	for (int i = 0; i<Steps(); ++i)
@@ -2050,16 +2000,14 @@ void FSModel::DeleteAllRigidLoads()
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::DeleteAllLoadControllers()
 {
 	m_LC.Clear();
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::RemoveUnusedLoadControllers()
 {
-	int NLC = m_LC.Size();
+	int NLC = (int)m_LC.Size();
 	int n = 0;
 	for (int i = 0; i < NLC; ++i)
 	{
@@ -2071,7 +2019,40 @@ void FSModel::RemoveUnusedLoadControllers()
 	}
 }
 
-//-----------------------------------------------------------------------------
+void FSModel::RemoveUnusedMaterials()
+{
+	const int NMAT = Materials();
+	std::map<int, int> tag;
+
+	GModel& mdl = GetModel();
+	for (int i = 0; i < mdl.Objects(); ++i)
+	{
+		GObject* po = mdl.Object(i);
+		for (int j = 0; j < po->Parts(); ++j)
+		{
+			GPart* pg = po->Part(j);
+			int matid = pg->GetMaterialID();
+			tag[matid] = 1;
+		}
+	}
+
+	std::vector<GMaterial*> deleteMats;
+	for (int i = 0; i < Materials(); ++i)
+	{
+		GMaterial* mat = GetMaterial(i);
+		if (tag.find(mat->GetID()) == tag.end())
+			deleteMats.push_back(mat);
+	}
+
+	if (!deleteMats.empty())
+	{
+		for (GMaterial* pm : deleteMats)
+			delete pm;
+	}
+
+	ClearMLT();
+}
+
 void FSModel::DeleteAllMeshDataGenerators()
 {
 	m_MD.Clear();
@@ -2106,7 +2087,6 @@ void FSModel::DeleteAllRigidBCs()
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::DeleteAllRigidICs()
 {
 	for (int i = 0; i < Steps(); ++i)
@@ -2116,7 +2096,6 @@ void FSModel::DeleteAllRigidICs()
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::DeleteAllRigidConnectors()
 {
 	for (int i = 0; i<Steps(); ++i)
@@ -2126,7 +2105,6 @@ void FSModel::DeleteAllRigidConnectors()
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::DeleteAllSteps()
 {
 	// remove all steps except the initial step
@@ -2137,38 +2115,29 @@ void FSModel::DeleteAllSteps()
 	}
 }
 
-//-----------------------------------------------------------------------------
-void FSModel::Purge(int ops)
+void FSModel::Purge()
 {
-	if (ops == 0)
-	{
-		m_pModel->RemoveMeshData();
+	m_GMdl->RemoveMeshData();
 
-		// clear all groups
-		m_pModel->RemoveNamedSelections();
+	// clear all groups
+	m_GMdl->RemoveNamedSelections();
 
-		// remove discrete objects
-		m_pModel->ClearDiscrete();
+	// remove discrete objects
+	m_GMdl->ClearDiscrete();
 
-		// remove all steps
-		m_pStep.Clear();
+	// remove all steps
+	m_pStep.Clear();
 
-		// remove all materials
-		DeleteAllMaterials();
+	// remove all materials
+	DeleteAllMaterials();
 
-		// remove all load controllers
-		m_LC.Clear();
+	// remove all load controllers
+	m_LC.Clear();
 
-		// add an initial step
-		m_pStep.Add(new FSInitialStep(this));
-	}
-	else
-	{
-		ClearSelections();
-	}
+	// add an initial step
+	m_pStep.Add(new FSInitialStep(this));
 }
 
-//-----------------------------------------------------------------------------
 // clear the selections of all the bc, loads, etc.
 void FSModel::ClearSelections()
 {
@@ -2222,25 +2191,29 @@ void FSModel::ClearSelections()
 	GetModel().RemoveNamedSelections();
 }
 
-//-----------------------------------------------------------------------------
+void FSModel::RemoveUnusedItems()
+{
+	GModel& mdl = GetModel();
+	mdl.RemoveUnusedSelections();
+	RemoveUnusedMaterials();
+	RemoveUnusedLoadControllers();
+}
+
 int FSModel::DataVariables()
 { 
 	return (int)m_Var.Size(); 
 }
 
-//-----------------------------------------------------------------------------
 FEDataVariable* FSModel::DataVariable(int i)
 { 
 	return m_Var[i]; 
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::AddDataVariable(FEDataVariable* pv)
 { 
 	m_Var.Add(pv); 
 }
 
-//-----------------------------------------------------------------------------
 FEDataVariable* FSModel::FindDataVariable(int nid)
 {
 	for (int i=0; i<(int)m_Var.Size(); ++i)
@@ -2251,14 +2224,13 @@ FEDataVariable* FSModel::FindDataVariable(int nid)
 	return 0;
 }
 
-//-----------------------------------------------------------------------------
 // Update model data
 void FSModel::UpdateData()
 {
 	// update material fiber pointer for trans-iso materials
-	for (int i=0; i<m_pModel->Objects(); ++i)
+	for (int i=0; i< m_GMdl->Objects(); ++i)
 	{
-		GObject* po = m_pModel->Object(i);
+		GObject* po = m_GMdl->Object(i);
 		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
@@ -2298,12 +2270,11 @@ void FSModel::UpdateData()
 	}
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::AssignComponentToStep(FSStepComponent* pc, FSStep* ps)
 {
 	FSStep* po = FindStep(pc->GetStep());
 	assert(po);
-	if (po == 0) return;
+	if (po == nullptr) return;
 
 	if (po != ps)
 	{
@@ -2312,12 +2283,12 @@ void FSModel::AssignComponentToStep(FSStepComponent* pc, FSStep* ps)
 	}
 }
 
-//-----------------------------------------------------------------------------
 // This function is used when reading FSGroup's that are not managed by an FSMesh.
 // The FSGroup class reads the mesh ID and then the owner of the FSGroup calls
 // this function to find the parent object (and mesh).
 bool FSModel::FindGroupParent(FSGroup* pg)
 {
+	if (pg == nullptr) return false;
 	int obj_id = pg->GetMeshID();
 	if (obj_id == -1) return false;
 	else
@@ -2329,7 +2300,6 @@ bool FSModel::FindGroupParent(FSGroup* pg)
 	}
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::CountBCs(int type)
 {
 	int n = 0;
@@ -2348,7 +2318,6 @@ int FSModel::CountBCs(int type)
 	return n;
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::CountLoads(int type)
 {
 	int n = 0;
@@ -2367,7 +2336,6 @@ int FSModel::CountLoads(int type)
 	return n;
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::CountICs(int type)
 {
 	int n = 0;
@@ -2386,7 +2354,6 @@ int FSModel::CountICs(int type)
 	return n;
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::CountInterfaces(int type)
 {
 	int n = 0;
@@ -2405,7 +2372,6 @@ int FSModel::CountInterfaces(int type)
 	return n;
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::CountRigidConstraints(int type)
 {
 	int n = 0;
@@ -2424,7 +2390,6 @@ int FSModel::CountRigidConstraints(int type)
 	return n;
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::CountRigidConnectors(int type)
 {
 	int n = 0;
@@ -2455,6 +2420,7 @@ int FSModel::LoadControllers() const
 
 FSLoadController* FSModel::GetLoadController(int i)
 {
+	if (i < 0 || i >= m_LC.Size()) return nullptr;
 	return m_LC[i];
 }
 
@@ -2517,7 +2483,6 @@ FSLoadController* FSModel::AddLoadCurve(LoadCurve& lc)
 	return plc;
 }
 
-//----------------------------------------------------------------------------------------
 void UpdateLCRefsCount(FSModelComponent* pmc, std::map<int, int>& LCT)
 {
 	if (pmc == nullptr) return;
@@ -2542,7 +2507,6 @@ void UpdateLCRefsCount(FSModelComponent* pmc, std::map<int, int>& LCT)
 	}
 }
 
-//----------------------------------------------------------------------------------------
 void FSModel::UpdateLoadControllerReferenceCounts()
 {
 	// clear all reference counters
@@ -2650,14 +2614,14 @@ void FSModel::UpdateLoadControllerReferenceCounts()
 }
 
 
-//----------------------------------------------------------------------------------------
 int FSModel::MeshDataGenerators() const
 {
-	return m_MD.Size();
+	return (int)m_MD.Size();
 }
 
 FSMeshDataGenerator* FSModel::GetMeshDataGenerator(int i)
 {
+	if (i < 0 || i >= m_MD.Size()) return nullptr;
 	return m_MD[i];
 }
 
@@ -2673,7 +2637,7 @@ int FSModel::RemoveMeshDataGenerator(FSMeshDataGenerator* pmd)
 
 void GetAllocatorIDsRecursive(FSCoreBase* obj, std::unordered_set<int>& allocatorIDs)
 {
-    if (obj == nullptr) return;
+    if ((obj == nullptr) || (obj->GetClassID() == -1)) return;
 
     FEBio::FEBioClassInfo ci = FEBio::GetClassInfo(obj->GetClassID());
     allocatorIDs.insert(ci.allocId);
@@ -2801,7 +2765,6 @@ void FSModel::GetActivePluginIDs(std::unordered_set<int>& allocatorIDs)
     }
 }
 
-//----------------------------------------------------------------------------------------
 int CountBCsByTypeString(const std::string& typeStr, FSModel& fem)
 {
 	int nc = 0;

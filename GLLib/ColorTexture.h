@@ -34,6 +34,8 @@ public:
 	CColorTexture(const CColorTexture& col);
 	void operator = (const CColorTexture& col);
 
+	void Create(int colormap, int ndivs, bool smooth);
+
 	GLTexture1D& GetTexture() { return m_tex; }
 
 	void UpdateTexture();
@@ -55,4 +57,5 @@ private:
 	bool	m_bsmooth;		// smooth interpolation or not
 
 	GLTexture1D m_tex;	// the actual texture
+	CColorMap m_map;
 };

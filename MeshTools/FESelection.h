@@ -170,6 +170,7 @@ public:
 
 	GPart* Part(size_t n) { return m_partList[n]; }
 
+	const std::vector<GPart*>& GetPartList() const { return m_partList; }
 
 	FSItemListBuilder* CreateItemList();
 

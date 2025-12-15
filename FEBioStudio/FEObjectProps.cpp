@@ -1024,13 +1024,8 @@ void CPlotfileProperties::Update()
 
 	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
 
-	addProperty("File Properties", CProperty::Group);
-
-	addProperty("plotfile format", CProperty::Enum)->setEnumValues(QStringList() << "febio" << "vtk");
-
-	addProperty("Plot Variables", CProperty::Group);
-
-	int ncount = 3;
+	int ncount = 0;
+	addProperty("Plot Variables", CProperty::Group); ncount++;
 	for (int i = 0; i < plt.PlotVariables(); ++i)
 	{
 		CPlotVariable& var = plt.PlotVariable(i);
@@ -1041,15 +1036,20 @@ void CPlotfileProperties::Update()
 		}
 	}
 
-	addProperty("", CProperty::Action, "Edit plot variables ...");
 	m_actionIndex = ncount;
+	addProperty("", CProperty::Action, "Edit plot variables ..."); ncount++;
+
+	addProperty("File Properties", CProperty::Group); ncount++;
+
+	m_pltFormatIndex = ncount;
+	addProperty("plotfile format", CProperty::Enum)->setEnumValues(QStringList() << "febio" << "vtk"); ncount++;
 }
 
 QVariant CPlotfileProperties::GetPropertyValue(int i) 
 { 
-	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-	if (i == 1)
+	if (i == m_pltFormatIndex)
 	{
+		CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
 		return (int)plt.GetPlotFormat();
 	}
 	else return (i != m_actionIndex ? true : QVariant()); 
@@ -1058,7 +1058,7 @@ QVariant CPlotfileProperties::GetPropertyValue(int i)
 void CPlotfileProperties::SetPropertyValue(int i, const QVariant& v)
 {
 	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-	if (i == 1)
+	if (i == m_pltFormatIndex)
 	{
 		int fmt = v.toInt();
 		plt.SetPlotFormat(static_cast<CPlotDataSettings::PlotFormat>(fmt));

@@ -102,11 +102,10 @@ void ModelData::ReadData(Post::CGLModel* po)
 		m_cmap.m_nField = pglmap->GetEvalField();
 		pglmap->GetRange(m_cmap.m_user);
 
-		CColorTexture* pcm = pglmap->GetColorMap();
-		m_cmap.m_ntype = pcm->GetColorMap();
-		m_cmap.m_ndivs = pcm->GetDivisions();
-		m_cmap.m_bsmooth = pcm->GetSmooth();
-		//		pcm->GetRange(m_cmap.m_min, m_cmap.m_max);
+		m_cmap.m_ntype = pglmap->GetColorMap();
+		m_cmap.m_ndivs = pglmap->GetDivisions();
+		m_cmap.m_bsmooth = pglmap->GetColorSmooth();
+//		pcm->GetRange(m_cmap.m_min, m_cmap.m_max);
 	}
 
 	// displacement map
@@ -150,11 +149,10 @@ void ModelData::WriteData(Post::CGLModel* po)
 		pglmap->SetRange(m_cmap.m_user);
 		pglmap->DisplayNodalValues(m_cmap.m_bDispNodeVals);
 
-		CColorTexture* pcm = pglmap->GetColorMap();
-		pcm->SetColorMap(m_cmap.m_ntype);
-		pcm->SetDivisions(m_cmap.m_ndivs);
-		pcm->SetSmooth(m_cmap.m_bsmooth);
-		//		pcm->SetRange(m_cmap.m_min, m_cmap.m_max);
+		pglmap->SetColorMap(m_cmap.m_ntype);
+		pglmap->SetDivisions(m_cmap.m_ndivs);
+		pglmap->SetColorSmooth(m_cmap.m_bsmooth);
+//		pcm->SetRange(m_cmap.m_min, m_cmap.m_max);
 	}
 
 	// displacement map
@@ -239,7 +237,17 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLModelDo
 	m_binit = false;
 
 	m_scene = new CGLPostScene(this);
-	m_scene->SetEnvironmentMap(wnd->GetEnvironmentMap().toStdString());
+
+	QString envMap = wnd->GetEnvironmentMap();
+	if (!envMap.isEmpty())
+	{
+		QImage img(envMap);
+		if (!img.isNull() && (img.format() == QImage::Format_RGB32))
+		{
+			CRGBAImage rgba(img.width(), img.height(), img.constBits());
+			m_scene->SetEnvironmentMap(rgba);
+		}
+	}
 
 	SetItemMode(ITEM_ELEM);
 
@@ -295,9 +303,6 @@ bool CPostDocument::Initialize()
 	const CPalette& pal = CPaletteManager::CurrentPalette();
 	ApplyPalette(pal);
 
-	// make sure the correct GLWidgetManager's edit layer is active
-	CGLWidgetManager::GetInstance()->SetEditLayer(m_widgetLayer);
-
 	if (m_glm == nullptr) m_glm = new Post::CGLModel(m_fem); else m_glm->SetFEModel(m_fem);
 
 	m_timeSettings.Defaults();
@@ -317,7 +322,7 @@ bool CPostDocument::Initialize()
 		// reset the camera
 		CGView& view = *GetView();
 		view.Reset();
-		GLCamera& cam = view.GetCamera();
+		GLCamera& cam = m_scene->GetCamera();
 		cam.Reset();
 		cam.SetTargetDistance(box.Radius() * 3);
 		cam.SetTarget(box.Center());
@@ -342,7 +347,6 @@ bool CPostDocument::Initialize()
 					GLColor c = docfem.GetMaterial(i)->GetColor();
 
 					Post::Material* mat = m_fem->GetMaterial(i);
-					mat->ambient = c;
 					mat->diffuse = c;
 				}
 
@@ -350,7 +354,6 @@ bool CPostDocument::Initialize()
 				{
 					GLColor c = mdl->DiscreteObject(i)->GetColor();
 					Post::Material* mat = m_fem->GetMaterial(i + mats);
-					mat->ambient = c;
 					mat->diffuse = c;
 				}
 			}
@@ -425,13 +428,14 @@ int CPostDocument::GetEvalField()
 void CPostDocument::ActivateColormap(bool bchecked)
 {
 	Post::CGLModel* po = m_glm;
+	m_showLegend = bchecked;
 	po->GetColorMap()->Activate(bchecked);
 	UpdateFEModel();
 }
 
 void CPostDocument::Activate()
 {
-	Post::FEPostModel::SetInstance(m_fem);
+	Post::FEPostModel::SetActiveModel(m_fem);
 	CGLDocument::Activate();
 }
 
@@ -484,38 +488,6 @@ void CPostDocument::DeleteObject(Post::CGLObject* po)
 	}
 	*/
 	CGLDocument::Update();
-}
-
-std::string CPostDocument::GetFieldString()
-{
-	if (IsValid())
-	{
-		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
-		return GetFSModel()->GetDataManager()->getDataString(nfield, Post::TENSOR_SCALAR);
-	}
-	else return "";
-}
-
-std::string CPostDocument::GetFieldUnits()
-{
-	if (IsValid())
-	{
-		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
-		const char* szunits = GetFSModel()->GetDataManager()->getDataUnits(nfield);
-		if (szunits)
-		{
-			QString s = QString("(%1)").arg(Units::GetUnitString(szunits));
-			return s.toStdString();
-		}
-		else return "";
-	}
-	else return "";
-}
-
-float CPostDocument::GetTimeValue()
-{
-	if (m_glm) return m_glm->CurrentTime();
-	else return 0.f;
 }
 
 float CPostDocument::GetTimeValue(int n)
@@ -626,11 +598,11 @@ void CPostDocument::ApplyPalette(const CPalette& pal)
 
 		Post::Material& m = *m_fem->GetMaterial(i);
 		m.diffuse = c;
-		m.ambient = c;
-		m.specular = GLColor(128, 128, 128);
+		m.specular = GLColor(0, 0, 0);
 		m.emission = GLColor(0, 0, 0);
 		m.shininess = 0.5f;
 		m.transparency = 1.f;
+		m.reflectivity = 0.f;
 	}
 }
 

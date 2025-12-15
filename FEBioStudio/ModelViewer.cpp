@@ -509,7 +509,7 @@ void CModelViewer::SelectItemList(FSItemListBuilder *pitem, bool badd)
 	switch (pitem->Type())
 	{
 	case GO_PART: pdoc->SetSelectionMode(SELECT_PART); pcmd = new CCmdSelectPart(mdl, pi, n, badd); break;
-	case GO_FACE: pdoc->SetSelectionMode(SELECT_FACE); pcmd = new CCmdSelectSurface(mdl, pi, n, badd); break;
+	case GO_FACE: pdoc->SetSelectionMode(SELECT_SURF); pcmd = new CCmdSelectSurface(mdl, pi, n, badd); break;
 	case GO_EDGE: pdoc->SetSelectionMode(SELECT_EDGE); pcmd = new CCmdSelectEdge(mdl, pi, n, badd); break;
 	case GO_NODE: pdoc->SetSelectionMode(SELECT_NODE); pcmd = new CCmdSelectNode(mdl, pi, n, badd); break;
 	case FE_ELEMSET:
@@ -658,6 +658,7 @@ void CModelViewer::on_props_nameChanged(const QString& txt)
 void CModelViewer::on_props_selectionChanged()
 {
 	FSObject* po = ui->props->GetCurrentObject();
+	Update();
 	ui->tree->UpdateObject(po);
 	CDocument* doc = GetDocument();
 	if (doc) doc->Update();
@@ -776,6 +777,7 @@ void CModelViewer::OnUnhideAllObjects()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel* m = doc->GetGModel();
 	m->ShowAllObjects();
+	doc->Update();
 	Update();
 	GetMainWindow()->RedrawGL();
 }
@@ -844,20 +846,25 @@ void CModelViewer::OnHideObject()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel& m = doc->GetFSModel()->GetModel();
 
-	for (int i=0; i<m_selection.size(); ++i)
+	vector<GObject*> objList;
+	for (int i = 0; i < m_selection.size(); ++i)
 	{
 		GObject* po = dynamic_cast<GObject*>(m_selection[i]); assert(po);
-		if (po) 
+		if (po)
 		{
-			m.ShowObject(po, false);
-
+			objList.push_back(po);
+			po->Hide();
 			QTreeWidgetItem* item = ui->tree->FindItem(po);
 			if (item) item->setForeground(0, Qt::gray);
 		}
 	}
 
-	CMainWindow* wnd = GetMainWindow();
-	wnd->RedrawGL();
+	if (!objList.empty())
+	{
+		doc->AddCommand(new CCmdHideObject(objList));
+		CMainWindow* wnd = GetMainWindow();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnShowObject()
@@ -865,20 +872,25 @@ void CModelViewer::OnShowObject()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel& m = doc->GetFSModel()->GetModel();
 
+	vector<GObject*> objList;
 	for (int i=0; i<(int)m_selection.size(); ++i)
 	{
 		GObject* po = dynamic_cast<GObject*>(m_selection[i]); assert(po);
 		if (po)
 		{
-			m.ShowObject(po, true);
-
+			po->Show();
+			objList.push_back(po);
 			QTreeWidgetItem* item = ui->tree->FindItem(po);
 			if (item) item->setForeground(0, QBrush());
 		}
 	}
-	doc->Update();
-	CMainWindow* wnd = GetMainWindow();
-	wnd->RedrawGL();
+
+	if (!objList.empty())
+	{
+		doc->AddCommand(new CCmdShowObject(objList));
+		CMainWindow* wnd = GetMainWindow();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnSelectObject()
@@ -1064,6 +1076,7 @@ void CModelViewer::OnHidePart()
 	}
 
 	CMainWindow* wnd = GetMainWindow();
+	doc->Update();
 	wnd->RedrawGL();
 }
 
@@ -1157,6 +1170,7 @@ void CModelViewer::OnShowPart()
 		}
 	}
 	Update();
+	doc->Update();
 	CMainWindow* wnd = GetMainWindow();
 	wnd->RedrawGL();
 }
@@ -1183,7 +1197,7 @@ void CModelViewer::OnSelectPart()
 void CModelViewer::OnSelectSurface()
 {
 	CMainWindow* wnd = GetMainWindow();
-	wnd->SetSelectionMode(SELECT_FACE);
+	wnd->SetSelectionMode(SELECT_SURF);
 
 	UpdateSelection();
 

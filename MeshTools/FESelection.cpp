@@ -588,16 +588,19 @@ void GEdgeSelection::UpdateBoundingBox()
 		for (int i = 0; i < NE; ++i)
 		{
 			GLMesh::EDGE& e = pm->Edge(i);
-			GEdge* pe = po->Edge(e.pid);
-			assert(pe);
-			if (pe && pe->IsSelected())
+			if (e.pid >= 0)
 			{
-				for (int j = 0; j < 2; ++j)
+				GEdge* pe = po->Edge(e.pid);
+				assert(pe);
+				if (pe && pe->IsSelected())
 				{
-					vec3d r_local = to_vec3d(pm->Node(e.n[j]).r);
-					vec3d r = po->GetTransform().LocalToGlobal(r_local);
+					for (int j = 0; j < 2; ++j)
+					{
+						vec3d r_local = to_vec3d(pm->Node(e.n[j]).r);
+						vec3d r = po->GetTransform().LocalToGlobal(r_local);
 
-					box += r;
+						box += r;
+					}
 				}
 			}
 		}

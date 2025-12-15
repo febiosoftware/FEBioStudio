@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/Serializable.h>
+#include "PropertyList.h"
 #include <QtCore/QString>
 #include <QObject>
 
@@ -130,6 +131,8 @@ public:
 	// return the absolute path from the relative path w.r.t. to the model's folder
 	QString ToAbsolutePath(const QString& relativePath);
 	QString ToAbsolutePath(const std::string& relativePath);
+
+	virtual CPropertyList* GetDocProperties() { return nullptr; }
 
 public:
 	std::string GetIcon() const;

@@ -54,7 +54,7 @@ CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
     m_glView = new CGLView(m_wnd);
 	m_glView->GetViewSettings().m_bgrid = false;
 	m_glView->AllocateDefaultWidgets(false);
-    m_layout->addWidget(m_glView, 1, 1);
+    m_layout->addWidget(QWidget::createWindowContainer(m_glView), 1, 1);
 
     setLayout(m_layout);
 

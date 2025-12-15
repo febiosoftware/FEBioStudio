@@ -31,6 +31,7 @@ CColorTexture::CColorTexture()
 	m_colorMap = ColorMapManager::GetDefaultMap();
 	m_ndivs = 10;
 	m_bsmooth = true;
+	m_map = ColorMapManager::GetColorMap(ColorMapManager::JET);
 
 	UpdateTexture();
 }
@@ -53,6 +54,14 @@ void CColorTexture::operator = (const CColorTexture& col)
 	m_tex = col.m_tex;
 }
 
+void CColorTexture::Create(int colormap, int ndivs, bool smooth)
+{
+	m_colorMap = colormap;
+	m_ndivs = ndivs;
+	m_bsmooth = smooth;
+	UpdateTexture();
+}
+
 void CColorTexture::UpdateTexture()
 {
 	int n = m_tex.Size();
@@ -63,14 +72,14 @@ void CColorTexture::UpdateTexture()
 
 	// make sure the color map points to an existing map
 	if ((m_colorMap < 0) || (m_colorMap >= ColorMapManager::ColorMaps())) m_colorMap = ColorMapManager::GetDefaultMap();
-	CColorMap& map = ColorMapManager::GetColorMap(m_colorMap);
+	m_map = ColorMapManager::GetColorMap(m_colorMap);
 
 	GLColor c;
 	for (int i = 0; i < n; i++, pb += 3)
 	{
 		float f = (float)(i * N / n);
 
-		c = map.map(f / (N - 1));
+		c = m_map.map(f / (N - 1));
 
 		pb[0] = c.r;
 		pb[1] = c.g;
@@ -124,5 +133,5 @@ int CColorTexture::GetColorMap() const
 
 CColorMap& CColorTexture::ColorMap()
 {
-	return ColorMapManager::GetColorMap(m_colorMap);
+	return m_map;
 }

@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "Tool.h"
+#include "MeasureTools.h"
 
 class CMainWindow;
 
@@ -40,4 +41,7 @@ public:
 
 private:
 	mat3d	m_moi;	// center of mass
+    mat3d   m_evec; // eigenvectors of MOI
+    vec3d   m_eval; // eigenvalues of MOI
+    bool    m_area; // boolean flag to report area MOI
 };

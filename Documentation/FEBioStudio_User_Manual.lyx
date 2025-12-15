@@ -135,7 +135,7 @@ status open
 User's Manual
 \series default
 \emph on
- Version 2.10
+ Version 3.0
 \end_layout
 
 \begin_layout Date
@@ -407,10 +407,10 @@ name "subsec:overview"
 
 \begin_layout Standard
 FEBio Studio is an integrated environment for the finite element modeling program FEBio.
- Although it has some mesh generation capabilities,
+ Although it offers a variety of functionality,
  its primary function is to set up the boundary and loading conditions,
  material properties,
- and analysis parameters for finite element analysis with the software FEBio.
+ and analysis parameters for finite element analysis for the software FEBio.
  The main features of FEBio Studio include:
 \end_layout
 
@@ -482,6 +482,10 @@ FEBio model can be run from within the GUI or exported to file.
 FEBio plot files,
  which contain the analysis results,
  can be visualized directly in FEBioStudio.
+\end_layout
+
+\begin_layout Itemize
+3D Image visualization and processing.
  
 \end_layout
 
@@ -510,7 +514,16 @@ FEBio Theory Manual
 \emph default
 .
  These manuals and other helpful material can be found on the febio.org website.
- See the Knowledgebase in particular.
+ See the 
+\begin_inset CommandInset href
+LatexCommand href
+name "FEBio Knowledgebase"
+target "https://febio.org/knowledgebase/"
+literal "false"
+
+\end_inset
+
+ in particular.
  
 \end_layout
 
@@ -606,8 +619,11 @@ Start
 \series default
 :
  Shows links to several 
+\series bold
+File
+\series default
 \emph on
-File 
+ 
 \emph default
 menu items,
  including opening files or creating new models.
@@ -658,13 +674,19 @@ New Model...
 \emph default
  link on the Welcome page,
  or selecting the 
-\emph on
+\series bold
 File
-\backslash
-New Model...
+\series default
+ →
+\series bold
+ New Model
+\emph on
+...
 
 \emph default
- menu item.
+ 
+\series default
+menu item.
  A dialog box will be shown next,
  where you can select a model template and name.
  Model templates are discussed in more detail in Chapter 
@@ -717,16 +739,19 @@ Graphics Toolbar
 is located below the Graphics View and displays some information regarding the Graphics View.
  Additional panels may be shown,
  such as the Log panel or the Build panel.
- Most panels can be dragged and dropped anywhere around the windows borders.
+ Most panels can be detached,
+ dragged and dropped anywhere around the main window's borders.
  Panels can also be stacked by dropping a panel on top of another one.
  A tab bar will then appear below the panel.
  If a panel is not visible,
  either click the tab below stacked panels or access it via the menu 
-\emph on
+\series bold
 View
-\backslash
+\series default
+ → 
+\series bold
 Windows
-\emph default
+\series default
 .
  The various panels and other UI components are discussed in more detail in Chapter 
 \begin_inset CommandInset ref
@@ -762,7 +787,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-The main components of the FEBioStudio GU.
+The main components of the FEBioStudio GUI.
  The Main Menu provides access to most of FEBioStudio’s functionality.
  The Main toolbar offers shortcuts for some commonly used features.
  The Graphics View shows a 3D rendering of the model.
@@ -800,15 +825,18 @@ name "subsubsec:mylabel2"
 
 \begin_layout Standard
 You can open a model from the 
-\emph on
+\series bold
 File
-\backslash
-Open Model
-\emph default
- menu.
+\series default
+ →
+\series bold
+ Open Model File ...
+ 
+\series default
+menu.
  You can also open recent models from the list shown on the Welcome Page.
  Clicking a link in the Recent section will open the model.
- FEBio Studio also supports drag-and-drop for supported file formats.
+ FEBio Studio also supports drag-and-drop for some file formats.
  For instance,
  you can drag a model file from Windows Explorer and drop it on FEBio Studio to open it.
  
@@ -869,13 +897,17 @@ Examples
 folder of your FEBioStudio installation folder.
  You can do this by selecting the
 \emph on
- File
-\begin_inset Formula $\backslash$
-\end_inset
-
-Open
+ 
+\series bold
 \emph default
- menu item.
+File
+\series default
+ →
+\series bold
+ Open Model File ...
+ 
+\series default
+menu item.
  A standard file open dialog box appears.
  Locate the file,
  select it and click on 
@@ -907,14 +939,6 @@ name "subsubsec:mylabel3"
 \end_inset
 
  
-\end_layout
-
-\begin_layout Standard
-In this step we will show you the most important skills you need to navigate the Graphics View,
- namely rotating the view,
- zooming,
- panning,
- and selecting and transforming objects.
 \end_layout
 
 \begin_layout Standard
@@ -954,7 +978,7 @@ name "subsubsec:mylabel4"
 Selection is another important aspect for interacting with the model.
  Selection requires a selection context,
  which tells FEBioStudio what type of entity you would like to select.
- The current selection context is highlighted on the toolbar and can be changed by clicking on the corresponding selection button.
+ The current selection context is highlighted on the main toolbar and can be changed by clicking on the corresponding selection button.
  For instance,
  to select an object,
  first click the 
@@ -1066,32 +1090,22 @@ For more precise modeling you can also enter the transformation numerically usin
 Transform 
 \emph default
 dialog which is accessible from the 
+\series bold
+Edit
+\series default
 \emph on
-Edit 
+ 
 \emph default
 menu (
-\emph on
+\series bold
 Edit
-\emph default
+\series default
+ →
+\series bold
+ Transform ...
 
-\begin_inset Formula $\backslash$
-\end_inset
-
-
+\series default
 \emph on
-Transform
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-textellipsis
-\end_layout
-
-\end_inset
-
  
 \emph default
 ).
@@ -1100,18 +1114,14 @@ textellipsis
 \begin_layout Standard
 If you accidentally moved an object,
  you can undo your action by selecting the 
-\emph on
+\series bold
 Edit
-\emph default
-
-\begin_inset Formula $\backslash$
-\end_inset
-
-
-\emph on
-Undo
-\emph default
- menu (shortcut 
+\series default
+ → 
+\series bold
+Undo 
+\series default
+menu (shortcut 
 \emph on
 ctrl
 \emph default
@@ -1121,17 +1131,13 @@ ctrl
 
 .
  The 
-\emph on
+\series bold
 Edit
-\emph default
-
-\begin_inset Formula $\backslash$
-\end_inset
-
-
-\emph on
+\series default
+ → 
+\series bold
 Redo
-\emph default
+\series default
  menu option allows you to redo your last undone action.
  Note that you have a virtually unlimited undo-redo stack so you rarely have to worry about making mistakes.
  However,
@@ -1197,12 +1203,14 @@ The Run FEBio dialog box,
 The installation of FEBio Studio comes with the latest version of FEBio and you can run the model in FEBio directly from the FEBio Studio UI.
  After you save the model,
  you can run it from the menu 
-\emph on
+\series bold
 FEBio
-\backslash
-Run
-\emph default
-,
+\series default
+ →
+\series bold
+ Run
+\series default
+ ...,
  or by clicking the corresponding icon on the main toolbar.
  
 \end_layout
@@ -1244,7 +1252,7 @@ plot file
 \end_inset
 
 .
- The file name is usually the job's named and the .xplt file extension.
+ The file name is usually the job's name and the .xplt file extension.
  
 \end_layout
 
@@ -1337,7 +1345,7 @@ FEBio Studio's UI when a plot file,
 \end_layout
 
 \begin_layout Chapter
-The FEBioStudio Environment
+The FEBio Studio Environment
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:mylabel3"
@@ -1349,22 +1357,22 @@ name "sec:mylabel3"
 
 \begin_layout Standard
 This chapter provides an in-depth description of FEBio Studio's graphical user interface and how to interact with it.
- FEBioStudio configures its UI depending on whether you are building a model (the 
+ FEBio Studio configures its UI depending on whether you are building a model (the 
 \emph on
 Build 
 \emph default
-environment),
+configuration),
  or whether you are analyzing a model's result (the 
 \emph on
 Post
 \emph default
- environment).
+ configuration).
  In this chapter,
  the 
 \emph on
 Build
 \emph default
- environment is discussed as well as the UI features that are common in both environments.
+ configuration is discussed as well as the UI features that are common in both configurations.
  
 \end_layout
 
@@ -1764,9 +1772,9 @@ found at the top of the window gives access to the following menus:
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 File
-\emph default
+\series default
 :
  Open files,
  save files,
@@ -1777,9 +1785,9 @@ File
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Edit
-\emph default
+\series default
 :
  Undo/Redo feature,
  options to edit the selection.
@@ -1788,9 +1796,9 @@ Edit
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Physics
-\emph default
+\series default
 :
  Define boundary conditions,
  contact interfaces,
@@ -1801,38 +1809,38 @@ Physics
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 FEBio
-\emph default
+\series default
 :
  Run FEBio models 
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Record
-\emph default
+\series default
 :
  create video recordings of the Graphics View
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Tools
-\emph default
+\series default
 :
  provides access to a set of useful tools,
- including the Options dialog.
+ including the Settings dialog.
  
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 View
-\emph default
+\series default
 :
  modify view settings and access additional windows.
  
@@ -1840,9 +1848,9 @@ View
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Help
-\emph default
+\series default
 :
  Access to the help options and About box.
  
@@ -1869,13 +1877,9 @@ The File menu offers the following menu items:
 
 \begin_layout Itemize
 
-\emph on
-New
-\emph default
- 
-\emph on
-Model
-\emph default
+\series bold
+New Model
+\series default
 :
  Start a new FEBio Studio model.
  This will open the Model Template dialog where you can select a template and set the model's name.
@@ -1884,8 +1888,11 @@ Model
 
 \begin_layout Itemize
 
+\series bold
+New Project
+\series default
 \emph on
-New Project:
+:
  
 \emph default
 Create a new FEBio Studio project.
@@ -1894,13 +1901,9 @@ Create a new FEBio Studio project.
 
 \begin_layout Itemize
 
-\emph on
-Open
-\emph default
- 
-\emph on
-Model File
-\emph default
+\series bold
+Open Model File
+\series default
 :
  Open a FEBio Studio model from file.
  
@@ -1908,8 +1911,11 @@ Model File
 
 \begin_layout Itemize
 
+\series bold
+Open Recent
+\series default
 \emph on
-Open Recent:
+:
  
 \emph default
 Open a recently opened model file.
@@ -1918,8 +1924,11 @@ Open a recently opened model file.
 
 \begin_layout Itemize
 
+\series bold
+Open Project
+\series default
 \emph on
-Open Project:
+:
  
 \emph default
 Opens a project file (but not the models in the project).
@@ -1928,9 +1937,22 @@ Opens a project file (but not the models in the project).
 
 \begin_layout Itemize
 
+\series bold
+Open Recent Project
+\series default
 \emph on
-Import Geometry
+:
+ 
 \emph default
+Provides a list of recently opened projects.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Import Geometry
+\series default
 :
  Import a surface or volume mesh into the current model.
  
@@ -1938,9 +1960,9 @@ Import Geometry
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Import recent Geometry
-\emph default
+\series default
 :
  Shows a list of recently accessed mesh files.
  
@@ -1948,9 +1970,9 @@ Import recent Geometry
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Close all
-\emph default
+\series default
 :
  Close all the currently opened models.
  
@@ -1958,9 +1980,9 @@ Close all
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Save
-\emph default
+\series default
 :
  Save the current FEBio Studio model to file.
  
@@ -1968,9 +1990,9 @@ Save
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Save as
-\emph default
+\series default
 :
  Save the current FEBio Studio model under a different name.
  
@@ -1978,8 +2000,11 @@ Save as
 
 \begin_layout Itemize
 
+\series bold
+Save all
+\series default
 \emph on
-Save all:
+:
  
 \emph default
 Saves all the currently opened models.
@@ -1988,8 +2013,11 @@ Saves all the currently opened models.
 
 \begin_layout Itemize
 
+\series bold
+Save Project as
+\series default
 \emph on
-Save Project as:
+:
  
 \emph default
 Save the current project to file.
@@ -1998,9 +2026,9 @@ Save the current project to file.
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Export FE Model
-\emph default
+\series default
 :
  Export the current model to a FE file format.
  
@@ -2008,9 +2036,9 @@ Export FE Model
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Export Geometry
-\emph default
+\series default
 :
  Export the mesh of the selected geometry to a surface or volume mesh file format.
  
@@ -2018,9 +2046,9 @@ Export Geometry
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Import Project Archive
-\emph default
+\series default
 :
  Opens a project from a project archive.
  
@@ -2028,18 +2056,18 @@ Import Project Archive
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Export Project Archive
-\emph default
+\series default
 :
  Saves the current open project to an project archive.
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Import Image
-\emph default
+\series default
 :
  Import image data into the current model.
  
@@ -2047,9 +2075,9 @@ Import Image
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Batch convert
-\emph default
+\series default
 :
  Convert a list of files from one format to another.
  (For example,
@@ -2058,9 +2086,24 @@ Batch convert
 
 \begin_layout Itemize
 
-\emph on
+\series bold
+Batch
+\series default
+ 
+\series bold
+Run:
+ 
+\series default
+Allows users to set up a batch run,
+ which will run a list of FEBio models.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
 Exit
-\emph default
+\series default
 :
  Exits the application.
  
@@ -2083,72 +2126,82 @@ The Edit menu offers the following menu items:
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Undo
-\emph default
+\series default
 :
  undo the last operation 
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Redo
-\emph default
+\series default
 :
  redo the last undone operation 
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
+Change log
+\series default
+:
+ opens a dialog showing all the changes that are made to the model.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
 Invert selection
-\emph default
+\series default
 :
  Invert the current selection 
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Clear selection
-\emph default
+\series default
 :
  Clear the current selection 
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Delete selection
-\emph default
+\series default
 :
  Delete the current selection 
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Name selection
-\emph default
+\series default
 :
  name the current selection 
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Hide selection
-\emph default
+\series default
 :
  hide the current selection
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Hide unselected
-\emph default
+\series default
 :
  hides the unselected items.
  
@@ -2156,9 +2209,9 @@ Hide unselected
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Unhide all
-\emph default
+\series default
 :
  Shows all the hidden objects.
  
@@ -2166,9 +2219,9 @@ Unhide all
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Toggle Visibility
-\emph default
+\series default
 :
  Hides visible objects and parts and shows hidden ones.
  
@@ -2176,9 +2229,9 @@ Toggle Visibility
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 More selection options
-\emph default
+\series default
 :
  Access to some additional options for working with selections.
  
@@ -2186,8 +2239,11 @@ More selection options
 
 \begin_layout Itemize
 
+\series bold
+Find
+\series default
 \emph on
-Find:
+:
  
 \emph default
 Locate nodes,
@@ -2199,22 +2255,9 @@ Locate nodes,
 
 \begin_layout Itemize
 
-\emph on
-Select Range
-\emph default
-:
- Select nodes,
- elements,
- etc.,
- based on their current data values.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
+\series bold
 Transform
-\emph default
+\series default
 :
  Modifies the current selections position,
  rotation,
@@ -2224,9 +2267,9 @@ Transform
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Collapse Transform
-\emph default
+\series default
 :
  Applies the selected object's transformation to its mesh and resets its transform.
  
@@ -2234,8 +2277,11 @@ Collapse Transform
 
 \begin_layout Itemize
 
+\series bold
+Clone object
+\series default
 \emph on
-Clone object:
+:
  
 \emph default
 create a copy of the currently selected object.
@@ -2244,8 +2290,11 @@ create a copy of the currently selected object.
 
 \begin_layout Itemize
 
+\series bold
+Merge objects
+\series default
 \emph on
-Merge objects:
+:
 
 \emph default
  Merges all the selected objects into a single editable mesh.
@@ -2254,9 +2303,9 @@ Merge objects:
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Copy Object
-\emph default
+\series default
 :
  create a copy of an object that can be pasted into a different model.
  
@@ -2264,18 +2313,18 @@ Copy Object
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Paste Object
-\emph default
+\series default
 :
  pastes the copied object into the current model
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Purge
-\emph default
+\series default
 :
  removes all physics from the model (materials,
  BC's,
@@ -2300,9 +2349,19 @@ The Physics menu offers the following menu items:
 
 \begin_layout Itemize
 
-\emph on
+\series bold
+Assign current selection
+\series default
+:
+ Assigns the current selection to the item that is selected in the model tree.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
 Add Nodal BC
-\emph default
+\series default
 :
  Apply a boundary condition to a selection of nodes.
  
@@ -2310,9 +2369,9 @@ Add Nodal BC
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Add Surface BC
-\emph default
+\series default
 :
  Apply a special boundary condition to a surface.
  
@@ -2320,9 +2379,9 @@ Add Surface BC
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Add linear constraint
-\emph default
+\series default
 :
  Apply a linear constraint boundary condition.
  
@@ -2330,19 +2389,19 @@ Add linear constraint
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Add Nodal Load
-\emph default
+\series default
 :
- Apply a load on a selected node.
+ Apply a load on selected nodes.
  
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Add Surface Load
-\emph default
+\series default
 :
  Apply a boundary load to a surface.
  
@@ -2350,9 +2409,9 @@ Add Surface Load
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Add Body Load
-\emph default
+\series default
 :
  Apply a body load.
  
@@ -2360,9 +2419,9 @@ Add Body Load
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Add Initial condition
-\emph default
+\series default
 :
  Define an initial condition for the selection.
  
@@ -2370,9 +2429,9 @@ Add Initial condition
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Add Contact
-\emph default
+\series default
 :
  Set up different contact conditions between the objects in the model.
  
@@ -2380,8 +2439,11 @@ Add Contact
 
 \begin_layout Itemize
 
+\series bold
+Add Surface Constraint
+\series default
 \emph on
-Add Surface Constraint:
+:
  
 \emph default
 Add a nonlinear constraint to a surface.
@@ -2390,9 +2452,9 @@ Add a nonlinear constraint to a surface.
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Add Body Constraint
-\emph default
+\series default
 :
  Add a nonlinear constraint to a part.
  
@@ -2400,16 +2462,19 @@ Add Body Constraint
 
 \begin_layout Itemize
 
+\series bold
+Add a general constraint
+\series default
 \emph on
-Add a general constraint:
+:
  Add a nonlinear constraint.
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Add Rigid Constraint
-\emph default
+\series default
 :
  Define a constraint to a rigid body.
  
@@ -2417,9 +2482,9 @@ Add Rigid Constraint
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Add Rigid Initial Condition
-\emph default
+\series default
 :
  Add an initial condition to a rigid body.
  
@@ -2427,9 +2492,9 @@ Add Rigid Initial Condition
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Add Rigid Load
-\emph default
+\series default
 :
  Add a load to a rigid body.
  
@@ -2437,9 +2502,9 @@ Add Rigid Load
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Add Rigid Connector
-\emph default
+\series default
 :
  Define a rigid connector between two rigid bodies.
  
@@ -2447,9 +2512,9 @@ Add Rigid Connector
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Add Material
-\emph default
+\series default
 :
  create a new material and manage material libraries.
  
@@ -2457,9 +2522,9 @@ Add Material
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Add Analysis Step
-\emph default
+\series default
 :
  define a new analysis step.
  
@@ -2467,9 +2532,9 @@ Add Analysis Step
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Solute Table
-\emph default
+\series default
 :
  Define all solutes for this analysis.
  
@@ -2477,9 +2542,9 @@ Solute Table
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Solid-bound Molecule Table
-\emph default
+\series default
 :
  Define all the solid-bound molecules of this analysis.
  
@@ -2487,9 +2552,9 @@ Solid-bound Molecule Table
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Chemical Reaction Editor
-\emph default
+\series default
 :
  Define all the chemical reactions of this analysis.
  
@@ -2497,8 +2562,11 @@ Chemical Reaction Editor
 
 \begin_layout Itemize
 
+\series bold
+Membrane Reaction Editor
+\series default
 \emph on
-Membrane Reaction Editor:
+:
  
 \emph default
 Define special membrane reactions for the current model.
@@ -2507,13 +2575,9 @@ Define special membrane reactions for the current model.
 
 \begin_layout Itemize
 
-\emph on
-Edit
-\emph default
- 
-\emph on
-Physics Modules
-\emph default
+\series bold
+Edit Physics Modules
+\series default
 :
  Change the settings of the active model.
  This allows users to activate or deactivate the different FEBio physics modules.
@@ -2526,37 +2590,47 @@ The FEBio Menu
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Run FEBio
-\emph default
+\series default
 :
  Run the active model in FEBio.
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Stop FEBio
-\emph default
+\series default
 :
  Stop the current FEBio run.
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
-Generate Optimization File
-\emph default
+\series bold
+Run FEBio Monitor
+\series default
 :
+ Runs the FEBio model using the FEBio Monitor.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Create Optimization 
+\series default
+Study:
  Opens wizard that walks users through generating an FEBio optimization input file.
  
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Generate Tangent Diagnostic
-\emph default
+\series default
 :
  Generates a tangent diagnostics file,
  which can be used to debug material implementations.
@@ -2565,9 +2639,9 @@ Generate Tangent Diagnostic
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 FEBio Info
-\emph default
+\series default
 :
  Brings up a dialog box that lists all the available features pulled from FEBio.
  
@@ -2575,11 +2649,21 @@ FEBio Info
 
 \begin_layout Itemize
 
-\emph on
-Manage FEBio plugins
-\emph default
+\series bold
+Plugins Repository
+\series default
 :
- Allows users to load FEBio plugins in FEBio Studio.
+ Access the plugin repository that allows users to download and install FEBio plugins in FEBio Studio.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Create FEBio Plugins
+\series default
+:
+ Start a wizard that will help users generate an FEBio plugin template.
  
 \end_layout
 
@@ -2588,42 +2672,51 @@ The Record Menu
 \end_layout
 
 \begin_layout Standard
-The Record menu gives the user access to the recording capabilities of FEBio Studio.
+The Record menu gives the user access to the screen recording capabilities of FEBio Studio.
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 New
-\emph default
- - selects a new target file for the recording.
+\series default
+...
+ :
+ selects a new target file for the recording.
  
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
-Start recording
-\emph default
- - starts recording the GV and stores the frames to a file.
+\series bold
+Start
+\series default
+:
+ starts recording the GV and stores the frames to a file.
  
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
-Pause recording
-\emph default
- - pauses the current recording.
+\series bold
+Pause
+\series default
+:
+
+\series bold
+ 
+\series default
+pauses the current recording.
  
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
-Stop recording
-\emph default
- - stops the current recording and closes the target file.
+\series bold
+Stop
+\series default
+:
+ stops the current recording and closes the target file.
  
 \end_layout
 
@@ -2648,8 +2741,11 @@ menu offers the following menu items:
 
 \begin_layout Itemize
 
+\series bold
+Curve Editor
+\series default
 \emph on
-Curve Editor:
+:
  
 \emph default
 Show the Curve Editor tool 
@@ -2657,9 +2753,9 @@ Show the Curve Editor tool
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Mesh Inspector
-\emph default
+\series default
 :
  Activate the Mesh Inspector tool.
  
@@ -2667,9 +2763,9 @@ Mesh Inspector
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Mesh Diagnostics
-\emph default
+\series default
 :
  Opens the mesh diagnostics tool,
  which allows users to run a diagnostic on the mesh of the currently selected object.
@@ -2678,9 +2774,9 @@ Mesh Diagnostics
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Unit Converter
-\emph default
+\series default
 :
  Convert quantities between different units.
  
@@ -2688,9 +2784,9 @@ Unit Converter
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Elasticity Converter
-\emph default
+\series default
 :
  convert between parameter for defining elastic materials.
  
@@ -2698,9 +2794,9 @@ Elasticity Converter
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Material Test
-\emph default
+\series default
 :
  A tool that can be used to run simple scenarios (e.g.
  uni-axial testing) on one of the materials in the model.
@@ -2709,8 +2805,21 @@ Material Test
 
 \begin_layout Itemize
 
+\series bold
+Distribution Visualizer
+\series default
+:
+ This tool can be used to visualize the continuous fiber distribution options.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Kinemat
+\series default
 \emph on
-Kinemat:
+:
 
 \emph default
  The Kinemat tool can be used to apply kinematics data to a model.
@@ -2730,8 +2839,11 @@ Kinemat:
 
 \begin_layout Itemize
 
+\series bold
+Plot Mix
+\series default
 \emph on
-Plot Mix:
+:
  
 \emph default
 This tool can be used to combine several plot files into one.
@@ -2750,9 +2862,19 @@ Add file
 
 \begin_layout Itemize
 
-\emph on
-Options
-\emph default
+\series bold
+Python Editor
+\series default
+:
+ Opens an editor that can be used to write and execute Python scripts.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Settings
+\series default
 :
  Open a dialog box that allows you to edit FEBio Studio's settings.
  
@@ -2779,27 +2901,37 @@ View
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Undo view change
-\emph default
+\series default
 :
  undo the last view change 
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Redo view change
-\emph default
+\series default
 :
  redo the last undone view change 
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
+Show GV Context menu
+\series default
+:
+ Toggles the quick-menu box displayed on the graphics view.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
 Zoom to Selection
-\emph default
+\series default
 :
  Zooms in on the current selection.
  
@@ -2807,9 +2939,9 @@ Zoom to Selection
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Orthographic Projection
-\emph default
+\series default
 :
  Toggles between orthographic or perspective projection mode.
  
@@ -2817,9 +2949,9 @@ Orthographic Projection
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Show Normals
-\emph default
+\series default
 :
  Toggles surface normal on or off of the active object.
  
@@ -2827,9 +2959,9 @@ Show Normals
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Show capture frame
-\emph default
+\series default
 :
  toggles the 
 \emph on
@@ -2842,9 +2974,19 @@ capture frame
 
 \begin_layout Itemize
 
-\emph on
+\series bold
+Toggle Overlay
+\series default
+:
+ hides all GV items that are rendered on the overlay texture.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
 Show Grid
-\emph default
+\series default
 :
  toggle the grid in the GV on or off.
  
@@ -2852,9 +2994,9 @@ Show Grid
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Show mesh lines
-\emph default
+\series default
 :
  toggle the mesh lines in the GV on or off.
  
@@ -2862,9 +3004,9 @@ Show mesh lines
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Show Edge lines
-\emph default
+\series default
 :
  toggle the rendering of the crease edges on or off.
  
@@ -2872,19 +3014,9 @@ Show Edge lines
 
 \begin_layout Itemize
 
-\emph on
-Backface culling
-\emph default
-:
- toggle backface culling on or off.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
+\series bold
 Color smoothing
-\emph default
+\series default
 :
  toggles between smooth and discrete contouring.
  (only used on Post side.) 
@@ -2892,9 +3024,9 @@ Color smoothing
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Toggle Render Mode
-\emph default
+\series default
 :
  toggles between solid and wireframe render mode.
  
@@ -2902,20 +3034,20 @@ Toggle Render Mode
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Show fibers
-\emph default
+\series default
 :
- Brings up the fiber dialog box,
+ Brings up the fiber visualization dialog box,
  which allows visualization of material fibers onto the mesh.
  
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Toggle Material axes
-\emph default
+\series default
 :
  toggles the option to render the material's local axes.
  
@@ -2923,9 +3055,9 @@ Toggle Material axes
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Show discrete sets
-\emph default
+\series default
 :
  Toggles whether discrete element sets (e.g.
  springs) will be shown or not.
@@ -2933,10 +3065,21 @@ Show discrete sets
 \end_layout
 
 \begin_layout Itemize
-3D 
-\emph on
-cursor to selection
-\emph default
+
+\series bold
+Toggle Tag Info
+\series default
+:
+ Toggles between the different tag info levels (none,
+ item label,
+ item and connected nodes)
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+3D cursor to selection
+\series default
 :
  Place the 3D cursor on the center of the current selection.
  
@@ -2944,9 +3087,9 @@ cursor to selection
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Track selection
-\emph default
+\series default
 :
  when active,
  keeps the camera focused on the current selection.
@@ -2955,9 +3098,9 @@ Track selection
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Toggle Lighting
-\emph default
+\series default
 :
  Turns lighting (i.e.
  shading) on or off.
@@ -2966,9 +3109,9 @@ Toggle Lighting
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Toggle select connected
-\emph default
+\series default
 :
  toggles selection mode between selecting a single item or all items connected to the selected item.
  
@@ -2976,18 +3119,18 @@ Toggle select connected
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Toggle FPS
-\emph default
+\series default
 :
  toggles rendering stats.
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Standard Views
-\emph default
+\series default
 :
  Select one of the standard views from the submenu.
  
@@ -2995,18 +3138,18 @@ Standard Views
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Save viewpoint
-\emph default
+\series default
 :
  Save the current camera view (only used by Post side)
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Previous viewpoint
-\emph default
+\series default
 :
  Returns camera to the previous view point.
  (only used by Post side)
@@ -3014,8 +3157,11 @@ Previous viewpoint
 
 \begin_layout Itemize
 
+\series bold
+Next viewpoint
+\series default
 \emph on
-Next viewpoint:
+:
  
 \emph default
 Returns camera to the next view point (only used by Post side)
@@ -3023,8 +3169,11 @@ Returns camera to the next view point (only used by Post side)
 
 \begin_layout Itemize
 
+\series bold
+Sync all views
+\series default
 \emph on
-Sync all views:
+:
  
 \emph default
 Applies the camera view from the current model to all the open models.
@@ -3033,9 +3182,9 @@ Applies the camera view from the current model to all the open models.
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Windows
-\emph default
+\series default
 :
  Toggles visibility of the FEBio Studio panels.
  
@@ -3058,9 +3207,19 @@ The Help menu offers the following menu items.
 
 \begin_layout Itemize
 
-\emph on
+\series bold
+Check for updates
+\series default
+:
+ see if any updates are available.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
 Show Welcome Page
-\emph default
+\series default
 :
  Makes the Welcome page active.
  
@@ -3068,9 +3227,9 @@ Show Welcome Page
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 FEBio Website
-\emph default
+\series default
 :
  Opens the FEBio website (febio.org) in an external web browser.
  
@@ -3078,8 +3237,11 @@ FEBio Website
 
 \begin_layout Itemize
 
+\series bold
+FEBio Knowledgebase
+\series default
 \emph on
-FEBio Knowledgebase:
+:
  
 \emph default
 Opens the FEBio Knowledgebase website in an external browser.
@@ -3091,9 +3253,9 @@ Opens the FEBio Knowledgebase website in an external browser.
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 FEBio User Manual
-\emph default
+\series default
 :
  Open the online FEBio User Manual in an external browser.
  
@@ -3101,9 +3263,9 @@ FEBio User Manual
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 FEBio Theory Manual
-\emph default
+\series default
 :
  Open the online FEBio Theory Manual in an external browser.
  
@@ -3111,9 +3273,9 @@ FEBio Theory Manual
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 FEBio Studio Manual
-\emph default
+\series default
 :
  Open the online FEBio Studio Manual in an external browser.
  
@@ -3121,8 +3283,11 @@ FEBio Studio Manual
 
 \begin_layout Itemize
 
+\series bold
+FEBio Forums
+\series default
 \emph on
-FEBio Forums:
+:
 
 \emph default
  Opens the FEBio forum website in an external web browser.
@@ -3131,8 +3296,11 @@ FEBio Forums:
 
 \begin_layout Itemize
 
+\series bold
+FEBio Publications
+\series default
 \emph on
-FEBio Publications:
+:
  
 \emph default
 Opens a web page with a list of publications that have used FEBio.
@@ -3141,23 +3309,19 @@ Opens a web page with a list of publications that have used FEBio.
 
 \begin_layout Itemize
 
-\emph on
+\series bold
 Submit a bug report
-\emph default
+\series default
 :
- Allows users to generate and submit bug reports that will be posted to the GitHub issues page.
+ Allows users to generate and submit bug reports that will be posted to the FEBioStudio GitHub issues page.
  
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
-About
-\emph default
- 
-\emph on
-FEBio Studio
-\emph default
+\series bold
+About FEBio Studio
+\series default
 :
  Displays the FEBio Studio About Box.
  
@@ -3222,6 +3386,18 @@ Save the current FEBioStudio model.
 \end_inset
 
 Saves a screenshot to file.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/teapot.png
+	lyxscale 50
+	width 0.26in
+	special height=0.26in
+
+\end_inset
+
+ Creates a ray-traced rendering of the active model.
 \end_layout
 
 \begin_layout Section
@@ -4070,22 +4246,10 @@ Many of the FEBio Studio features can also be accessed by right-clicking on an i
  A popup menu will appear that lists the available options for that particular item.
  For example,
  you can add a new material by right-clicking on the Materials item and selecting 
-\emph on
-Add Material
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-textellipsis
-\end_layout
-
-\end_inset
-
+\series bold
+Add Material ...
  
-\emph default
+\series default
 from the popup menu.
 \end_layout
 
@@ -4103,6 +4267,20 @@ At the top of the Model Editor additional buttons are located that allow access 
 
 For model components that have associated geometry items,
  this button selects these items in the Graphics View.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/select_highlight.png
+	width 0.27in
+	special height=0.29in
+
+\end_inset
+
+Enables automatic highlighting.
+ When this is enabled,
+ selecting an item in the model tree will automatically highlight the corresponding selection in the Graphics View.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -4138,6 +4316,32 @@ Activate the Search panel,
 
 Clicking this button will synchronize the selection between the Graphics View and the Model Viewer.
  This only works for geometry items.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/refresh.png
+	width 0.27in
+	special height=0.29in
+
+\end_inset
+
+Clicking this button will refresh the contents of the model tree,
+ making sure all selections are up-to-date and all components are validated.
+\end_layout
+
+\begin_layout Subsection
+The Search Panel
+\end_layout
+
+\begin_layout Standard
+The Search panel is an alternative method for inspecting model components.
+ When active,
+ users can enter a search filter at the top.
+ All items with a name that contains the filter will be displayed in the box below the filter.
+ Users can select items here and the properties will be displayed below.
+ Users can also right-click on items and select an option from the popup menu.
+ Double-clicking on an item will toggle back to the tree view with that item selected.
 \end_layout
 
 \begin_layout Standard
@@ -4184,20 +4388,6 @@ name "fig78"
 \end_layout
 
 \begin_layout Subsection
-The Search Panel
-\end_layout
-
-\begin_layout Standard
-The Search panel is an alternative method for inspecting model components.
- When active,
- users can enter a search filter at the top.
- All items with a name that contains the filter will be displayed in the box below the filter.
- Users can select items here and the properties will be displayed below.
- Users can also right-click on items and select an option from the popup menu.
- Double-clicking on an item will toggle back to the tree view with that item selected.
-\end_layout
-
-\begin_layout Subsection
 The Model Viewer Panes
 \begin_inset CommandInset label
 LatexCommand label
@@ -4209,7 +4399,7 @@ name "subsec:mylabel17"
 \end_layout
 
 \begin_layout Standard
-Below the Model Viewer you will several panes that provide information about the item that is active in the Model Viewer's tree view.
+Below the Model Viewer you will see several panes that provide information about the item that is active in the Model Viewer's tree view.
  The particular panes that are shown depend on the selected item.
 \end_layout
 
@@ -4300,6 +4490,61 @@ name "fig79"
 
 \end_layout
 
+\begin_layout Standard
+Most properties can be edited directly from the properties panel.
+ However,
+ some properties cannot be edited that way.
+ In that case,
+ clicking on the property name may bring up an additional widget that provides the controls to edit the property.
+ This is the case,
+ for instance,
+ for properties that represent parameterized or discretized curves.
+ (e.g.
+ force-displacement curve for nonlinear springs.) Clicking the property name will then bring up a widget that allows users to customize the curve.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/figure2_80.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Sometimes selecting the property's name may bring up an additional widget that allows users to customize the property.
+ For instance,
+ in the image above a curve is created using a special curve-editing widget.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Editing Selections
 \begin_inset CommandInset label
@@ -4377,6 +4622,178 @@ This button removes the items selected in the list from the box.
 This button selects the items that are selected in the box also selected in the Graphics View.
 \end_layout
 
+\begin_layout Subsection
+The Appearance Editor
+\end_layout
+
+\begin_layout Standard
+In FEBio Studio,
+ the user can change the visual appearance of objects and parts.
+ The main tool to do this is the 
+\series bold
+Appearance Editor
+\series default
+\SpecialChar endofsentence
+ The Appearance Editor is opened by clicking the appearance editor button.
+ This button is shown in the properties list of model tree items for which the appearance can be set.
+ At the moment,
+ this is shown when an object or a material in the model tree is selected.
+ The button itself shows a small colored sphere that reflects the appearance of the corresponding model tree item.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/AppearanceEditor.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Using the Appearance Editor,
+ the user can change the visual appearance of objects and parts.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Using the Appearance Editor,
+ the user can change several settings that affect the visual appearance of objects and parts in the model.
+ 
+\end_layout
+
+\begin_layout Standard
+The shading model that is used to color items in FEBio Studio is the classical Phong shading model.
+ This model composes the color as the sum of three separate color contributions:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\mathrm{color=0.2\times ambient+diffuse\times\mathit{cos}\left(N,L\right)+specular}\times\left(cos\left(H,L\right)\right)^{n}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+ambient 
+\emph default
+color is a constant color that is added to the final color.
+ The 
+\emph on
+diffuse 
+\emph default
+color is the main color and is weighted by the direction cosine between the light's direction (L) and the local normal (N).
+ Areas where the normal is directed towards the light will be bright,
+ and areas that are pointing away from the light will be darker.
+ The 
+\emph on
+specular 
+\emph default
+color adds a highlight,
+ i.e.
+ a very bright area,
+ to the overall color,
+ and is weighted by the direction cosine between the halfway vector (H),
+ a vector between the light and the view direction,
+ and the light's direction (L).
+ To control the size of the specular highlight,
+ the direction cosine is exponentiated to the power 
+\emph on
+n
+\emph default
+,
+ often called the specular exponent,
+ and the higher the exponent,
+ the smaller the highlight.
+ It typically ranges between 0 and 128.
+ In FEBio Studio,
+ however,
+ the specular exponent cannot be set directly.
+ Instead,
+ the 
+\emph on
+shininess 
+\emph default
+parameter is used and ranges between 0 and 1.
+ 
+\end_layout
+
+\begin_layout Standard
+In addition,
+ users can set the 
+\emph on
+reflection 
+\emph default
+parameter to add a reflective effect to the appearance.
+ This will only work if the environment map is set and enabled,
+ which can be done in the FEBio Studio Settings dialog (under the Lighting settings.) 
+\end_layout
+
+\begin_layout Standard
+In summary,
+ the following parameters can be set in the Appearance Editor.
+ 
+\end_layout
+
+\begin_layout Description
+Presets Choose from a list of common materials,
+ such as various metals,
+ plastics,
+ and biological materials.
+\end_layout
+
+\begin_layout Description
+Ambient Sets the constant ambient color of the material.
+\end_layout
+
+\begin_layout Description
+Diffuse Sets the diffuse color of the material
+\end_layout
+
+\begin_layout Description
+Specular Sets the specular color of the material.
+\end_layout
+
+\begin_layout Description
+Shininess Sets the specular exponent of the specular highlight indirectly and ranges between 0 and 1.
+ 
+\end_layout
+
+\begin_layout Description
+Reflection Sets how much the material reflects the environment map and ranges between 0 and 1.
+ (Requires enabling the environment map.) 
+\end_layout
+
 \begin_layout Section
 The Build Panel
 \begin_inset CommandInset label
@@ -4389,7 +4806,7 @@ name "subsec:mylabel18"
 \end_layout
 
 \begin_layout Standard
-The Build panel allows users access to the geometry and mesh editing tools in FEBioStudio.
+The Build panel allows users access to the geometry and mesh editing tools in FEBio Studio.
  It consists of several child panels,
  each offering a different set of model editing tools.
 \end_layout
@@ -4407,7 +4824,7 @@ name "subsubsec:mylabel52"
 
 \begin_layout Standard
 The Create panel is used to create geometry.
- FEBioStudio offers a basic set of mesh generation features;
+ FEBio Studio offers a basic set of mesh generation features;
  you can create 
 \emph on
 primitive 
@@ -4431,7 +4848,10 @@ button to add the primitive to your model.
  See section 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "subsec:mylabel21"
+reference "subsec:creating"
+plural "false"
+caps "false"
+noprefix "false"
 nolink "false"
 
 \end_inset
@@ -4458,6 +4878,8 @@ Edit
 panel allows you to modify the object creation parameters.
  By modifying these parameters,
  the user can change the geometry at any time.
+ Note that if the geometry is already meshed,
+ changing the object's parameters may invalidate this mesh as well as any selections associated with the mesh.
  See section 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -4494,6 +4916,13 @@ Mesh
 Editable Meshes 
 \emph default
 this panel will show a set of tools that allow the mesh to be modified.
+ Exercise caution when editing meshes in a model that already has boundary conditions,
+ loads,
+ etc.,
+ assigned.
+ If any of the selections assigned to these model components depend directly on the mesh,
+ problems may arise if the mesh is changed in any way.
+ 
 \end_layout
 
 \begin_layout Subsection
@@ -4511,96 +4940,39 @@ name "subsubsec:mylabel55"
 This panel defines a few specialized tools that can be useful for very specific tasks.
 \end_layout
 
-\begin_layout Subsubsection
-Conchoid Fit
-\end_layout
-
-\begin_layout Standard
-This tool fits a conchoid to the current selection.
- 
-\end_layout
-
-\begin_layout Subsubsection
-Read Curve
-\end_layout
-
-\begin_layout Standard
-This tool allows users to import a curve from a file that contains a list of points.
- 
-\end_layout
-
-\begin_layout Subsubsection
-Foam Generator
-\end_layout
-
-\begin_layout Standard
-A tool for generating a tetrahedral mesh that emulates a foam-structure,
- i.e.
- a cube with randomly distributed holes.
- 
-\end_layout
-
-\begin_layout Subsubsection
-Material Map
-\end_layout
-
-\begin_layout Standard
-This tool reads a .k file with scalar data.
- It then partitions the mesh given the number of 
-\begin_inset Quotes eld
+\begin_layout Description
+Scalar
+\begin_inset space ~
 \end_inset
 
-materials
-\begin_inset Quotes erd
-\end_inset
-
-,
- based on the scalar data and assign each element to a partition depending on the associated scalar value.
- 
-\end_layout
-
-\begin_layout Subsubsection
-Scalar Field
-\end_layout
-
-\begin_layout Standard
-With this tool,
+Field With this tool,
  users can generate scalar data maps on a mesh.
  These maps can then be used for defining heterogeneous material parameters or other spatially varying model parameters.
- 
+ (See 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:scalar_field_tool"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+ for more details.)
 \end_layout
 
-\begin_layout Standard
-The tool essentially solves a Poisson problem on the mesh,
- using the provided boundary conditions.
- The boundary conditions are defined by assigning values to certain selections.
- 
-\end_layout
+\begin_layout Description
+Edit
+\begin_inset space ~
+\end_inset
 
-\begin_layout Standard
-To use this tool,
- first give a name to the data map that will be generated.
- Then,
- assign values to boundary nodes,
- edges,
- or surfaces.
- Choose the data format of the map and the material (which is used to limit the map to certain parts.) Then,
- click the Create button.
- A new map with the user-defined named will be added to the model tree.
- 
-\end_layout
+Data
+\begin_inset space ~
+\end_inset
 
-\begin_layout Subsubsection
-Edit Data Field
-\end_layout
-
-\begin_layout Standard
-This tool allows users to assign values to elements for an existing data map.
- 
-\end_layout
-
-\begin_layout Standard
-To use the tool,
+Field This tool allows users to assign values to elements for an existing data map.
+ To use the tool,
  first select the elements for which you wish to assign a value.
  Then,
  choose the data field and the new value,
@@ -4608,140 +4980,54 @@ To use the tool,
  
 \end_layout
 
-\begin_layout Subsubsection
-Plane cut
-\end_layout
+\begin_layout Description
+Plane
+\begin_inset space ~
+\end_inset
 
-\begin_layout Standard
-With this tool,
+cut With this tool,
  the user can cut a mesh in two parts along a user-defined plane.
  (Only works for triangle meshes.) 
 \end_layout
 
-\begin_layout Subsubsection
-Fiber Generator
-\end_layout
+\begin_layout Description
+Fiber
+\begin_inset space ~
+\end_inset
 
-\begin_layout Standard
-This tool can be used to generate a vector field on a mesh.
+Generator This tool can be used to generate a vector field on a mesh.
  The vector field can be stored in a data map,
  which can then be used to define e.g.
  material fiber orientations.
- 
-\end_layout
+ (See 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:fiber_generator_tool"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
 
-\begin_layout Standard
-The tool works very similarly to the scalar field tool.
- It also solves a Poisson problem on the mesh using prescribed boundary conditions.
- However,
- it then proceeds by numerically evaluating the gradient of this scalar field.
- This defines the initial vector field.
- Then,
- additional parameters allow further modifications of this vector field.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Generate mat axes
-\series default
-:
- Generate material axes instead of vectors and assign these to the element local coordinate system.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Generate cross product
-\series default
-:
- The final vector field will be the cross product of the initial vector field and the user-defined 
-\begin_inset Quotes eld
 \end_inset
 
-normal vector
-\begin_inset Quotes erd
+for more details.) 
+\end_layout
+
+\begin_layout Description
+Import
+\begin_inset space ~
 \end_inset
 
-.
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Normal vector
-\series default
-:
- The vector that will be used to generate the cross product vector field.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Out-plane rotation (deg)
-\series default
-:
- Specifies the additional rotation angle (in degrees) to apply to the vector field that rotates it out of the plane that is perpendicular to the normal vector.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-In-plane rotation (deg)
-\series default
-:
- Specifies an additional rotation angle (in degrees) to apply to the vector field that rotates the vector in the plane that is perpendicular to the normal vector.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Generate map
-\series default
-:
- Generate a map and define the map's name.
- (If not checked,
- the vectors are assigned to the element's fiber property,
- but this will be deprecated in the future.) 
-\end_layout
-
-\begin_layout Subsubsection
-Area Calculator
-\end_layout
-
-\begin_layout Standard
-This tool calculates the surface area A of selected faces.
- It also projects this surface area along the three coordinate directions as Ax,
- Ay and Az.
-\end_layout
-
-\begin_layout Subsubsection
-Import Springs
-\end_layout
-
-\begin_layout Standard
-This tool imports a collection of line elements from a text or VTK file and produces either discrete (i.e.
+Springs This tool imports a collection of line elements from a text or VTK file and produces either discrete (i.e.
  spring) elements,
  or linear truss elements.
- 
-\end_layout
-
-\begin_layout Standard
-This tool expects that the user has an object selected (which has to be an editable mesh) to which the new nodes and line elements will be added.
+ This tool expects that the user has an object selected (which has to be an editable mesh) to which the new nodes and line elements will be added.
  When adding new nodes,
  first the tool will check if a node already exists at that location (within the user-defined tolerance) and if so,
  pick the existing node.
  If no node exists at the location,
  a new node will be added to the object.
-\end_layout
-
-\begin_layout Standard
-The 
+ The 
 \begin_inset Quotes eld
 \end_inset
 
@@ -4755,8 +5041,12 @@ Check for intersection
  
 \end_layout
 
-\begin_layout Subsubsection
-Quadric Fit
+\begin_layout Description
+Quadric
+\begin_inset space ~
+\end_inset
+
+Fit
 \end_layout
 
 \begin_layout Standard
@@ -5462,26 +5752,36 @@ normalized eigenvector
 
 \end_layout
 
-\begin_layout Subsubsection
-ICP Registration
-\end_layout
+\begin_layout Description
+ICP
+\begin_inset space ~
+\end_inset
 
-\begin_layout Standard
-This tool implements the Iterative Closest Point registration method,
+Registration This tool implements the Iterative Closest Point registration method,
  which can be used to align two objects assuming an affine transformation.
  
 \end_layout
 
-\begin_layout Subsubsection
-Image Map
+\begin_layout Description
+Image
+\begin_inset space ~
+\end_inset
+
+Map
 \end_layout
 
 \begin_layout Standard
 This tool can be used to extract a scalar data map from a 3D image data.
  Before you can use this tool,
- you must import a 3D image (menu File
-\backslash
-Import Image).
+ you must import a 3D image (menu 
+\series bold
+File
+\series default
+ → 
+\series bold
+Import Image
+\series default
+).
  Then,
  give the new data map a name and select the image model.
  The following options can be set to control how the data is extracted from the image.
@@ -5531,17 +5831,29 @@ Filter
  
 \end_layout
 
-\begin_layout Subsubsection
-Discrete Element Network
-\end_layout
+\begin_layout Description
+Discrete
+\begin_inset space ~
+\end_inset
 
-\begin_layout Standard
-This tool converts a surface mesh to a mesh composed of discrete elements.
+Element
+\begin_inset space ~
+\end_inset
+
+Network This tool converts a surface mesh to a mesh composed of discrete elements.
  
 \end_layout
 
-\begin_layout Subsubsection
-Select Near Plane
+\begin_layout Description
+Select
+\begin_inset space ~
+\end_inset
+
+Near
+\begin_inset space ~
+\end_inset
+
+Plane
 \end_layout
 
 \begin_layout Standard
@@ -5589,18 +5901,10 @@ Add to selection
  
 \end_layout
 
-\begin_layout Subsubsection
-Kinemat
-\end_layout
-
-\begin_layout Standard
-The Kinemat tool allows users to setup an FEBio problem using only geometry and kinematics data.
+\begin_layout Description
+Kinemat The Kinemat tool allows users to setup an FEBio problem using only geometry and kinematics data.
  The geometry is assumed to be rigid bodies,
- and the kinemat data describes the motion of the rigid parts.
-\end_layout
-
-\begin_layout Standard
-FEBio Studio will read the data and construct a complete FEBio model:
+ and the kinemat data describes the motion of the rigid parts.FEBio Studio will read the data and construct a complete FEBio model:
  Rigid materials are assigned to each bone.
  The kinemat data is used to apply prescribed displacements and rotations for each rigid body.
  After import,
@@ -6744,6 +7048,158 @@ Finish
 \end_layout
 
 \begin_layout Section
+The Project Panel
+\end_layout
+
+\begin_layout Standard
+FEBio Studio offers a multi-document interface,
+ where at any given time,
+ multiple FEBio models,
+ plot files,
+ and other documents,
+ can be open.
+ Typically,
+ all these open documents have some relation to each other.
+ For instance,
+ a single FEBio model and multiple plot files can be open at the same time,
+ where each plot file shows the results of a parameter study.
+ To help manage and keep track of documents that somehow belong together,
+ the user can create an FEBio Studio project.
+ 
+\end_layout
+
+\begin_layout Standard
+FEBio Studio will always maintain an active project in the background that keeps tracks of all the files that are currently open and have been opened in the current FEBio Studio session.
+ The status of this project can be inspected on the Project panel.
+ The Project panel is divided into two panes.
+ The top pane shows a tree view of the current files in the project.
+ At the bottom of the Project panel is a Notes pane.
+ Here,
+ users can add notes and comments to the currently selected item in the project tree.
+\end_layout
+
+\begin_layout Standard
+The project tree is split into two main branches:
+ 
+\end_layout
+
+\begin_layout Description
+Open
+\begin_inset space ~
+\end_inset
+
+Files shows all the files that are currently open in FEBio Studio.
+ Double-clicking a file in the Open Files list will activate the corresponding tab.
+\end_layout
+
+\begin_layout Description
+Project shows all the files in the project.
+ 
+\end_layout
+
+\begin_layout Standard
+Users can further customize the project in several ways.
+ Right-clicking on the PROJECT item allows the user to do the following operations.
+ 
+\end_layout
+
+\begin_layout Description
+Save
+\begin_inset space ~
+\end_inset
+
+Project
+\begin_inset space ~
+\end_inset
+
+as Save the project to a file.
+ (More on this below)
+\end_layout
+
+\begin_layout Description
+Create
+\begin_inset space ~
+\end_inset
+
+Group Create a new group (a new branch in the project tree) that can be used to group certain files together.
+ 
+\end_layout
+
+\begin_layout Description
+
+\series bold
+Close
+\begin_inset space ~
+\end_inset
+
+Project 
+\series default
+Close the current project and start a new empty project.
+\end_layout
+
+\begin_layout Description
+Clear
+\begin_inset space ~
+\end_inset
+
+Project Clears the current project.
+ This may lead to loss of data since projects are automatically saved.
+ If the current project is stored as a file,
+ this will overwrite the file with an empty project.
+ 
+\end_layout
+
+\begin_layout Description
+Add
+\begin_inset space ~
+\end_inset
+
+File Add a file to the project.
+ Note that any file can be added.
+ It doesn't have to be a file that can actually be opened in FEBio Studio.
+ For instance,
+ you can keep a Word document in the project that contains additional project details.
+ 
+\end_layout
+
+\begin_layout Description
+Import
+\begin_inset space ~
+\end_inset
+
+Folder Adds files from a user-specified folder to the project.
+ Only files with the following extensions will be imported:
+ 
+\emph on
+fsm,
+ fs2,
+ feb,
+ xplt
+\emph default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The active project can be saved to a file using either the menu 
+\series bold
+File 
+\series default
+→
+\series bold
+ Save Project as ...
+ 
+\series default
+or by right-clicking the PROJECT item on the Project panel.
+ Once a project is saved,
+ FEBio Studio will automatically ensure that any changes to the project (e.g.
+ by loading files) will be reflected in the file.
+ There is no need to save the project again.
+ The project file itself is a standard xml file and can be viewed and edited with any text editor.
+ 
+\end_layout
+
+\begin_layout Section
 The Curve Editor
 \begin_inset CommandInset label
 LatexCommand label
@@ -6801,13 +7257,17 @@ The
 Curve Editor 
 \emph default
 is accessed either from the 
-\emph on
-Tools/Curve Editor 
-\emph default
+\series bold
+Tools
+\series default
+ → 
+\series bold
+Curve Editor 
+\series default
 menu or by pressing the corresponding button on the toolbar.
  It can also be accessed using the 
 \emph on
-F4 
+F9 
 \emph default
 shortcut.
  The 
@@ -7561,7 +8021,7 @@ Pt.
 \end_layout
 
 \begin_layout Section
-FEBio Studio Options
+FEBio Studio Settings
 \begin_inset CommandInset label
 LatexCommand label
 name "subsec:preview"
@@ -7572,11 +8032,15 @@ name "subsec:preview"
 \end_layout
 
 \begin_layout Standard
-The FEBio Studio Options dialog can be opened from the 
-\emph on
-Tools/Options
-\emph default
- menu or by pressing the F12 shortcut button.
+The FEBio Studio Settings dialog can be opened from the 
+\series bold
+Tools
+\series default
+ → 
+\series bold
+Settings 
+\series default
+menu or by pressing the F12 shortcut button.
  Different categories can be selected by clicking the tab buttons.
  By selecting a category a list of options is shown on the right hand side of the dialog box.
  The categories are:
@@ -7627,6 +8091,16 @@ Display
 \begin_layout Itemize
 
 \emph on
+FEBio
+\emph default
+:
+ Sets default FEBio configuration file and the paths for generating FEBio plugins.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
 Lighting
 \emph default
 :
@@ -7649,6 +8123,16 @@ Physics
 \emph default
 :
  Allows the user to select options that draw physics related items in the Graphics View.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Post Options
+\emph default
+:
+ Set special settings only used in the Post configuration.
  
 \end_layout
 
@@ -7694,6 +8178,16 @@ Model repository
  
 \end_layout
 
+\begin_layout Itemize
+
+\emph on
+Auto update
+\emph default
+:
+ Options to update your installation to the latest release or development version.
+ 
+\end_layout
+
 \begin_layout Standard
 \begin_inset Float figure
 placement document
@@ -7714,7 +8208,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-The FEBio Studio Options dialog allows users to customize many aspects of the FEBio Studio environment.
+The FEBio Studio Settings dialog allows users to customize many aspects of the FEBio Studio environment.
 \end_layout
 
 \end_inset
@@ -7725,10 +8219,40 @@ The FEBio Studio Options dialog allows users to customize many aspects of the FE
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+The buttons on the bottom of the dialog allow users to accept or reject the changes.
+ The 
+\series bold
+Reset
+\series default
+ button will restore all default settings.
+ (It will not clear the recent file lists.) Click 
+\series bold
+OK 
+\series default
+to accept all new changes and close.
+ Click 
+\series bold
+Cancel 
+\series default
+to close the dialog without accepting changes.
+ Click 
+\series bold
+Apply
+\series default
+ to apply the changes without closing the dialog box.
+ 
 \end_layout
 
 \begin_layout Subsection
-Background Options
+Background Settings
+\end_layout
+
+\begin_layout Standard
+The background settings set how the background of the Graphics View is rendered.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -7770,7 +8294,12 @@ Sets the style of the Graphic's View background.
 \end_layout
 
 \begin_layout Subsection
-Camera Options
+Camera Settings
+\end_layout
+
+\begin_layout Standard
+These settings control how to camera motion is animated when the user switches between views (e.g.
+ when zooming in on an object)
 \end_layout
 
 \begin_layout Itemize
@@ -7806,7 +8335,7 @@ Animation bias
 \end_layout
 
 \begin_layout Subsection
-Colormap Options
+Colormap Settings
 \end_layout
 
 \begin_layout Standard
@@ -7815,7 +8344,7 @@ FEBio Studio uses a palette of colormaps for rendering plots (contour plot,
  slice,
  streamlines,
  etc.).
- This palette can be edited in this tab of the Settings options dialog.
+ This palette can be edited in this tab of the dialog.
  Users can modify the colormaps or create new colormaps.
  New colormaps are automatically saved and reloaded between FEBio Studio sessions.
  
@@ -7844,7 +8373,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-The Colormap options allow users to edit the colormaps that are used for rendering plots in the Graphics View.
+The Colormap settings allow users to edit the colormaps that are used for rendering plots in the Graphics View.
 \end_layout
 
 \end_inset
@@ -7858,11 +8387,11 @@ The Colormap options allow users to edit the colormaps that are used for renderi
 \end_layout
 
 \begin_layout Subsection
-Display Options
+Display Settings
 \end_layout
 
 \begin_layout Standard
-The display options affect some of the aspects of how the model is displayed on the screen.
+The display settings affect some of the aspects of how the model is displayed on the screen.
  The following options can be modified:
 \end_layout
 
@@ -7920,6 +8449,31 @@ Normals scale factor
 \begin_layout Itemize
 
 \series bold
+Enable highlighting
+\series default
+:
+ When enabled,
+ geometry items are highlighted when hovering the mouse over them.
+ The item that is highlighted depends on the current selection context.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Identify backfacing faces
+\series default
+:
+ When enabled,
+ the backs of surfaces are rendered in a different color then the front side.
+ This can be useful to distinguish between the fronts and backs of surfaces,
+ especially in models that use shells.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
 Multiview Projection
 \series default
 :
@@ -7939,38 +8493,105 @@ Object transparency mode
 \begin_layout Itemize
 
 \series bold
-Object color
+Default Text Color Option
 \series default
 :
- Sets the color option for rendering objects.
+ Chooses how the default text color for Graphic View widgets is determined.
  
 \end_layout
 
 \begin_deeper
 \begin_layout Itemize
 
-\emph on
-Default
-\emph default
+\series bold
+Theme
+\series default
 :
- the object's color is determined by the material assigned to its part.
- If no material is assigned,
- the object's color is used.
+ The UI theme determines the color.
+ For light modes,
+ it will be black;
+ for dark modes,
+ it will be white.
+ 
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
-Object
-\emph default
+\series bold
+Custom
+\series default
 :
- always use the object's color.
- 
+ Choose a custom text color.
 \end_layout
 
 \end_deeper
+\begin_layout Itemize
+
+\series bold
+Custom Text Color
+\series default
+:
+ This is the color that will be used when the user chooses the 
+\emph on
+Custom 
+\emph default
+option for the 
+\emph on
+default text color option 
+\emph default
+setting.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Tag Font Size
+\series default
+:
+ Set the font size used for rendering the labels on tags in the Graphics View.
+ 
+\end_layout
+
 \begin_layout Subsection
-Lighting Options
+FEBio Settings
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Load FEBio config file on startup
+\series default
+:
+ Sets whether the FEBio configuration file is loaded when FEBio Studio starts.
+ This may be necessary for running FEBio using the default configuration.
+ 
+\end_layout
+
+\begin_layout Itemize
+Config file:
+ Set the location for the default FEBio configuration file.
+ 
+\end_layout
+
+\begin_layout Itemize
+FEBio SDK Include path:
+ Set the location of the FEBio SDK Include file path.
+ 
+\end_layout
+
+\begin_layout Itemize
+FEBio SDK Library path:
+ Set the location of the FEBio SDK Library file path
+\end_layout
+
+\begin_layout Itemize
+FEBio create plugin path:
+ Set the default location for creating FEBio plugins using the FEBio Plugin Creation Wizard.
+\end_layout
+
+\begin_layout Subsection
+Lighting Settings
 \end_layout
 
 \begin_layout Standard
@@ -7986,7 +8607,7 @@ Enable Lighting
 :
  toggle lighting on or off.
  When lighting is off,
- parts are rendering without any shading effects.
+ parts are rendered without any shading effects.
 \end_layout
 
 \begin_layout Itemize
@@ -8010,33 +8631,39 @@ The ambient intensity of the light source.
 \begin_layout Itemize
 
 \series bold
-Render Shadows:
-
-\series default
- Toggles whether shadows will be rendered.
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Shadow Intensity:
- 
-\series default
-Sets the intensity of the shadows (0 black,
- 1 fully transparent)
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
 Light direction:
  
 \series default
 The direction vector that points to the light source.
 \end_layout
 
+\begin_layout Itemize
+
+\series bold
+Environment map
+\series default
+:
+ Sets the location of an image file that will be used as the environment map.
+ Images need to be either JPG or PNG,
+ and for best results,
+ should be high-quality HDR images,
+ created specifically for use as an environment map.
+ (Changing this requires a restart of FEBio Studio.) 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Use Environment Map
+\series default
+:
+ Determines whether the environment map is used when rendering objects in the Graphics View.
+ Requires a valid environment map image to work properly.
+ 
+\end_layout
+
 \begin_layout Subsection
-Palette Options
+Palette Settings
 \end_layout
 
 \begin_layout Standard
@@ -8129,7 +8756,7 @@ Apply palette to materials:
 \end_layout
 
 \begin_layout Subsection
-Physics Options
+Physics Settings
 \end_layout
 
 \begin_layout Standard
@@ -8197,7 +8824,25 @@ Show fibers/axes on hidden parts
 \end_layout
 
 \begin_layout Subsection
-Selection Options
+Post Settings
+\end_layout
+
+\begin_layout Standard
+These are settings that only apply to the Post environment.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Default colormap range
+\series default
+:
+ Sets the default range option that will be used by the colormap item in the Post model tree.
+ 
+\end_layout
+
+\begin_layout Subsection
+Selection Settings
 \end_layout
 
 \begin_layout Standard
@@ -8266,7 +8911,7 @@ select connected
 \end_layout
 
 \begin_layout Subsection
-UI Options
+UI Settings
 \end_layout
 
 \begin_layout Standard
@@ -8297,44 +8942,14 @@ Clear undo stack on save
 \begin_layout Itemize
 
 \series bold
-Theme
-\series default
-:
- Set the overall UI theme.
- If this setting is changed,
- you need to restart FEBio Studio to see the effect.
- 
-\end_layout
+Recent file list:
 
-\begin_layout Itemize
-
-\series bold
-Show New dialog box
 \series default
-:
- Shows the New dialog box when selecting the 
+ This button clears the recent file lists that are shown on the Welcome page and in the various 
 \emph on
-File
-\backslash
-New Model
-\emph default
- menu.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Clear Recent model list:
-
-\series default
- Clears the recent model lists that is shown on the Welcome page and in the 
-\emph on
-File
-\backslash
 Open Recent
 \emph default
- menu.
+ File menu options.
  
 \end_layout
 
@@ -8349,7 +8964,7 @@ Autosave interval
 \end_layout
 
 \begin_layout Subsection
-Units Options
+Units Settings
 \end_layout
 
 \begin_layout Standard
@@ -8383,7 +8998,7 @@ Selects the unit system that will be used.
 \end_layout
 
 \begin_layout Subsection
-Model Repository Options
+Model Repository Settings
 \begin_inset CommandInset label
 LatexCommand label
 name "subsec:Model-Repository-Options"
@@ -8411,7 +9026,7 @@ Sets the location where a local copy of the model repository is saved.
 \end_layout
 
 \begin_layout Subsection
-Auto Update Options
+Auto Update Settings
 \end_layout
 
 \begin_layout Standard
@@ -8534,31 +9149,15 @@ name "fig99"
 
 \begin_layout Standard
 A new model can be started from the 
-\emph on
+\series bold
 File
-\emph default
-
-\begin_inset Formula $\backslash$
-\end_inset
-
-
-\emph on
-New Model
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-textellipsis
-\end_layout
-
-\end_inset
-
-
-\emph default
- menu or by clicking the corresponding toolbar button.
+\series default
+ → 
+\series bold
+New Model...
+ 
+\series default
+menu or by clicking the corresponding toolbar button.
  This will open the New Model dialog box.
  This dialog presents the model templates that are available.
  A model template is a collection of modules that will be activated in a model.
@@ -8569,13 +9168,13 @@ textellipsis
 \begin_layout Standard
 Choosing Cancel on this dialog will activate all modules and expose all the physics features and modeling capabilities.
  You can also change the active modules after starting a new model from the menu 
-\emph on
+\series bold
 Physics
-\begin_inset Formula $\backslash$
-\end_inset
-
+\series default
+ → 
+\series bold
 Edit Physics Modules
-\emph default
+\series default
 .
 \end_layout
 
@@ -8592,18 +9191,14 @@ name "subsec:loading"
 
 \begin_layout Standard
 Model files be loaded from the 
-\emph on
+\series bold
 File
-\emph default
-
-\begin_inset Formula $\backslash$
-\end_inset
-
-
-\emph on
-Open Model File
-\emph default
- menu.
+\series default
+ → 
+\series bold
+Open Model File 
+\series default
+menu.
  A standard file open dialog box appears where a file can be selected and opened.
 \end_layout
 
@@ -8615,8 +9210,8 @@ Several formats are supported,
 \begin_layout Itemize
 
 \series bold
-FEBio Studio Files (fs2,
- fsm):
+FEBio Studio Files (fsm,
+ fs2):
 
 \series default
  This is the native FEBio Studio file format.
@@ -8669,8 +9264,8 @@ Comments:
 \end_layout
 
 \begin_layout Enumerate
-The FS2 file format is the native file format used by FEBio Studio 2.
- (Previous versions used the FSM extension.) This format is an extension of the the legacy software PreView's file format,
+The FSM file format is the native file format used by FEBio Studio 3.
+ (Previous versions used the FS2 extension.) This format is an extension of the the legacy software PreView's file format,
  which usually had the 
 \emph on
 .prv
@@ -8764,56 +9359,43 @@ name "subsec:saving"
 
 \begin_layout Standard
 A model can be saved from the 
-\emph on
+\series bold
 File
-\emph default
-
-\begin_inset Formula $\backslash$
-\end_inset
-
-
-\emph on
-Save
-\emph default
- or 
-\emph on
+\series default
+ → 
+\series bold
+Save 
+\series default
+or 
+\series bold
 File
-\emph default
-
-\begin_inset Formula $\backslash$
-\end_inset
-
-
-\emph on
+\series default
+ → 
+\series bold
 Save as
-\emph default
+\series default
  menus.
  The former can be used to save the file to the same location as it was loaded.
  For new models that have not been saved yet,
  this will execute the 
-\emph on
+\series bold
 File
-\emph default
-
-\begin_inset Formula $\backslash$
-\end_inset
-
-
-\emph on
+\series default
+ → 
+\series bold
 Save as
-\emph default
+\series default
  command on the first attempt to save the model.
  The 
+\series bold
+File
+\series default
+ → 
+\series bold
+Save as
+\series default
 \emph on
-Files
-\emph default
-
-\begin_inset Formula $\backslash$
-\end_inset
-
-
-\emph on
-Save as 
+ 
 \emph default
 menu allows the user to select a file name for storing the model.
 \end_layout
@@ -8967,9 +9549,13 @@ name "subsec:importing"
 Instead of creating geometry directly in FEBioStudio it is more common to create your geometry in dedicated software and import the mesh into FEBioStudio.
  FEBioStudio can import several different mesh file formats.
  Geometry can be imported using the 
-\emph on
-File/Import Geometry 
-\emph default
+\series bold
+File
+\series default
+ → 
+\series bold
+Import Geometry 
+\series default
 menu.
  Appendix A lists an overview of all the supported file formats including the supported features of the particular formats.
 \end_layout
@@ -9517,10 +10103,14 @@ Apply
 \emph default
 button to create the new mesh.
  To show the mesh in the Graphics View select the 
-\emph on
-View/Toggle Mesh lines
-\emph default
- menu or use the '
+\series bold
+View
+\series default
+ → 
+\series bold
+Toggle Mesh lines 
+\series default
+menu or use the '
 \begin_inset Formula $m$
 \end_inset
 
@@ -10792,6 +11382,741 @@ threshold
 \end_layout
 
 \begin_layout Chapter
+Generating and Editing Mesh Data
+\end_layout
+
+\begin_layout Standard
+FEBio allows the use of mesh data maps in a model,
+ i.e.
+ values assigned to individual nodes or elements of a mesh that can be used in various contexts.
+ For instance,
+ it can be used to assign a different material parameter value to each element,
+ or prescribe a different nodal value for each node of a prescribed displacement boundary condition.
+ FEBio offers two mechanisms for defining mesh data:
+ The data can be defined explicitly via a map,
+ i.e.
+ a single value defined for each element or node,
+ or it can be defined implicitly through 
+\emph on
+mesh data generators
+\emph default
+.
+ The latter are procedural approaches that generate the actual mesh data map when FEBio starts.
+ FEBio Studio supports both types of mesh data and in addition offers several tools for generating,
+ editing,
+ and visualizing mesh data
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Note that FEBio Studio does not currently visualize the data generated by mesh data generators as this data is only generated by FEBio when the model is run.
+\end_layout
+
+\end_inset
+
+.
+ This chapter describes the ways that FEBio Studio offers users to generate and edit mesh data.
+ 
+\end_layout
+
+\begin_layout Section
+Adding Mesh Data
+\end_layout
+
+\begin_layout Standard
+To add a mesh data map to the model first select an object in the Graphics View,
+ right-click on the 
+\series bold
+Mesh Data 
+\series default
+item in the model tree,
+ and select 
+\series bold
+Add mesh data map
+\series default
+ from the popup menu.
+ A dialog box appears that allows users to select the type of map,
+ the data type (i.e.
+ scalar,
+ vector,
+ tensor),
+ the data format,
+ and how to initialize the data map.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/add_mesh_data.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+This figure shows the dialog box that can be used to add a mesh data map to a model.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The following properties can be set.
+\end_layout
+
+\begin_layout Description
+name Specify the name of the mesh data map
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+In general,
+ it is best to avoid giving the mesh data map the same name as the model's variable to which it will be assigned.
+ For instance,
+ if the map is to be used for a material parameter named 'E',
+ don't name the map 'E' as well.
+ Instead,
+ name it for instance 'E_map'.
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Description
+type Select whether the map represents nodal,
+ element,
+ or surface data.
+ This choice affects how the data can be used.
+ For instance,
+ nodal data will typically be used in boundary conditions,
+ and element data will often be used to define heterogeneous material parameters.
+ 
+\end_layout
+
+\begin_layout Description
+data
+\begin_inset space ~
+\end_inset
+
+type Select the data type of the map,
+ i.e.
+ scalar,
+ vector,
+ or tensor.
+ 
+\end_layout
+
+\begin_layout Description
+data
+\begin_inset space ~
+\end_inset
+
+format (Only relevant for element and surface data.) The 'item' option will assign a single value to the element.
+ The 'node' option will assign a unique value to each node of the domain.
+ For instance,
+ for element data,
+ the data is assigned to the (shared) nodes of the elements.
+ The mesh data therefore represents a continuous datafield over the domain.
+ The 'mult' option assigns a unique value for each node of each element.
+ Neighboring elements may have different values for each node they share.
+ The resulting datafield may be discontinuous across element boundaries.
+ 
+\end_layout
+
+\begin_layout Description
+data
+\begin_inset space ~
+\end_inset
+
+initializer:
+ Specifies how FEBio Studio will generate the data for the mesh data map.
+ The 'list' option will generate a value for each item of the map and is typically what you want.
+ The 'constant' option will not generate a value for each item,
+ but instead will assign a single constant value to the entire map.
+ This is only useful for very specific applications.
+\end_layout
+
+\begin_layout Standard
+Once all properties are set,
+ click OK to add the mesh data map to the model.
+ At this point,
+ although the map is visible in the model tree,
+ it has not yet been assigned to any part of the mesh.
+ The next step is to select nodes,
+ elements,
+ or surface facets,
+ depending on the type of the map,
+ and assign it to the map via the selection pane.
+ After a selection is assigned to the map,
+ the actual data is generated and can be edited.
+ By default,
+ the data values will all be set to zero.
+ To change these values,
+ right-click on the map in the model tree and select 
+\series bold
+Edit
+\series default
+ from the popup menu.
+ This will bring up a new dialog box that lists the current values for each item in the map.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/edit_mesh_data.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Edit Data Map dialog can be used to modify the data values directly.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Users can now edit the individual values of the map,
+ or paste them from the clipboard.
+ The data can also be copied onto the clipboard.
+ 
+\end_layout
+
+\begin_layout Standard
+Although the Edit Data Map dialog allows fine grain control over the map's values,
+ usually it is not the most convenient way to generate map data.
+ The following sections describe other tools for generating mesh data.
+\end_layout
+
+\begin_layout Section
+FEBio Mesh Data Generators
+\end_layout
+
+\begin_layout Standard
+As described above,
+ FEBio offers an alternative way for generating mesh data maps,
+ namely using 
+\emph on
+mesh data generators
+\emph default
+.
+ These are procedural (i.e.
+ algorithmic) approaches for generating mesh data.
+ A mesh data generator is added by right-clicking the 
+\emph on
+Mesh Data 
+\emph default
+item in the model tree,
+ and selecting 
+\series bold
+Add mesh data generator 
+\series default
+from the popup menu.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/add_mesh_data_generator.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Add Mesh Data Generator dialog box allows users to add an FEBio mesh data generator item to the model.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The dialog presents a list of the available mesh data generators.
+ Note that the category column shows the type of mesh items the data generator can be assigned to.
+ This is important as the type defines how the map can be used in the model.
+ Consult the FEBio manual for more details on the specific options and how to use them in a model.
+ 
+\end_layout
+
+\begin_layout Section
+The Scalar Field Tool
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:scalar_field_tool"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The 
+\series bold
+scalar field tool
+\series default
+ is used to generate scalar data maps on a mesh.
+ These maps can then be used for defining heterogeneous material parameters or other spatially varying model parameters.
+ 
+\end_layout
+
+\begin_layout Standard
+The tool can be found on the 
+\emph on
+Tools
+\emph default
+ tab of the 
+\emph on
+Build
+\emph default
+ panel.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/scalar_field_tool.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The scalar field tool can be used to generate a mesh data map.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To use the tool,
+ first enter a name for the resulting mesh data map in the 
+\emph on
+Name
+\emph default
+ field.
+ Next,
+ you can assign values to mesh selections.
+ For example,
+ if certain values are desired on specific surfaces,
+ edges,
+ or nodes,
+ then the following steps will accomplish that goal:
+ make a selection on the mesh,
+ enter the desired value in the 
+\emph on
+value 
+\emph default
+field,
+ click the 
+\series bold
+Add
+\series default
+ button.
+ A new entry will be added in the table.
+ The values assigned to the selections can still be edited by double-clicking the value in the table and entering a new value.
+ This procedure can be repeated as many times as needed to assign different values to selections.
+ Note that it is not necessary to assign values to every item (i.e.
+ node or element) of the mesh.
+ Instead,
+ only values on some boundary surfaces or edges are needed.
+ The values for the interior of the mesh are calculated by the tool.
+ It accomplishes this by solving a Poisson problem on the mesh,
+ using the provided values as boundary conditions on the corresponding mesh selections.
+ 
+\end_layout
+
+\begin_layout Standard
+The following parameters further specify the data map that will be generated.
+\end_layout
+
+\begin_layout Description
+Data
+\begin_inset space ~
+\end_inset
+
+format Set how the tool will output the values,
+ i.e.
+ as nodal data or element data.
+ This choice may affect how the data map can be used in the model.
+ 
+\end_layout
+
+\begin_layout Description
+Material Currently,
+ data is only generated for the parts to which a particular material is assigned.
+ This option allows you to select the material,
+ and the corresponding parts on which data is generated.
+\end_layout
+
+\begin_layout Standard
+The tool uses an iterative method for solving the Poisson problem.
+ The remainder of the parameters control the solution process.
+\end_layout
+
+\begin_layout Description
+Max
+\begin_inset space ~
+\end_inset
+
+iterations Set the maximum number of iterations that can be used by the iterative solver.
+ Setting this value too low may result in an unconverged solution to the Poisson problem.
+ The default value of 1000 will be sufficient for most problems,
+ but models with large meshes my need to increase this value.
+\end_layout
+
+\begin_layout Description
+Tolerance The convergence tolerance for the iterative method.
+ 
+\end_layout
+
+\begin_layout Description
+SOR
+\begin_inset space ~
+\end_inset
+
+parameter Sets the SOR (Successive Over Relaxation) parameter,
+ which may significantly decrease the number of iterations necessary for convergence.
+ The default value will likely work well for most applications.
+ 
+\end_layout
+
+\begin_layout Standard
+To run the tool,
+ click the 
+\series bold
+Create
+\series default
+ Button.
+ This will solve for the nodal or element values,
+ given the boundary conditions to the Poisson problem,
+ create the mesh data map,
+ assign the values,
+ and add it to the model.
+ 
+\end_layout
+
+\begin_layout Section
+The Fiber Generator Tool
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:fiber_generator_tool"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Despite the specific reference to 
+\begin_inset Quotes eld
+\end_inset
+
+fiber
+\begin_inset Quotes erd
+\end_inset
+
+,
+ this tool can be used to generate a vector field on a mesh.
+ The vector field can be stored in a data map,
+ which can then be used to define e.g.
+ material fiber orientations.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/fiber_generator_tool.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The scalar field tool can be used to generate a mesh data map.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The tool works very similarly to the scalar field tool.
+ First,
+ users assign (scalar) values to specific mesh selections.
+ It then solves a Poisson problem on the mesh using the provided values as prescribed boundary conditions on the selections.
+ This results in a scalar field.
+ The tool then proceeds by numerically evaluating the gradient of this scalar field.
+ This defines the initial vector field.
+ Additional parameters allow further modifications of this vector field.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Generate mat axes
+\series default
+:
+ Generate material axes instead of vectors and assign these to the element local coordinate system.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Generate cross product
+\series default
+:
+ The final vector field will be the cross product of the initial vector field and the user-defined 
+\begin_inset Quotes eld
+\end_inset
+
+normal vector
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Normal vector
+\series default
+:
+ The vector that will be used to generate the cross product vector field.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Out-plane rotation (deg)
+\series default
+:
+ Specifies the additional rotation angle (in degrees) to apply to the vector field that rotates it out of the plane that is perpendicular to the normal vector.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+In-plane rotation (deg)
+\series default
+:
+ Specifies an additional rotation angle (in degrees) to apply to the vector field that rotates the vector in the plane that is perpendicular to the normal vector.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Generate map
+\series default
+:
+ Generate a map and define the map's name.
+ (If not checked,
+ the vectors are assigned to the element's fiber property,
+ but this will be deprecated in the future.) 
+\end_layout
+
+\begin_layout Standard
+Note that unlike the scalar field tool,
+ the values assigned to mesh selections don't matter that much,
+ but are simply chosen to guide the generation of the vector field.
+ 
+\end_layout
+
+\begin_layout Section
+Visualizing Mesh Data
+\end_layout
+
+\begin_layout Standard
+Mesh data maps can be visualized in FEBio Studio
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+The data maps generated by FEBio mesh data generators can currently not be visualized in FEBio Studio since this data is not generated until FEBio runs.
+\end_layout
+
+\end_inset
+
+ using the Mesh Inspector.
+ This tool can be accessed from the menu 
+\series bold
+Tools
+\series default
+ → 
+\series bold
+Mesh Inspector 
+\series default
+or from the corresponding icon on the main toolbar.
+ The 
+\emph on
+variable 
+\emph default
+option will list all the datafields that can be visualized and includes,
+ near the bottom,
+ the scalar mesh data maps.
+ Simply select the name of the mesh data map to visualize the data in the Graphics View.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/mesh_data_visual.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Mesh data can be visualized using the Mesh Inspector.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter
 Materials
 \begin_inset CommandInset label
 LatexCommand label
@@ -10868,9 +12193,13 @@ Material Browser
 \emph default
 .
  The Material Browser is accessed from the 
-\emph on
-Physics/Add Material 
-\emph default
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Add Material 
+\series default
 menu,
  using the 
 \emph on
@@ -11016,10 +12345,14 @@ Solutes may be included in several types of materials in FEBio,
  triphasic,
  and multiphasic materials.
  A global table of solutes is created by accessing the 
-\emph on
-Physics/Solute Table
-\emph default
- menu.
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Solute Table 
+\series default
+menu.
  When adding materials that include solutes (Section 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -11046,10 +12379,14 @@ name "subsec:mylabel24"
 \begin_layout Standard
 Solid-bound molecules (SBM) may be included in multiphasic analysis.
  A global table of SBMs is created by accessing the 
-\emph on
-Physics/Solid-Bound Molecule Table
-\emph default
- menu.
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Solid-Bound Molecule Table 
+\series default
+menu.
  When adding materials that include SBMs,
  these may be selected from the SBM table.
 \end_layout
@@ -11100,10 +12437,14 @@ nolink "false"
 \begin_layout Standard
 To create a chemical reaction,
  select the 
-\emph on
-Physics/Chemical Reaction Table
-\emph default
- menu.
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Chemical Reaction Table 
+\series default
+menu.
  The Chemical Reaction Editor will appear (Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -11247,13 +12588,21 @@ Boundary conditions are used to constrain the solution on parts of the boundary.
 \begin_layout Standard
 To apply a boundary condition,
  select the 
-\emph on
-Physics/Add Nodal BC 
-\emph default
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Add Nodal BC 
+\series default
 menu or the 
-\emph on
-Physics/Add Surface BC
-\emph default
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Add Surface BC
+\series default
 .
  Most of the boundary conditions will be under the Nodal BC option.
  Nodal boundary conditions can be applied to nodes,
@@ -11400,9 +12749,13 @@ Surface loads are applied in a similar way as boundary conditions.
  First select the items to which you wish to apply the load.
  Then,
  select the 
-\emph on
-Physics/Add Surface Load 
-\emph default
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Add Surface Load 
+\series default
 from the menu bar.
  This opens up a dialog box from which you can select the available loads (Figure 
 \begin_inset CommandInset ref
@@ -11673,9 +13026,13 @@ sliding A sliding interface allows two opposing surfaces to come into contact,
 \begin_layout Standard
 To add a contact definition,
  select the 
-\emph on
-Physics/Add Contact 
-\emph default
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Add Contact 
+\series default
 menu.
  A dialog box shows up that allows you to select the step for which the contact definition is to be active (or select 
 \emph on
@@ -11877,8 +13234,15 @@ surface constraint
  displacement for a structural mechanics problem) at a surface.
  To add a surface constraint,
  go to the menu 
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Add Surface Constraint
+\series default
 \emph on
-Physics/Add Surface Constraint,
+,
  
 \emph default
 or right-click on the 
@@ -11962,8 +13326,15 @@ body constraint
  displacement for a structural mechanics problem) on all the nodes of a volumetric body part.
  To add a body constraint,
  go to the menu 
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Add Body Constraint
+\series default
 \emph on
-Physics/Add Body Constraint,
+,
  
 \emph default
 or right-click on the 
@@ -12001,8 +13372,15 @@ general constraint
  constrains the solution of the finite element problem in some special way.
  To add a general constraint,
  go to the menu 
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Add Body Constraint
+\series default
 \emph on
-Physics/Add Body Constraint,
+,
  
 \emph default
 or right-click on the 
@@ -12079,9 +13457,13 @@ The degrees of freedom of rigid bodies can be constrained in the same way as any
  In FEBioStudio,
  rigid bodies are implicitly defined when you create a rigid body material.
  A rigid body constraint can now be applied using the 
-\emph on
-Physics/Add Rigid Constraint 
-\emph default
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Add Rigid Constraint 
+\series default
 menu.
  It is important to note that when a rigid body is created none of its degrees of freedom are initially constrained.
 \end_layout
@@ -12175,9 +13557,13 @@ Rigid bodies can also be used in dynamic simulations.
 
 \begin_layout Standard
 A rigid body initial condition can be added using the 
-\emph on
-Physics/Add Rigid Initial Condition 
-\emph default
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Add Rigid Initial Condition 
+\series default
 menu.
  
 \end_layout
@@ -12260,9 +13646,13 @@ name "subsec:rigid-3"
 
 \begin_layout Standard
 A rigid body load can be added using the 
-\emph on
-Physics/Add Rigid Load 
-\emph default
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Add Rigid Load 
+\series default
 menu.
  
 \end_layout
@@ -12358,10 +13748,14 @@ rigid connectors
 
 \begin_layout Standard
 Rigid connectors can be added to the model using the 
-\emph on
-Physics/Add Rigid Connector
-\emph default
- menu.
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Add Rigid Connector 
+\series default
+menu.
  
 \end_layout
 
@@ -12446,7 +13840,15 @@ rigid
 boundary condition,
  is used.
  The rigid boundary condition is added as any other boundary condition (e.g.
- via the menu Physics/Add Nodal BC).
+ via the menu 
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Add Nodal BC
+\series default
+).
  Any selection of a deformable object (e.g.
  surface) that is assigned to this boundary condition will be tied to the rigid body.
  The rigid body that the selection ties to,
@@ -12501,9 +13903,13 @@ name "subsec:mylabel27"
 
 \begin_layout Standard
 When you start FEBioStudio or create a new model using the 
-\emph on
-File/New 
-\emph default
+\series bold
+File
+\series default
+ → 
+\series bold
+New 
+\series default
 menu,
  you'll notice that FEBioStudio by default creates one step,
  namely the 
@@ -12536,9 +13942,13 @@ name "subsec:mylabel28"
 
 \begin_layout Standard
 An analysis step is added using the 
-\emph on
-Physics/Add Step 
-\emph default
+\series bold
+Physics
+\series default
+ → 
+\series bold
+Add Step 
+\series default
 menu.
  Alternatively,
  you can also add a step by right-clicking on the 
@@ -13171,18 +14581,14 @@ Running FEBio
 
 \begin_layout Standard
 FEBio can be called from within FEBioStudio by selecting the 
-\emph on
-Tools
-\emph default
-
-\begin_inset Formula $\backslash$
-\end_inset
-
-
-\emph on
-Run FEBio
-\emph default
- menu,
+\series bold
+FEBio
+\series default
+ → 
+\series bold
+Run FEBio 
+\series default
+menu,
  or from the main toolbar by clicking the corresponding tool button 
 \begin_inset Graphics
 	filename Figures/febio.png
@@ -13275,18 +14681,14 @@ By pressing OK,
  The FEBio output will be shown in the log panel.
  If this panel is not visible,
  you can activate it from the 
-\emph on
+\series bold
 View
-\emph default
-
-\begin_inset Formula $\backslash$
-\end_inset
-
-
-\emph on
-Log
-\emph default
- menu.
+\series default
+ → 
+\series bold
+Log 
+\series default
+menu.
 \end_layout
 
 \begin_layout Standard
@@ -13909,42 +15311,45 @@ Output
 \end_layout
 
 \begin_layout Section
-Using FEBio Plugins
+The FEBio Monitor
 \end_layout
 
 \begin_layout Standard
-FEBio supports plugins that allow users to add new features to FEBio easily.
- As of FEBio Studio 2.0 plugins can be loaded into FEBio Studio and the model components defined in the plugin will be integrated in the UI.
- For example,
- if a plugin adds a new material,
- then the material will be available in the Material Browser.
- In addition,
- when using the 
-\emph on
-default 
-\emph default
-launch configuration,
- FEBio will automatically load all the plugins that were loaded in FEBio Studio so that special configuration file is needed.
- (For local and remote launch configuration you still need to prepare a special config file.) 
-\end_layout
-
-\begin_layout Standard
-To load an FEBio plugin into FEBio Studio's user interface,
- select the menu 
-\emph on
-FEBio
-\backslash
-Manage FEBio plugins
-\emph default
-.
- A dialog appears that will list all currently loaded plugins and offers options to load and unload FEBio plugins.
+The FEBio Monitor offers an alternative way to run FEBio models from FEBio Studio.
+ Using the FEBio Monitor,
+ users can have a live graphical view of the model's solution progress,
+ as well as monitor the convergence norms using graphs.
+ The solution progress can be paused at which point users can inspect the detailed model's state,
+ including the current stiffness matrix.
  
 \end_layout
 
 \begin_layout Standard
-\noindent
+The FEBio Monitor can be a helpful tool for debugging a model as it offers a direct visual way to inspect the solution progress,
+ something that is otherwise difficult to obtain.
+ Problems can be identified as soon as they occur,
+ without the need to take any further post-processing steps.
+ 
+\end_layout
+
+\begin_layout Standard
+The FEBio Monitor can be invoked from the menu 
+\series bold
+FEBio
+\series default
+ → 
+\series bold
+Run FEBio Monitor
+\series default
+.
+ A dialog box appears that is similar to the usual run dialog,
+ but offers additional controls.
+ 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
-placement h
+placement document
 alignment document
 wide false
 sideways false
@@ -13953,7 +15358,760 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename Figures/febio_plugins.png
+	filename Figures/febio_monitor_dialog.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The FEBio Monitor dialog allows users the configure the FEBio Monitor session and run the FEBio model.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+Job Settings 
+\emph default
+pane allows users to enter the job's name and its working directory,
+ similar to a standard FEBio job.
+ The working directory is the place where the output files will be stored.
+ It is important to note that the FEBio Monitor will run a standard FEBio job that will produce the usual output files.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+Monitor Settings 
+\emph default
+pane allows users to configure the control parameters of the session.
+ Most of these parameters can also be modified once the job is started,
+ as discussed below.
+ 
+\end_layout
+
+\begin_layout Description
+Pause
+\begin_inset space ~
+\end_inset
+
+event This is the event that will be used when a pause is requested.
+ After the job is started,
+ the user can pause the run.
+ The job will then be paused at the next occurrence of the selected event.
+ 
+\end_layout
+
+\begin_layout Description
+Start
+\begin_inset space ~
+\end_inset
+
+job
+\series bold
+
+\begin_inset space ~
+\end_inset
+
+in
+\series default
+
+\begin_inset space ~
+\end_inset
+
+paused
+\begin_inset space ~
+\end_inset
+
+state This option will pause the job at the first occurrence of the selected event.
+\end_layout
+
+\begin_layout Description
+Pause
+\begin_inset space ~
+\end_inset
+
+after
+\begin_inset space ~
+\end_inset
+
+time This will pause the job once it passes the entered time value.
+ Note that this time refers to the simulation time,
+ not the actual runtime of the job.
+ 
+\end_layout
+
+\begin_layout Description
+Debug
+\begin_inset space ~
+\end_inset
+
+level Run the job in debug mode or not.
+ 
+\end_layout
+
+\begin_layout Description
+Record
+\begin_inset space ~
+\end_inset
+
+states By default,
+ the FEBio Monitor will only display the current state of the model.
+ When this option is checked,
+ all the states will be recorded and can be inspected when the job is paused.
+\end_layout
+
+\begin_layout Description
+Collect
+\begin_inset space ~
+\end_inset
+
+variable
+\begin_inset space ~
+\end_inset
+
+norms Check this option if you want to display the norms of the model's individual solution variables.
+ (By default,
+ only the residual,
+ energy,
+ and total solution norms are shown.) 
+\end_layout
+
+\begin_layout Description
+Update
+\begin_inset space ~
+\end_inset
+
+events Select when the model's state will be updated in the monitor.
+ This only affects how often and when the monitor will query the solution's state.
+ 
+\end_layout
+
+\begin_layout Description
+Generate
+\begin_inset space ~
+\end_inset
+
+job
+\begin_inset space ~
+\end_inset
+
+report Collect additional data while running the FEBio job and create a report once the job is completed.
+ 
+\end_layout
+
+\begin_layout Standard
+Once the settings have been chosen,
+ click the OK button to start the monitor session.
+ The FEBio Monitor will load and start the FEBio job.
+ Note that the job is run using the default launch configuration.
+ The FEBio Monitor currently does not support any other launch configurations.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/febio_monitor.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The FEBio Monitor shows a graphical view of the current state of the FEBio model's solution.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:The-FEBio-Monitor"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In many ways,
+ an FEBio Monitor session resembles a post session and offers many of the same features.
+ However,
+ there are a few noteworthy differences (see 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:The-FEBio-Monitor"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+).
+ The FEBio Monitor panel on the left has a 
+\emph on
+Watch
+\emph default
+ tab that by default displays all the model parameters that are load-controlled and shows the current value.
+ (Note that this panel is only updated when the model is paused.) Users can also add additional entries in the table by double-clicking the empty slot below the last entry and entering the model parameter's name.
+ In addition,
+ on the bottom of the Watch panel,
+ the 
+\emph on
+Matrix Inspector
+\emph default
+ can be accessed.
+ The Matrix Inspector gives users a visualization of the current stiffness matrix as well as some tools to inspect and diagnose the matrix.
+ 
+\end_layout
+
+\begin_layout Standard
+As part of an FEBio Monitor session,
+ a new toolbar is visible in the toolbar area near the top of the window.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/febio_monitor_toolbar.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+From the left to right,
+ the buttons allow the user to take the following actions.
+\end_layout
+
+\begin_layout Itemize
+Open the FEBio Monitor Settings dialog.
+ This dialog is similar to the FEBio Monitor dialog mentioned above,
+ but only shows the parameters that can be edited in an active session.
+ 
+\end_layout
+
+\begin_layout Itemize
+The 'play' button will continue a paused model.
+ The model will not be automatically paused on the next pause event.
+ 
+\end_layout
+
+\begin_layout Itemize
+The 'pause' button will pause the model.
+ Note that FEBio will only pause on the pause event selected in the FEBio Monitor dialog.
+ 
+\end_layout
+
+\begin_layout Itemize
+The 'next' button will continue a paused model.
+ The model will be paused automatically on the next pause event.
+ 
+\end_layout
+
+\begin_layout Itemize
+The 'stop' button will stop a running model and terminate the monitor session.
+\end_layout
+
+\begin_layout Standard
+In addition to the Watch panel,
+ additional graphs are shown below the Graphics View that show various metrics of the active model.
+ The graphs display the convergence norms of the model,
+ typically the residual (R),
+ energy (E),
+ and overall solution norm (D),
+ as well as additionally selected norms.
+ The 
+\emph on
+memory monitor 
+\emph default
+shows the current and maximum allocated memory.
+ (Note that this is the memory consumption of FEBio Studio,
+ not of FEBio.) 
+\end_layout
+
+\begin_layout Section
+Running Batch Jobs
+\end_layout
+
+\begin_layout Standard
+FEBio Studio has the option to manage and run several FEBio jobs at the same time.
+ These are referred to as batch jobs.
+ In addition to running multiple jobs simultaneously,
+ the batch feature also offers the ability to compare the results between different batch runs.
+ 
+\end_layout
+
+\begin_layout Subsection
+Create a new batch job
+\end_layout
+
+\begin_layout Standard
+To create a new batch job,
+ use the menu 
+\series bold
+File 
+\series default
+→
+\series bold
+ Batch Run 
+\series default
+→
+\series bold
+ New Batch ...
+\series default
+.
+ A dialog box appears where users can add files from different sources.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Add files from the current project
+\emph default
+:
+ this will add all the feb files from the current project file.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Add files from folder
+\emph default
+:
+ this will prompt the user to select a folder on their system.
+ All feb files from the folder will be added.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Add files
+\emph default
+:
+ this will give users the option to select individual files from the file system.
+\end_layout
+
+\begin_layout Standard
+After adding files,
+ the files are displayed in the dialog box.
+ Additional files can be added or files can be selected and removed using the corresponding buttons at the top of the dialog box.
+ Finally,
+ click OK to create the batch job.
+ The batch job will be displayed in the batch job view,
+ as described below.
+\end_layout
+
+\begin_layout Subsection
+Open or Save a batch file
+\end_layout
+
+\begin_layout Standard
+An existing batch file can be loaded directly from the file system using the menu 
+\series bold
+File 
+\series default
+→
+\series bold
+ Batch Run 
+\series default
+→
+\series bold
+ Open Batch File
+\series default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+A standard file open dialog will be presented where the user can select a batch job file (extension 
+\series bold
+.fsbatch
+\series default
+).
+ Click OK to load the batch file.
+ The batch job will be displayed in the batch job view,
+ as described below.
+\end_layout
+
+\begin_layout Standard
+To save a batch job,
+ simply use the menu 
+\series bold
+File 
+\series default
+→
+\series bold
+ Save
+\series default
+ or 
+\series bold
+File 
+\series default
+→
+\series bold
+ Save as
+\series default
+.
+ 
+\end_layout
+
+\begin_layout Subsection
+The Batch Job View
+\end_layout
+
+\begin_layout Standard
+After a new batch job is created or a batch file was loaded,
+ the contents of the batch job is displayed in a special window called the 
+\series bold
+batch job view
+\series default
+.
+\end_layout
+
+\begin_layout Standard
+The view shows a table that lists all the FEBio files in the batch job,
+ as well as several columns with metrics that were collected the last time the batch job was run.
+ (For a new batch job,
+ the columns will be empty.) 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/batch_view.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Batch Job View shows the list of files that are part of the batch,
+ as well various metrics that can be used to compare runs.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+At the top of the view,
+ a toolbar shows several buttons that allow you to manage various aspects of the batch job.
+ From left to right:
+\end_layout
+
+\begin_layout Description
+Options The options button opens a dialog box where you can set several settings for running the batch job,
+ such as the number of concurrent processes,
+ the number of threads per process,
+ and the path to the FEBio executable.
+ 
+\end_layout
+
+\begin_layout Description
+Start The start button is used to start the batch job.
+ You can either choose to run all the files or just the selected ones.
+ 
+\end_layout
+
+\begin_layout Description
+Cancel Once the batch runs,
+ this button can be used to cancel either all pending jobs or all running and pending jobs.
+ 
+\end_layout
+
+\begin_layout Description
+filter The filter option allows users to limit the files that are shown based on certain criteria.
+ The criteria can be either a string or regex expression to filter the file list,
+ or a condition to filter based on the metrics.
+ To enter a regex start the filter text with a slash ('/').
+ To define a condition,
+ start with an equal sign ('=').
+ The condition is formed as follows:
+ 
+\emph on
+metric operator value
+\emph default
+.
+ The 
+\emph on
+metric 
+\emph default
+can be any of the names listed on the column headers.
+ The operator is any of <,
+ <=,
+ >,
+ >=,
+ =,
+ ==,
+ != ('=' and '==' are both for 
+\emph on
+equal than
+\emph default
+ and '!=' means 
+\emph on
+not equal
+\emph default
+).
+ The 
+\emph on
+value
+\emph default
+ is any valid numeric value for the corresponding metric.
+ For example,
+ to list only jobs that ran for more than a minute,
+ set the filter to '=runtime>60' (don't include quote symbols).
+ 
+\end_layout
+
+\begin_layout Description
+add This button can be used to add additional files to the batch job.
+\end_layout
+
+\begin_layout Description
+remove This button can be used to remove the currently selected files.
+ 
+\end_layout
+
+\begin_layout Description
+copy This button can be used to copy the batch jobs and metric to the clipboard as a tab-separated list.
+ 
+\end_layout
+
+\begin_layout Standard
+Right-clicking on any batch file prompts a popup menu from which additional actions can be selected.
+ These actions allow you to open the feb file or the corresponding log or plot file in FEBio Studio.
+ 
+\end_layout
+
+\begin_layout Subsection
+Running the batch job
+\end_layout
+
+\begin_layout Standard
+To run the batch job,
+ click the Start button in the toolbar at the top of the batch view window.
+ Two options are listed:
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Run all
+\series default
+:
+ select this option to run all the currently visible files in the batch view.
+ If no filter criteria are active,
+ this will run all the files in the batch.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Run selected
+\series default
+:
+ only run the files that are currently selected
+\end_layout
+
+\begin_layout Standard
+Before a batch job is run,
+ several options can be set that will affect the batch job.
+ To change these settings,
+ click the 
+\series bold
+Options
+\series default
+ button on the batch view's toolbar.
+ A dialog opens where you can edit the following settings:
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Nr.
+ of processes
+\series default
+:
+ This is the max number of concurrent processes that will be started when you run the batch job.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Nr.
+ threads/process
+\series default
+:
+ This is the number of threads that will be used for each process.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+FEBio executable
+\series default
+:
+ sets the path of the FEBio executable that you want to use.
+ 
+\end_layout
+
+\begin_layout Standard
+Before starting a batch job,
+ it's important to choose these settings wisely.
+ This means that you must know the system resources that you have available.
+ There is often nothing to gain by starting up more processes or choosing more threads than you have processors on your computer.
+ For instance,
+ if you only have 4 cpus,
+ then the product of the number of processes and threads per process should not exceed 4.
+ The default value is 1 for the number of processes,
+ and (default) for the number of threads per process.
+ This usually means that the number of threads is determined by the OS and the applicable environment variables (e.g.
+ OMP_NUM_THREADS).
+ 
+\end_layout
+
+\begin_layout Standard
+When the batch job is started,
+ all files that will be run change their status to PENDING (shown in the first column next to the file name).
+ When a job is picked up by a process,
+ it changes its status to RUNNING.
+ Files that complete normally will have their status changed to FINISHED.
+ If the file failed to start or error terminated,
+ the status is set to FAILED.
+ Running and pending jobs can be canceled from the toolbar.
+ Pending jobs that were canceled will set their status to CANCELED.
+ Jobs that were already running when canceled will be set to FAILED.
+ 
+\end_layout
+
+\begin_layout Standard
+As the individual jobs are run,
+ the columns containing various metrics will be populated.
+ If the batch job was loaded from an existing file,
+ and if the new metrics are different,
+ both the new and the old values are shown,
+ using the format 
+\begin_inset Quotes eld
+\end_inset
+
+new value (old value)
+\begin_inset Quotes erd
+\end_inset
+
+.
+ The background color will also change.
+ It will be red if the new value is higher than the old value,
+ and it will be yellow if the new value is less than the old value.
+ This makes it easy to compare different runs.
+ Keep in mind that the runtimes will often be different,
+ and some metrics may also show small differences when the jobs were run with multiple threads per process.
+ These are often expected changes and not an indication of a problem.
+ However,
+ if there are more significant changes or the changes occurred when running on a single thread,
+ then that could be a sign of a deeper problem.
+\end_layout
+
+\begin_layout Section
+FEBio Job Reports
+\end_layout
+
+\begin_layout Standard
+FEBio Job Reports provide additional details about an FEBio job that was completed.
+ This report can provide insights into how well (or how poorly as the case may be) FEBio ran and help with tracking down possible problems.
+ 
+\end_layout
+
+\begin_layout Standard
+By default,
+ FEBio Studio does not generate job reports.
+ To generate a job report after FEBio finishes,
+ make sure to check the corresponding option in the Run FEBio dialog box before running the job (under the Advanced settings).
+ Job reports can also be generated from FEBio log files.
+ Simply drag-and-drop the log file onto the FEBio Studio window and a job report will be created.
+ Job reports generated from log files may not be as detailed as the ones generated directly from an FEBio job.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/febio_job_report.png
+	lyxscale 50
 	scale 50
 
 \end_inset
@@ -13965,77 +16123,57 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-The FEBio Plugins dialog box offers a way to load FEBio plugins into FEBio Studio.
-\begin_inset CommandInset label
-LatexCommand label
-name "fig12_3"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-A plugin can be loaded by clicking the 
-\series bold
-Load 
-\series default
-button.
- Previously loaded plugins can be selected from a dropdown,
- or select <other...> to load a plugin from the file system.
- After the plugin is loaded,
- the lower panel will show all the model components that were added to FEBio Studio.
+The FEBio Job Report provides additional information on a completed FEBio job.
  
 \end_layout
 
-\begin_layout Standard
-\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
 \end_inset
 
 
 \end_layout
 
 \begin_layout Standard
-
-\series bold
-Important!
- 
-\series default
-It is important to note that only plugins can be loaded that were build for the specific version that FEBio Studio uses.
- Trying to load plugins that are not compatible may cause instability or a crash.
+The job report shows the following information:
  
 \end_layout
 
-\begin_layout Standard
-\begin_inset VSpace defskip
-\end_inset
-
-
+\begin_layout Itemize
+The files that were used and created during the job.
+ 
 \end_layout
 
-\begin_layout Standard
-
-\series bold
-Important!
+\begin_layout Itemize
+Some stats about the job as well as a breakdown of the stats per analysis step.
  
-\series default
-When loading a model file (either fs2 or feb) that needs a plugin,
- it is important to 
-\emph on
-first 
-\emph default
-load the plugin into FEBio Studio.
- Otherwise FEBio Studio will not be able to load the file.
+\end_layout
+
+\begin_layout Itemize
+A color-coded bar chart showing the number of iterations/rhs/refs per time step.
+ (red means the time step failed,
+ green means the time step completed.)
+\end_layout
+
+\begin_layout Itemize
+Detailed timings of specific FEBio operations.
+ 
+\end_layout
+
+\begin_layout Itemize
+A pie chart of these timings.
+ 
+\end_layout
+
+\begin_layout Itemize
+A list of all the warnings and errors that were generated during the FEBio job.
  
 \end_layout
 
@@ -14222,6 +16360,14 @@ adds a vector plot object to the model.
 \begin_layout Itemize
 
 \emph on
+Tensor plot
+\emph default
+ - adds a tensor plot object to the model.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
 Isosurface plot - 
 \emph default
 adds an isosurface plot object to the model.
@@ -14243,7 +16389,8 @@ adds a slice plot object to the model.
 Displacement map -
 \emph default
  add a displacement map to the model.
- 
+ (Note that for standard FEBio plotfiles,
+ a displacement map is automatically added to the model when loading the file.)
 \end_layout
 
 \begin_layout Itemize
@@ -14263,6 +16410,104 @@ Particle flow plot
 \emph default
  - adds a particle flow plot,
  which shows particles flowing in a vector field.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Volume flow plot
+\emph default
+ - adds a volume flow plot,
+ which renders a volumetric 
+\begin_inset Quotes eld
+\end_inset
+
+fog
+\begin_inset Quotes erd
+\end_inset
+
+ whose density is proportional to the selected field value.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Point probe
+\emph default
+ - adds a point probe,
+ which allows users to track a location on a model and sample the current value.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Curve probe 
+\emph default
+- adds a curve probe,
+ which tracks and samples the value along a user-defined curve.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Ruler 
+\emph default
+- can be used to track relative position and distance between two nodes of the mesh.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Muscle Path 
+\emph default
+- Defines a geodesic curve between two points,
+ i.e.
+ a shortest-path that wraps around geometry.
+ Can be used as a simple representation of a muscle and allows calculation of departure points and moment arms.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Vector glyph
+\emph default
+ - Can be used to show vector data at particular points in the model.
+ (E.g.
+ to show velocity,
+ acceleration,
+ or force on a rigid body.)
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Helical axis
+\emph default
+ - Calculates the location and orientation of the helical axis of a rigid body and displays it in the Graphics View.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Plot group
+\emph default
+ - Create a new plot group in the model tree.
+ If a plot group is selected in the model tree when adding a new plot object,
+ the plot object will be added to the plot group.
+ Post model items can also be moved between groups by right-clicking on the item and select 
+\begin_inset Quotes eld
+\end_inset
+
+Move to group
+\begin_inset Quotes erd
+\end_inset
+
+ from the popup menu.
  
 \end_layout
 
@@ -14304,6 +16549,15 @@ New Graph -
 \begin_layout Itemize
 
 \emph on
+Scatter plot
+\emph default
+ - Opens a new Graph window that shows a scatter plot of the selected data.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
 Summary - 
 \emph default
 provides 2D plots of minimum,
@@ -14325,12 +16579,34 @@ Statistics -
 \emph on
 Integrate - 
 \emph default
-shows 
-\begin_inset space \quad{}
-\end_inset
-
-the integration tool.
+shows the integration tool.
  
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Integrate surface
+\emph default
+ - Shows the 
+\emph on
+Integrate Surface 
+\emph default
+tool,
+ which performs an integration of the currently selected datafield multiplied by the local normal.
+ The components of the resulting vector field are shown as three individual line plots.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Import points - 
+\emph default
+This tool imports point data that can be superimposed on the model.
+ Enter a name for the point data,
+ select the source file,
+ and click Apply.
 \end_layout
 
 \begin_layout Itemize
@@ -14754,7 +17030,7 @@ Setting the GV widget's properties
 
 \begin_layout Standard
 After selecting a widget,
- you can alter its properties by selecting Edit/Properties from the menu.
+ you can alter its properties by clicking the Properties button from the Widget toolbar.
  A dialog box appears.
  You can also bring up this dialog box by double-clicking the widget.
  Below is an example of the properties dialog box for a text widget.
@@ -14911,7 +17187,15 @@ title
 
 \begin_layout Plain Layout
 Title of the problem.
- The title is set in the File/Model Info dialog box.
+ The title is set in the 
+\series bold
+File
+\series default
+ → 
+\series bold
+Model Info 
+\series default
+dialog box.
 \end_layout
 
 \end_inset
@@ -15255,7 +17539,15 @@ Deleting GV Widgets
 \end_layout
 
 \begin_layout Standard
-GV widgets can be removed by first selecting them and then selecting Edit/Delete from the menu bar.
+GV widgets can be removed by first selecting them and then selecting 
+\series bold
+Edit
+\series default
+ → 
+\series bold
+Delete 
+\series default
+from the menu bar.
  Note that you cannot delete the predefined widgets,
  namely the title,
  subtitle,
@@ -15280,15 +17572,19 @@ The Capture Frame
 \end_layout
 
 \begin_layout Standard
-The capture frame is the area of the screen that will be captured when taking a screen shot or recording an animation.
+The capture frame is the area of the screen that will be captured when taking a screenshot or recording an animation.
  The capture frame is not always visible,
  but can be displayed by selecting the 
-\emph on
-View/Toggle Capture Frame
-\emph default
- from the menu.
+\series bold
+View
+\series default
+ → 
+\series bold
+Toggle Capture Frame 
+\series default
+from the menu.
  The same menu will hide it again.
- The capture frame can be shown by selecting the keypad-`0' shortcut.
+ The capture frame can be shown by selecting the keypad-'0' shortcut.
  When visible,
  the capture frame can be moved and resized by selecting one of the borders and dragging the mouse button.
  To resize it,
@@ -15297,9 +17593,9 @@ View/Toggle Capture Frame
  you can open the properties dialog box,
  by selecting the 
 \emph on
-Edit/Properties 
+Properties 
 \emph default
-menu or by double-clicking on one of its borders.
+button on the widget options toolbar or by double-clicking on one of its borders.
 \end_layout
 
 \begin_layout Section
@@ -15307,26 +17603,7 @@ Taking a snapshot
 \end_layout
 
 \begin_layout Standard
-To take a snapshot of the current Graphics View,
- select the 
-\emph on
-File
-\emph default
-/
-\emph on
-Snapshot 
-\emph default
-menu.
- Alternatively,
- you can press the 
-\emph on
-ctrl
-\emph default
-
-\begin_inset Formula $+p$
-\end_inset
-
-shortcut or push the 
+To take a snapshot of the current Graphics View push the 
 \emph on
 snapshot 
 \emph default
@@ -15338,6 +17615,177 @@ Save
  dialog box appears and the desired filename can be entered or selected.
  Images can be saved as BMP,
  TIFF or JPEG images.
+ To only capture a part of the Graphics View,
+ make sure the capture frame is active.
+ To activate the capture frame,
+ use the menu 
+\series bold
+View
+\series default
+ →
+\series bold
+ Show Capture Frame
+\series default
+,
+ or use the corresponding '0' (number zero) shortcut.
+ The capture frame can be moved by dragging its border or resized by dragging the lower-right corner.
+ 
+\end_layout
+
+\begin_layout Section
+Using the Ray Tracer
+\end_layout
+
+\begin_layout Standard
+Instead of taking a screenshot,
+ you can also create a ray-traced rendering of the current scene.
+ A ray-traced rendering can create higher quality,
+ arbitrary resolution images,
+ which may be more suited for journal articles or other high quality publications.
+ Ray-tracing is often more suitable for rendering shadows and transparent materials.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/ray-trace.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+A collection of ray-traced images,
+ generated by FEBio Studio.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To create a ray-traced rendering,
+ click the ray-trace button on the main toolbar.
+ A dialog will appear where several settings can be chosen that will affect the final resolution and image quality of the rendering.
+ 
+\end_layout
+
+\begin_layout Description
+Width,
+\begin_inset space ~
+\end_inset
+
+Height set the resolution of the final image.
+ By default,
+ the dimensions of the active Graphics View are entered,
+ however users can enter any dimensions here.
+ Note that higher resolutions will take longer to render.
+ 
+\end_layout
+
+\begin_layout Description
+Shadows Check this option if you want shadows to be rendered.
+ 
+\end_layout
+
+\begin_layout Description
+Shadow
+\begin_inset space ~
+\end_inset
+
+Strength Set the strength of the shadows (range 0...1 from very light to very dark)
+\end_layout
+
+\begin_layout Description
+
+\series bold
+Multisample 
+\series default
+Select the multi-sample level.
+ Higher levels of multi-sampling will create better quality images but will take longer to render.
+ 
+\end_layout
+
+\begin_layout Description
+Background Select the background option:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+
+\series bold
+Default
+\series default
+,
+ same as Graphics View
+\end_layout
+
+\begin_layout Description
+
+\series bold
+transparent
+\series default
+ make the background transparent
+\end_layout
+
+\begin_layout Description
+
+\series bold
+background
+\begin_inset space ~
+\end_inset
+
+color
+\series default
+ use the 
+\emph on
+background color
+\emph default
+ setting.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+Background
+\begin_inset space ~
+\end_inset
+
+Color Sets the background color.
+ Only used when the 
+\series bold
+Background 
+\series default
+setting is set to 
+\emph on
+background color
+\emph default
+.
+ 
 \end_layout
 
 \begin_layout Section
@@ -15350,9 +17798,13 @@ FEBio Studio has the capability to record an animation of the current GV.
  first position and resize the capture frame so that it covers the desired area of the GV that will be captured.
  Next,
  select the 
-\emph on
-Record/New 
-\emph default
+\series bold
+Record
+\series default
+ → 
+\series bold
+New 
+\series default
 menu.
  This opens a standard file dialog box where you can select a file format and enter the target filename.
  If the selected file format is an image format (.bmp,
@@ -15377,9 +17829,13 @@ After you have selected a target file,
 \begin_layout Standard
 To start recording,
  select 
-\emph on
-Record/Start 
-\emph default
+\series bold
+Record
+\series default
+ → 
+\series bold
+Start 
+\series default
 from the menu or press the corresponding shortcut.
  Now,
  all the action in the GV will be recorded to the target file.
@@ -15392,15 +17848,23 @@ from the menu or press the corresponding shortcut.
 \begin_layout Standard
 To pause the recording,
  select 
-\emph on
-Record/Pause 
-\emph default
+\series bold
+Record
+\series default
+ → 
+\series bold
+Pause 
+\series default
 from the menu.
  To finally stop the recording,
  select 
-\emph on
-Record/Stop 
-\emph default
+\series bold
+Record
+\series default
+ → 
+\series bold
+Stop 
+\series default
 from the menu.
  This will close the target file and unlock the capture frame.
 \end_layout
@@ -15651,18 +18115,14 @@ In order to use element tracking,
  first select the element that you wish to track.
  Then,
  select the 
-\emph on
+\series bold
 View
-\emph default
-
-\begin_inset Formula $\to$
-\end_inset
-
-
-\emph on
-Track Selection
-\emph default
- menu item.
+\series default
+ → 
+\series bold
+Track Selection 
+\series default
+menu item.
  To stop element tracking,
  clear the selection and then select the same menu item (or use the Ctrl
 \begin_inset Formula $+$
@@ -15682,32 +18142,27 @@ viewpoint
 \emph default
 .
  Simply select the 
-\emph on
+\series bold
 View
-\emph default
-
-\begin_inset Formula $\to$
-\end_inset
-
-
-\emph on
+\series default
+ → 
+\series bold
 Save viewpoint 
-\emph default
+\series default
 menu item and a new key item will be created in the Model Viewer.
  As with the View item,
  selecting a Key item allows you to edit the position and orientation of that stored camera position.
  In addition,
  by selecting the 
-\emph on
+\series bold
 View
-\emph default
-
-\begin_inset Formula $\to$
-\end_inset
-
-
+\series default
+ → 
+\series bold
+Prev/Next viewpoint
+\series default
 \emph on
-Prev/Next viewpoint,
+,
  
 \emph default
 you can smoothly interpolate between camera key positions.
@@ -15931,100 +18386,104 @@ status collapsed
 \end_inset
 
 When a material is selected,
- the property window on the bottom of the material viewer,
- lists the available properties that the user can change.
- The options are:
+ the property window on the bottom of the material viewer lists the available properties that the user can change.
+ 
+\end_layout
+
+\begin_layout Standard
+To edit the appearance of the material,
+ click the colored sphere to open the Appearance Editor.
+ This allows users to set various settings that affect the visual appearance of the material.
+\end_layout
+
+\begin_layout Standard
+Additionally,
+ users can set the following properties:
 \end_layout
 
 \begin_layout Itemize
 
 \emph on
-Color
+Render Mode
 \emph default
- - sets the color of the material.
- By clicking on the colored button,
- the Color Selector dialog is opened and the color can be changed.
- Closing the Color Selector will automatically update the color in the Graphics view.
+:
+
+\emph on
+ 
+\emph default
+Allows users to override the default render mode and choose between 
+\emph on
+solid 
+\emph default
+and 
+\emph on
+wireframe
+\emph default
+.
  
 \end_layout
 
 \begin_layout Itemize
 
 \emph on
-Specular
+Opacity
 \emph default
- - sets the specular color for the material.
- Click the colored button next to it to change the specular color.
+:
+
+\emph on
+ 
+\emph default
+sets the opaqueness value for the material.
+ Slide the bar to change the value.
  
 \end_layout
 
 \begin_layout Itemize
 
 \emph on
-Emission -
+Opacity Mode
 \emph default
- sets the emission color for the material.
- Click the colored button next to it to change the emission color.
+:
+
+\emph on
  
+\emph default
+Chooses between different transparency options
 \end_layout
 
 \begin_layout Itemize
 
 \emph on
-Mesh Color -
+Show Mesh
 \emph default
- sets the mesh color for the material.
- Click the colored button next to it to change the mesh color.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Shininess -
-\emph default
- sets the shininess value for the material.
- Slide the slide bar to change the shininess value.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Transparency -
-\emph default
- sets the transparency value for the material.
- Slide the bar to change the transparency value.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Show Mesh -
-\emph default
+:
  if checked,
- the mesh lines will be drawn on top of the model.
+ the mesh lines will be drawn on top of the model (when mesh lines are visible).
  
 \end_layout
 
 \begin_layout Itemize
 
 \emph on
-Cast Shadows -
+Mesh color
 \emph default
- allows the material to cast shadows on other materials.
- This has only an effect when shadows are enabled.
- Shadows can be enabled by selecting the corresponding button on the toolbar.
+:
+ sets the color of the mesh lines
+\emph on
  
 \end_layout
 
 \begin_layout Itemize
 
 \emph on
-Clip -
+Clip
 \emph default
- allows the material to be clipped when a clip plane is defined for the model.
+:
+
+\emph on
+ 
+\emph default
+allows the material to be clipped when a clip plane is defined for the model.
  
 \end_layout
 
@@ -16081,11 +18540,7 @@ float
 vec3f
 \emph default
 :
- a 3D vector with three float 
-\begin_inset space \quad{}
-\end_inset
-
-components 
+ a 3D vector with three float components 
 \end_layout
 
 \begin_layout Itemize
@@ -16236,17 +18691,13 @@ Adding data from a text file
 
 \begin_layout Standard
 When selecting the 
-\begin_inset Quotes eld
-\end_inset
-
+\series bold
 Add
-\begin_inset Formula $\backslash$
-\end_inset
-
+\series default
+ → 
+\series bold
 From file
-\begin_inset Quotes erd
-\end_inset
-
+\series default
  menu,
  a dialog box will be shown where you can enter the file name and additional information for parsing the file.
  The text file containing the data can be selected using the Browse button.
@@ -16370,17 +18821,13 @@ Adding data via an equation
 
 \begin_layout Standard
 When selecting the 
-\begin_inset Quotes eld
-\end_inset
-
+\series bold
 Add
-\begin_inset Formula $\backslash$
-\end_inset
-
+\series default
+ → 
+\series bold
 Equation
-\begin_inset Quotes erd
-\end_inset
-
+\series default
  menu from the data panel,
  a dialog box appears where the user can enter the name of the new data field and a mathematical expression that will be evaluated over the entire mesh.
 \end_layout
@@ -16424,7 +18871,7 @@ You can use the symbols
 \begin_inset Formula $t$
 \end_inset
 
-to reference time.
+ to reference time.
 \end_layout
 
 \begin_layout Subsection
@@ -16439,26 +18886,10 @@ New data fields can be defined by filtering existing data fields.
 \begin_layout Standard
 To create a filtered data field,
  select a data field in the Data panel and then click the 
-\begin_inset Quotes eld
-\end_inset
+\series bold
+Filter...
 
-Filter
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-textellipsis
-\end_layout
-
-\end_inset
-
- 
-\begin_inset Quotes erd
-\end_inset
-
+\series default
  button.
  A dialog box appears where the following information has to be entered.
 \end_layout
@@ -16788,26 +19219,6 @@ Add
 button.
  A dialog box appears where a time value can be entered for the new state.
  The new state will be inserted on the defined time point.
-\end_layout
-
-\begin_layout Section
-The Tools Tab
-\begin_inset CommandInset label
-LatexCommand label
-name "subsec:mylabel15-1"
-
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Standard
-The 
-\emph on
-Tools 
-\emph default
-panel shows a list of additional tools that can be used to calculate certain metrics or edit the model content.
- See Appendix B for an overview of the currently supported tools.
 \end_layout
 
 \begin_layout Standard
@@ -17810,9 +20221,13 @@ FEBio Studio allows the user to add a plane cut to the model.
  The plane cut defines a clipping plane which will hide all geometry on the positive side of the plane.
  To add a plane cut to the model,
  select the 
-\emph on
-Post/Plane cut 
-\emph default
+\series bold
+Post
+\series default
+ → 
+\series bold
+Plane cut 
+\series default
 from the menu.
  A new item will show up the Model Viewer that the user can select and edit the properties off.
  The following properties are defined for the plane cut.
@@ -17987,9 +20402,15 @@ The mirror plane allows users to mirror the geometry along one of the principal 
  Y,
  Z).
  To add a mirror plane,
- select the menu Post
-\backslash
-Mirror Plane,
+ select the menu 
+\series bold
+Post
+\series default
+ → 
+\series bold
+Mirror Plane
+\series default
+,
  or select the corresponding button on the post toolbar.
  The mirror plane defines the following options.
 \end_layout
@@ -18049,8 +20470,15 @@ A
 vector plot 
 \emph default
 of the model can be added by selecting the 
+\series bold
+Post
+\series default
+ → 
+\series bold
+Vector plot
+\series default
 \emph on
-Post/Vector plot 
+ 
 \emph default
 menu.
  This will add a vector plot item to the Model Viewer.
@@ -18225,8 +20653,15 @@ name "subsec:isosurface"
 \begin_layout Standard
 An isosurface plot draws a surface through all the points of the model that have the same value.
  An isosurface plot can be added by selecting the 
+\series bold
+Post
+\series default
+ → 
+\series bold
+Isosurface plot
+\series default
 \emph on
-Post/Isosurface plot 
+ 
 \emph default
 from the menu.
  A new item will appear in the Model Viewer that the user can select to edit the surface plot's properties.
@@ -18348,8 +20783,15 @@ A slice plot draws the intersection of the model with a series of planes.
  The planes can be oriented by the user.
  To add a slice plot,
  select the 
+\series bold
+Post
+\series default
+ → 
+\series bold
+Slice plot
+\series default
 \emph on
-Post/Slice plot 
+ 
 \emph default
 from the menu.
  A new item will show up in the Model Viewer which the user can select to edit the slice plot's properties.
@@ -18379,10 +20821,10 @@ Gradient -
 X-normal -
 \emph default
  sets the 
-\begin_inset Formula $x$
-\end_inset
-
- component of the plane normal.
+\emph on
+x-
+\emph default
+component of the plane normal.
  
 \end_layout
 
@@ -18392,25 +20834,22 @@ X-normal -
 Y-normal
 \emph default
  - sets the 
-\begin_inset Formula $y$
-\end_inset
-
-component of the plane normal 
+\emph on
+y
+\emph default
+-component of the plane normal 
 \end_layout
 
 \begin_layout Itemize
-\begin_inset Formula $Z$
-\end_inset
-
--
+Z-
 \emph on
 normal
 \emph default
  - sets the 
-\begin_inset Formula $z$
-\end_inset
-
- component of the plane normal 
+\emph on
+z-
+\emph default
+component of the plane normal 
 \end_layout
 
 \begin_layout Itemize
@@ -18849,13 +21288,13 @@ The Summary Window displays a graph of the minimum,
  This summary of values can be calculated using only selected elements or nodes,
  or for the entire model when no elements or nodes are selected.
  It can be opened by selecting the 
-\emph on
+\series bold
 Post
-\emph default
-/
-\emph on
+\series default
+ → 
+\series bold
 Summary
-\emph default
+\series default
 .
  Figure 9 shows the 
 \emph on
@@ -18884,7 +21323,11 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-The Summary Window can be opened from the Post/Summary menu.
+The Summary Window can be opened from the 
+\series bold
+Post → Summary
+\series default
+ menu.
 \begin_inset CommandInset label
 LatexCommand label
 name "fig47"
@@ -18973,13 +21416,13 @@ Graph window
 \emph default
 ,
  select the 
-\emph on
+\series bold
 Post
-\emph default
-/
-\emph on
+\series default
+ → 
+\series bold
 new Graph 
-\emph default
+\series default
 menu.
  Multiple graph windows can be displayed simultaneously.
 \end_layout
@@ -19202,10 +21645,10 @@ Math plot
 :
  Enter a mathematical expression,
  using 
-\begin_inset Formula $x$
-\end_inset
-
-as the ordinate,
+\emph on
+x
+\emph default
+ as the ordinate,
  which will be displayed on the top of the graph.
  
 \end_layout
@@ -19309,14 +21752,14 @@ When no other windows are open (such as e.g.
  etc.),
  pressing the ESC-key will clear the selection.
  You can also select the 
-\emph on
+\series bold
 Edit
-\emph default
-/
-\emph on
-Clear Selection
-\emph default
- menu to clear the entire selection.
+\series default
+ → 
+\series bold
+Clear Selection 
+\series default
+menu to clear the entire selection.
 \end_layout
 
 \begin_layout Standard
@@ -19353,7 +21796,15 @@ allows you to calculate the integral over a selected region.
  faces,
  or elements.
  Then,
- activate the Integration tool from the Post/Integrate menu.
+ activate the Integration tool from the 
+\series bold
+Post
+\series default
+ → 
+\series bold
+Integrate
+\series default
+ menu.
  A window appears with a graph that represents the integral of the selected region as a function of time.
  Depending on the selection,
  the graph represents different things.
@@ -19433,7 +21884,7 @@ The post model,
  and all the information necessary for FEBio Studio to reconstruct the model.
  The default extension for a PSF is 
 \emph on
-fspsf
+fsps
 \emph default
 .
  
@@ -19445,11 +21896,13 @@ To create a PSF,
  by loading an xplt file).
  Then,
  go to 
-\emph on
+\series bold
 File
-\backslash
+\series default
+ → 
+\series bold
 Save as...
-\emph default
+\series default
 ,
  select the 
 \begin_inset Quotes eld
@@ -19465,11 +21918,13 @@ FEBio Studio Post Session
  Similarly,
  to open a PSF,
  go to the menu 
-\emph on
+\series bold
 File
-\backslash
+\series default
+ → 
+\series bold
 Open Model
-\emph default
+\series default
 ,
  select the 
 \begin_inset Quotes eld
@@ -20622,9 +23077,15 @@ FEBio Studio uses SimpleITK to read and manipulate image data,
  it is scaled down to 8 bits.
  Multichannel images (including color images) cannot be read in at all.
  To load image data,
- select the File
-\backslash
-Import Image from the main menu,
+ select the 
+\series bold
+File
+\series default
+ → 
+\series bold
+Import Image 
+\series default
+from the main menu,
  and then select the type of image that you would like to import,
  which will show the standard File Open dialog box.
  Locate the image file on the file system and click OK.
@@ -20648,12 +23109,8 @@ By default,
 Supported Image Types
 \end_layout
 
-\begin_layout Subsubsection
-Raw
-\end_layout
-
-\begin_layout Standard
-Raw images contain no header information,
+\begin_layout Description
+Raw Raw images contain no header information,
  and so in order to import them,
  you must provide information about the physical location of the image,
  and the physical and pixel dimensions of the image.
@@ -20661,54 +23118,43 @@ Raw images contain no header information,
  a dialog box will appear where you can enter this information.
 \end_layout
 
-\begin_layout Subsubsection
-DICOM
-\end_layout
-
-\begin_layout Standard
-DICOM images are read using SimpleITK.
+\begin_layout Description
+DICOM DICOM images are read using SimpleITK.
  In order to load in a sequence of DICOM images,
  simply select one of the DICOM files from the File Dialog.
  FEBio Studio uses builtin SimpleITK functionality to parse the header data of the DICOM images to locate and read all of the files that belong to the same dataset as the file you specified.
 \end_layout
 
-\begin_layout Subsubsection
-TIFF
-\end_layout
-
-\begin_layout Standard
-TIFF images are read using SimpleITK.
+\begin_layout Description
+TIFF TIFF images are read using SimpleITK.
  To load in a TIFF image,
  simple select it from the File Dialog.
  
 \end_layout
 
-\begin_layout Subsubsection
-OME TIFF
-\end_layout
+\begin_layout Description
+OME
+\begin_inset space ~
+\end_inset
 
-\begin_layout Standard
-OME TIFF images are read using SimpleITK.
+TIFF OME TIFF images are read using SimpleITK.
  To load in an OME TIFF image,
  you should select the xml file containing the OME header data from the File Dialog.
  
 \end_layout
 
-\begin_layout Subsubsection
-Image Sequence
-\end_layout
+\begin_layout Description
+Image
+\begin_inset space ~
+\end_inset
 
-\begin_layout Standard
-If you have a sequence of 2D image files that together make up a single 3D image,
+Sequence If you have a sequence of 2D image files that together make up a single 3D image,
  you can load them in using this option.
  Simply select all of the images files that correspond to your image stack in the File Dialog.
  To ensure that they are loaded in the proper order,
  please make sure that they are organized alphabetically by file name.
-\end_layout
-
-\begin_layout Standard
-Do not use this option to load in a sequence of DICOM files.
- See the section on DICOM images for more information.
+ Do not use this option to load in a sequence of DICOM files.
+ Use the DICOM option instead.
 \end_layout
 
 \begin_layout Section
@@ -22650,6 +25096,849 @@ After the interpolation and remeshing steps,
 \end_layout
 
 \begin_layout Chapter
+Using Python in FEBio Studio
+\end_layout
+
+\begin_layout Standard
+FEBio Studio has a built-in Python interpreter that can be used to run simple Python scripts that interact with FEBio Studio in various ways.
+ In addition,
+ FEBio Studio offers an external Python module that can be used to use FEBio Studio functionality without opening FEBio Studio.
+ Both of these options are discussed in this chapter.
+ 
+\end_layout
+
+\begin_layout Section
+The Embedded Python Interpreter
+\end_layout
+
+\begin_layout Standard
+To open the Python editor,
+ select the menu 
+\series bold
+Tools
+\series default
+ →
+\series bold
+ Python Editor
+\series default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Float figure
+placement h
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/python_editor.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Plugin Repository can be used to download and install FEBio plugins.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The Python Editor window shows a text editor for creating simple Python scripts.
+ Python scripts can be saved and loaded from the 
+\series bold
+File 
+\series default
+menu.
+ To run the Python script,
+ click the run button on the toolbar or select the menu 
+\series bold
+Python 
+\series default
+→
+\series bold
+ Run Script
+\series default
+.
+ Before you run a script,
+ it is advised to set the working directory on the corresponding field on the toolbar.
+ The output of the Python script can be found on the Output panel.
+ Make sure to select Python from the 
+\begin_inset Quotes eld
+\end_inset
+
+Show output from
+\begin_inset Quotes erd
+\end_inset
+
+ dropdown menu near the top of the Output panel.
+ 
+\end_layout
+
+\begin_layout Standard
+Example Python scripts can be found on the Github repo 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://github.com/febiosoftware/python-tests"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Some preliminary documentation of the Python module is available from 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://help.febio.org/docs/fbs_module/"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Section
+The External Python Module
+\end_layout
+
+\begin_layout Standard
+FEBio Studio also offers an external Python module that allows users to use FEBio Studio functionality directly from a Python script and without opening the GUI.
+ 
+\end_layout
+
+\begin_layout Standard
+To use the module,
+ you must first configure Python so that it can find the module.
+ (Alternatively you can simply copy the module to the folder of the python script where you want to use it.) 
+\end_layout
+
+\begin_layout Standard
+Take note that the external Python module is built against specific versions of Python and thus require to be run with the same version.
+ 
+\end_layout
+
+\begin_layout Chapter
+Using and Creating FEBio Plugins
+\end_layout
+
+\begin_layout Standard
+FEBio supports plugins that allow users to add new features to FEBio.
+ Plugins can be used to add new constitutive models,
+ boundary conditions,
+ loads,
+ physics solvers,
+ and much more.
+ FEBio Studio supports these plugins and offers ways to load and integrate them seamlessly in the FEBio Studio UI.
+ This chapter first discusses the plugin repository,
+ which is main mechanism for downloading and installing FEBio plugins.
+ Then,
+ the tools are discussed that allow users to create,
+ edit,
+ and build plugins from within FEBio Studio.
+ 
+\end_layout
+
+\begin_layout Section
+The Plugin Repository
+\end_layout
+
+\begin_layout Standard
+The Plugin Repository is the standard mechanism for downloading,
+ installing,
+ and sharing FEBio plugins.
+ To open the Plugin Repository select the menu 
+\series bold
+FEBio
+\series default
+ →
+\series bold
+ Plugin Repository
+\series default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Float figure
+placement h
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/febio_plugins.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Plugin Repository can be used to download and install FEBio plugins.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig12_3"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+On the left hand side you see a panel that is divided into two sections.
+ The top section shows all the plugins that are currently installed.
+ The bottom section shows a list of plugins that are available from the online repository.
+ Selecting a plugin will display additional information about the plugin on the right side of the dialog box.
+ If the plugin is not installed,
+ you can download it and install it.
+ If the plugin is already installed and loaded,
+ you can choose to unload and uninstall it.
+ In addition,
+ for installed plugins,
+ the 
+\emph on
+Details
+\emph default
+ section provides more information on the specific features that the plugin implements.
+ 
+\end_layout
+
+\begin_layout Standard
+If you built a custom plugin on your system,
+ then you can also load it into FEBio Studio using the Plugin Repository.
+ On the bottom of the dialog box is a button labeled 
+\series bold
+Load Local Plugin
+\series default
+.
+ Clicking the button brings up a standard file open dialog box where you can locate and select the plugin file.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Important!
+ 
+\series default
+It is important to note that only plugins can be loaded that were build for the specific version that FEBio Studio uses.
+ Trying to load plugins that are not compatible may cause instability or a crash.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Important!
+ 
+\series default
+When loading a model file (either fsm or feb) that needs a plugin,
+ it is important to 
+\emph on
+first 
+\emph default
+load the plugin into FEBio Studio.
+ Otherwise FEBio Studio will not be able to load the file.
+ 
+\end_layout
+
+\begin_layout Section
+Creating FEBio Plugins
+\end_layout
+
+\begin_layout Standard
+FEBio Studio offers the ability to create and use custom FEBio plugins.
+ In this section we'll detail the steps needed to do this.
+ Before you can create plugins,
+ there are a few prerequisite steps that need to be completed.
+ 
+\end_layout
+
+\begin_layout Subsection
+Prerequisites
+\end_layout
+
+\begin_layout Standard
+First and foremost,
+ you must install a development environment on your system.
+ At the very least,
+ you will need a C++ compiler,
+ but it is best to use the same compiler that was used to build the FEBio Studio software itself.
+ For Windows,
+ we recommend using the Community Edition of Visual Studio.
+ For Mac,
+ we recommend using XCode,
+ and on Linux we recommend using g++.
+ 
+\end_layout
+
+\begin_layout Standard
+In addition to a c++ compiler,
+ FEBio Studio also uses CMake (https://cmake.org/download/) to build the plugin code and thus CMake must be installed on your system as well.
+ Make sure to configure CMake during installation so that it can be called from the command line.
+ 
+\end_layout
+
+\begin_layout Standard
+Finally,
+ you must have the FEBio SDK (Software Development Kit) installed.
+ This is an optional component when you install FEBio Studio.
+ If it is not installed,
+ you may need to reinstall FEBio Studio making sure to enable that component.
+ 
+\end_layout
+
+\begin_layout Standard
+After you installed a development environment,
+ CMake,
+ and the FEBio SDK,
+ you must set several settings in FEBio Studio.
+ Open the FEBio Studio Settings dialog box from the menu 
+\series bold
+Tools
+\series default
+ →
+\series bold
+ Settings...
+
+\series default
+ and select the FEBio option on the left side.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/settings_febio.png
+	scale 75
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The FEBio settings page is used to specify the location of the FEBio SDK.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here,
+ you need to specify three paths:
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+FEBio SDK Include path
+\series default
+:
+ This is path to the include folder of the FEBio SDK (e.g.:
+ C:
+\backslash
+Program Files
+\backslash
+FEBioStudio3
+\backslash
+sdk
+\backslash
+include)
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+FEBio SDK Library path
+\series default
+:
+ This is the path to the folder that contains the library files (e.g.:
+ C:
+\backslash
+Program Files
+\backslash
+FEBioStudio3
+\backslash
+sdk
+\backslash
+lib
+\backslash
+Release)
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+FEBio create plugin path
+\series default
+:
+ This is the path to a folder that will be used as the default location to place plugin files.
+ 
+\end_layout
+
+\begin_layout Standard
+With all the necessary software installed and FEBio Studio configured,
+ you can now move on to the next step,
+ creating the plugin.
+ 
+\end_layout
+
+\begin_layout Subsection
+The FEBio Plugin Wizard
+\end_layout
+
+\begin_layout Standard
+Creating an FEBio plugin project is as simple as following the steps in the FEBio Plugin wizard.
+ To start the wizard,
+ select the menu 
+\series bold
+FEBio
+\series default
+ →
+\series bold
+ Create FEBio Plugin...
+\series default
+.
+\end_layout
+
+\begin_layout Standard
+The first page of the wizard allows you to choose a name for the plugin.
+ Since this name will be used to generate the plugin files,
+ make sure to use only characters that are valid in file names.
+ In addition,
+ you can also choose the location where FEBioStudio will generate the plugin files.
+ Lastly,
+ choose the FEBio module that you will expand.
+ For instance,
+ if you intend to add a new constitutive model for an elastic material,
+ select the 
+\emph on
+solid
+\emph default
+ module.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/plugin_wizard_page1.png
+	scale 75
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Plugin Wizard can be used to create the template code of an FEBio plugin.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+After filling out the information,
+ click the 
+\series bold
+Next
+\series default
+ button to proceed to the next page.
+\end_layout
+
+\begin_layout Standard
+On the second page,
+ you can select the plugin type (e.g.
+ Elastic Material,
+ if you intend to implement a new constitutive model) and enter the name of the class.
+ Make sure to use a valid C++ class name.
+ Optionally,
+ you can enter the type string of the plugin class.
+ This is the string value that will be used when registering the plugin and the string that users will use as the value for the type attribute in the FEBio input file.
+ By default,
+ the name of the plugin class will be used.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/plugin_wizard_page2.png
+	scale 75
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+On the second page of the wizard you select the type of plugin you want to create.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Once this page is completed,
+ click 
+\series bold
+Next
+\series default
+ to continue.
+\end_layout
+
+\begin_layout Standard
+The third page will list properties you can set to further configure the particular plugin you want to create.
+ The properties that are listed will depend on the type of plugin you selected.
+ For example,
+ if you selected the "Elastic Material" plugin,
+ the properties will allow you to choose the base class for the material class.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/plugin_wizard_page3.png
+	scale 75
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+On the third page of the wizard you select additional options for the specify plugin type you want to create.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Once the properties are set,
+ click 
+\series bold
+Finish 
+\series default
+to exit the wizard.
+\end_layout
+
+\begin_layout Standard
+At this point,
+ the wizard will generate all the necessary files for building the plugin.
+ A dialog box will inform you whether FEBio Studio was able to generate the plugin files or not.
+ If the wizard was successful,
+ the following files should have been generated in the location that you specified on the first page of the wizard.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+CMakeLists.txt
+\series default
+ This is the CMake file that will generate the project files for your build environment.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+main.cpp
+\series default
+ This is the file that contains the required functions that FEBio needs to integrate your plugin.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+MyPluginName.h
+\series default
+ The header file containing the class declaration.
+ (The actual name will use the class name you entered in the wizard.)
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+MyPluginName.cpp
+\series default
+ The code file containing the class definition.
+ (The actual name will use the class name you entered in the wizard.)
+\end_layout
+
+\begin_layout Standard
+The next step is to build the plugin.
+ 
+\end_layout
+
+\begin_layout Subsection
+Building the plugin
+\end_layout
+
+\begin_layout Standard
+The wizard will generate a template code that is ready to build.
+ Of course,
+ the plugin may not actually do anything yet,
+ but at this point,
+ you can verify that the plugin builds correctly with your build environment and can be loaded in FEBio Studio.
+\end_layout
+
+\begin_layout Standard
+The first step will be to build the project files for your build environment.
+ This essentially means that you have to run CMake on the CMakeLists.txt that the wizard generated.
+ If you are familiar with CMake,
+ you can do this outside FEBioStudio,
+ however,
+ you can also do this from FEBio Studio.
+ In fact,
+ you can build the plugin directly from FEBio Studio.
+\end_layout
+
+\begin_layout Standard
+On the Project panel,
+ you'll notice that your plugin files are listed there under a new item that is named after your plugin.
+ Double-clicking a file will open it up in an editor in FEBio Studio.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/plugin_project.png
+	scale 75
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The project panel will show the files that have been created with the Plugin Wizard.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To build the plugin,
+ right-click the top-level item with the plugin's name and select the Build option.
+ When doing this,
+ FEBio Studio will now first call CMake to generate the project files,
+ and then call CMake again to build the plugin with your native build environment.
+ You can monitor the progress on the Output panel.
+ (Make sure "Build" is selected in the show output from the dropdown list.)
+\end_layout
+
+\begin_layout Standard
+If the build was successful,
+ you can now load the plugin into FEBio Studio.
+ To load the plugin,
+ right-click the item with the plugin's name in the Project panel and select the Load menu option.
+ A dialog box will inform you whether the plugin was loaded successfully or not.
+\end_layout
+
+\begin_layout Subsection
+Plugin Caveats
+\end_layout
+
+\begin_layout Standard
+Although FEBioStudio has the ability to generate plugin files,
+ edit the files,
+ and build the plugin,
+ it is still highly recommended to familiarize yourself with your build environment since some tasks can only be done there.
+\end_layout
+
+\begin_layout Standard
+One important thing to keep in mind is that FEBio Studio will only build the 
+\emph on
+Release
+\emph default
+ configuration of the plugin,
+ since only the 
+\emph on
+Release
+\emph default
+ build can be loaded into FEBio Studio.
+ For the purpose of testing your plugin code,
+ it is more convenient to build the 
+\emph on
+Debug
+\emph default
+ configuration.
+ However,
+ this can only be done from your build environment.
+ To build your 
+\emph on
+Debug
+\emph default
+ configuration,
+ you can still use the wizard to generate the plugin files and build the 
+\emph on
+Release
+\emph default
+ configuration,
+ as this will generate all the project files for your build environment.
+ However,
+ after that,
+ you'll have to open the IDE (or manually change the project files) to build and test the 
+\emph on
+Debug
+\emph default
+ configuration of your plugin.
+\end_layout
+
+\begin_layout Standard
+Further documentation on how to create FEBio plugins can be found online in the 
+\begin_inset CommandInset href
+LatexCommand href
+name "FEBio Developer's Manual"
+target "https://help.febio.org/doxygen/febio4.10/index.html"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Chapter
 \start_of_appendix
 Mesh Import Formats
 \begin_inset CommandInset label
@@ -22970,7 +26259,7 @@ name "subsec:ansys"
 \end_layout
 
 \begin_layout Standard
-The following ANSYS®keywords are supported.
+The following ANSYS® keywords are supported.
 \end_layout
 
 \begin_layout Itemize

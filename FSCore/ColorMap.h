@@ -68,6 +68,8 @@ public:
 	void Invert();
 
 	void SetRange(float fmin, float fmax);
+	float RangeMin() const { return m_min; }
+	float RangeMax() const { return m_max; }
 
 protected:
 	int		m_ncol;

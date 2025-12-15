@@ -177,7 +177,7 @@ protected:
 	bool WriteFaceData(FEPostModel& fem, FEState& state);
 
 	bool FillNodeDataArray(std::vector<float>& val, FEMeshData& data);
-	bool FillElemDataArray(std::vector<float>& val, FEMeshData& data, FSElemSet& part);
+	bool FillElemDataArray(std::vector<float>& val, FEMeshData& data, FSMeshPartition& part);
 	bool FillFaceDataArray(std::vector<float>& val, FEMeshData& data, FSSurface& part);
 
 	bool error(const char* sz);

@@ -598,11 +598,6 @@ void CCurveEditWidget::on_plot_backgroundImageChanged()
 	ui->plt->setYAxisTickColor(c);
 }
 
-void CCurveEditWidget::on_plot_doneZoomToRect()
-{
-
-}
-
 void CCurveEditWidget::on_plot_regionSelected(QRect rt)
 {
 	if (ui->map2rect->isChecked())
@@ -694,13 +689,6 @@ void CCurveEditWidget::on_zoomX_clicked()
 void CCurveEditWidget::on_zoomY_clicked()
 {
 	ui->plt->OnZoomToHeight();
-}
-
-void CCurveEditWidget::on_map_clicked()
-{
-	// TODO: This came in from a merge with develop, but 
-	// I'm not sure yet how to fix this. 
-//	ui->plt->mapToUserRect();
 }
 
 void CCurveEditWidget::on_lineType_currentIndexChanged(int n)

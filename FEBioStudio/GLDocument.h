@@ -47,7 +47,7 @@ enum TransformMode
 enum SelectionMode {
 	SELECT_OBJECT = 1,
 	SELECT_PART = 2,
-	SELECT_FACE = 3,
+	SELECT_SURF = 3,
 	SELECT_EDGE = 4,
 	SELECT_NODE = 5,
 	SELECT_DISCRETE = 6
@@ -75,8 +75,25 @@ enum MeshSelectionMode {
 	MESH_MODE_SURFACE = 1
 };
 
+// Base class for documents that manage a GLScene
+class CGLSceneDocument : public CUndoDocument
+{
+public:
+	CGLSceneDocument(CMainWindow* wnd);
+
+	GLScene* GetScene();
+
+	CGView* GetView();
+
+	void Update() override;
+
+protected:
+	GLScene* m_scene = nullptr;
+	CGView m_view;
+};
+
 // Base class for documents that require visualization
-class CGLDocument : public CUndoDocument
+class CGLDocument : public CGLSceneDocument
 {
 public:
 	enum UI_VIEW_MODE
@@ -118,6 +135,8 @@ public:
 	int GetItemMode() { return m_vs.nitem; }
 	void SetItemMode(int mode) { m_vs.nitem = mode; UpdateSelection(); }
 
+	void ZoomSelection(bool forceZoom = true);
+
 	static std::string GetTypeString(FSObject* po);
 
 	UI_VIEW_MODE GetUIViewMode() { return m_uiMode; }
@@ -129,6 +148,9 @@ public:
 	FESelection* GetCurrentSelection();
 	void SetCurrentSelection(FESelection* psel);
 
+	// get the bounding box
+	virtual BOX GetBoundingBox() { return BOX(); }
+
 	// get the selection bounding box
 	BOX GetSelectionBox();
 
@@ -136,24 +158,11 @@ public:
 
 	virtual GObject* GetActiveObject();
 
-	CGView* GetView();
-
-	GLScene* GetScene();
-
 	void Update() override;
 
 public:
-	int GetWidgetLayer();
 	bool ShowTitle() const { return m_showTitle; }
 	bool ShowSubtitle() const { return m_showSubtitle; }
-	bool ShowLegend() const { return m_showLegend; }
-
-	void ShowLegend(bool b) { m_showLegend = b; }
-	void SetDataRange(double vmin, double vmax) { m_dataRange[0] = vmin; m_dataRange[1] = vmax; }
-	void GetDataRange(double v[2]) { v[0] = m_dataRange[0]; v[1] = m_dataRange[1]; }
-
-	// This string will be shown in top-left corner
-	virtual std::string GetRenderString();
 
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }
@@ -185,8 +194,6 @@ public:
 	int GetUnitSystem() const;
 
 protected:
-	GLScene* m_scene;
-
 	VIEW_STATE	m_vs;	// the view state
 
 	UI_VIEW_MODE m_uiMode;
@@ -203,10 +210,7 @@ protected:
 	FileWriter* m_fileWriter;
 
 	// GL widget parameters
-	unsigned int	m_widgetLayer;
 	bool	m_showTitle;
 	bool	m_showSubtitle;
 	bool	m_showLegend;
-	double	m_dataRange[2];
 };
-

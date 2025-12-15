@@ -23,14 +23,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include <GL/glew.h>
 #include "GLScreenRecorder.h"
 #include "GLView.h"
 #include "Animation.h"
 
 GLScreenRecorder::GLScreenRecorder() : m_glview(nullptr), m_video(nullptr)
 {
-	m_videoFormat = GL_RGB;
 	m_state = RECORDING_STATE::STOPPED;
 }
 
@@ -47,11 +45,6 @@ RECORDING_STATE GLScreenRecorder::GetRecordingState() const
 bool GLScreenRecorder::HasRecording() const
 {
 	return (m_video != nullptr);
-}
-
-void GLScreenRecorder::SetVideoFormat(unsigned int fmt) 
-{
-	m_videoFormat = fmt; 
 }
 
 bool GLScreenRecorder::SetVideoStream(CAnimation* video)

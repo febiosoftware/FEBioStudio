@@ -51,6 +51,72 @@ int degenerate_hex(int* n)
 	return FE_HEX8;
 }
 
+bool is_degenerate_penta(int* n)
+{
+	for (int i=0; i<6; ++i)
+	{
+		for (int j=i+1; j<6; ++j)
+		{
+			if (n[i] == n[j]) return true;
+		}
+	}
+	return false;
+}
+
+int degenerate_penta(int* n)
+{
+    // todo: add more checks for degenerate elements
+    if ((n[0] == n[3]) && (n[1] == n[4]))
+    {
+        n[3] = n[5];
+        return FE_TET4;
+    }
+    else if ((n[0] == n[3]) && (n[2] == n[5]))
+    {
+        n[3] = n[4];
+        return FE_TET4;
+    }
+    else if ((n[1] == n[4]) && (n[2] == n[5]))
+    {
+        return FE_TET4;
+    }
+	else if (n[2] == n[5])
+	{
+		int m[6] = { n[0], n[1], n[2], n[3], n[4], n[5] };
+		n[0] = m[0];
+		n[1] = m[3];
+		n[2] = m[4];
+		n[3] = m[1];
+		n[4] = m[2];
+		return FE_PYRA5;
+	}
+	else if (n[0] == n[3])
+	{
+		int m[6] = { n[0], n[1], n[2], n[3], n[4], n[5] };
+		n[0] = m[1];
+		n[1] = m[4];
+		n[2] = m[5];
+		n[3] = m[2];
+		n[4] = m[3];
+		return FE_PYRA5;
+	}
+	else if (n[1] == n[4])
+	{
+		int m[6] = { n[0], n[1], n[2], n[3], n[4], n[5] };
+		n[0] = m[0];
+		n[1] = m[2];
+		n[2] = m[5];
+		n[3] = m[3];
+		n[4] = m[1];
+		return FE_PYRA5;
+	}
+
+    // assert that this is not a degenerate element
+    assert(!is_degenerate_penta(n));
+
+    return FE_PENTA6;
+}
+
 FSMesh* FEExtrudeToSurface::Apply(GObject* po, FESelection* pg)
 {
 	if ((pg == nullptr) || (po == nullptr)) return nullptr;
@@ -210,16 +276,23 @@ FSMesh* FEExtrudeToSurface::Apply(GObject* po, FESelection* pg)
 			}
 			else if (f.Type() == FE_FACE_TRI3)
 			{
+                int n[6] = { 0 };
 				FSElement& el = newMesh->Element(l * NF + i);
 				el.SetType(FE_PENTA6);
 				el.m_gid = 0;
-				el.m_node[0] = ids[f.n[0]];
-				el.m_node[1] = ids[f.n[1]];
-				el.m_node[2] = ids[f.n[2]];
+				n[0] = ids[f.n[0]];
+				n[1] = ids[f.n[1]];
+				n[2] = ids[f.n[2]];
 
-				el.m_node[3] = id2[f.n[0]];
-				el.m_node[4] = id2[f.n[1]];
-				el.m_node[5] = id2[f.n[2]];
+				n[3] = id2[f.n[0]];
+				n[4] = id2[f.n[1]];
+				n[5] = id2[f.n[2]];
+                
+                // it's possible that we have a degenerate elements, so let's check
+                int elemType = degenerate_penta(n);
+                assert(elemType != -1);
+                el.SetType(elemType);
+                for (int i = 0; i < el.Nodes(); ++i) el.m_node[i] = n[i];
 			}
 			else
 			{

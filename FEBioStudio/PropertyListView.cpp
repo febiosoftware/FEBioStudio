@@ -223,7 +223,7 @@ public:
 			{
 				if (role == Qt::DisplayRole)
 				{
-					Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+					Post::FEPostModel* fem = Post::FEPostModel::GetActiveModel(); assert(fem);
 					std::string s;
 					if (fem)
 					{
@@ -234,11 +234,11 @@ public:
 				}
 				else if (role == Qt::EditRole) return v;
 			}
-			if (prop.type == CProperty::DataVec3)
+			if ((prop.type == CProperty::DataVec3) || (prop.type == CProperty::DataVec3Exp))
 			{
 				if (role == Qt::DisplayRole)
 				{
-					Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+					Post::FEPostModel* fem = Post::FEPostModel::GetActiveModel(); assert(fem);
 					std::string s;
 					if (fem)
 					{
@@ -253,7 +253,7 @@ public:
 			{
 				if (role == Qt::DisplayRole)
 				{
-					Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+					Post::FEPostModel* fem = Post::FEPostModel::GetActiveModel(); assert(fem);
 					std::string s;
 					if (fem)
 					{
@@ -466,7 +466,7 @@ public:
 			else if (prop.type == CProperty::DataScalar)
 			{
 				CDataFieldSelector* pc = new CDataFieldSelector(parent);
-				Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+				Post::FEPostModel* fem = Post::FEPostModel::GetActiveModel(); assert(fem);
 				if (fem) pc->BuildMenu(fem, Post::TENSOR_SCALAR);
 				int nfield = data.toInt();
 				pc->setCurrentValue(nfield);
@@ -476,8 +476,18 @@ public:
 			else if (prop.type == CProperty::DataVec3)
 			{
 				CDataFieldSelector* pc = new CDataFieldSelector(parent);
-				Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+				Post::FEPostModel* fem = Post::FEPostModel::GetActiveModel(); assert(fem);
 				if (fem) pc->BuildMenu(fem, Post::TENSOR_VECTOR);
+				int nfield = data.toInt();
+				pc->setCurrentValue(nfield);
+				m_view->connect(pc, SIGNAL(currentValueChanged(int)), m_view, SLOT(onDataChanged()));
+				return pc;
+			}
+			else if (prop.type == CProperty::DataVec3Exp)
+			{
+				CDataFieldSelector* pc = new CDataFieldSelector(parent);
+				Post::FEPostModel* fem = Post::FEPostModel::GetActiveModel(); assert(fem);
+				if (fem) pc->BuildMenu(fem, Post::TENSOR_VECTOR, true);
 				int nfield = data.toInt();
 				pc->setCurrentValue(nfield);
 				m_view->connect(pc, SIGNAL(currentValueChanged(int)), m_view, SLOT(onDataChanged()));
@@ -486,7 +496,7 @@ public:
 			else if (prop.type == CProperty::DataMat3)
 			{
 				CDataFieldSelector* pc = new CDataFieldSelector(parent);
-				Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+				Post::FEPostModel* fem = Post::FEPostModel::GetActiveModel(); assert(fem);
 				if (fem) pc->BuildMenu(fem, Post::TENSOR_TENSOR2);
 				int nfield = data.toInt();
 				pc->setCurrentValue(nfield);
@@ -530,7 +540,9 @@ public:
 		{
 			const CProperty& prop = model->getPropertyList().Property(index.row());
 			if ((prop.type == CProperty::Std_Vector_Double) ||
-				(prop.type == CProperty::Vec2d))
+				(prop.type == CProperty::Vec2d) ||
+				(prop.type == CProperty::Vec3) ||
+				(prop.type == CProperty::Mat3s))
 			{
 				QLineEdit* w = new QLineEdit(parent);
 				QObject::connect(w, SIGNAL(editingFinished()), m_view, SLOT(onDataChanged()));
@@ -568,7 +580,7 @@ public:
 class Ui::CPropertyListView
 {
 public:
-	CPropertyList*			m_list;
+	CPropertyList*			m_list = nullptr;
 	QTableView*				m_prop;
 	CPropertyListDelegate*	m_delegate;
 	CPropertyListModel*		m_data;

@@ -27,8 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include "FEMultiBlockMesh.h"
 
-class GSphere;
-
 class FESphere : public FEMultiBlockMesh
 {
 public:
@@ -36,16 +34,14 @@ public:
 	enum { RATIO, NDIV, NSEG, GR, GR2, ELEM_TYPE };
 
 public:
-	FESphere();
+	FESphere(GObject& o);
 
-	FSMesh* BuildMesh(GObject* po) override;
+	FSMesh* BuildMesh() override;
 
 protected:
 	bool BuildMultiBlock() override;
 
 protected:
-	GSphere* m_pobj;
-
 	double	m_r;
 	int	m_ndiv, m_nseg;
 	double	m_gd, m_gr;

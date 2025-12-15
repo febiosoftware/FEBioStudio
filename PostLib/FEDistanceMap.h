@@ -74,6 +74,11 @@ public:
 	int GetSurfaceSize(int i);
 
 public:
+	void Init();
+
+	void ApplyState(int ntime);
+
+public:
 	// assign selections
 	void SetSelection1(std::vector<int>& s) { m_surf1.m_face = s; }
 
@@ -81,9 +86,14 @@ public:
 
     void SetSigned(bool sign) { m_bsigned = sign; }
 
+	void SetMethod(int nopt) { m_nopt = nopt; }
+
+	void FlipPrimary(bool b) { m_flipPrimary = b; }
+	void FlipSecondary(bool b) { m_flipSecondary = b; }
+
 protected:
 	// build node normal list
-	void BuildNormalList(FEDistanceMap::Surface& s);
+	void BuildNormalList(FEDistanceMap::Surface& s, bool flip);
 
 	// project r onto the surface
 	Projection project(Surface& surf, vec3f& r, int ntime);
@@ -98,5 +108,8 @@ protected:
 public:
 	double	m_tol;			//!< projection tolerance
 	bool	m_bsigned;		//!< signed or non-signed distance
+	bool	m_flipPrimary;
+	bool	m_flipSecondary;
+	int		m_nopt;
 };
 }

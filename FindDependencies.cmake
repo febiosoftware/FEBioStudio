@@ -1,5 +1,5 @@
 # Qt
-find_package(Qt6 COMPONENTS Widgets Gui Network OpenGL OpenGLWidgets REQUIRED) 
+find_package(Qt6 COMPONENTS Widgets Gui Network OpenGL OpenGLWidgets ShaderTools REQUIRED) 
 
 mark_as_advanced(Qt6_DIR Qt6Core_DIR Qt6CoreTools_DIR Qt6DBusTools_DIR Qt6DBus_DIR Qt6GuiTools_DIR 
     Qt6Gui_DIR Qt6Network_DIR Qt6OpenGLWidgets_DIR Qt6OpenGL_DIR Qt6WidgetsTools_DIR Qt6Widgets_DIR)
@@ -56,7 +56,7 @@ if(NEWPATH)
         set(FEBio_INC "${FEBio_SDK}/include" CACHE PATH "Path to FEBio include directory." FORCE)
 
         if(WIN32)
-            list(APPEND LIB_SUFFIXES "lib" "lib/Release"  "vs2017/Release" "vs2017/Debug")
+            list(APPEND LIB_SUFFIXES "lib" "lib/Release" "lib/Debug")
         else()
             list(APPEND LIB_SUFFIXES "lib")
         endif()

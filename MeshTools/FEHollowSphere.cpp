@@ -34,13 +34,8 @@ SOFTWARE.*/
 #include <MeshLib/FSMesh.h>
 #include <math.h>
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-FEHollowSphere::FEHollowSphere()
+FEHollowSphere::FEHollowSphere(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_pobj = nullptr;
 	m_nd = 6;
 	m_ns = 1;
 	m_gr = 1;
@@ -63,10 +58,11 @@ double gain2(double x, double r, double n)
 
 bool FEHollowSphere::BuildMultiBlock()
 {
-	assert(m_pobj);
+	GHollowSphere* po = dynamic_cast<GHollowSphere*>(&m_o);
+	if (po == 0) return false;
 
 	// get object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double R0 = param.GetFloatValue(GHollowSphere::RIN);
 	double R1 = param.GetFloatValue(GHollowSphere::ROUT);
 
@@ -422,12 +418,9 @@ bool FEHollowSphere::BuildMultiBlock()
 	return true;
 }
 
-FSMesh* FEHollowSphere::BuildMesh(GObject* po)
+FSMesh* FEHollowSphere::BuildMesh()
 {
-	m_pobj = dynamic_cast<GHollowSphere*>(po);
-	if (m_pobj == nullptr) return nullptr;
-
-	BuildMultiBlock();
+	if (!BuildMultiBlock()) return nullptr;
 
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);
@@ -440,15 +433,6 @@ FSMesh* FEHollowSphere::BuildMesh(GObject* po)
 
 	// create the MB
 	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
-
-	// update the mesh
-	pm->UpdateMesh();
-
-	// the Multi-block mesher will assign a different smoothing ID
-	// to each face, but we don't want that here. 
-	// For now, we autosmooth the mesh although we should think of a 
-	// better way
-	pm->AutoSmooth(60);
 
 	return pm;
 }

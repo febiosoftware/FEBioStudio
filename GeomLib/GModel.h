@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <MeshLib/FSItemListBuilder.h>
 #include <vector>
+#include <functional>
 
 class GObject;
 class FSModel;
@@ -127,6 +128,10 @@ public:
 
 	// find a part based on its name
 	GPart* FindPart(const std::string& partName);
+
+	// get all the parts (helpful if you want to loop over all parts)
+	std::vector<GPart*> AllParts();
+	std::vector<GPart*> AllParts(std::function<bool(const GPart* pg)> filter);
 
 	// --- surface functions ---
 
@@ -232,15 +237,6 @@ public:
 	std::list<GPart*> FindPartsFromMaterial(int matId, bool bmatch = true);
 
 public:
-	// create a clone
-	GObject* CloneObject(GObject *po);
-
-	// clone the object on a grid
-	std::vector<GObject*> CloneGrid(GObject* po, int x0, int x1, int y0, int y1, int z0, int z1, double dx, double dy, double dz);
-
-	// reolve clone the object
-	std::vector<GObject*> CloneRevolve(GObject* po, int count, double range, double spiral, const vec3d& center, const vec3d& axis, bool rotateClones);
-
 	// merge the selected objects
 	GObject* MergeSelectedObjects(GObjectSelection* sel, const std::string& newObjectName, bool weld, double tol);
 
@@ -253,7 +249,6 @@ public:
 public:
 	// show (or hide if bshow==false) a list of objects
 	void ShowObjects(const std::vector<int>& objList, bool bshow = true);
-	void ShowObject(GObject* po, bool bshow = true);
 
 	// select a list of objects
 	void SelectObjects(const std::vector<int>& objList);

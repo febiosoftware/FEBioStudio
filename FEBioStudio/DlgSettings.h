@@ -33,10 +33,12 @@ SOFTWARE.*/
 #include <QFormLayout>
 #include <QLabel>
 #include <FSCore/ColorMap.h>
+#include <GLLib/GLViewSettings.h>
 
 class CMainWindow;
 class QAbstractButton;
 class QLabel;
+class CGLDocument;
 
 namespace Ui {
 	class CDlgSettings;
@@ -167,6 +169,12 @@ public:
 	CFEBioSettingsWidget(QWidget* parent = nullptr);
 
 public:
+	bool GetLoadConfigFlag();
+	QString GetConfigFileName();
+
+	void SetLoadConfigFlag(bool b);
+	void SetConfigFileName(QString s);
+
 	QString GetSDKIncludePath() const;
 	void SetSDKIncludePath(const QString& s);
 
@@ -176,7 +184,12 @@ public:
 	QString GetCreatePluginPath() const;
 	void SetCreatePluginPath(const QString& s);
 
+protected slots:
+	void editConfigFilePath();
+
 private:
+	QCheckBox* m_loadConfig = nullptr;
+	QLineEdit* m_configEdit = nullptr;
 	QLineEdit* m_sdkInc = nullptr;
 	QLineEdit* m_sdkLib = nullptr;
 	QLineEdit* m_pluginPath = nullptr;
@@ -210,7 +223,7 @@ class CDlgSettings : public QDialog
 	Q_OBJECT
 
 public:
-	CDlgSettings(CMainWindow* pwnd);
+	CDlgSettings(CMainWindow* pwnd, CGLDocument* doc, GLViewSettings& vs);
 
 	void showEvent(QShowEvent* ev);
 
@@ -224,7 +237,6 @@ public slots:
 private:
 	void UpdateSettings();
 	void UpdateUI();
-	void UpdateColormap();
 
 protected:
 	CMainWindow*		m_pwnd;

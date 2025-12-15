@@ -26,51 +26,35 @@ SOFTWARE.*/
 
 #pragma once
 
-class QOpenGLWidget;
+class QWidget;
 #include "GLWidget.h"
 #include <vector>
 
 class CGLWidgetManager
 {
 public:
+	CGLWidgetManager();
 	~CGLWidgetManager();
 
-	static CGLWidgetManager* GetInstance();
-
-	void AddWidget(GLWidget* pw, int layer = -1);
+	void AddWidget(GLWidget* pw);
 	void RemoveWidget(GLWidget* pw);
 	int Widgets() { return (int)m_Widget.size(); }
 
 	GLWidget* operator [] (int i) { return m_Widget[i]; }
 	GLWidget* get(int i) { return m_Widget[i]; }
 
-	void AttachToView(QOpenGLWidget* pview);
-
 	int handle(int x, int y, int nevent);
 
-	void DrawWidgets(QPainter* painter);
-	void DrawWidgetsInLayer(QPainter* painter, int layer);
-	void DrawWidget(GLWidget* widget, QPainter* painter);
-
-	void SetRenderLayer(int l);
-	void SetEditLayer(int l);
-
-	// Make sure widget are within bounds. (Call when parent QOpenGLWidget changes size)
-	void CheckWidgetBounds();
+	void DrawWidgets(GLPainter* painter);
+	void DrawWidget(GLWidget* widget, GLPainter* painter);
 
 protected:
-	void SnapWidget(GLWidget* pw);
-
-protected:
-	QOpenGLWidget*			m_pview;
 	std::vector<GLWidget*>	m_Widget;
 
-	unsigned int			m_renderLayer;	// layer used for rendering
-	unsigned int			m_editLayer;	// default layer used when adding widgets
-
 private:
-	CGLWidgetManager();
 	CGLWidgetManager(const CGLWidgetManager& m) = delete;
+	CGLWidgetManager& operator = (const CGLWidgetManager& m) = delete;
 
-	static CGLWidgetManager*	m_pmgr;
+	bool isResizing = false;
+	bool isDragging = false;
 };

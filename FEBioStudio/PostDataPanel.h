@@ -146,6 +146,8 @@ public:
 	int		m_nop;
 	int		m_ndata;
 
+	int		m_fnc;
+
 private:
 	double	m_scale[9];	// scale factors
 	int		m_nsc;		// scale components

@@ -26,7 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "Document.h"
 #include "GLPlaneCut.h"
-#include <GLLib/GLScene.h>
+#include "GLViewScene.h"
 
 enum OBJECT_COLOR_MODE {
 	DEFAULT_COLOR,
@@ -53,11 +53,13 @@ class GLModelSceneItem : public GLSceneItem
 public:
 	GLModelSceneItem(CGLModelScene* scene) : m_scene(scene) {}
 
+	const GLCamera& GetCamera() const;
+
 protected:
 	CGLModelScene* m_scene;
 };
 
-class GLPlaneCutItem : public GLCompositeSceneItem
+class GLPlaneCutItem : public GLModelSceneItem
 {
 public:
 	GLPlaneCutItem(CGLModelScene* scene);
@@ -65,60 +67,118 @@ public:
 
 private:
 	void UpdatePlaneCut(GLContext& rc, bool reset);
-	void RenderBoxCut(GLRenderEngine& re, GLContext& rc, const BOX& box);
+	void RenderBoxCut(GLRenderEngine& re, const BOX& box);
 
 private:
-	CGLModelScene* m_scene;
 	GLPlaneCut	m_planeCut;
 };
+
+class GLObjectSurfaceItem;
 
 class GLObjectItem : public GLModelSceneItem
 {
 public:
 	GLObjectItem(CGLModelScene* scene, GObject* po);
+	~GLObjectItem();
 	void render(GLRenderEngine& re, GLContext& rc) override;
+
+	GObject* GetGObject() const { return m_po; }
+
+	Transform GetTransform() const;
+	void SetTransform(const Transform& T);
+
+	GLMesh* GetSelectionMesh();
 
 private:
 	void RenderGObject(GLRenderEngine& re, GLContext& rc);
 
-	void RenderObject(GLRenderEngine& re, GLContext& rc);
+	void RenderSelection(GLRenderEngine& re);
+
+private:
+	GObject* m_po = nullptr;
+	GLObjectSurfaceItem* m_surfItem = nullptr;
+	Transform m_renderTransform;
+};
+
+class GLObjectSurfaceItem : public GLModelSceneItem
+{
+public:
+	GLObjectSurfaceItem(CGLModelScene* scene, GObject* po) : GLModelSceneItem(scene), m_po(po) {}
+	~GLObjectSurfaceItem() {}
+
+	void BuildSurfaceMesh();
+	void BuildSurfaceFEMesh(bool useContourMap);
+
+	void render(GLRenderEngine& re, GLContext& rc) override;
+
+	GLMesh* GetSelectionMesh();
+
+private:
+	void RenderGeomSurface(GLRenderEngine& re, GLContext& rc);
+	void RenderFEMeshSurface(GLRenderEngine& re, GLContext& rc);
+
 	void RenderSurfaceMeshFaces(GLRenderEngine& re, GLContext& rc);
 
-	void RenderParts(GLRenderEngine& re, GLContext& rc);
-	void RenderSurfaces(GLRenderEngine& re, GLContext& rc);
-	void RenderEdges(GLRenderEngine& re, GLContext& rc);
-	void RenderNodes(GLRenderEngine& re, GLContext& rc);
-	void RenderBeamParts(GLRenderEngine& re, GLContext& rc);
-	void RenderSurfaceMeshEdges(GLRenderEngine& re, GLContext& rc);
+	void RenderUnselectedBeamElements(GLRenderEngine& re);
 
-	void RenderFEFacesFromGMesh(GLRenderEngine& re, GLContext& rc);
-	void RenderMeshByDefault(GLRenderEngine& re, GLContext& rc);
-	void RenderMeshByObjectColor(GLRenderEngine& re, GLContext& rc);
-	void RenderMeshByElementType(GLRenderEngine& re, GLContext& rc, GLMesh& mesh);
+	void RenderBeamParts(GLRenderEngine& re);
+	void RenderNodes(GLRenderEngine& re);
 
-	void RenderUnselectedBeamElements(GLRenderEngine& re, GLContext& rc);
-	void RenderSelectedFEElements(GLRenderEngine& re, GLContext& rc);
-	void RenderAllBeamElements(GLRenderEngine& re, GLContext& rc);
-	void RenderSelectedFEFaces(GLRenderEngine& re, GLContext& rc);
-	void RenderFEEdges(GLRenderEngine& re, GLContext& rc);
+	void RenderSurfaceMeshEdges(GLRenderEngine& re);
+	void RenderAllBeamElements(GLRenderEngine& re);
+	void RenderFEEdges(GLRenderEngine& re);
 	void RenderFENodes(GLRenderEngine& re, GLContext& rc);
 	void RenderSurfaceMeshNodes(GLRenderEngine& re, GLContext& rc);
-	void RenderNormals(GLRenderEngine& re, GLContext& rc, double scale);
-
-	void RenderSelection(GLRenderEngine& re, GLContext& rc);
+	void renderTaggedGMeshNodes(GLRenderEngine& re, const GLMesh& mesh, int tag);
 
 private:
-	void UpdateGMeshColor(GLMesh& msh);
+	std::vector<GLMaterial> m_mat; // material per face
+	GObject* m_po = nullptr;
+	unsigned int m_uid = 0; // uid of GLMesh used to create the other meshes
+	std::unique_ptr<GLMesh> m_surfMesh;
+	std::unique_ptr<GLMesh> m_selectionMesh;
+	std::unique_ptr<GLMesh> m_surfFEMesh;
+	std::unique_ptr<GLMesh> m_nodeFEMesh;
+};
 
-	void ColorByDefault     (GLMesh& msh);
-	void ColorByObject      (GLMesh& msh);
-	void ColorByMaterialType(GLMesh& msh);
-	void ColorByElementType (GLMesh& msh);
-	void ColorByPhysics     (GLMesh& msh);
+class GLMeshLinesItem : public GLModelSceneItem
+{
+public:
+	GLMeshLinesItem(CGLModelScene* scene, GObject* po) : GLModelSceneItem(scene), m_po(po) {}
+	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
-	GObject* m_po;
-	bool	m_clearCache;
+	GObject* m_po = nullptr;
+};
+
+class GLFeatureEdgesItem : public GLModelSceneItem
+{
+public:
+	GLFeatureEdgesItem(CGLModelScene* scene, GObject* po);
+	~GLFeatureEdgesItem();
+	void render(GLRenderEngine& re, GLContext& rc) override;
+
+private:
+	void BuildRenderMesh();
+
+	void ResetMesh(GLMesh* m = nullptr);
+	bool NeedsUpdate() const;
+
+private:
+	GObject* m_po = nullptr;
+	unsigned int m_uid = 0;
+	std::unique_ptr<GLMesh> m_mesh;
+};
+
+class GLObjectNormalsItem : public GLModelSceneItem
+{
+public:
+	GLObjectNormalsItem(CGLModelScene* scene, GObject* po) : GLModelSceneItem(scene), m_po(po) {}
+	void render(GLRenderEngine& re, GLContext& rc) override;
+
+private:
+	GObject* m_po = nullptr;
+	std::unique_ptr<GLMesh> m_normalMesh;
 };
 
 class GLDiscreteItem : public GLModelSceneItem
@@ -143,20 +203,6 @@ public:
 	void render(GLRenderEngine& re, GLContext& rc) override;
 };
 
-class GLMeshLinesItem : public GLModelSceneItem
-{
-public:
-	GLMeshLinesItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, GLContext& rc) override;
-};
-
-class GLFeatureEdgesItem : public GLModelSceneItem
-{
-public:
-	GLFeatureEdgesItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, GLContext& rc) override;
-};
-
 class GLPhysicsItem : public GLModelSceneItem
 {
 public:
@@ -165,11 +211,31 @@ public:
 
 private:
 	void RenderRigidBodies(GLRenderEngine& re, GLContext& rc) const;
-	void RenderRigidJoints(GLRenderEngine& re, GLContext& rc) const;
-	void RenderRigidConnectors(GLRenderEngine& re, GLContext& rc) const;
-	void RenderRigidWalls(GLRenderEngine& re, GLContext& rc) const;
-	void RenderMaterialFibers(GLRenderEngine& re, GLContext& rc) const;
-	void RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc) const;
+	void RenderRigidJoints(GLRenderEngine& re, double scale) const;
+	void RenderRigidConnectors(GLRenderEngine& re, double scale) const;
+	void RenderRigidWalls(GLRenderEngine& re) const;
+	void RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc);
+
+private:
+	void BuildAxesMesh(GLContext& rc);
+
+private:
+	std::unique_ptr<GLMesh> m_axesMesh;
+	GObject* m_axesObject = nullptr;
+	FSMesh* m_axesFEMesh = nullptr;
+};
+
+class GLFiberVizItem : public GLModelSceneItem
+{
+public:
+	GLFiberVizItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
+	void render(GLRenderEngine& re, GLContext& rc) override;
+
+private:
+	void BuildFiberViz(GLContext& rc);
+
+private:
+	GLFiberRenderer* m_fiberViz = nullptr;
 };
 
 class GLSelectionItem : public GLModelSceneItem
@@ -179,10 +245,10 @@ public:
 	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
-	void RenderSelectedParts(GLRenderEngine& re, GLContext& rc, GObject* po) const;
-	void RenderSelectedSurfaces(GLRenderEngine& re, GLContext& rc, GObject* po) const;
-	void RenderSelectedEdges(GLRenderEngine& re, GLContext& rc, GObject* po) const;
-	void RenderSelectedNodes(GLRenderEngine& re, GLContext& rc, GObject* po) const;
+	void RenderSelectedParts   (GLRenderEngine& re, GLContext& rc, GLObjectItem* po) const;
+	void RenderSelectedSurfaces(GLRenderEngine& re, GLContext& rc, GLObjectItem* po) const;
+	void RenderSelectedEdges   (GLRenderEngine& re, GLContext& rc, GLObjectItem* po) const;
+	void RenderSelectedNodes   (GLRenderEngine& re, GLContext& rc, GLObjectItem* po) const;
 };
 
 class GLHighlighterItem : public GLModelSceneItem
@@ -193,12 +259,12 @@ public:
 
 private:
 	void drawNode(GLRenderEngine& re, GLContext& rc, GNode* node, GLColor c);
-	void drawEdge(GLRenderEngine& re, GLContext& rc, GEdge* edge, GLColor c);
+	void drawEdge(GLRenderEngine& re, GEdge* edge, GLColor c);
 	void drawFace(GLRenderEngine& re, GLContext& rc, GFace* face, GLColor c);
 	void drawPart(GLRenderEngine& re, GLContext& rc, GPart* part, GLColor c);
 
-	void drawFENodeSet(GLRenderEngine& re, GLContext& rc, FSNodeSet* nodeSet, GLColor c);
-	void drawFESurface(GLRenderEngine& re, GLContext& rc, FSSurface* surf, GLColor c);
+	void drawFENodeSet(GLRenderEngine& re, FSNodeSet* nodeSet, GLColor c);
+	void drawFESurface(GLRenderEngine& re, FSSurface* surf, GLColor c);
 
 private:
 	GLColor			m_activeColor;		// color of active item
@@ -222,7 +288,7 @@ private:
 	CImageModel* m_img;
 };
 
-class CGLModelScene : public GLScene
+class CGLModelScene : public GLViewScene
 {
 public:
 	CGLModelScene(CModelDocument* doc);
@@ -231,15 +297,11 @@ public:
 
 	BOX GetBoundingBox() override;
 
-	BOX GetSelectionBox() override;
-
 	void SetObjectColorMode(OBJECT_COLOR_MODE colorMode);
 
 	OBJECT_COLOR_MODE ObjectColorMode() const;
 
 	void Update() override;
-
-	void UpdateFiberViz();
 
 	GLMesh& GetSelectionMesh() { return m_selectionMesh; }
 
@@ -259,33 +321,45 @@ public:
 
 	GObject* GetActiveObject() const;
 
-	GLFiberRenderer* GetFiberRenderer();
-
 	FESelection* GetCurrentSelection();
+
+public:
+	GLObjectItem* FindGLObjectItem(GObject* po);
+	GLObjectItem* GetActiveGLObjectItem() const { return m_activeObjectItem; }
+	std::vector<GLObjectItem*> GetGLObjectItems() const { return m_glObjectList; }
 
 private:
 	void BuildScene(GLContext& rc);
 
 public:
-	void RenderRigidLabels(GLContext& rc);
-
-	void RenderTags(GLContext& rc);
+	void UpdateTags(GLContext& rc);
+	void UpdateSelectionTags(GLContext& rc);
+	void UpdateRigidLabels(GLContext& rc);
 
 public:
-	GLColor GetPartColor(GPart* pg);
-	GLColor GetFaceColor(GFace& face);
-
-	void BuildFiberViz(GLContext& rc);
+	GLMaterial GetPartMaterial(GPart* pg);
+	GLMaterial GetFaceMaterial(GFace& face);
 
 	void UpdateRenderTransforms(GLContext& rc);
+
+	LegendData GetLegendData(int n) override;
+
+	void SetColorMap(int map) { m_colormap = map; Update(); }
+	int GetColorMap() const { return m_colormap; }
+
+	void ColorizeMesh(GObject* po);
 
 private:
 	CModelDocument* m_doc;
 	GLMesh			m_selectionMesh;
+
+	std::vector<GLObjectItem*> m_glObjectList;
+	GLObjectItem* m_activeObjectItem = nullptr;
+
+	int m_colormap = 6; // = JET
+	bool m_showLegend = false;
 	
 	OBJECT_COLOR_MODE	m_objectColor;
 
 	bool m_buildScene;
-
-	GLFiberRenderer* m_fiberViz;
 };

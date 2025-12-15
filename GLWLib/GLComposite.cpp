@@ -32,8 +32,16 @@ GLComposite::GLComposite(int x, int y, int w, int h) : GLWidget(x, y, w, h)
 	m_bgFillColor[0] = GLColor(255, 255, 255, 50);
 }
 
-void GLComposite::draw(QPainter* painter)
+GLComposite::~GLComposite()
 {
+	for (auto it : m_children) delete it;
+	m_children.clear();
+}
+
+void GLComposite::draw(GLPainter* painter)
+{
+	GLWidget::draw(painter);
+
 	int y = m_y;
 	for (GLWidget* w : m_children)
 	{
@@ -57,4 +65,10 @@ int GLComposite::handle(int x, int y, int nevent)
 		if (w->handle(x, y, nevent)) return 1;
 	}
 	return 0;
+}
+
+void GLComposite::scale(double s)
+{
+	GLWidget::scale(s);
+	for (GLWidget* w : m_children) w->scale(s);
 }

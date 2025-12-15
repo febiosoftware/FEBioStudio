@@ -68,6 +68,13 @@ enum View_Mode {
 	VIEW_ISOMETRIC
 };
 
+// view conventions
+enum View_Convention {
+	CONV_FR_XZ,
+	CONV_FR_XY,
+	CONV_US_XY
+};
+
 enum Planecut_Mode
 {
 	PLANECUT,
@@ -96,7 +103,7 @@ struct GLViewSettings
 	float	m_line_size;		//!< line size
 	bool	m_bline_smooth;		//!< line smoothing flag
 	bool	m_bpoint_smooth;	//!< point smoothing flag
-	bool	m_bzsorting;
+
 	int		m_defaultFGColorOption;	//!< determines how default FG color for widgets is set (0=theme, 1=user)
 	GLColor	m_defaultFGColor;		//!< the default FG color (when m_defaultFGColorOption == 1)
 	bool	m_snapToGrid;		//!< snap to grid
@@ -106,7 +113,6 @@ struct GLViewSettings
 	bool	m_bTags;
 	int		m_ntagInfo;	// amount of info shown on tags
 	int		m_tagFontSize;	// font size used for tags
-	bool	m_show3DCursor = false;
 	vec3d	m_pos3d;	// The location of the 3D cursor
 	int		m_transparencyMode;		// 0 = off, 1 = selected only, 2 = unselected only
 	bool	m_showHighlights;
@@ -123,8 +129,6 @@ struct GLViewSettings
 
 	// Lighting
 	bool	m_bLighting;	// use lighting or not
-	bool	m_bShadows;		// use shadows or not
-	float	m_shadow_intensity;	// shadow intensity
 	float	m_ambient;		// scene light ambient intensity
 	float	m_diffuse;		// scene light diffuse inentisty
 	bool	m_use_environment_map;	// use the environment map (if one is provided)
@@ -147,7 +151,6 @@ struct GLViewSettings
 	bool	m_showRigidLabels;	//!< show labels on rigid bodies
 
 	// Selection
-	bool	m_bcull;	//!< cull backface flag
 	bool	m_bconn;	//!< select connected
 	bool	m_bmax;		//!< max angle constraint for select connected
 	bool	m_bpart;	//!< respect partition boundaries flag
@@ -163,5 +166,6 @@ struct GLViewSettings
 	// UI
 	int		m_apply;	//!< emulate apply via middle mouse button
 
+	GLViewSettings() { Defaults(0); }
 	void Defaults(int ntheme = 0);
 };

@@ -85,7 +85,7 @@ void CCreateButtonPanel::AddCreateButton(const QString& txt, const QIcon& icon, 
 	tb->setAutoRaise(true);
 	std::string tmp = txt.toStdString();
 	std::string tip = FSCore::beautify_string(tmp.c_str());
-	tb->setToolTip(QString("<font color=\"black\">") + QString::fromStdString(tip));
+	tb->setToolTip(QString::fromStdString(tip));
 
 	int ncount = (int)buttonGroup->buttons().size();
 	int y = ncount % 5;

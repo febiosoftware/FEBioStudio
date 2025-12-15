@@ -106,7 +106,7 @@ private:
 
 //-----------------------------------------------------------------------------
 // point cloud rendering of imported point data
-class CGLPointPlot : public CGLLegendPlot
+class CGLPointPlot : public CGLPlot
 {
 	enum { POINT_SIZE, POINT_SIZE_SOURCE, RENDER_MODE, COLOR_MODE, SOLID_COLOR, COLOR_MAP, DATA_FIELD, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN};
 

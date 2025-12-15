@@ -11,7 +11,6 @@ set(FBS_BIN_NAME FEBioStudio)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_FILES_DIRECTORY ${CMAKE_BINARY_DIR}/CMakeFiles)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER Autogen)
@@ -36,7 +35,7 @@ if(NOT Qt6_DIR OR NOT CMAKE_PREFIX_PATH)
     if(WIN32)
         find_path(Qt_TEMP Qt6Config.cmake
             PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/*
-            PATH_SUFFIXES "lib/cmake/Qt6" "msvc2019_64/lib/cmake/Qt6"
+            PATH_SUFFIXES "lib/cmake/Qt6" "msvc2022_64/lib/cmake/Qt6"
             DOC "Qt CMake Directory"
             NO_DEFAULT_PATH)
     elseif(APPLE)
@@ -155,7 +154,11 @@ if(CAD_FEATURES)
         endforeach(name)    
     endif()
 
+if(USE_NEW_OCC)
+    set(OCCT_LIB_NAMES TKernel TKGeomBase TKTopAlgo TKPrim TKMesh TKMath TKBRep TKDESTL TKFillet TKBO TKDEIGES TKDESTEP TKXSBase TKG3d TKLCAF TKVCAF)
+else()
     set(OCCT_LIB_NAMES TKernel TKGeomBase TKTopAlgo TKPrim TKMesh TKMath TKBRep TKSTL TKFillet TKBO TKIGES TKSTEP TKSTEPBase TKXSBase TKG3d TKLCAF TKVCAF)
+endif()
     foreach(name IN LISTS OCCT_LIB_NAMES)
         findLib(OCCT_LIB_DIR OCCT_LIB ${name})
         list(APPEND OCCT_LIBS ${OCCT_LIB})
@@ -350,12 +353,6 @@ if(USE_FFMPEG)
 	include_directories(${FFMPEG_INC})
 endif()
 
-if(APPLE)
-    include_directories(${GLEW_INCLUDE_DIR})
-else()
-    include_directories(${GLEW_INCLUDE_DIRS})
-endif()
-
 if(USE_PYTHON)
     include_directories(${PYBIND11_INC})
 endif()
@@ -382,7 +379,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib OGLLib GLWLib RTLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioMonitor VTKLib PyLib)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib RTLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioMonitor VTKLib PyLib RHILib)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
@@ -480,36 +477,38 @@ endif()
 ##### Link Libraries #####
 
 # Linking the Qt libraries also pulls in the include files
-target_link_libraries(${FBS_BIN_NAME} Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::OpenGL Qt6::OpenGLWidgets)
-target_link_libraries(CUILib Qt6::Widgets Qt6::Gui Qt6::OpenGLWidgets)
-target_link_libraries(GLWLib Qt6::Gui Qt6::OpenGLWidgets)
+target_link_libraries(${FBS_BIN_NAME} Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::GuiPrivate)
+target_link_libraries(CUILib Qt6::Widgets Qt6::Gui)
+target_link_libraries(GLWLib Qt6::Gui Qt6::Widgets)
 target_link_libraries(PostGL Qt6::Gui)
 target_link_libraries(PostLib Qt6::Gui)
-target_link_libraries(GLLib Qt6::OpenGL Qt6::OpenGLWidgets)
-target_link_libraries(OGLLib Qt6::OpenGL Qt6::OpenGLWidgets)
+target_link_libraries(GLLib)
 target_link_libraries(RTLib)
+target_link_libraries(RHILib Qt6::Core Qt6::Widgets Qt6::Gui Qt6::GuiPrivate)
 target_link_libraries(FSCore Qt6::Core)
 target_link_libraries(MeshIO Qt6::Core)
 target_link_libraries(MeshTools Qt6::Core)
 target_link_libraries(ImageLib Qt6::Core Qt6::Gui)
-target_link_libraries(PyLib Qt6::Core Qt6::Gui Qt6::OpenGLWidgets)
-target_link_libraries(FEBioMonitor Qt6::Core Qt6::Widgets Qt6::Gui Qt6::OpenGLWidgets)
+target_link_libraries(PyLib Qt6::Core Qt6::Gui Qt6::Widgets)
+target_link_libraries(FEBioMonitor Qt6::Core Qt6::Widgets Qt6::Gui)
 
 if(WIN32)
 elseif(APPLE)
 else()
     target_link_libraries(${FBS_BIN_NAME} -static-libstdc++ -static-libgcc)
     
-	target_link_libraries(${FBS_BIN_NAME} -Wl,--start-group)
+	target_link_libraries(${FBS_BIN_NAME} -Wl,--allow-shlib-undefined -Wl,--start-group)
 endif()
 
 if(UNIX)
     if(${USE_MKL_OMP})
         target_link_libraries(${FBS_BIN_NAME} ${MKL_OMP})
         target_include_directories(RTLib PRIVATE ${OpenMP_C_INCLUDE_DIRS} ${OMP_INC})
+        target_include_directories(GLLib PRIVATE ${OpenMP_C_INCLUDE_DIRS} ${OMP_INC})
     else()
         target_link_libraries(${FBS_BIN_NAME} ${OpenMP_C_LIBRARIES})
         target_include_directories(RTLib PRIVATE ${OpenMP_C_INCLUDE_DIRS} ${OMP_INC})
+        target_include_directories(GLLib PRIVATE ${OpenMP_C_INCLUDE_DIRS} ${OMP_INC})
     endif()
 endif()
 
@@ -611,11 +610,6 @@ if(USE_ZLIB)
     target_link_libraries(${FBS_BIN_NAME} ${ZLIB_LIBRARY_RELEASE})
 endif()
 
-target_link_libraries(${FBS_BIN_NAME} ${OPENGL_LIBRARY})
-
-
-target_link_libraries(${FBS_BIN_NAME} ${GLEW_LIBRARIES} GLEW::glew)
-
 target_link_libraries(${FBS_BIN_NAME} ${FEBIOSTUDIO_LIBS})
 
 if (WIN32)
@@ -636,6 +630,31 @@ elseif(APPLE)
 else()
     target_link_libraries(${FBS_BIN_NAME} -Wl,--end-group)
 endif()
+
+set(SHADER_FILES
+    RHILib/shaders/color.vert
+    RHILib/shaders/color.frag
+    RHILib/shaders/lines.vert
+    RHILib/shaders/lines.frag
+    RHILib/shaders/point.vert
+    RHILib/shaders/point.frag
+    RHILib/shaders/overlay.vert
+    RHILib/shaders/overlay.frag
+    RHILib/shaders/canvas.vert
+    RHILib/shaders/canvas.frag
+    RHILib/shaders/triad.vert
+    RHILib/shaders/triad.frag
+    RHILib/shaders/volume.vert
+    RHILib/shaders/volume.frag
+    RHILib/shaders/grad.vert
+    RHILib/shaders/grad.frag
+    RHILib/shaders/diffuse.vert
+    RHILib/shaders/diffuse.frag
+)
+
+qt_add_shaders(${FBS_BIN_NAME} "rhi_shaders"
+    FILES ${SHADER_FILES}
+)
 
 option(BUILD_UPDATER "Build updater" OFF)
 if(BUILD_UPDATER)

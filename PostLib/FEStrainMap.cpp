@@ -139,7 +139,7 @@ void FEStrainMap::Apply(FEPostModel& fem)
 	m_fem = &fem;
 
 	// add a new data field
-	fem.AddDataField(new FEDataField_T<FEFaceData<float, DATA_NODE> >(&fem, EXPORT_DATA), szname);
+	fem.AddDataField(new FEDataField_T<FEFaceData<float, DATA_NODE> >(&fem), szname);
 	int NDATA = fem.GetDataManager()->DataFields() - 1;
 
 	// get the mesh

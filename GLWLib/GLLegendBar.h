@@ -25,7 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "GLWidget.h"
-#include <GLLib/ColorTexture.h>
+
+class CColorTexture;
 
 class GLLegendBar : public GLWidget
 {
@@ -34,9 +35,9 @@ public:
 	enum { ORIENT_HORIZONTAL, ORIENT_VERTICAL };
 
 public:
-	GLLegendBar(CColorTexture* pm, int x, int y, int w, int h, int orientation = ORIENT_VERTICAL);
+	GLLegendBar(int x, int y, int w, int h, int orientation = ORIENT_VERTICAL);
 
-	void draw(QPainter* painter);
+	void draw(GLPainter* painter);
 
 	void SetType(int n) { m_ntype = n; }
 
@@ -67,13 +68,15 @@ public:
 	float LineThickness() const { return m_lineWidth; }
 	void SetLineThickness(float f) { m_lineWidth = f; }
 
-protected:
-	void draw_gradient_vert(QPainter* painter);
-	void draw_gradient_horz(QPainter* painter);
-	void draw_discrete_vert(QPainter* painter);
-	void draw_discrete_horz(QPainter* painter);
+	void SetColorGradient(int n);
 
-	void draw_bg(int x0, int y0, int x1, int y1, QPainter* painter);
+protected:
+	void draw_gradient_vert(GLPainter* painter);
+	void draw_gradient_horz(GLPainter* painter);
+	void draw_discrete_vert(GLPainter* painter);
+	void draw_discrete_horz(GLPainter* painter);
+
+	void draw_bg(int x0, int y0, int x1, int y1, GLPainter* painter);
 
 protected:
 	int		m_ntype;	// type of bar
@@ -86,5 +89,5 @@ protected:
 	float	m_fmax;		// max of range
 	float	m_lineWidth;	// line width
 
-	CColorTexture* m_pMap;
+	CColorTexture* m_pMap = nullptr;
 };

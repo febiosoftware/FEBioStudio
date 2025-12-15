@@ -29,11 +29,11 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <FEMLib/FSModel.h>
 #include <GLLib/GLMesh.h>
-#include <GLLib/GLCamera.h>
-#include <GLLib/GLContext.h>
 #include <GLLib/GLViewSettings.h>
 #include <GLLib/GLRenderEngine.h>
 #include <FSCore/ColorMap.h>
+#include "GLModelScene.h"
+#include <FSCore/ColorMapManager.h>
 
 const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
@@ -63,24 +63,24 @@ bool GLPlaneCut::IsValid() const
 	return (m_planeCut != nullptr); 
 }
 
-void GLPlaneCut::Create(FSModel& fem, bool showMeshData, int mode)
+void GLPlaneCut::Create(CGLModelScene& scene, bool showMeshData, int mode)
 {
 	switch (mode)
 	{
-	case Planecut_Mode::PLANECUT     : CreatePlaneCut(fem, showMeshData); break;
-	case Planecut_Mode::HIDE_ELEMENTS: CreateHideElements(fem, showMeshData); break;
+	case Planecut_Mode::PLANECUT     : CreatePlaneCut(scene, showMeshData); break;
+	case Planecut_Mode::HIDE_ELEMENTS: CreateHideElements(scene, showMeshData); break;
 	default:
 		break;
 	}
 }
 
-void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
+void GLPlaneCut::CreatePlaneCut(CGLModelScene& scene, bool showMeshData)
 {
-	GModel& mdl = fem.GetModel();
-	GObject* poa = mdl.GetActiveObject();
+	GObject* poa = scene.GetActiveObject();
 	double vmin, vmax;
 
-	if (mdl.Objects() == 0) return;
+	std::vector<GLObjectItem*> objItems = scene.GetGLObjectItems();
+	if (objItems.empty()) return;
 
 	int edge[15][2], edgeNode[15][2], etag[15];
 
@@ -88,12 +88,11 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 	m_planeCut = new GLMesh;
 	GLMesh* planeCut = m_planeCut;
 
-	// TODO: swith to texture
-	CColorMap colormap;
+	FSModel& fem = *scene.GetFSModel();
 
-	for (int i = 0; i < mdl.Objects(); ++i)
+	for (auto item : objItems)
 	{
-		GObject* po = mdl.Object(i);
+		GObject* po = item->GetGObject();
 		if (po->GetFEMesh())
 		{
 			FSMesh* mesh = po->GetFEMesh();
@@ -102,7 +101,7 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 			int en[8];
 			GLColor ec[8];
 
-			const Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 
 			// set the plane normal
 			vec3d norm(m_plane[0], m_plane[1], m_plane[2]);
@@ -121,7 +120,7 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 			if ((po == poa) && (showMeshData))
 			{
 				showContour = (showMeshData && data.IsValid());
-				if (showContour) { data.GetValueRange(vmin, vmax); colormap.SetRange((float)vmin, (float)vmax); }
+				if (showContour) { data.GetValueRange(vmin, vmax); m_col.SetRange((float)vmin, (float)vmax); }
 			}
 
 			// repeat over all elements
@@ -184,7 +183,7 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 						for (int k = 0; k < 8; ++k)
 						{
 							if (data.GetElementDataTag(i) > 0)
-								ec[k] = colormap.map(data.GetElementValue(i, nt[k]));
+								ec[k] = m_col.map(data.GetElementValue(i, nt[k]));
 							else
 								ec[k] = inactiveColor;
 						}
@@ -308,24 +307,24 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 	planeCut->Update();
 }
 
-void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
+void GLPlaneCut::CreateHideElements(CGLModelScene& scene, bool showMeshData)
 {
-	GModel& mdl = fem.GetModel();
-	GObject* poa = mdl.GetActiveObject();
-	double vmin, vmax;
+	FSModel& fem = *scene.GetFSModel();
 
-	if (mdl.Objects() == 0) return;
+	GObject* poa = scene.GetActiveObject();
+	double vmin, vmax;
 
 	if (m_planeCut) delete m_planeCut;
 	m_planeCut = new GLMesh;
 	GLMesh* planeCut = m_planeCut;
 
 	// TODO: swith to texture
-	CColorMap colormap;
+	CColorMap& colormap = m_col;
 
-	for (int n = 0; n < mdl.Objects(); ++n)
+	std::vector<GLObjectItem*> objItems = scene.GetGLObjectItems();
+	for (auto item : objItems)
 	{
-		GObject* po = mdl.Object(n);
+		GObject* po = item->GetGObject();
 		if (po->GetFEMesh())
 		{
 			FSMesh* mesh = po->GetFEMesh();
@@ -335,7 +334,7 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 			double ev[8] = { 0 };
 			GLColor ec[8];
 
-			const Transform& T = po->GetRenderTransform();
+			Transform T = item->GetTransform();
 
 			// set the plane normal
 			vec3d norm(m_plane[0], m_plane[1], m_plane[2]);
@@ -476,12 +475,14 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 
 								// calculate nodal positions
 								vec3f r[3];
+								GLColor vc[3];
 								for (int m = 0; m < 3; m++)
 								{
 									int node = pf[m];
 									if (node < 4)
 									{
 										r[m] = to_vec3f(T.LocalToGlobal(ex[node]));
+										vc[m] = ec[node];
 									}
 									else
 									{
@@ -494,6 +495,9 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 										float w = (ref - (float)v1) / ((float)v2 - (float)v1);
 										vec3d p = ex[n1] * (1.f - w) + ex[n2] * w;
 										r[m] = to_vec3f(T.LocalToGlobal(p));
+
+										GLColor cm = ec[n1] * (1.f - w) + ec[n2] * w;
+										vc[m] = cm;
 									}
 								}
 
@@ -504,7 +508,15 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 								{
 									face.eid = i;
 								}
-								face.c[0] = face.c[1] = face.c[2] = c;
+
+								if (showContour)
+								{
+									face.c[0] = vc[0];
+									face.c[1] = vc[1];
+									face.c[2] = vc[2];
+								}
+								else
+									face.c[0] = face.c[1] = face.c[2] = c;
 
 								pf += 3;
 							}
@@ -531,34 +543,36 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 	planeCut->Update();
 }
 
-void GLPlaneCut::Render(GLRenderEngine& re, GLContext& rc)
+void GLPlaneCut::Render(GLRenderEngine& re)
 {
 	if (m_planeCut == nullptr) return;
 
 	// render the unselected faces
-	re.setMaterial(GLMaterial::PLASTIC, GLColor(200, 200, 200), GLMaterial::VERTEX_COLOR);
-	re.renderGMesh(*m_planeCut, 0, false);
+	GLMaterial mat;
+	mat.type = GLMaterial::PLASTIC;
+	mat.diffuse = GLColor::White();
+	mat.diffuseMap = GLMaterial::VERTEX_COLOR;
+	re.setMaterial(mat);
+	re.renderGMesh(*m_planeCut, 0);
 
 	// render the selected faces
-	re.setColor(GLColor(255, 64, 0));
-	re.renderGMesh(*m_planeCut, 1, false);
-
-	if (rc.m_settings.m_bmesh)
+	if (m_planeCut->SurfacePartitions() > 1)
 	{
-		GLCamera& cam = *rc.m_cam;
-		cam.LineDrawMode(true);
-		re.positionCamera(cam);
+		re.setColor(GLColor(255, 64, 0));
+		re.renderGMesh(*m_planeCut, 1);
+	}
 
-		GLColor c = rc.m_settings.m_meshColor;
-		re.setMaterial(GLMaterial::CONSTANT, c);
-		re.renderGMeshEdges(*m_planeCut, 0, false);
+	if (m_renderMesh)
+	{
+		re.setMaterial(GLMaterial::CONSTANT, m_meshColor);
+		re.renderGMeshEdges(*m_planeCut, 0);
 
-		// TODO: This used to be drawn with depthtest off
-		re.setColor(GLColor::Yellow());
-		re.renderGMeshEdges(*m_planeCut, 1, false);
-
-		cam.LineDrawMode(false);
-		re.positionCamera(cam);
+		if (m_planeCut->SurfacePartitions() > 1)
+		{
+			// TODO: This used to be drawn with depthtest off
+			re.setColor(GLColor::Yellow());
+			re.renderGMeshEdges(*m_planeCut, 1);
+		}
 	}
 }
 

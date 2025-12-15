@@ -115,7 +115,8 @@ GBox::GBox(double W, double H, double D) : GPrimitive(GBOX)
 //-----------------------------------------------------------------------------
 FEMesher* GBox::CreateDefaultMesher()
 {
-	return new FEBoxMesher();
+	FEBoxMesher* mesher = new FEBoxMesher(*this);
+	return mesher;
 }
 
 //-----------------------------------------------------------------------------

@@ -24,8 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLCheckBox.h"
-#include <QPainter>
-#include "convert.h"
 
 GLCheckBox::GLCheckBox(int x, int y, int w, int h, const char* szlabel) : GLWidget(x, y, w, h, szlabel)
 {
@@ -33,8 +31,10 @@ GLCheckBox::GLCheckBox(int x, int y, int w, int h, const char* szlabel) : GLWidg
 	m_checkRect[0] = m_checkRect[1] = m_checkRect[2] = m_checkRect[3] = 0;
 }
 
-void GLCheckBox::draw(QPainter* painter)
+void GLCheckBox::draw(GLPainter* painter)
 {
+	GLWidget::draw(painter);
+
 	int x0 = m_x;
 	int y0 = m_y;
 	int x1 = m_x + m_w;
@@ -50,10 +50,13 @@ void GLCheckBox::draw(QPainter* painter)
 
 	QPen oldpen = painter->pen();
 
+	GLColor fc = get_fg_color();
+
 	// draw the checkmark
 	const int checkSize = 2 * m_h / 3;
 	QPen pen = painter->pen();
-	pen.setColor(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
+	pen.setColor(QColor(fc.r, fc.g, fc.b));
+	pen.setWidth(1);
 	painter->setPen(pen);
 	int xl = x0 + 2;
 	int yl = y0 + (h - checkSize) / 2;

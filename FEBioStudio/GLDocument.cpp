@@ -25,14 +25,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLDocument.h"
 #include <QtCore/QDir>
-#include <QFileInfo>
-#include <GLWLib/GLWidgetManager.h>
 #include <GLLib/GLScene.h>
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMultiPatch.h>
 #include <GeomLib/GMeshObject.h>
+#include <GeomLib/GOCCObject.h>
 #include <GeomLib/GGroup.h>
 #include <PostGL/GLPlot.h>
 #include <PostGL/GLDisplacementMap.h>
@@ -49,13 +48,34 @@ SOFTWARE.*/
 #include <MeshLib/FSElementData.h>
 #include <FSCore/FileReader.h>
 #include <FSCore/FileWriter.h>
+#include <FSCore/ColorMapManager.h>
 #include "FEBioJob.h"
 #include "units.h"
 #include "MainWindow.h"
 #include "Commands.h"
 #include <sstream>
 
-CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
+CGLSceneDocument::CGLSceneDocument(CMainWindow* wnd) : CUndoDocument(wnd)
+{
+	m_scene = nullptr;
+}
+
+CGView* CGLSceneDocument::GetView()
+{
+	return &m_view;
+}
+
+GLScene* CGLSceneDocument::GetScene()
+{
+	return m_scene;
+}
+
+void CGLSceneDocument::Update()
+{
+	if (m_scene) m_scene->Update();
+}
+
+CGLDocument::CGLDocument(CMainWindow* wnd) : CGLSceneDocument(wnd)
 {
 	m_fileWriter = nullptr;
 	m_fileReader = nullptr;
@@ -73,17 +93,9 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 
 	m_psel = nullptr;
 
-	m_scene = nullptr;
-
 	m_showTitle = false;
 	m_showSubtitle = false;
 	m_showLegend = false;
-	m_dataRange[0] = m_dataRange[1] = 0;
-
-	static int layer = 1;
-	m_widgetLayer = layer++;
-
-	CGLWidgetManager::GetInstance()->SetEditLayer(m_widgetLayer);
 }
 
 CGLDocument::~CGLDocument()
@@ -101,11 +113,6 @@ void CGLDocument::SetUnitSystem(int unitSystem)
 int CGLDocument::GetUnitSystem() const
 {
 	return m_units;
-}
-
-std::string CGLDocument::GetRenderString()
-{
-	return std::string();
 }
 
 FESelection* CGLDocument::GetCurrentSelection() { return m_psel; }
@@ -159,25 +166,20 @@ GObject* CGLDocument::GetActiveObject()
 	return nullptr;
 }
 
-CGView* CGLDocument::GetView()
-{
-	return &m_scene->GetView();
-}
-
-GLScene* CGLDocument::GetScene()
-{
-	return m_scene;
-}
-
 void CGLDocument::Update()
 {
 	UpdateSelection();
-	if (m_scene) m_scene->Update();
+	CGLSceneDocument::Update();
 }
 
-int CGLDocument::GetWidgetLayer()
+void CGLDocument::ZoomSelection(bool forceZoom)
 {
-	return m_widgetLayer;
+	BOX box = GetSelectionBox();
+	GLScene* scene = GetScene();
+	if (box.IsValid() && scene)
+	{
+		scene->GetCamera().ZoomToBox(box, forceZoom);
+	}
 }
 
 std::string CGLDocument::GetTypeString(FSObject* po)
@@ -190,6 +192,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<GMeshObject*>(po)) return "Editable mesh";
 	else if (dynamic_cast<GCurveMeshObject*>(po)) return "Editable curve";
 	else if (dynamic_cast<GSurfaceMeshObject*>(po)) return "Editable surface";
+	else if (dynamic_cast<GOCCObject*>(po)) return "OCC object";
 	else if (dynamic_cast<GMaterial*>(po))
 	{
 		GMaterial* gmat = dynamic_cast<GMaterial*>(po);

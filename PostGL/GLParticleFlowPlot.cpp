@@ -158,7 +158,6 @@ void CGLParticleFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 	int NP = (int) m_particles.size();
 	if (NP == 0) return;
 
-	re.pushState();
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::White());
 
 	// build a point mesh
@@ -231,8 +230,6 @@ void CGLParticleFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 			re.renderGMeshEdges(lineMesh, false);
 		}
 	}
-
-	re.popState();
 }
 
 void CGLParticleFlowPlot::Update(int ntime, float dt, bool breset)
@@ -365,7 +362,7 @@ void CGLParticleFlowPlot::UpdateParticleColors()
 	if (vmax == vmin) vmax++;
 
 	int ncol = m_Col.GetColorMap();
-	CColorMap& col = ColorMapManager::GetColorMap(ncol);
+	const CColorMap& col = ColorMapManager::GetColorMap(ncol);
 
 	int NP = (int)m_particles.size();
 	for (int i = 0; i<NP; ++i)
@@ -528,8 +525,8 @@ void CGLParticleFlowPlot::SeedParticles()
 		float w = frand();
 
 		// see if this is a valid candidate for a seed
-		vec3f fn = f.m_fn;
-		if ((fn*vf < -vtol) && (w <= m_density))
+		vec3f fn = to_vec3f(mesh.FaceNormal(f));
+		if ((w <= m_density) && (fn*vf < -vtol))
 		{
 			// calculate the face center, this will be the seed
 			// NOTE: We are using reference coordinates, therefore we assume that the mesh is not deforming!!
@@ -555,4 +552,19 @@ void CGLParticleFlowPlot::SeedParticles()
             }
 		}
 	}
+}
+
+LegendData CGLParticleFlowPlot::GetLegendData() const
+{
+	LegendData l;
+
+	l.discrete = false;
+	l.ndivs = 10;
+	l.vmin = m_crng.x;
+	l.vmax = m_crng.y;
+	l.smooth = false;
+	l.colormap = GetIntValue(COLOR_MAP);
+	l.title = GetName();
+
+	return l;
 }

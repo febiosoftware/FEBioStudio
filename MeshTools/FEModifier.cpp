@@ -39,6 +39,8 @@ SOFTWARE.*/
 #include <MeshLib/Intersect.h>
 #include <GeomLib/GGroup.h>
 #include <MeshTools/LaplaceSolver.h>
+#include <FEBioStudio/MeasureTools.h>
+#include <numeric>
 
 FEModifier::FEModifier(const char* sz) { SetName(sz); }
 FEModifier::~FEModifier() {}
@@ -250,7 +252,7 @@ FSMesh* FEFlattenFaces::Apply(FSMesh *pm)
 		for (i=0; i<m.Faces(); ++i)
 		{
 			FSFace& f = m.Face(i);
-			if (f.IsSelected()) na += to_vec3d(f.m_fn);
+			if (f.IsSelected()) na += m.FaceNormal(f);
 		}
 	}
 	else na = m_na;
@@ -467,7 +469,6 @@ FSMesh* FEAlignNodes::Apply(FSMesh* pm)
 		}
 	}
 
-	pnm->UpdateNormals();
 	pnm->UpdateBoundingBox();
 
 	return pnm;
@@ -480,8 +481,37 @@ FSMesh* FEAlignNodes::Apply(FSMesh* pm)
 
 FEProjectNodes::FEProjectNodes() : FEModifier("Project Nodes")
 {
-    AddChoiceParam(0, "project", "project")->SetEnumNames("X-plane\0Y-plane\0Z-Plane\0Surface\0");
+    AddChoiceParam(0, "project", "project")->SetEnumNames("X-plane\0Y-plane\0Z-Plane\0Surface\0User Plane");
+	AddVecParam(vec3d(0, 0, 0), "point", "point on plane")->SetState(0);
+	AddVecParam(vec3d(0, 0, 1), "normal", "normal of plane")->SetState(0);
 }
+
+bool FEProjectNodes::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		int method = GetIntValue(0);
+		if (method != m_method)
+		{
+			m_method = method;
+			if (method == 4)
+			{
+				GetParam(1).SetState(Param_ALLFLAGS);
+				GetParam(2).SetState(Param_ALLFLAGS);
+			}
+			else
+			{
+				GetParam(1).SetState(0);
+				GetParam(2).SetState(0);
+			}
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 
 FSMesh* FEProjectNodes::Apply(FSMesh* pm)
 {
@@ -515,7 +545,6 @@ FSMesh* FEProjectNodes::Apply(FSMesh* pm)
     if (iref == -1) { delete pnm; return 0; }
 
 	pnm->UpdateBoundingBox();
-	pnm->UpdateNormals();
     
     return pnm;
 }
@@ -540,8 +569,49 @@ FSMesh* FEProjectNodes::Apply(GObject* po, FESelection* pg)
 			return ProjectToSurface(po, sel->Face(0));
 		}
 	}
+	else if (nplane == 4)
+	{
+		// make sure we only have a node selection on the current mesh
+		FSMesh* pm = po->GetFEMesh();
+		FENodeSelection* sel = dynamic_cast<FENodeSelection*>(pg);
+		if (sel && (sel->GetMesh() == pm)) return ProjectToUserPlane(po);
+	}
 
 	return nullptr;
+}
+
+FSMesh* FEProjectNodes::ProjectToUserPlane(GObject* po)
+{
+	FSMesh* oldMesh = po->GetFEMesh();
+	if (oldMesh == nullptr) return nullptr;
+
+	// get the plane data
+	vec3d r0 = GetVecValue(1);
+	vec3d n = GetVecValue(2);
+	n.Normalize();
+
+	// make sure the normal is valid
+	if (n.norm() == 0) return nullptr;
+
+	// create a new mesh
+	FSMesh* pnm = new FSMesh(*oldMesh);
+	Transform T = po->GetTransform();
+	for (int i = 0; i < pnm->Nodes(); ++i)
+	{
+		FSNode& node = pnm->Node(i);
+		if (node.IsSelected())
+		{
+			// get the global position of the node
+			vec3d r_global = T.LocalToGlobal(node.r);
+			// project this node onto the plane
+			double d = n * (r_global - r0);
+			r_global -= n * d;
+			// convert back to local coordinates
+			node.r = T.GlobalToLocal(r_global);
+		}
+	}
+	pnm->UpdateBoundingBox();
+	return pnm;
 }
 
 FSMesh* FEProjectNodes::ProjectToSurface(GObject* po, GFace* pg)
@@ -585,7 +655,6 @@ FSMesh* FEProjectNodes::ProjectToSurface(GObject* po, GFace* pg)
 		}
 	}
 	pnm->UpdateBoundingBox();
-	pnm->UpdateNormals();
 
 	return pnm;
 }
@@ -1126,7 +1195,7 @@ FSMesh* FEMirrorMesh::Apply(FSMesh *pm)
 		for (int i = 0; i < sel->Count(); ++i)
 		{
 			FSFace& face = *sel->Face(i);
-			N += to_vec3d(face.m_fn);
+			N += pm->FaceNormal(face);
 		}
 		N.Normalize();
 	}

@@ -26,21 +26,23 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "CColorButton.h"
+#include <QPainter>
+#include <QColorDialog>
 
-CColorButton::CColorButton(QWidget* parent) : QWidget(parent)
+
+CColorButton::CColorButton(QWidget* parent) : QFrame(parent)
 {
+	setFrameShape(QFrame::NoFrame);
 	m_col = QColor(Qt::black);
 	setMinimumSize(sizeHint());
 }
 
 void CColorButton::paintEvent(QPaintEvent* ev)
 {
+	QFrame::paintEvent(ev);
+
 	QPainter p(this);
-	p.fillRect(rect(), m_col);
-	p.setPen(Qt::black);
-	QRect rt = rect();
-	rt.adjust(0,0,-1,-1);
-	p.drawRect(rt);
+	p.fillRect(contentsRect(), m_col);
 }
 
 void CColorButton::setColor(const QColor& c)

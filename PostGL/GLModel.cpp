@@ -46,11 +46,11 @@ extern int ET_PYRA13[8][3];
 // constructor
 CGLModel::CGLModel(FEPostModel* ps)
 {
-	m_ps = ps;
+	m_postMdl = ps;
 	SetName("Model");
 
 	m_lastMesh = nullptr;
-	
+
 	m_stol = 60.0;
 
 	m_bnorm = false;
@@ -58,8 +58,6 @@ CGLModel::CGLModel(FEPostModel* ps)
 	m_bghost = false;
 	m_nDivs = 0; // this means "auto"
 	m_brenderInteriorNodes = true;
-
-	m_doZSorting = true;
 
 	m_renderInnerSurface = true;
 
@@ -82,9 +80,6 @@ CGLModel::CGLModel(FEPostModel* ps)
 	m_selectType = SELECT_FE_ELEMS;
 	m_selectStyle = SELECT_RECT;
 	m_selection = nullptr;
-
-	m_pcol = nullptr;
-	m_pdis = nullptr;
 
 	m_ghost_color = GLColor(96, 96, 96);
 
@@ -109,15 +104,15 @@ CGLModel::CGLModel(FEPostModel* ps)
 	if (ndisp != -1)
 	{
 		ps->SetDisplacementField(BUILD_FIELD( DATA_CLASS::NODE_DATA, ndisp, 0));
-		m_pdis = new CGLDisplacementMap(this);
+		m_dispMap.reset(new CGLDisplacementMap(this));
 	}
 
 	// add a default color map
-	m_pcol = new CGLColorMap(this);
+	m_colMap.reset(new CGLColorMap(this));
 
 	if (ps)
 	{
-		m_postObj = new CPostObject(this);
+		m_postObj.reset(new CPostObject(this));
 
 		// Set the FE mesh and update
 		m_postObj->SetFEMesh(ps->GetFEMesh(0));
@@ -126,7 +121,7 @@ CGLModel::CGLModel(FEPostModel* ps)
 	else m_postObj = nullptr;
 
 	UpdateEdge();
-	m_postObj->BuildInternalSurfaces();
+	if (m_postObj) m_postObj->BuildInternalSurfaces();
 	Update(false);
 }
 
@@ -134,40 +129,36 @@ CGLModel::CGLModel(FEPostModel* ps)
 //! destructor
 CGLModel::~CGLModel(void)
 {
-	delete m_pdis;
-	delete m_pcol;
-	delete m_postObj;
 }
 
 void CGLModel::Clear()
 {
 	SetFEModel(nullptr);
-	m_postObj = nullptr;
+	m_postObj.reset();
 }
 
 bool CGLModel::IsValid() const
 {
-	return (m_ps && m_postObj);
+	return (m_postMdl && m_postObj);
 }
 
 void CGLModel::SetFEModel(FEPostModel* ps)
 {
 	SetSelection(nullptr);
-	m_ps = ps;
-	if (m_postObj) delete m_postObj; 
+	m_postMdl = ps;
+	m_postObj.reset(); 
 	if (ps)
 	{
-		m_postObj = new CPostObject(this);
+		m_postObj.reset(new CPostObject(this));
 		m_postObj->SetFEMesh(ps->GetFEMesh(0));
 		m_postObj->Update(true);
+		m_postObj->BuildInternalSurfaces();
 	}
-	else m_postObj = nullptr;
-	if (m_postObj) m_postObj->BuildInternalSurfaces();
 }
 
 CPostObject* CGLModel::GetPostObject()
 {
-	return m_postObj;
+	return m_postObj.get();
 }
 
 void CGLModel::ShowShell2Solid(bool b) { m_bShell2Solid = b; }
@@ -188,11 +179,10 @@ void CGLModel::ShellReferenceSurface(int n) { m_nshellref = n; }
 //-----------------------------------------------------------------------------
 FSMesh* CGLModel::GetActiveMesh()
 {
-	FEPostModel* pfem = GetFSModel();
-	if (pfem)
+	if (m_postMdl)
 	{
-		if (pfem->GetStates() > 0) return m_ps->CurrentState()->GetFEMesh();
-		return pfem->GetFEMesh(0);
+		if (m_postMdl->GetStates() > 0) return m_postMdl->CurrentState()->GetFEMesh();
+		return m_postMdl->GetFEMesh(0);
 	}
 	return nullptr;
 }
@@ -200,36 +190,35 @@ FSMesh* CGLModel::GetActiveMesh()
 //-----------------------------------------------------------------------------
 Post::FEState* CGLModel::GetActiveState()
 {
-	FEPostModel* pfem = GetFSModel();
-	if (pfem && (pfem->GetStates() > 0)) return m_ps->CurrentState();
+	if (m_postMdl && (m_postMdl->GetStates() > 0)) return m_postMdl->CurrentState();
 	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-float CGLModel::CurrentTime() const { return (m_ps ? m_ps->CurrentTime() : 0.f); }
+float CGLModel::CurrentTime() const { return (m_postMdl ? m_postMdl->CurrentTime() : 0.f); }
 
 //-----------------------------------------------------------------------------
-int CGLModel::CurrentTimeIndex() const { return (m_ps ? m_ps->CurrentTimeIndex() : -1); }
+int CGLModel::CurrentTimeIndex() const { return (m_postMdl ? m_postMdl->CurrentTimeIndex() : -1); }
 
 //-----------------------------------------------------------------------------
 void CGLModel::SetCurrentTimeIndex(int ntime)
 {
-	if (m_ps && m_ps->GetStates()) m_ps->SetCurrentTimeIndex(ntime);
+	if (m_postMdl && m_postMdl->GetStates()) m_postMdl->SetCurrentTimeIndex(ntime);
 }
 
 //-----------------------------------------------------------------------------
 void CGLModel::SetTimeValue(float ftime)
 {
-	if (m_ps && m_ps->GetStates()) m_ps->SetTimeValue(ftime);
+	if (m_postMdl && m_postMdl->GetStates()) m_postMdl->SetTimeValue(ftime);
 }
 
 //-----------------------------------------------------------------------------
 // Update the model data
 bool CGLModel::Update(bool breset)
 {
-	if (m_ps == nullptr) return true;
+	if (m_postMdl == nullptr) return true;
 
-	FEPostModel& fem = *m_ps;
+	FEPostModel& fem = *m_postMdl;
 	if (fem.GetStates() == 0) return true;
 
 	// get the time inc value
@@ -237,7 +226,7 @@ bool CGLModel::Update(bool breset)
 	float dt = fem.CurrentTime() - fem.GetTimeValue(ntime);
 
 	// update the state of the mesh
-	GetFSModel()->UpdateMeshState(ntime);
+	fem.UpdateMeshState(ntime);
 
 	// Calling this will rebuild the internal surfaces
 	// This should only be done when the mesh has changed
@@ -249,10 +238,10 @@ bool CGLModel::Update(bool breset)
 	}
 
 	// update displacement map
-	if (m_pdis && m_pdis->IsActive()) m_pdis->Update(ntime, dt, breset);
+	if (m_dispMap && m_dispMap->IsActive()) m_dispMap->Update(ntime, dt, breset);
 
 	// update the colormap
-	if (m_pcol && m_pcol->IsActive()) m_pcol->Update(ntime, dt, breset);
+	if (m_colMap && m_colMap->IsActive()) m_colMap->Update(ntime, dt, breset);
 
 	// NOTE: commenting this out since this would cause the FieldDataSelector's menu
 	//       to be rebuild each time a user selected a new field
@@ -290,31 +279,24 @@ bool CGLModel::Update(bool breset)
 //-----------------------------------------------------------------------------
 void CGLModel::UpdateDisplacements(int nstate, bool breset)
 {
-	if (m_pdis && m_pdis->IsActive()) m_pdis->Update(nstate, 0.f, breset);
+	if (m_dispMap && m_dispMap->IsActive()) m_dispMap->Update(nstate, 0.f, breset);
 }
 
 //-----------------------------------------------------------------------------
 void CGLModel::SetSmoothingAngle(double w)
 { 
 	m_stol = w;
-
-	FEPostModel* ps = GetFSModel();
-	if (ps == 0) return;
-
-	FSMeshBase* pm = ps->GetFEMesh(0);
-	pm->AutoSmooth(m_stol);
 }
 
 //-----------------------------------------------------------------------------
 bool CGLModel::AddDisplacementMap(const char* szvectorField)
 {
 	if (szvectorField == nullptr) szvectorField = "displacement";
-
-	FEPostModel* ps = GetFSModel();
+	if (m_postMdl == nullptr) return false;
 
 	// see if the mesh has any vector fields
 	// which can be used for displacement maps
-	FEDataManager* pdm = ps->GetDataManager();
+	FEDataManager* pdm = m_postMdl->GetDataManager();
 	FEDataFieldPtr pd = pdm->FirstDataField();
 	int nv = 0;
 	int ndisp = -1;
@@ -326,15 +308,14 @@ bool CGLModel::AddDisplacementMap(const char* szvectorField)
 
 	if (nv == 0) return false;
 
-	if (m_pdis) delete m_pdis;
-	m_pdis = new CGLDisplacementMap(this);
+	m_dispMap.reset(new CGLDisplacementMap(this));
 	if (ndisp != -1)
 	{
-		ps->SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, ndisp, 0));
+		m_postMdl->SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, ndisp, 0));
 	}
-	else ps->SetDisplacementField(-1);
+	else m_postMdl->SetDisplacementField(-1);
 
-	GetFSModel()->ResetAllStates();
+	m_postMdl->ResetAllStates();
 
 	return true;
 }
@@ -342,14 +323,15 @@ bool CGLModel::AddDisplacementMap(const char* szvectorField)
 //-----------------------------------------------------------------------------
 bool CGLModel::HasDisplacementMap()
 {
-	if (m_pdis == 0) return false;
-	return (GetFSModel()->GetDisplacementField() >= 0);
+	if ((m_postMdl == nullptr) || (m_dispMap == nullptr)) return false;
+	return (m_postMdl->GetDisplacementField() >= 0);
 }
 
 //-----------------------------------------------------------------------------
 void CGLModel::ResetMesh()
 {
-	FEPostModel& fem = *GetFSModel();
+	if (m_postMdl == nullptr) return;
+	FEPostModel& fem = *m_postMdl;
 	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	Post::FERefState& ref = *fem.GetState(0)->m_ref;
@@ -360,24 +342,21 @@ void CGLModel::ResetMesh()
 		FSNode& node = mesh.Node(i);
 		node.r = to_vec3d(ref.m_Node[i].m_rt);
 	}
-
-	// reevaluate normals
-	mesh.UpdateNormals();
 }
 
 //-----------------------------------------------------------------------------
 void CGLModel::RemoveDisplacementMap()
 {
-	FEPostModel* ps = GetFSModel();
-	ps->SetDisplacementField(-1);
-	delete m_pdis;
-	m_pdis = 0;
+	if (m_postMdl == nullptr) return;
+	m_postMdl->SetDisplacementField(-1);
+
+	m_dispMap.reset();
 
 	// reset the mesh
 	ResetMesh();
 
 	// just to be safe, let's reset all states to force them to reevaluate
-	GetFSModel()->ResetAllStates();
+	m_postMdl->ResetAllStates();
 }
 
 //-----------------------------------------------------------------------------
@@ -403,10 +382,12 @@ void CGLModel::SetSubDivisions(int ndivs)
 
 int CGLModel::GetSubDivisions()
 {
+	FSMesh* mesh = GetActiveMesh();
+	if (mesh == nullptr) return 1;
+
 	if (m_nDivs < 1)
 	{
-		FSMesh& mesh = *GetActiveMesh();
-		int NE = mesh.Elements();
+		int NE = mesh->Elements();
 		if (NE == 0) return 1;
 
 		const int max_elem = 10000;
@@ -432,8 +413,8 @@ void CGLModel::SetSelection(FESelection* sel)
 
 void CGLModel::UpdateSelectionMesh()
 {
-	GLMesh& m = m_selectionMesh;
-	BuildSelectionMesh(m_selection, m_selectionMesh);
+	m_selectionMesh.reset(new GLMesh());
+	BuildSelectionMesh(m_selection, *m_selectionMesh);
 }
 
 //-----------------------------------------------------------------------------
@@ -567,8 +548,10 @@ void CGLModel::ShowMaterial(int nmat)
 // Show elements with a certain material ID
 void CGLModel::UpdateMeshVisibility()
 {
+	if (m_postMdl == nullptr) return;
+
 	FSMesh& mesh = *GetActiveMesh();
-	Post::FEPostModel& fem = *GetFSModel();
+	Post::FEPostModel& fem = *m_postMdl;
 
 	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
@@ -628,7 +611,7 @@ void CGLModel::UpdateMeshVisibility()
 		else edge.Show(false);
 	}
 
-	m_postObj->BuildInternalSurfaces();
+	if (m_postObj) m_postObj->BuildInternalSurfaces();
 }
 
 //-----------------------------------------------------------------------------
@@ -636,13 +619,14 @@ void CGLModel::SelectElemsInRange(float fmin, float fmax, bool bsel)
 {
 	FSMesh* pm = GetActiveMesh();
 	int N = pm->Elements();
-	FEState* ps = GetActiveState();
+	FEState* state = GetActiveState();
+	if (state == nullptr) return;
 	for (int i = 0; i<N; ++i)
 	{
 		FSElement_& el = pm->ElementRef(i);
 		if (el.IsEnabled() && el.IsVisible() && ((bsel == false) || (el.IsSelected())))
 		{
-			float v = ps->m_ELEM[i].m_val;
+			float v = state->m_ELEM[i].m_val;
 			if ((v >= fmin) && (v <= fmax)) el.Select();
 			else el.Unselect();
 		}
@@ -654,13 +638,14 @@ void CGLModel::SelectNodesInRange(float fmin, float fmax, bool bsel)
 {
 	FSMesh* pm = GetActiveMesh();
 	int N = pm->Nodes();
-	FEState* ps = GetActiveState();
+	FEState* state = GetActiveState();
+	if (state == nullptr) return;
 	for (int i = 0; i<N; ++i)
 	{
 		FSNode& node = pm->Node(i);
 		if (node.IsEnabled() && node.IsVisible() && ((bsel == false) || (node.IsSelected())))
 		{
-			float v = ps->m_NODE[i].m_val;
+			float v = state->m_NODE[i].m_val;
 			if ((v >= fmin) && (v <= fmax)) node.Select();
 			else node.Unselect();
 		}
@@ -672,13 +657,14 @@ void CGLModel::SelectEdgesInRange(float fmin, float fmax, bool bsel)
 {
 	FSMesh* pm = GetActiveMesh();
 	int N = pm->Edges();
-	FEState* ps = GetActiveState();
+	FEState* state = GetActiveState();
+	if (state == nullptr) return;
 	for (int i = 0; i<N; ++i)
 	{
 		FSEdge& edge = pm->Edge(i);
 		if (edge.IsEnabled() && edge.IsVisible() && ((bsel == false) || (edge.IsSelected())))
 		{
-			float v = ps->m_EDGE[i].m_val;
+			float v = state->m_EDGE[i].m_val;
 			if ((v >= fmin) && (v <= fmax)) edge.Select();
 			else edge.Unselect();
 		}
@@ -689,14 +675,15 @@ void CGLModel::SelectEdgesInRange(float fmin, float fmax, bool bsel)
 void CGLModel::SelectFacesInRange(float fmin, float fmax, bool bsel)
 {
 	FSMesh* pm = GetActiveMesh();
-	FEState* ps = GetActiveState();
+	FEState* state = GetActiveState();
+	if (state == nullptr) return;
 	int N = pm->Faces();
 	for (int i = 0; i<N; ++i)
 	{
 		FSFace& f = pm->Face(i);
 		if (f.IsEnabled() && f.IsVisible() && ((bsel == false) || (f.IsSelected())))
 		{
-			float v = ps->m_FACE[i].m_val;
+			float v = state->m_FACE[i].m_val;
 			if ((v >= fmin) && (v <= fmax)) f.Select();
 			else f.Unselect();
 		}
@@ -1009,7 +996,7 @@ void CGLModel::UpdateEdge()
 void CGLModel::UpdateInternalSurfaces(bool eval)
 {
 	// Build the internal surfaces
-	m_postObj->BuildInternalSurfaces();
+	if (m_postObj) m_postObj->BuildInternalSurfaces();
 
 	// reevaluate model
 	if (eval) Update(false);
@@ -1019,27 +1006,28 @@ void CGLModel::UpdateInternalSurfaces(bool eval)
 void CGLModel::GetSelectionList(vector<int>& L, int mode)
 {
 	L.clear();
-	FSMesh& m = *GetActiveMesh();
+	FSMesh* m = GetActiveMesh();
+	if (m == nullptr) return;
 	switch (mode)
 	{
 	case SELECT_FE_NODES:
 	{
-		for (int i = 0; i<m.Nodes(); ++i) if (m.Node(i).IsSelected()) L.push_back(i);
+		for (int i = 0; i<m->Nodes(); ++i) if (m->Node(i).IsSelected()) L.push_back(i);
 	}
 	break;
 	case SELECT_FE_EDGES:
 	{
-		for (int i = 0; i<m.Edges(); ++i) if (m.Edge(i).IsSelected()) L.push_back(i);
+		for (int i = 0; i<m->Edges(); ++i) if (m->Edge(i).IsSelected()) L.push_back(i);
 	}
 	break;
 	case SELECT_FE_FACES:
 	{
-		for (int i = 0; i<m.Faces(); ++i) if (m.Face(i).IsSelected()) L.push_back(i);
+		for (int i = 0; i<m->Faces(); ++i) if (m->Face(i).IsSelected()) L.push_back(i);
 	}
 	break;
 	case SELECT_FE_ELEMS:
 	{
-		for (int i = 0; i<m.Elements(); ++i) if (m.ElementRef(i).IsSelected()) L.push_back(i);
+		for (int i = 0; i<m->Elements(); ++i) if (m->ElementRef(i).IsSelected()) L.push_back(i);
 	}
 	break;
 	}

@@ -26,12 +26,12 @@ SOFTWARE.*/
 #pragma once
 #include <functional>
 #include <FSCore/color.h>
-#include <QFont>
+#include "GLPainter.h"
 #include <map>
 
 class CGLView;
 class CGLWidgetManager;
-class QPainter;
+
 
 enum GLWAlign {
 	GLW_ALIGN_LEFT		= 0x0001,
@@ -62,12 +62,12 @@ public:
 	GLWidget(int x, int y, int w, int h, const char* szlabel = 0);
 	virtual ~GLWidget();
 
-	virtual void draw(QPainter* painter) = 0;
+	virtual void draw(GLPainter* painter);
 
 	virtual int handle(int x, int y, int nevent) { return 0; }
 
 	void set_fg_color(const GLColor& c, bool setoverrideflag = true) { m_fgc = c; if (setoverrideflag) m_boverridefgc = true; }
-	GLColor get_fg_color() { return m_fgc; }
+	GLColor get_fg_color() { return (m_boverridefgc ? m_fgc : m_base); }
 	bool isfgc_overridden() const { return m_boverridefgc; }
 
 	void set_bg_style(int n) { m_bgFillMode = n; }
@@ -112,6 +112,16 @@ public:
 		if (m_h < m_minh) m_h = m_minh;
 	}
 
+	virtual void scale(double s)
+	{
+		m_w = (int)(s * m_w);
+		m_h = (int)(s * m_h);
+		if (m_w < m_minw) m_w = m_minw;
+		if (m_h < m_minh) m_h = m_minh;
+
+		m_font.setPointSize((int)(s * m_font.pointSize()));
+	}
+
 	void show() { m_bshow = true; }
 	void hide() { m_bshow = false; if (this == m_pfocus) m_pfocus = 0; }
 	bool visible() { return m_bshow; }
@@ -131,12 +141,11 @@ public:
 	void add_event_handler(glw_event_handler f) { m_eventHandlers.push_back(f); }
 
 protected:
-	void draw_bg(int x0, int y0, int x1, int y1, QPainter* painter);
+	void draw_bg(int x0, int y0, int x1, int y1, GLPainter* painter);
+
+	void snap_to_bounds(GLPainter& painter);
 
 public:
-	unsigned int layer() const { return m_layer; }
-	void set_layer(unsigned int l) { m_layer = l; }
-
 	std::string processLabel() const;
 
 public:
@@ -166,8 +175,6 @@ protected:
 	
 	unsigned int	m_nsnap;	// alignment flag
 
-	unsigned int m_layer;
-
 	GLColor	m_fgc;
 	GLColor m_bgFillColor[2], m_bgLineColor;
 	int		m_bgFillMode;	// background fille style
@@ -186,5 +193,6 @@ protected:
 
 	std::vector<glw_event_handler> m_eventHandlers;
 
+	CGLWidgetManager* m_parent = nullptr;
 	friend class CGLWidgetManager;
 };

@@ -255,6 +255,7 @@ public:
 };
 
 const char* szcmakecmd[] = {
+	"add_compile_options",
 	"add_definitions",
 	"add_library",
 	"cmake_minimum_required", 
@@ -262,17 +263,27 @@ const char* szcmakecmd[] = {
 	"include", 
 	"include_directories", 
 	"link_directories", 
-	"mark_as_advanced", 
+	"list",
+	"mark_as_advanced",
 	"message", 
 	"option", 
 	"project", 
 	"set", 
 	"set_property", 
 	"target_link_libraries", 
+	"unset"
 };
 
 const char* szcmakectrl[] = {
-	"if", "foreach", "while", "macro", "function"
+	"else",  
+	"elseif", 
+	"endforeach",
+	"endif", 
+	"foreach", 
+	"function", 
+	"if", 
+	"macro",
+	"while",
 };
 
 class CMakeHighlighter : public CSyntaxHighlighter

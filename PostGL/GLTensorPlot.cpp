@@ -27,10 +27,10 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLTensorPlot.h"
 #include "PostLib/constants.h"
-#include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
 #include <stdlib.h>
 #include <GLLib/glx.h>
+#include <GLLib/GLMeshBuilder.h>
 #include <FSCore/ClassDescriptor.h>
 #include <FSCore/ColorMapManager.h>
 using namespace Post;
@@ -96,12 +96,6 @@ GLTensorPlot::GLTensorPlot()
 	m_range.maxtype = RANGE_DYNAMIC;
 	m_range.mintype = RANGE_DYNAMIC;
 	m_range.valid = false;
-
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::ORIENT_HORIZONTAL);
-	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	bar->copy_label(szname);
-	bar->ShowTitle(true);
-	SetLegendBar(bar);
 
 	UpdateData(false);
 }
@@ -201,6 +195,9 @@ void GLTensorPlot::Update()
 
 void GLTensorPlot::Update(int ntime, float dt, bool breset)
 {
+	delete m_mesh;
+	m_mesh = nullptr;
+
 	if (m_lastCol != m_ncol) breset = true;
 	m_lastCol = m_ncol;
 
@@ -427,12 +424,34 @@ static double frand() { return (double)rand() / (double)RAND_MAX; }
 
 void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
-	GetLegendBar()->SetDivisions(m_ndivs);
-
 	if (m_ntensor == 0) return;
 
-	// store attributes
-	re.pushState();
+	if (m_mesh == nullptr)
+	{
+		BuildMesh();
+		if (m_mesh) re.deleteCachedMesh(m_mesh);
+	}
+	if (m_mesh)
+	{
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
+
+		if (m_nglyph == Glyph_Line)
+			re.renderGMeshEdges(*m_mesh);
+		else
+			re.renderGMesh(*m_mesh);
+	}
+}
+
+void GLTensorPlot::BuildMesh()
+{
+	if (m_mesh) {
+		delete m_mesh; 
+		m_mesh = nullptr;
+	}
+
+	GLMeshBuilder re;
+
+	re.beginShape();
 
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
@@ -492,15 +511,13 @@ void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 			auto_scale = 1.f / Lmax;
 		}
 
-		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+		const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 		float fmax = 1.f, fmin = 0.f;
 		if (m_ncol != Glyph_Col_Solid)
 		{
 			fmax = m_range.max;
 			fmin = m_range.min;
 		}
-
-		GetLegendBar()->SetRange(fmin, fmax);
 
 		if (fmax == fmin) fmax++;
 
@@ -566,14 +583,13 @@ void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 			auto_scale = 1.f / Lmax;
 		}
 
-		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+		const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 		float fmax = 1.f, fmin = 0.f;
 		if (m_ncol != Glyph_Col_Solid)
 		{
 			fmax = m_range.max;
 			fmin = m_range.min;
 		}
-		GetLegendBar()->SetRange(fmin, fmax);
 
 		if (fmax == fmin) fmax++;
 
@@ -601,8 +617,9 @@ void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 		}
 	}
 
-	// restore attributes
-	re.popState();
+	re.endShape();
+
+	m_mesh = re.takeMesh();
 }
 
 void GLTensorPlot::RenderGlyphs(GLRenderEngine& re, TENSOR& t, float scale)
@@ -728,4 +745,23 @@ void GLTensorPlot::RenderBox(GLRenderEngine& re, TENSOR& t, float scale)
 	re.scale(scale*sx, scale*sy, scale*sz);
 	glx::drawBox(re, 0.5, 0.5, 0.5);
 	re.popTransform();
+}
+
+LegendData GLTensorPlot::GetLegendData() const
+{
+	LegendData l;
+
+	int glyphCol = GetIntValue(GLYPH_COLOR);
+	if ((glyphCol >  0) && (m_range.valid))
+	{
+		l.discrete = false;
+		l.ndivs = m_ndivs;
+		l.vmin = m_range.min;
+		l.vmax = m_range.max;
+		l.smooth = true;
+		l.colormap = GetIntValue(COLOR_MAP);
+		l.title = GetName();
+	}
+
+	return l;
 }

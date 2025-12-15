@@ -44,7 +44,7 @@ GSphereInBox::GSphereInBox() : GPrimitive(GSPHERE_IN_BOX)
 //-----------------------------------------------------------------------------
 FEMesher* GSphereInBox::CreateDefaultMesher()
 {
-	return new FESphereInBox();
+	return new FESphereInBox(*this);
 }
 
 //-----------------------------------------------------------------------------
@@ -87,7 +87,7 @@ bool GSphereInBox::Update(bool b)
 
 	SetRenderMesh(nullptr);
 
-	return true;
+	return GPrimitive::Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -146,7 +146,8 @@ void GSphereInBox::BuildGMesh()
 	GPrimitive::BuildGMesh();
 
 	// project nodes onto surface
-	GLMesh* pm = new GLMesh();
+	GLMesh* pm = GetRenderMesh();
+	if (pm == nullptr) return;
 
 	// find all nodes for the inner surface and project to a sphere
 	for (int i = 0; i < pm->Nodes(); ++i) pm->Node(i).tag = 0;
@@ -174,6 +175,4 @@ void GSphereInBox::BuildGMesh()
 	}
 
 	pm->Update();
-
-	SetRenderMesh(pm);
 }

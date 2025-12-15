@@ -936,7 +936,7 @@ void FEBioFormat4::ParseGeometryElementSet(FEBioInputModel::Part* part, XMLTag& 
 		} while (!tag.isend());
 	}
 
-	part->AddElementSet(FEBioInputModel::ElementSet(sname, elem));
+	part->AddElementSet(FEBioInputModel::ElementSet(sname, elem, part));
 }
 
 //-----------------------------------------------------------------------------
@@ -1344,7 +1344,35 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 				++tag;
 			} while (!tag.isend());
 		}
-		else ParseUnknownTag(tag);
+		else
+		{
+			FEBioInputModel::ElementSet* eset = feb.FindElementSet(szset);
+			if (eset && eset->m_part)
+			{
+				FSMesh* mesh = eset->m_part->GetFEMesh();
+
+				double h[FSElement::MAX_NODES] = { 0 };
+				++tag;
+				do
+				{
+					int m = tag.value(h, FSElement::MAX_NODES);
+					int lid = tag.AttributeValue<int>("lid", 0) - 1;
+					if (lid >= 0)
+					{
+						int id = mesh->ElementIndexFromID(eset->element(lid));
+						FSElement& el = mesh->Element(id);
+
+						if (el.IsShell() && (m == el.Nodes()))
+						{
+							for (int i = 0; i < m; ++i) el.m_h[i] = h[i];
+						}
+						else throw XMLReader::InvalidValue(tag);
+					}
+					++tag;
+				} while (!tag.isend());
+			}
+			else ParseUnknownAttribute(tag, "elem_set");
+		}
 	}
 	else if (type && (*type == "fiber"))
 	{
