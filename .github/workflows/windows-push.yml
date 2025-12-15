@@ -16,5 +16,6 @@ jobs:
       package-name: febio-studio
       requires-sdk: true
       python-module: true
-      publish: true
+      publish: false
+      aws-ami-id: ami-069001bb982dcc2c6
     secrets: inherit
