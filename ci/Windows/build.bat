@@ -18,7 +18,8 @@ cmake -L . -B cmbuild ^
   -DUSE_PYTHON=ON ^
   -DPython3_INCLUDE_DIR="C:\Program Files\Python313\include" ^
   -DPython3_LIBRARY="C:\Program Files\Python313\libs\python313.lib" ^
-  -DPython3_EXECUTABLE="C:\Program Files\Python313\python.exe"
+  -DPython3_EXECUTABLE="C:\Program Files\Python313\python.exe" ^
+  -DQT_FORCE_MIN_CMAKE_VERSION_FOR_USING_QT=3.20
 
 cd cmbuild
 msbuild /v:m /P:Configuration=Release  /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS% ALL_BUILD.vcxproj
