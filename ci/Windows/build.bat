@@ -1,6 +1,6 @@
 call "%VS2019INSTALLDIR%\VC\Auxiliary\Build\vcvars64.bat"
 
-set Qt_Root="c:/usr/local/Qt/6.7.3/msvc2019_64"
+set Qt_Root="c:/usr/local/Qt/6.9.3/msvc2022_64"
 cmake -L . -B cmbuild ^
   -DQt_Root=%Qt_Root% ^
   -DFEBio_SDK=febio4-sdk ^
