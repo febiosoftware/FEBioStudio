@@ -165,6 +165,22 @@ void CPostObject::UpdateMesh()
 
 	mesh->Update();
 	mesh->setModified(true);
+
+	// the render mesh is used for rendering the feature edges.
+	// TODO: Can I not just use the FE render mesh?
+	mesh = GetRenderMesh();
+	if (mesh)
+	{
+		assert(mesh->Nodes() == pm->Nodes());
+		for (int i = 0; i < mesh->Nodes(); ++i)
+		{
+			GLMesh::NODE& nd = mesh->Node(i);
+			FSNode& ns = pm->Node(nd.nid);
+			nd.r = to_vec3f(ns.r);
+		}
+		mesh->Update();
+		mesh->setModified(true);
+	}
 }
 
 void CPostObject::BuildFERenderMesh()
