@@ -71,8 +71,12 @@ void CPostObject::UpdateMesh()
 
 	if (shellToSolid)
 	{
+		int N0 = pm->Nodes();
+		int NF = pm->Faces();
+		int nsurf = Faces();
+
 		// first update the main nodes
-		for (int i = 0; i < pm->Nodes(); ++i)
+		for (int i = 0; i < N0; ++i)
 		{
 			GLMesh::NODE& nd = mesh->Node(i);
 			FSNode& ns = pm->Node(nd.nid);
@@ -80,60 +84,72 @@ void CPostObject::UpdateMesh()
 		}
 
 		// update the shell offset nodes
-		vector<vec3d> nodeNormals = pm->NodeNormals();
-		int nf = pm->Faces();
-		int n0 = pm->Nodes();
-		for (int j = 0; j < nf; ++j)
-		{
-			const FSFace& face = pm->Face(j);
-			if (face.IsVisible())
-			{
-				int eid = face.m_elem[0].eid;
-				if ((eid >= 0) && (!pm->Element(eid).IsVisible()))
-				{
-					eid = face.m_elem[1].eid;
-				}
-				int mid = -1;
+		std::vector<vector<vec3d>> faceNodeNormals = pm->FaceNodalNormals();
 
-				bool isShell = false;
-				if (eid >= 0)
+		std::vector< std::deque<int> > faceList(nsurf);
+		for (int i = 0; i < NF; i++)
+		{
+			const FSFace& face = pm->Face(i);
+			if (face.m_gid >= 0 && face.m_gid < nsurf)
+				faceList[face.m_gid].push_back(i);
+		}
+
+		int n0 = pm->Nodes();
+		for (int i = 0; i < nsurf; i++)
+		{
+			for (auto n : faceList[i])
+			{
+				const FSFace& face = pm->Face(n);
+				if (face.IsVisible())
 				{
-					isShell = pm->Element(eid).IsShell();
-					mid = pm->Element(eid).m_MatID;
-				}
-				if (isShell)
-				{
-					FSElement& el = pm->Element(eid);
-					int nf = face.Nodes();
-					int nn[FSElement::MAX_NODES] = { 0 };
-					int m[FSElement::MAX_NODES] = { 0 };
-					for (int j = 0; j < nf; ++j)
+					int eid = face.m_elem[0].eid;
+					if ((eid >= 0) && (!pm->Element(eid).IsVisible()))
 					{
-						int nj = face.n[j];
-						vec3d rn = pm->Node(nj).r;
-						switch (shellRefSurface)
+						eid = face.m_elem[1].eid;
+					}
+
+					bool isShell = false;
+					if (eid >= 0)
+					{
+						isShell = pm->Element(eid).IsShell();
+					}
+
+					if (isShell)
+					{
+						FSElement& el = pm->Element(eid);
+						int nf = face.Nodes();
+						int nn[FSElement::MAX_NODES] = { 0 };
+						int m[FSElement::MAX_NODES] = { 0 };
+						for (int j = 0; j < nf; ++j)
 						{
-						case 0: // mid
-						{
-							vec3d ra = rn + nodeNormals[nj] * (el.m_h[j] * 0.5);
-							vec3d rb = rn - nodeNormals[nj] * (el.m_h[j] * 0.5);
-							mesh->Node(n0++).r = to_vec3f(rb);
-							mesh->Node(n0++).r = to_vec3f(ra);
-						}
-						break;
-						case 1: // bottom
-							rn = rn + nodeNormals[nj] * el.m_h[j];
-							mesh->Node(n0++).r = to_vec3f(rn);
+							int nj = face.n[j];
+							vec3d rn = pm->Node(nj).r;
+							vec3d N = faceNodeNormals[n][j];
+							switch (shellRefSurface)
+							{
+							case 0: // mid
+							{
+								vec3d ra = rn + N * (el.m_h[j] * 0.5);
+								vec3d rb = rn - N * (el.m_h[j] * 0.5);
+								mesh->Node(n0++).r = to_vec3f(rb);
+								mesh->Node(n0++).r = to_vec3f(ra);
+							}
 							break;
-						case 2: // top
-							rn = rn - nodeNormals[nj] * el.m_h[j];
-							mesh->Node(n0++).r = to_vec3f(rn);
-							break;
+							case 1: // bottom
+								rn = rn + N * el.m_h[j];
+								mesh->Node(n0++).r = to_vec3f(rn);
+								break;
+							case 2: // top
+								rn = rn - N * el.m_h[j];
+								mesh->Node(n0++).r = to_vec3f(rn);
+								break;
+							}
 						}
 					}
 				}
 			}
 		}
+		assert(n0 == mesh->Nodes());
 	}
 	else
 	{
@@ -159,9 +175,9 @@ void CPostObject::BuildFERenderMesh()
 	int nsurf = Faces();
 	if (nsurf == 0) return;
 
-	vector<vec3d> nodeNormals(pm->Nodes());
+	vector<vector<vec3d>> faceNodeNormals;
 	if (shellToSolid)
-		nodeNormals = pm->NodeNormals();
+		faceNodeNormals = pm->FaceNodalNormals();
 
 	GLMesh* pgm = new GLMesh;
 	GLMesh& gm = *pgm;
@@ -216,13 +232,14 @@ void CPostObject::BuildFERenderMesh()
 					for (int j = 0; j < nf; ++j)
 					{
 						int nj = face.n[j];
-						vec3d rn = pm->Node(j).r;
+						vec3d rn = pm->Node(nj).r;
+						vec3d N = faceNodeNormals[n][j];
 						switch (shellRefSurface)
 						{
 						case 0: // mid
 						{
-							vec3d ra = rn + nodeNormals[nj] * (el.m_h[j] * 0.5);
-							vec3d rb = rn - nodeNormals[nj] * (el.m_h[j] * 0.5);
+							vec3d ra = rn + N * (el.m_h[j] * 0.5);
+							vec3d rb = rn - N * (el.m_h[j] * 0.5);
 							m0[j] = gm.AddNode(to_vec3f(rb), nj, -1);
 							m1[j] = gm.AddNode(to_vec3f(ra), nj, -1);
 							mbot[nf - j - 1] = m0[j];
@@ -230,14 +247,14 @@ void CPostObject::BuildFERenderMesh()
 						}
 						break;
 						case 1: // bottom
-							rn = rn + nodeNormals[nj] * el.m_h[j]; 
+							rn = rn + N * el.m_h[j]; 
 							m0[j] = nj;
 							m1[j] = gm.AddNode(to_vec3f(rn), nj, -1);
 							mbot[nf - j - 1] = m0[j];
  							mtop[j] = m1[j];
 							break;
 						case 2: // top
-							rn = rn - nodeNormals[nj] * el.m_h[j];
+							rn = rn - N * el.m_h[j];
 							m0[j] = gm.AddNode(to_vec3f(rn), nj, -1);
 							m1[j] = nj;
 							mbot[nf - j - 1] = m0[j];

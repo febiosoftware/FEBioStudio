@@ -92,6 +92,95 @@ std::vector<vec3d> FSMeshBase::NodeNormals() const
 	return nodeNormals;
 }
 
+std::vector< std::vector<vec3d> > FSMeshBase::FaceNodalNormals() const
+{
+	int NN = Nodes();
+	int NF = Faces();
+	std::vector< std::vector<vec3d> > faceNodalNormals(NF);
+	std::vector<vec3d> faceNormals(NF);
+	for (int i = 0; i < NF; ++i)
+	{
+		const FSFace& face = Face(i);
+		faceNormals[i] = FaceNormal(face);
+		faceNodalNormals[i].assign(face.Nodes(), vec3d(0, 0, 0));
+	}
+
+	std::vector<vec3d> nodeNormals(NN, vec3d(0,0,0));
+	std::vector<int> tag(NF, -1);
+
+	std::vector<int> faceList; faceList.reserve(NF);
+	std::vector<int> S(NF);
+	int ss = 0;
+	int ng = 0;
+	for (int i = 0; i < NF; ++i)
+	{
+		const FSFace& face = Face(i);
+		if (tag[i] == -1)
+		{
+			if (!faceList.empty())
+			{
+				for (int nfj : faceList)
+				{
+					const FSFace& fj = Face(nfj);
+					int nf = fj.Nodes();
+					for (int k = 0; k < nf; ++k)
+						nodeNormals[fj.n[k]] = vec3d(0, 0, 0);
+				}
+				faceList.clear();
+			}
+
+			S[ss++] = i;
+
+			while (ss > 0)
+			{
+				int m = S[--ss];
+				faceList.push_back(m);
+
+				const FSFace& fm = Face(m);
+				tag[m] = ng;
+				int nf = fm.Nodes();
+				for (int j = 0; j < nf; ++j) nodeNormals[fm.n[j]] += faceNormals[m];
+
+				int ne = fm.Edges();
+				for (int j = 0; j < ne; ++j)
+				{
+					int nbrj = fm.m_nbr[j];
+					if ((nbrj >= 0) && (nbrj < NF))
+					{
+						if (tag[nbrj] == -1)
+						{
+							tag[nbrj] = ng;
+							S[ss++] = nbrj;
+						}
+					}
+				}
+			}
+			ng++;
+
+			for (int j = 0; j < faceList.size(); ++j)
+			{
+				int nfj = faceList[j];
+				const FSFace& fj = Face(nfj);
+				int nf = fj.Nodes();
+				for (int k = 0; k < nf; ++k)
+					faceNodalNormals[nfj][k] = nodeNormals[fj.n[k]];
+			}
+		}
+	}
+
+	for (int i = 0; i < NF; ++i)
+	{
+		const FSFace& face = Face(i);
+		int nf = face.Nodes();
+		for (int j = 0; j < nf; ++j)
+		{
+			faceNodalNormals[i][j].Normalize();
+		}
+	}
+
+	return faceNodalNormals;
+}
+
 //-----------------------------------------------------------------------------
 // Tag all faces
 void FSMeshBase::TagAllFaces(int ntag)

@@ -62,6 +62,9 @@ public:
 	// Calculate averaged node normals
 	std::vector<vec3d> NodeNormals() const;
 
+	// Calculate for each face a list of nodal normals
+	std::vector< std::vector<vec3d> > FaceNodalNormals() const;
+
 public:
 	//! Update item visibility
 	virtual void UpdateItemVisibility() {}
