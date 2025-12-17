@@ -161,7 +161,20 @@ CPostObject* CGLModel::GetPostObject()
 	return m_postObj.get();
 }
 
-void CGLModel::ShowShell2Solid(bool b) { m_bShell2Solid = b; }
+void CGLModel::ShowShell2Solid(bool b) 
+{ 
+	if (b != m_bShell2Solid)
+	{
+		if (m_postObj)
+		{
+			m_bShell2Solid = b;
+			m_postObj->SetShellToSolid(b);
+			m_postObj->BuildFERenderMesh();
+			Update(true);
+		}
+	}
+}
+
 bool CGLModel::ShowShell2Solid() const { return m_bShell2Solid; }
 
 //-----------------------------------------------------------------------------
@@ -174,7 +187,19 @@ float CGLModel::SolidBeamRadius() const { return m_solidBeamRadius; }
 
 //-----------------------------------------------------------------------------
 int CGLModel::ShellReferenceSurface() const { return m_nshellref; }
-void CGLModel::ShellReferenceSurface(int n) { m_nshellref = n; }
+void CGLModel::ShellReferenceSurface(int n) 
+{ 
+	if (n != m_nshellref)
+	{
+		m_nshellref = n;
+		if (m_postObj)
+		{
+			m_postObj->SetShellReferenceSurface(n);
+			m_postObj->BuildFERenderMesh();
+			Update(true);
+		}
+	}
+}
 
 //-----------------------------------------------------------------------------
 FSMesh* CGLModel::GetActiveMesh()
