@@ -103,6 +103,10 @@ $bins = @(
 
     # SQLite
     'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\sqlite3.dll'
+
+    # Python
+    'C:\Program Files\Python313\python3.dll'
+    'C:\Program Files\Python313\python313.dll'
 )
 
 Foreach ($i in $febioBins)
@@ -122,6 +126,7 @@ Foreach ($i in $bins)
     cp $i release/bin
 }
 
+# Copy Qt plugins
 mkdir release\bin\platforms
 cp C:\usr\local\Qt\6.9.3\msvc2022_64\plugins\platforms\qwindows.dll release\bin\platforms
 
@@ -133,6 +138,10 @@ cp C:\usr\local\Qt\6.9.3\msvc2022_64\plugins\tls\*.dll release\bin\tls
 
 mkdir release\bin\imageformats
 cp C:\usr\local\Qt\6.9.3\msvc2022_64\plugins\imageformats\*.dll release\bin\imageformats
+
+# Copy python libs
+cp -R "C:\Program Files\Python313\DLLs" release\bin\DLLs
+cp -R "C:\Program Files\Python313\Lib" release\bin\Lib
 
 # Create docs
 $docs = @(
