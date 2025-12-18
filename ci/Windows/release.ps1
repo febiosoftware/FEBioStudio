@@ -41,15 +41,15 @@ $bins = @(
     'C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\redist\intel64_win\compiler\libiomp5md.dll'
 
     # Qt
-    'C:\usr\local\Qt\6.7.3\msvc2019_64\bin\Qt6Core.dll'
-    'C:\usr\local\Qt\6.7.3\msvc2019_64\bin\Qt6Widgets.dll'
-    'C:\usr\local\Qt\6.7.3\msvc2019_64\bin\Qt6Gui.dll'
-    'C:\usr\local\Qt\6.7.3\msvc2019_64\bin\Qt6OpenGLWidgets.dll'
-    'C:\usr\local\Qt\6.7.3\msvc2019_64\bin\Qt6OpenGL.dll'
-    'C:\usr\local\Qt\6.7.3\msvc2019_64\bin\Qt6Network.dll'
+    'C:\usr\local\Qt\6.9.3\msvc2022_64\bin\Qt6Core.dll'
+    'C:\usr\local\Qt\6.9.3\msvc2022_64\bin\Qt6Widgets.dll'
+    'C:\usr\local\Qt\6.9.3\msvc2022_64\bin\Qt6Gui.dll'
+    'C:\usr\local\Qt\6.9.3\msvc2022_64\bin\Qt6OpenGLWidgets.dll'
+    'C:\usr\local\Qt\6.9.3\msvc2022_64\bin\Qt6OpenGL.dll'
+    'C:\usr\local\Qt\6.9.3\msvc2022_64\bin\Qt6Network.dll'
 
     # ZLIB
-    'C:\vcpkg\buildtrees\zlib\x64-windows-rel\zlib1.dll'
+    'C:\vcpkg\packages\zlib_x64-windows\bin\zlib1.dll'
 
     # NetGen
     'C:\usr\local\bin\nglib.dll'
@@ -90,9 +90,9 @@ $bins = @(
     'C:\usr\local\win64\vc14\bin\TKG3d.dll'
 
     # libSSH
-    'C:\vcpkg\buildtrees\libssh\x64-windows-rel\src\ssh.dll'
-    'C:\vcpkg\buildtrees\openssl\x64-windows-rel\libssl-3-x64.dll'
-    'C:\vcpkg\buildtrees\openssl\x64-windows-rel\libcrypto-3-x64.dll'
+    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\ssh.dll'
+    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\libssl-3-x64.dll'
+    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\libcrypto-3-x64.dll'
 
     # libZip
     'C:\usr\local\bin\zip.dll'
@@ -100,9 +100,6 @@ $bins = @(
 
     # FFMPEG
     'C:\Program Files\FFmpeg\bin\*.dll'
-
-    # GLEW
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\glew32.dll'
 
     # SQLite
     'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\sqlite3.dll'
@@ -126,16 +123,16 @@ Foreach ($i in $bins)
 }
 
 mkdir release\bin\platforms
-cp C:\usr\local\Qt\6.7.3\msvc2019_64\plugins\platforms\qwindows.dll release\bin\platforms
+cp C:\usr\local\Qt\6.9.3\msvc2022_64\plugins\platforms\qwindows.dll release\bin\platforms
 
 mkdir release\bin\styles
-cp C:\usr\local\Qt\6.7.3\msvc2019_64\plugins\styles\qmodernwindowsstyle.dll release\bin\styles
+cp C:\usr\local\Qt\6.9.3\msvc2022_64\plugins\styles\qmodernwindowsstyle.dll release\bin\styles
 
 mkdir release\bin\tls
-cp C:\usr\local\Qt\6.7.3\msvc2019_64\plugins\tls\*.dll release\bin\tls
+cp C:\usr\local\Qt\6.9.3\msvc2022_64\plugins\tls\*.dll release\bin\tls
 
 mkdir release\bin\imageformats
-cp C:\usr\local\Qt\6.7.3\msvc2019_64\plugins\imageformats\*.dll release\bin\imageformats
+cp C:\usr\local\Qt\6.9.3\msvc2022_64\plugins\imageformats\*.dll release\bin\imageformats
 
 # Create docs
 $docs = @(
