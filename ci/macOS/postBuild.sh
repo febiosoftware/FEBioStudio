@@ -30,7 +30,7 @@ if [ -n "${HEAT_REPO}" ]; then
     cp $HEAT_REPO/cmbuild/lib/libFEBioHeat.dylib $FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents/Frameworks
 fi
 
-/Users/gitRunner/local/x86_64/QtNew/6.7.3/macos/bin/macdeployqt $FBS_DIR/cmbuild/bin/FEBioStudio.app -executable=$FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents/MacOS/FEBioStudioUpdater
+/Users/gitRunner/QtNew/6.9.3/macos/bin/macdeployqt $FBS_DIR/cmbuild/bin/FEBioStudio.app -executable=$FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents/MacOS/FEBioStudioUpdater
 
 cp "$HOME/local/x86_64/lib/libTKOffset.7.7.dylib" $FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents/Frameworks
 cp "$HOME/local/x86_64/lib//libTKXDEIGES.7.7.dylib" $FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents/Frameworks

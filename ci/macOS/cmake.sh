@@ -1,4 +1,4 @@
-QT_ROOT="$HOME/local/x86_64/QtNew/6.7.3/macos"
+QT_ROOT="$HOME/QtNew/6.9.3/macos"
 run_cmake() {
 	cmake -L . -B cmbuild \
 		-DQt_Root=$QT_ROOT \
