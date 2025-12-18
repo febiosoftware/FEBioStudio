@@ -1,4 +1,4 @@
-call "%VS2019INSTALLDIR%\VC\Auxiliary\Build\vcvars64.bat"
+call "%VS2022INSTALLDIR%\VC\Auxiliary\Build\vcvars64.bat"
 
 set Qt_Root="c:/usr/local/Qt/6.9.3/msvc2022_64"
 cmake -L . -B cmbuild ^
