@@ -58,7 +58,7 @@ libs=(
     /lib/x86_64-linux-gnu/libz.so.1
 
     # Qt
-    /opt/Qt/6.7.3/gcc_64/lib/libQt6Network.so.6
+    /opt/Qt/6.9.3/gcc_64/lib/libQt6Network.so.6
         /lib/x86_64-linux-gnu/libzstd.so.1
         /lib/x86_64-linux-gnu/libgssapi_krb5.so.2
             /lib/x86_64-linux-gnu/libkrb5.so.3
@@ -67,21 +67,21 @@ libs=(
             /lib/x86_64-linux-gnu/libcom_err.so.2
             /lib/x86_64-linux-gnu/libkrb5support.so.0
         /lib/x86_64-linux-gnu/libresolv.so.2
-    /opt/Qt/6.7.3/gcc_64/lib/libQt6OpenGLWidgets.so.6
-        /opt/Qt/6.7.3/gcc_64/lib/libQt6OpenGL.so.6
+    /opt/Qt/6.9.3/gcc_64/lib/libQt6OpenGLWidgets.so.6
+        /opt/Qt/6.9.3/gcc_64/lib/libQt6OpenGL.so.6
         /lib/x86_64-linux-gnu/libxkbcommon.so.0
-    /opt/Qt/6.7.3/gcc_64/lib/libQt6Widgets.so.6
-    /opt/Qt/6.7.3/gcc_64/lib/libQt6Gui.so.6
+    /opt/Qt/6.9.3/gcc_64/lib/libQt6Widgets.so.6
+    /opt/Qt/6.9.3/gcc_64/lib/libQt6Gui.so.6
         /lib/x86_64-linux-gnu/libEGL.so.1
         /lib/x86_64-linux-gnu/libfontconfig.so.1
             /lib/x86_64-linux-gnu/libexpat.so.1
             /lib/x86_64-linux-gnu/libuuid.so.1
-        /opt/Qt/6.7.3/gcc_64/lib/libQt6DBus.so.6
+        /opt/Qt/6.9.3/gcc_64/lib/libQt6DBus.so.6
             /lib/x86_64-linux-gnu/libdbus-1.so.3
-    /opt/Qt/6.7.3/gcc_64/lib/libQt6Core.so.6
-        /opt/Qt/6.7.3/gcc_64/lib/libicui18n.so.73
-        /opt/Qt/6.7.3/gcc_64/lib/libicuuc.so.73
-        /opt/Qt/6.7.3/gcc_64/lib/libicudata.so.73
+    /opt/Qt/6.9.3/gcc_64/lib/libQt6Core.so.6
+        /opt/Qt/6.9.3/gcc_64/lib/libicui18n.so.73
+        /opt/Qt/6.9.3/gcc_64/lib/libicuuc.so.73
+        /opt/Qt/6.9.3/gcc_64/lib/libicudata.so.73
         /lib/x86_64-linux-gnu/librt.so.1
 
     # NetGen
@@ -172,9 +172,9 @@ for item in ${libs[@]}; do
 done
 
 # Get Qt plugins
-cp -r /opt/Qt/6.7.3/gcc_64/plugins/xcbglintegrations $RELEASE_DIR/lib/
-cp -r /opt/Qt/6.7.3/gcc_64/plugins/tls $RELEASE_DIR/lib/
-cp -r /opt/Qt/6.7.3/gcc_64/plugins/platformthemes $RELEASE_DIR/lib/
+cp -r /opt/Qt/6.9.3/gcc_64/plugins/xcbglintegrations $RELEASE_DIR/lib/
+cp -r /opt/Qt/6.9.3/gcc_64/plugins/tls $RELEASE_DIR/lib/
+cp -r /opt/Qt/6.9.3/gcc_64/plugins/platformthemes $RELEASE_DIR/lib/
 
 # Remove extra "debug" files
 rm $RELEASE_DIR/lib/xcbglintegrations/*.debug
@@ -183,8 +183,8 @@ rm $RELEASE_DIR/lib/platformthemes/*.debug
 
 # Get Qt platforms
 mkdir $RELEASE_DIR/lib/platforms
-cp /opt/Qt/6.7.3/gcc_64/plugins/platforms/libqxcb.so $RELEASE_DIR/lib/platforms
-cp /opt/Qt/6.7.3/gcc_64/lib/libQt6XcbQpa.so.6 $RELEASE_DIR/lib
+cp /opt/Qt/6.9.3/gcc_64/plugins/platforms/libqxcb.so $RELEASE_DIR/lib/platforms
+cp /opt/Qt/6.9.3/gcc_64/lib/libQt6XcbQpa.so.6 $RELEASE_DIR/lib
 
 patchelf --set-rpath '$ORIGIN/..' $RELEASE_DIR/lib/platforms/libqxcb.so
 
