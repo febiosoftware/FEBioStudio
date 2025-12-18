@@ -16,6 +16,9 @@ cmake -L . -B cmbuild ^
   -DUSE_ITK=ON ^
   -DBUILD_UPDATER=ON ^
   -DUSE_PYTHON=ON ^
+  -DMMG_LIB_DIR="C:\usr\local\lib" ^
+  -DFFMPEG_LIB_DIR="C:\Program Files\FFmpeg\lib" ^
+  -DSSH_LIB_DIR="C:\vcpkg\packages\libssh_x64-windows\lib" ^
   -DPython3_INCLUDE_DIR="C:\Program Files\Python313\include" ^
   -DPython3_LIBRARY="C:\Program Files\Python313\libs\python313.lib" ^
   -DPython3_EXECUTABLE="C:\Program Files\Python313\python.exe" 
