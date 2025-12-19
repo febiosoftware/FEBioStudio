@@ -201,6 +201,7 @@ private:
 	QMatrix4x4 m_projMatrix;
 	float zNear = 0.01f;
 	float zFar = 100.0f;
+	bool isOrtho = false;
 
 	// overlay flag
 	bool m_useOverlay = false;
