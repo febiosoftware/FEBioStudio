@@ -73,10 +73,6 @@ void init_fbs_python(std::wstring pythonHome)
         PyConfig_SetString(&config, &config.home,
                         pythonHome.c_str());
 
-        // Optional but recommended
-        // PyConfig_SetString(&config, &config.program_name,
-        //                 L"/opt/myapp/bin/myapp");
-
         py::initialize_interpreter(&config);
 
         PyConfig_Clear(&config);

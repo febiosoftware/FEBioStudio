@@ -148,6 +148,9 @@ libs=(
     # GLEW
     /lib/x86_64-linux-gnu/libGLEW.so.2.2
 
+    # Python
+    /home/ubuntu/.pyenv/versions/3.13.1/lib/libpython3.13.so.1.0
+
     # Required for libQt6XcbQpa.so
     /lib/x86_64-linux-gnu/libxcb-cursor.so.0
 )
@@ -194,6 +197,11 @@ patchelf --set-rpath '$ORIGIN/../lib' $RELEASE_DIR/lib/libTK*
 # Create qt.conf
 echo "[Paths]
 Plugins = ../lib" > $RELEASE_DIR/bin/qt.conf
+
+# Get Python home dir
+mkdir -p $RELEASE_DIR/lib/python/lib
+cp -r /home/ubuntu/.pyenv/versions/3.13.1/lib/python3.13 $RELEASE_DIR/lib/python/lib/
+rm -r $RELEASE_DIR/lib/python/lib/python3.13/test
 
 # Create docs
 docs=(
