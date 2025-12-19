@@ -14,7 +14,7 @@ run_cmake() {
         -DUSE_PYTHON=ON \
 		-DBUILD_UPDATER=ON \
         -DFFMPEG_INC=/usr/local/include \
-        -DFFMPEG_LIB_DIR=/usr/local/lib \PEG_INC=/usr/local/include \
+        -DFFMPEG_LIB_DIR=/usr/local/lib \
         -DPython3_ROOT_DIR=/home/ubuntu/.pyenv/versions/3.13.1 \
         -DPython3_EXECUTABLE=/home/ubuntu/.pyenv/versions/3.13.1/bin/python3 \
         -DPython3_INCLUDE_DIR=/home/ubuntu/.pyenv/versions/3.13.1/include/python3.13 \
