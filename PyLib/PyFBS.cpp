@@ -62,9 +62,29 @@ PY_MODULE_TYPE(fbs, m)
 }
 
 #ifndef PY_EXTERNAL
-void init_fbs_python()
+void init_fbs_python(std::wstring pythonHome)
 {
-	pybind11::initialize_interpreter();
+    if(!pythonHome.empty())
+    {
+        PyConfig config;
+        PyConfig_InitPythonConfig(&config);
+
+        // Absolute path to your shipped Python prefix
+        PyConfig_SetString(&config, &config.home,
+                        pythonHome.c_str());
+
+        // Optional but recommended
+        // PyConfig_SetString(&config, &config.program_name,
+        //                 L"/opt/myapp/bin/myapp");
+
+        py::initialize_interpreter(&config);
+
+        PyConfig_Clear(&config);
+    }
+    else
+    {
+        pybind11::initialize_interpreter();
+    }
 
 	// setup output
 	auto sysm = pybind11::module::import("sys");

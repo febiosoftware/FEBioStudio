@@ -65,6 +65,7 @@ private:
 	bool m_pythonInitialized = false;
 
 	std::string	m_cwd;
+    std::wstring m_pythonHome;
 
 	static CPythonRunner* m_This;
 };

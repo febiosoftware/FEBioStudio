@@ -28,14 +28,27 @@ SOFTWARE.*/
 #include "PythonRunner.h"
 #include "PyFBS.h"
 #include <algorithm>
+#include <QCoreApplication>
+#include <QDir>
 namespace py = pybind11;
 
 CPythonRunner* CPythonRunner::m_This = nullptr;
 
 
-CPythonRunner::CPythonRunner(QObject* parent) : QObject(parent)
+CPythonRunner::CPythonRunner(QObject* parent) : QObject(parent), m_pythonHome(L"")
 {
 	m_This = this;
+
+    // Sets the python home directory for an installed version of FEBio Studio
+    #ifdef LINUX
+        QString path = QCoreApplication::applicationDirPath() + "/../lib/python";
+
+        if(QDir(path).exists())
+        {
+            m_pythonHome = path.toStdWString();
+        }
+    #endif
+
 }
 
 CPythonRunner* CPythonRunner::GetInstance()
@@ -93,7 +106,7 @@ void CPythonRunner::runFile(QString fileName)
 
 	if (!m_pythonInitialized)
 	{
-		init_fbs_python();
+		init_fbs_python(m_pythonHome);
 		m_pythonInitialized = true;
 	}
 
@@ -234,7 +247,7 @@ void CPythonRunner::runScript(QString script)
 
 	if (!m_pythonInitialized)
 	{
-		init_fbs_python();
+		init_fbs_python(m_pythonHome);
 		m_pythonInitialized = true;
 	}
 
