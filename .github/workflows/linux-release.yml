@@ -13,6 +13,7 @@ jobs:
   call_workflow:
     uses: febiosoftware/febio-workflows/.github/workflows/linux-release.yml@fbs3
     with:
-      aws-ami-id: ${{ vars.LINUX_AMI }}
+      # aws-ami-id: ${{ vars.LINUX_AMI }}
+      aws-ami-id: ami-0562298975ffc835d
       aws-sg-id: sg-0ca7912782cf1538b
     secrets: inherit

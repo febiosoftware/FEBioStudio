@@ -3,6 +3,9 @@ set -e
 
 . $(dirname $0)/cmake.sh
 
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
+
 main() {
     git clone https://github.com/pybind/pybind11.git /opt/pybind11
 	# TODO: Figure out why it's not generating correctly on first attempt

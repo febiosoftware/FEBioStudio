@@ -12,5 +12,6 @@ run_cmake() {
 		-DUSE_NETGEN=ON \
 		-DUSE_ITK=ON \
         -DUSE_PYTHON=ON \
-		-DBUILD_UPDATER=ON
+		-DBUILD_UPDATER=ON \
+        -DPython3_EXECUTABLE=$HOME/.pyenv/versions/3.13.1/bin/python3
 }
