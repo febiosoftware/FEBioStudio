@@ -105,7 +105,7 @@ $bins = @(
     'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\sqlite3.dll'
 
     # FFTW
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\lib\fftw3.lib'
+    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\fftw3.dll'
 
     # Python
     'C:\Program Files\Python313\python3.dll'
