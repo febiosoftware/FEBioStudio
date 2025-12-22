@@ -171,12 +171,14 @@ void CPostObject::UpdateMesh()
 	mesh = GetRenderMesh();
 	if (mesh)
 	{
-		assert(mesh->Nodes() == pm->Nodes());
 		for (int i = 0; i < mesh->Nodes(); ++i)
 		{
 			GLMesh::NODE& nd = mesh->Node(i);
-			FSNode& ns = pm->Node(nd.nid);
-			nd.r = to_vec3f(ns.r);
+			if ((nd.nid >= 0) && (nd.nid < pm->Nodes()))
+			{
+				FSNode& ns = pm->Node(nd.nid);
+				nd.r = to_vec3f(ns.r);
+			}
 		}
 		mesh->Update();
 		mesh->setModified(true);
@@ -303,8 +305,9 @@ void CPostObject::BuildFERenderMesh()
 					int j1 = (j + 1) % ne;
 					if ((face.m_nbr[j] < 0) || (face.n[j] < face.n[j1]))
 					{
-						int m[2] = { face.n[j], face.n[j1] };
-						gm.AddEdge(m, 2, mid);
+						int m[FSEdge::MAX_NODES] = { 0 };
+						int l = face.GetEdgeNodes(j, m);
+						gm.AddEdge(m, l, mid);
 					}
 				}
 			}
