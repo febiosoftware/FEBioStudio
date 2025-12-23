@@ -63,6 +63,10 @@ for item in ${febioLibs[@]}; do
     cp $item $UPLOAD_DIR/Frameworks
 done
 
+# Copy Python into app bundle
+cp -r ~/local/x86_64/Python/Python.framework $APP_BUDLE/Contents/Frameworks/Python.framework
+rm -rf $APP_BUDLE/Contents/Frameworks/Python.framework/Versions/3.13/lib/python3.13/test
+
 # Create docs
 docs=(
     $FEBIO_REPO/Documentation/FEBio_EULA_4.pdf

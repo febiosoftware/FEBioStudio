@@ -125,7 +125,7 @@
                     <name>FEBioStudio</name>
                     <runAsAdmin>0</runAsAdmin>
                     <runInTerminal>0</runInTerminal>
-                    <windowsExec>${installdir}/bin/FEBioStudio2.exe</windowsExec>
+                    <windowsExec>${installdir}/bin/FEBioStudio.exe</windowsExec>
                     <windowsExecArgs></windowsExecArgs>
                     <windowsIcon>${installdir}/doc/febiostudio.ico</windowsIcon>
                     <windowsPath>${installdir}</windowsPath>
@@ -258,13 +258,13 @@
         <actionGroup>
             <actionList>
                 <registrySet>
-                    <key>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\App Paths\FEBioStudio2.exe</key>
+                    <key>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\App Paths\FEBioStudio.exe</key>
                     <name></name>
                     <type>REG_SZ</type>
-                    <value>${installdir}\bin\FEBioStudio2.exe</value>
+                    <value>${installdir}\bin\FEBioStudio.exe</value>
                 </registrySet>
                 <registrySet>
-                    <key>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\App Paths\FEBioStudio2.exe</key>
+                    <key>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\App Paths\FEBioStudio.exe</key>
                     <name>Path</name>
                     <type>REG_SZ</type>
                     <value>${installdir}\bin</value>
@@ -279,9 +279,9 @@
                     <key>HKEY_CLASSES_ROOT\fbs\shell\open\command</key>
                     <name></name>
                     <type>REG_SZ</type>
-                    <value>"${installdir}\bin\FEBioStudio2.exe" "%1"</value>
+                    <value>"${installdir}\bin\FEBioStudio.exe" "%1"</value>
                 </registrySet>
-                <setInstallerVariable name="FBSbin" value="${installdir}/bin/FEBioStudio2.exe"/>
+                <setInstallerVariable name="FBSbin" value="${installdir}/bin/FEBioStudio.exe"/>
             </actionList>
             <ruleList>
                 <platformTest type="windows"/>
@@ -368,7 +368,7 @@
                 <!-- FEBio Studio Desktop installation-->
                 <writeFile>
                     <encoding>utf-8</encoding>
-                    <path>${installdir}/FEBioStudio2.desktop</path>
+                    <path>${installdir}/FEBioStudio.desktop</path>
                     <text>
 [Desktop Entry]
 Version=${product_version}
@@ -386,18 +386,18 @@ MimeType=application/x-febiostudioproject;application/x-febiostudiomodel;applica
                 </writeFile>
                 <runProgram>
                     <program>xdg-desktop-menu</program>
-                    <programArguments>install --novendor ${installdir}/FEBioStudio2.desktop</programArguments>
+                    <programArguments>install --novendor ${installdir}/FEBioStudio.desktop</programArguments>
                     <abortOnError>0</abortOnError>
                     <showMessageOnError>0</showMessageOnError>
                 </runProgram>
                 <runProgram>
                     <program>xdg-mime</program>
-                    <programArguments>default FEBioStudio2.desktop x-scheme-handler/fbs</programArguments>
+                    <programArguments>default FEBioStudio.desktop x-scheme-handler/fbs</programArguments>
                     <abortOnError>0</abortOnError>
                     <showMessageOnError>0</showMessageOnError>
                 </runProgram>
                 <addFilesToUninstaller>
-                    <files>${installdir}/FEBioStudio2.desktop</files>
+                    <files>${installdir}/FEBioStudio.desktop</files>
                 </addFilesToUninstaller>
                 <addFilesToUninstaller>
                     <files>${installdir}/application-x-febiostudiotypes.xml</files>
@@ -418,7 +418,7 @@ MimeType=application/x-febiostudioproject;application/x-febiostudiomodel;applica
         <actionGroup>
             <actionList>
                 <registryDelete>
-                    <key>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\App Paths\FEBioStudio2.exe</key>
+                    <key>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\App Paths\FEBioStudio.exe</key>
                     <name></name>
                 </registryDelete>
                 <registryDelete>
@@ -459,7 +459,7 @@ MimeType=application/x-febiostudioproject;application/x-febiostudiomodel;applica
                 <!-- Remove Desktop Entry -->
                 <runProgram>
                     <program>xdg-desktop-menu</program>
-                    <programArguments>uninstall --novendor ${installdir}/FEBioStudio2.desktop</programArguments>
+                    <programArguments>uninstall --novendor ${installdir}/FEBioStudio.desktop</programArguments>
                 </runProgram>
                 <!-- Remove FEBio Studio Mime Types -->
                 <runProgram>

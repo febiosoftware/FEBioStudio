@@ -4,7 +4,7 @@
 
 #ifdef WIN32
 #define FEBIOBINARY "\\febio4.exe"
-#define FBSBINARY "\\FEBioStudio2.exe"
+#define FBSBINARY "\\FEBioStudio.exe"
 #define FBSUPDATERBINARY "\\FEBioStudioUpdater.exe"
 #define MVUTIL "\\mvUtil.exe"
 #elif __APPLE__
