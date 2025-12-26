@@ -32,23 +32,14 @@ class CSelectNearPlaneTool : public CBasicTool
 public:
     CSelectNearPlaneTool(CMainWindow* wnd);
 
-	QWidget* createUi() override;
-
-	virtual bool OnApply() override;
-
-	// virtual void updateUi() override;
-
-private:
-    void on_dataChanged(int index);
+	bool OnApply() override;
 
 private:
     enum Direction { X, Y, Z, FACE};
 
 private:
-    CPropertyListForm* m_pform;
-
     int m_direction;
-    double m_position;
+    double m_offset;
     double m_threshold;
     bool m_add;
 };
