@@ -16,7 +16,9 @@ run_cmake() {
 		-DHOMEBREW=ON \
         -DUSE_MKL_OMP=ON \
         -DMKL_OMP=/opt/intel/oneapi/compiler/latest/mac/compiler/lib/libiomp5.dylib \
-        -DOMP_INC=/Users/gitRunner/local/x86_64/homebrew/opt/libomp/include
+        -DOMP_INC=/Users/gitRunner/local/x86_64/homebrew/opt/libomp/include \
+        -DFFMPEG_INC=/Users/gitRunner/local/x86_64/include \
+        -DFFMPEG_LIB_DIR=/Users/gitRunner/local/x86_64/lib
 }
 
 

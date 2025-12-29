@@ -530,7 +530,7 @@ void CModelRepoConnectionHandler::authReply(QNetworkReply *r)
 	}
 	else
 	{
-		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
+		QString message = "An unknown server error has occurred.\nHTTP Status Code: ";
 		message += std::to_string(statusCode).c_str();
 
 		imp->authenticated = false;
@@ -562,7 +562,7 @@ void CModelRepoConnectionHandler::getSchemaReply(QNetworkReply *r)
 	}
 	else
 	{
-		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
+		QString message = "An unknown server error has occurred.\nHTTP Status Code: ";
 		message += std::to_string(statusCode).c_str();
 
 		imp->dbPanel->ShowMessage(message, true);
@@ -638,7 +638,7 @@ void CModelRepoConnectionHandler::getFileReply(QNetworkReply *r)
 	}
 	else
 	{
-		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
+		QString message = "An unknown server error has occurred.\nHTTP Status Code: ";
 		message += std::to_string(statusCode).c_str();
 
 		imp->dbPanel->ShowMessage(message);
@@ -668,7 +668,7 @@ void CModelRepoConnectionHandler::uploadFileRequestReply(QNetworkReply *r)
 	}
 	else
 	{
-		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
+		QString message = "An unknown server error has occurred.\nHTTP Status Code: ";
 		message += std::to_string(statusCode).c_str();
 
 		imp->dbPanel->updateUploadReady(false);
@@ -805,7 +805,7 @@ void CModelRepoConnectionHandler::requestUploadPermissionsReply(QNetworkReply *r
 	}
 	else
 	{
-		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
+		QString message = "An unknown server error has occurred.\nHTTP Status Code: ";
 		message += std::to_string(statusCode).c_str();
 
 		imp->dbPanel->ShowMessage(message);

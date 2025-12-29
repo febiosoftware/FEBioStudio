@@ -64,8 +64,16 @@ for item in ${febioLibs[@]}; do
 done
 
 # Copy Python into app bundle
-cp -r ~/local/x86_64/Python/Python.framework $APP_BUDLE/Contents/Frameworks/
+cp -r ~/local/x86_64/Python/Python.framework/ $APP_BUDLE/Contents/Frameworks/
 rm -rf $APP_BUDLE/Contents/Frameworks/Python.framework/Versions/3.13/lib/python3.13/test
+rm -rf $APP_BUDLE/Contents/Frameworks/Python.framework/Headers
+rm -rf $APP_BUDLE/Contents/Frameworks/Python.framework/Versions/3.13/Headers
+rm -rf $APP_BUDLE/Contents/Frameworks/Python.framework/Versions/3.13/include
+rm -rf $APP_BUDLE/Contents/Frameworks/Python.framework/Versions/3.13/share
+rm -rf $APP_BUDLE/Contents/Frameworks/Python.framework/Versions/3.13/Resources
+rm $APP_BUDLE/Contents/Frameworks/Python.framework/Versions/3.13/bin/idle*
+rm $APP_BUDLE/Contents/Frameworks/Python.framework/Versions/3.13/bin/pydoc*
+rm $APP_BUDLE/Contents/Frameworks/Python.framework/Versions/3.13/bin/pip*
 
 # Create docs
 docs=(
