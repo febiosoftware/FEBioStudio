@@ -607,7 +607,7 @@ if(USE_ZLIB)
 endif()
 
 if(USE_PYTHON)
-    target_link_libraries(${FBS_BIN_NAME} Python3::Python)
+    target_link_libraries(PyLib Python3::Python)
 endif()
 
 target_link_libraries(${FBS_BIN_NAME} ${FEBIOSTUDIO_LIBS})
