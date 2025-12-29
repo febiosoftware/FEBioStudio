@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include "FEBioStudio.h"
 #include "MainWindow.h"
 #include <FEBioLink/FEBioModule.h>
+#include <FEBioLib/version.h>
 
 class Ui::CHelpDialog
 {
@@ -93,8 +94,10 @@ void CHelpDialog::on_help_clicked()
     }
     else
     {
-        QDesktopServices::openUrl(QUrl(MANUAL_PATH + m_url));
-        
+        QString url = QString(MANUAL_PATH) + "%1-%2/%3";
+        url = url.arg(VERSION).arg(SUBVERSION).arg(m_url);
+
+        QDesktopServices::openUrl(QUrl(url));
     }
 }
 
