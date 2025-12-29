@@ -396,7 +396,9 @@ void CGLColorMap::UpdateRenderMesh(int n0, int n1, float dt)
 					for (int j = 0; j < 3; ++j)
 					{
 						int nj = glface.n[j];
-						glface.t[j] = vec3f((buf[nj] - min) * dti, 0.f, 0.f);
+						int nid = gmsh->Node(nj).nid;
+						float f = ((nid >= 0) && (nid < buf.size()) ? buf[nid] - min : 0.f);
+						glface.t[j] = vec3f(f * dti, 0.f, 0.f);
 					}
 				}
 				else
@@ -423,7 +425,8 @@ void CGLColorMap::UpdateRenderMesh(int n0, int n1, float dt)
 					for (int j = 0; j < 3; ++j)
 					{
 						int nj = glface.n[j];
-						float f = m_nodeData[nj];
+						int nid = gmsh->Node(nj).nid;
+						float f = ((nid >= 0) && (nid<m_nodeData.size()) ? m_nodeData[nid] : 0.f);
 						f = (f - min) * dti;
 						glface.t[j] = vec3f(f, 0.f, 0.f);
 					}

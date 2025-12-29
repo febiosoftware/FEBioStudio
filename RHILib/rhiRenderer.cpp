@@ -307,6 +307,7 @@ void rhiRenderer::setProjection(double fov, double fnear, double far)
 	m_projMatrix.perspective(fov, ar, fnear, far);
 	zNear = fnear;
 	zFar = far;
+	isOrtho = false;
 }
 
 void rhiRenderer::setOrthoProjection(double left, double right, double bottom, double top, double fnear, double far)
@@ -315,6 +316,7 @@ void rhiRenderer::setOrthoProjection(double left, double right, double bottom, d
 	m_projMatrix.ortho(left, right, bottom, top, fnear, far);
 	zNear = fnear;
 	zFar = far;
+	isOrtho = true;
 }
 
 void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
@@ -629,7 +631,11 @@ void rhiRenderer::finish()
 	QRhiCommandBuffer* cb = m_sc->currentFrameCommandBuffer();
 
 	float zrange = fabs(zFar - zNear);
-	float dz = 2e-5 * zrange;
+	float dz = 0.f; 
+	if (isOrtho)
+		dz = 1e-8 * zrange;
+	else 
+		dz = 2e-5 * zrange;
 
 	// set global properties
 	m_global.setLightPosition(m_light);

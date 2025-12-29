@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "PostObject.h"
 #include "GLModel.h"
+#include <array>
 
 CPostObject::CPostObject(Post::CGLModel* glm) : GMeshObject((FSMesh*)nullptr)
 {
@@ -62,30 +63,125 @@ void CPostObject::UpdateMesh()
 	if (mesh == nullptr) return;
 
 	FSMesh* pm = GetFEMesh();
-
-	for (int i = 0; i < mesh->Nodes(); ++i)
+	if (pm == nullptr)
 	{
-		GLMesh::NODE& nd = mesh->Node(i);
-		FSNode& ns = pm->Node(nd.nid);
-
-		nd.r = to_vec3f(ns.r);
+		SetFERenderMesh(nullptr);
+		return;
 	}
-	mesh->Update();
 
-	mesh->setModified(true);
-
-	GLMesh* renderMesh = GetRenderMesh();
-	if (renderMesh)
+	if (shellToSolid)
 	{
-		for (int i = 0; i < renderMesh->Nodes(); ++i)
+		int N0 = pm->Nodes();
+		int NF = pm->Faces();
+		int nsurf = Faces();
+
+		// first update the main nodes
+		for (int i = 0; i < N0; ++i)
 		{
-			GLMesh::NODE& nd = renderMesh->Node(i);
+			GLMesh::NODE& nd = mesh->Node(i);
+			FSNode& ns = pm->Node(nd.nid);
+			nd.r = to_vec3f(ns.r);
+		}
+
+		// update the shell offset nodes
+		std::vector<vector<vec3d>> faceNodeNormals = pm->FaceNodalNormals();
+
+		std::vector< std::deque<int> > faceList(nsurf);
+		for (int i = 0; i < NF; i++)
+		{
+			const FSFace& face = pm->Face(i);
+			if (face.m_gid >= 0 && face.m_gid < nsurf)
+				faceList[face.m_gid].push_back(i);
+		}
+
+		int n0 = pm->Nodes();
+		for (int i = 0; i < nsurf; i++)
+		{
+			for (auto n : faceList[i])
+			{
+				const FSFace& face = pm->Face(n);
+				if (face.IsVisible())
+				{
+					int eid = face.m_elem[0].eid;
+					if ((eid >= 0) && (!pm->Element(eid).IsVisible()))
+					{
+						eid = face.m_elem[1].eid;
+					}
+
+					bool isShell = false;
+					if (eid >= 0)
+					{
+						isShell = pm->Element(eid).IsShell();
+					}
+
+					if (isShell)
+					{
+						FSElement& el = pm->Element(eid);
+						int nf = face.Nodes();
+						int nn[FSElement::MAX_NODES] = { 0 };
+						int m[FSElement::MAX_NODES] = { 0 };
+						for (int j = 0; j < nf; ++j)
+						{
+							int nj = face.n[j];
+							vec3d rn = pm->Node(nj).r;
+							vec3d N = faceNodeNormals[n][j];
+							switch (shellRefSurface)
+							{
+							case 0: // mid
+							{
+								vec3d ra = rn + N * (el.m_h[j] * 0.5);
+								vec3d rb = rn - N * (el.m_h[j] * 0.5);
+								mesh->Node(n0++).r = to_vec3f(rb);
+								mesh->Node(n0++).r = to_vec3f(ra);
+							}
+							break;
+							case 1: // bottom
+								rn = rn + N * el.m_h[j];
+								mesh->Node(n0++).r = to_vec3f(rn);
+								break;
+							case 2: // top
+								rn = rn - N * el.m_h[j];
+								mesh->Node(n0++).r = to_vec3f(rn);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		assert(n0 == mesh->Nodes());
+	}
+	else
+	{
+		assert(mesh->Nodes() == pm->Nodes());
+		for (int i = 0; i < mesh->Nodes(); ++i)
+		{
+			GLMesh::NODE& nd = mesh->Node(i);
 			FSNode& ns = pm->Node(nd.nid);
 
 			nd.r = to_vec3f(ns.r);
 		}
-		renderMesh->Update();
-		renderMesh->setModified(true);
+	}
+
+	mesh->Update();
+	mesh->setModified(true);
+
+	// the render mesh is used for rendering the feature edges.
+	// TODO: Can I not just use the FE render mesh?
+	mesh = GetRenderMesh();
+	if (mesh)
+	{
+		for (int i = 0; i < mesh->Nodes(); ++i)
+		{
+			GLMesh::NODE& nd = mesh->Node(i);
+			if ((nd.nid >= 0) && (nd.nid < pm->Nodes()))
+			{
+				FSNode& ns = pm->Node(nd.nid);
+				nd.r = to_vec3f(ns.r);
+			}
+		}
+		mesh->Update();
+		mesh->setModified(true);
 	}
 }
 
@@ -97,6 +193,10 @@ void CPostObject::BuildFERenderMesh()
 	int nsurf = Faces();
 	if (nsurf == 0) return;
 
+	vector<vector<vec3d>> faceNodeNormals;
+	if (shellToSolid)
+		faceNodeNormals = pm->FaceNodalNormals();
+
 	GLMesh* pgm = new GLMesh;
 	GLMesh& gm = *pgm;
 	gm.Create(pm->Nodes(), 0, 0);
@@ -107,12 +207,12 @@ void CPostObject::BuildFERenderMesh()
 	}
 
 	int NF = pm->Faces();
-	std::vector< std::deque<int> > faceList(NF);
+	std::vector< std::deque<int> > faceList(nsurf);
 	for (int i = 0; i < NF; i++)
 	{
 		const FSFace& face = pm->Face(i);
-		assert(face.m_gid >= 0);
-		faceList[face.m_gid].push_back(i);
+		if (face.m_gid >= 0 && face.m_gid < nsurf)
+			faceList[face.m_gid].push_back(i);
 	}
 
 	for (int i = 0; i < nsurf; i++)
@@ -132,9 +232,72 @@ void CPostObject::BuildFERenderMesh()
 					eid = face.m_elem[1].eid;
 				}
 				int mid = -1;
-				if (eid >= 0) mid = pm->Element(eid).m_MatID;
 
-				gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_gid, face.IsExterior(), n, eid, mid);
+				bool isShell = false;
+				if (eid >= 0)
+				{
+					isShell = pm->Element(eid).IsShell();
+					mid = pm->Element(eid).m_MatID;
+				}
+				if (isShell && shellToSolid)
+				{
+					FSElement& el = pm->Element(eid);
+					int nf = face.Nodes();
+					int mtop[FSElement::MAX_NODES] = { 0 };
+					int mbot[FSElement::MAX_NODES] = { 0 };
+					int m0[FSElement::MAX_NODES] = { 0 };
+					int m1[FSElement::MAX_NODES] = { 0 };
+					for (int j = 0; j < nf; ++j)
+					{
+						int nj = face.n[j];
+						vec3d rn = pm->Node(nj).r;
+						vec3d N = faceNodeNormals[n][j];
+						switch (shellRefSurface)
+						{
+						case 0: // mid
+						{
+							vec3d ra = rn + N * (el.m_h[j] * 0.5);
+							vec3d rb = rn - N * (el.m_h[j] * 0.5);
+							m0[j] = gm.AddNode(to_vec3f(rb), nj, -1);
+							m1[j] = gm.AddNode(to_vec3f(ra), nj, -1);
+							mbot[nf - j - 1] = m0[j];
+							mtop[j] = m1[j];
+						}
+						break;
+						case 1: // bottom
+							rn = rn + N * el.m_h[j]; 
+							m0[j] = nj;
+							m1[j] = gm.AddNode(to_vec3f(rn), nj, -1);
+							mbot[nf - j - 1] = m0[j];
+ 							mtop[j] = m1[j];
+							break;
+						case 2: // top
+							rn = rn - N * el.m_h[j];
+							m0[j] = gm.AddNode(to_vec3f(rn), nj, -1);
+							m1[j] = nj;
+							mbot[nf - j - 1] = m0[j];
+ 							mtop[j] = m1[j];
+							break;
+						}
+					}
+
+					gm.AddFace(mtop, face.Nodes(), face.m_gid, face.m_gid, face.IsExterior(), n, eid, mid);
+					gm.AddFace(mbot, face.Nodes(), face.m_gid, face.m_gid, face.IsExterior(), n, eid, mid);
+
+					int ne = face.Edges();
+					for (int j = 0; j < ne; ++j)
+					{
+						int j1 = (j + 1) % ne;
+						FSFace* pfn = pm->FacePtr(face.m_nbr[j]);
+						if ((pfn == nullptr) || (pfn->m_gid != face.m_gid))
+						{
+							std::array<int, 4> mm = { m0[j], m0[j1], m1[j1], m1[j] };
+							gm.AddFace(mm.data(), 4, face.m_gid, -1, face.IsExterior(), n, eid, mid);
+						}
+					}
+				}
+				else
+					gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_gid, face.IsExterior(), n, eid, mid);
 
 				int ne = face.Edges();
 				for (int j = 0; j < ne; ++j)
@@ -142,8 +305,9 @@ void CPostObject::BuildFERenderMesh()
 					int j1 = (j + 1) % ne;
 					if ((face.m_nbr[j] < 0) || (face.n[j] < face.n[j1]))
 					{
-						int m[2] = { face.n[j], face.n[j1] };
-						gm.AddEdge(m, 2, mid);
+						int m[FSEdge::MAX_NODES] = { 0 };
+						int l = face.GetEdgeNodes(j, m);
+						gm.AddEdge(m, l, mid);
 					}
 				}
 			}

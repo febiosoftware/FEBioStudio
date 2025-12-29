@@ -45,6 +45,12 @@ public:
 
 	void BuildFERenderMesh() override;
 
+public:
+	void SetShellToSolid(bool b) { shellToSolid = b; }
+	bool GetShellToSolid() const { return shellToSolid; }
+
+	void SetShellReferenceSurface(int n) { shellRefSurface = n; }
+
 public: // internal surfaces
 
 	int InternalSurfaces() { return (int)m_innerSurface.size(); }
@@ -61,4 +67,7 @@ private:
 private:
 	Post::CGLModel* m_glm;
 	std::vector<Post::GLSurface*> m_innerSurface;
+
+	bool shellToSolid = false;
+	int shellRefSurface = 0; // 0 = mid, 1 = bottom, 2 = top
 };

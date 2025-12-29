@@ -1100,12 +1100,30 @@ void FSMesh::UpdateFaceNeighbors()
 						// see if they are both external or both internal
 						if (isValidFaceNeighbor(*pf, *pfn))
 						{
-							pf->m_nbr[j] = NFT.FaceIndex(n[0], k);
-							break;
+							if (pf->m_nbr[j] == -1)
+							{
+								pf->m_nbr[j] = NFT.FaceIndex(n[0], k);
+							}
+							else
+							{
+								// we get here if the face has more than one neighbour.
+								// In that case, we invalidate the neighbour info for this face.
+								pf->m_nbr[j] = -2;
+							}
 						}
 					}
 				}
 			}
+		}
+	}
+
+	// clean up face neighbors
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace* pf = FacePtr(i);
+		for (int j=0; j<pf->Edges();++j)
+		{
+			if (pf->m_nbr[j] == -2) pf->m_nbr[j] = -1;
 		}
 	}
 }
