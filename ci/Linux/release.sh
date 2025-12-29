@@ -145,8 +145,8 @@ libs=(
     /usr/local/lib/libavutil.so.58
     /usr/local/lib/libswscale.so.7
 
-    # GLEW
-    /lib/x86_64-linux-gnu/libGLEW.so.2.2
+    # FFTW
+    /usr/local/lib/x86_64-linux-gnu/libfftw3.so.3
 
     # Python
     /home/ubuntu/.pyenv/versions/3.13.1/lib/libpython3.13.so.1.0
