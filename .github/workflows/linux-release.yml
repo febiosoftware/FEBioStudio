@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   call_workflow:
-    uses: febiosoftware/febio-workflows/.github/workflows/linux-release.yml@fbs
+    uses: febiosoftware/febio-workflows/.github/workflows/linux-release.yml@fbs3
     with:
       # aws-ami-id: ${{ vars.LINUX_AMI }}
       aws-ami-id: ami-0562298975ffc835d
