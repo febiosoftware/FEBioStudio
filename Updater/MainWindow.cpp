@@ -214,9 +214,9 @@ CMainWindow::CMainWindow(bool devChannel, bool updaterUpdateCheck, QString& bran
 
 	setWizardStyle(QWizard::ModernStyle);
 
-	setPixmap(QWizard::WatermarkPixmap, QPixmap(":/images/leftSide.png"));
-	setPixmap(QWizard::BackgroundPixmap, QPixmap(":/images/leftSide.png"));
-	setPixmap(QWizard::LogoPixmap, QPixmap(":/images/FEBioStudio.png"));
+	setPixmap(QWizard::WatermarkPixmap, QPixmap(":/Documentation/InstallerImages/Left Side Image Transparent.png"));
+	setPixmap(QWizard::BackgroundPixmap, QPixmap(":/Documentation/InstallerImages/Left Side Image Transparent.png"));
+	setPixmap(QWizard::LogoPixmap, QPixmap("/icons/FEBioStudio.png"));
 
 	ui->setup(this, correctDir);
 
