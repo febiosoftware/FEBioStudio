@@ -373,7 +373,7 @@
 [Desktop Entry]
 Version=${product_version}
 Encoding=UTF-8
-Name=FEBioStudio 2
+Name=FEBioStudio
 GenericName=FEBioStudio
 Comment=Pre and Post Processor for the FEBio Suite
 Exec=${installdir}/bin/FEBioStudio %U
