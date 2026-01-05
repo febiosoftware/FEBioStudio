@@ -6,6 +6,75 @@
 
 ===========================================================================
 
+ R E L E A S E   3.0   1/5/2026
+
+===========================================================================
+
+FEBio Studio version 3.0 is a major update and contains a lot of new features and changes. The two main design goals were to make working with FBS more programmable and to provide more tools for debugging FEBio runs. 
+The following is a short summary of the most noteworthy changes in FBS3. Please see the FEBio Studio User Manual for more details. 
+* The FEBio Monitor allows users to run FEBio models interactively from the graphical user interface. The model's state can be inspected visually at any time during the solution process. 
+* FEBio Reports provide a comprehensive analysis of the FEBio job. FEBio Reports can also be generated from FEBio log files, though they may be less detailed than reports generated from FEBio jobs that are run inside FEBio Studio. 
+* FEBio Studio now supports Python. A simple Python editor is available within FBS and the built-in Pyhton interpreter (using Pyhton 3.13.1) can run custom Python scripts. (An external Pyhon module is in development and will be available in the next release.)
+* Users can now generate FEBio plugins entirely from the FEBio Studio interface. The plugin files are generated via a wizard. They can then be edited within FBS3 and build into a plugin. 
+* The new Plugin Repository provides access to FEBio plugins developed by others. Using the Plugin Repo, users can quickly find plugins and install them in their local installation. 
+* FEBio Studio's render engine has been completely overhauled and now uses a hardware abstraction layer. This means that the user can now choose what render backend to use on their system. For instance, mac users can now use Metal. Other supported backends are OpenGL (all OS), Direct3D 11/12 (Windows), and Vulkan (Windows and Linux).
+
+In addition, FBS3 now uses the .fsm extension again as the default extension for FEBio Studio models. (It can still read .fs2 files and some other older formats.)
+The FBS3 settings are now stored in a different location than FBS2 so FBS3 will not import the FBS2 settings. The settings are now stored in an INI file and, in principle, can be hand-edited although this is not recommended.
+
+The following lists changes in addition to the new features listed above.
+
+New Features:
+* A ray-tracer was implemented that allows users to generate high-quality, arbitrary resolution images of their models and results. The ray-tracer will also produce better results when shadows or transparency is required. 
+* Instead of simply using colors for materials and objects, users can now customize all the visual material properties that are used to rendered the model (on build and post side). 
+* Environment maps can be configured to enable special reflection effects. 
+* Added tools to measure the average surface normal and the dihedral angle between two selected faces.
+* Added support for angle criterion to MMGRemesh modifier.
+* Added support for global definitions and made a few other tweaks to the Abaqus reader.
+* Added support for triangular elements in Extrude-to-surface tool.
+* Added support for curves in ICP Registration tool.
+* Implemented Extrude-to-surface tool.
+* Added color picking button on 3D Image Settings panel.
+* Added Math Function data filter to post data panel. (#196)
+* Added option to "Project Nodes" modifier to project nodes onto a user-specified plane.
+* Added arithmetic filter for scalar face data.
+
+
+Improvements:
+* Added templates for reporting issues through GitHub Issues.
+* Modified moment of inertia tool to return eigenvectors and eigenvalues of the the MOI tensor. Modified calculation of element volume to work with shell elements and to return area when shell thickness is zero.
+* Removed unused toolbar button in New dialog.
+* FEBio Studio now uses the C locale for its default when formatting numbers
+* Surface metrics tool now reports in global coordinates.
+* Renamed AverageNormalTool to FaceMetricsTool and added centroid calculation.
+* Modified Purge Selections option so that log items are removed if they have selections assigned.
+* Fixed some problems with import of springs in Abaqus file reader.
+* Now storing nodesize to settings.
+* Added checks for shared nodes and degenerate hexes in extrude to surface tool.
+* Now using faster nearest-node query in ICP registration to speed things up a bit.
+* Modified ICP Registration tool so it works with different type of selections.
+* Modified how signed distance is calculated in distance map. Users can now choose the convention for calculating signed distances. 
+* Added support for exporting higher order elements to stl and surf. (Higher-order elements are triangulated before export.)
+* Renamed "invert" math function filter to "negate" (#196)
+* Added filename to RAW image import dialog. (#184)
+
+
+Bug Fixes: 
+* Fixed issue with reading shell thickness for element sets from feb file.
+* Fixed bug in reading SCALARS section from vtk legacy files.
+* Fixed issue with exporting VTK data.
+* Fixed issue with unhiding faces of an editable surface.
+* Updating material assignments when objects are deleted.
+* Fixed bug in processing nodesets in Abaqus import.
+* Fixed several issues with import of STEP and BREP files.
+
+Documentation:
+* New FBS3 features are added to the documentation.
+* Some images were updated to reflect the new FBS3 interface. 
+
+
+===========================================================================
+
  R E L E A S E   2.10   7/23/2025
 
 ===========================================================================

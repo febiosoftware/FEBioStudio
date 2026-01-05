@@ -25,111 +25,76 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "SelectNearPlaneTool.h"
-#include "PropertyListForm.h"
-#include "MainWindow.h"
 #include "ModelDocument.h"
-#include <FEMLib/FSModel.h>
-#include <GeomLib/GModel.h>
-#include <GeomLib/FSGroup.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FSMesh.h>
 #include <MeshLib/FSFace.h>
 #include <MeshLib/FSNode.h>
-#include <MeshTools/FESelection.h>
 #include <FECore/vec3d.h>
 #include "Commands.h"
-#include <QBoxLayout>
-#include <QPushButton>
 
 CSelectNearPlaneTool::CSelectNearPlaneTool(CMainWindow* wnd)
-    :CBasicTool(wnd, "Select Near Plane"), m_direction(X), m_position(0), m_threshold(0.01), m_add(true)
+    :CBasicTool(wnd, "Select Near Plane", HAS_APPLY_BUTTON), m_direction(X), m_offset(0), m_threshold(0.01), m_add(true)
 {
     addEnumProperty(&m_direction, "Direction")->setEnumValues(QStringList() << "X" << "Y" << "Z" << "From Selected Face");
-    addDoubleProperty(&m_position, "Position");
+    addDoubleProperty(&m_offset, "Offset");
     addDoubleProperty(&m_threshold, "Threshold");
     addBoolProperty(&m_add, "Add to Selection");
-}
 
-QWidget* CSelectNearPlaneTool::createUi()
-{
-    QWidget* widget = new QWidget;
-
-    QVBoxLayout* layout = new QVBoxLayout;
-    layout->setContentsMargins(0,0,0,0);
-
-    m_pform = new CPropertyListForm;
-    m_pform->setPropertyList(this);
-    layout->addWidget(m_pform);
-
-    QPushButton* apply = new QPushButton("Select");
-    layout->addWidget(apply);
-
-    widget->setLayout(layout);
-
-    QObject::connect(m_pform, &CPropertyListForm::dataChanged, [=](bool itemModified, int index){on_dataChanged(index);});
-    QObject::connect(apply, &QPushButton::clicked, [=](){OnApply();});
-
-    return widget;
+	SetApplyButtonText("Select");
 }
 
 bool CSelectNearPlaneTool::OnApply()
 {
-    auto doc = GetMainWindow()->GetModelDocument();
-
-    if(!doc) return false;
-
-    GObject* obj = GetMainWindow()->GetActiveObject();;
-
+    GObject* obj = GetActiveObject();
     if(!obj) return false;
     
     FSMesh* mesh = obj->GetFEMesh();
+	if (mesh == nullptr) return false;
 
-    std::vector<int> ids;
-
-    std::vector<vec3d> normals;
-    std::vector<vec3d> positions;
+    std::vector<std::pair<vec3d,vec3d>> planes; // position and normal
 
     switch (m_direction)
     {
     case X:
-        normals.emplace_back(1,0,0);
-        positions.emplace_back(m_position,0,0);
+        planes.emplace_back(vec3d(m_offset,0,0), vec3d(1,0,0));
         break;
     case Y:
-        normals.emplace_back(0,1,0);
-        positions.emplace_back(0,m_position,0);
+		planes.emplace_back(vec3d(0,m_offset,0), vec3d(0,1,0));
         break;
     case Z:
-        normals.emplace_back(0,0,1);
-        positions.emplace_back(0,0,m_position);
+        planes.emplace_back(vec3d(0,0,m_offset), vec3d(0,0,1));
         break;
     case FACE:
     {
-        FEFaceSelection* selection = dynamic_cast<FEFaceSelection*>(doc->GetCurrentSelection());
-
-        if(!selection) return false;
-
-        auto it = selection->begin();
-        for(int index = 0; index < selection->Count(); index++, ++it)
-        {
-            normals.push_back(mesh->FaceNormal(*it));
-            positions.push_back(mesh->FaceCenter(*it));
+		for (int n = 0; n < mesh->Faces(); n++)
+		{
+			FSFace& f = mesh->Face(n);
+			if (f.IsSelected())
+			{
+				vec3d N = mesh->FaceNormal(f);
+				vec3d c = mesh->FaceCenter(f);
+				planes.emplace_back(c + N * m_offset, N);
+			}
         }
-
-        break;
     }
+	break;
     default:
+		assert(false);
+		return false;
         break;
     }
     
-    for(int nodeIndex = 0; nodeIndex < mesh->Nodes(); nodeIndex++)
+	std::vector<int> ids;
+	for(int nodeIndex = 0; nodeIndex < mesh->Nodes(); nodeIndex++)
     {
         FSNode node = mesh->Node(nodeIndex);
 
-        for(int index = 0; index < normals.size(); index++)
+        for(int index = 0; index < planes.size(); index++)
         {
-            double distance = abs(normals[index]*node.r - normals[index]*positions[index]);
-
+			vec3d p = planes[index].first;
+			vec3d N = planes[index].second;
+            double distance = abs(N*node.r - N*p);
             if(distance <= m_threshold)
             {
                 ids.push_back(nodeIndex);
@@ -138,34 +103,13 @@ bool CSelectNearPlaneTool::OnApply()
         }
     }
 
-    doc->SetItemMode(ITEM_NODE);
-
-    CCmdSelectFENodes* cmd = new CCmdSelectFENodes(mesh, ids, m_add);
-
-    doc->DoCommand(cmd);
+	CGLDocument* doc = GetDocument();
+	if (doc)
+	{
+		doc->SetItemMode(ITEM_NODE);
+		doc->DoCommand(new CCmdSelectFENodes(mesh, ids, m_add));
+	}
+	else return false;
 
 	return true;
-}
-
-void CSelectNearPlaneTool::on_dataChanged(int index)
-{
-    if(index == 0)
-    {
-        if(m_direction == FACE)
-        {
-            if(Property(1).flags != 0)
-            {
-                Property(1).setFlags(0);
-                m_pform->setPropertyList(this);
-            }
-        }
-        else
-        {
-            if(Property(1).flags != (CProperty::Visible | CProperty::Editable))
-            {
-                Property(1).setFlags(CProperty::Visible | CProperty::Editable);
-                m_pform->setPropertyList(this);
-            }
-        }
-        }
 }
