@@ -17,5 +17,5 @@ jobs:
       requires-sdk: true
       python-module: true
       publish: false
-      aws-ami-id: ami-0fc9fd7a35f59a6cc
+      aws-ami-id: ${{ vars.LINUX_AMI }}
     secrets: inherit
