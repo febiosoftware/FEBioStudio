@@ -18,5 +18,4 @@ jobs:
       python-module: true
       publish: false
       aws-ami-id: ${{ vars.WINDOWS_AMI }}
-      # aws-ami-id: ami-0b0393915adb7ee63
     secrets: inherit
