@@ -13,7 +13,7 @@
     <enableTimestamp>1</enableTimestamp>
     <vendor>University of Utah</vendor>
     <windows64bitMode>1</windows64bitMode>
-    <windowsSoftwareRegistryPrefix>${product_fullname}2</windowsSoftwareRegistryPrefix>
+    <windowsSoftwareRegistryPrefix>${product_fullname}</windowsSoftwareRegistryPrefix>
     <osxSigningPkcs12File>/Users/GitRunner/osx_app_signing.p12</osxSigningPkcs12File>
     <osxSigningPkcs12Password>${env(MACOS_PKCS12_PSWD)}</osxSigningPkcs12Password>
     <componentList>
