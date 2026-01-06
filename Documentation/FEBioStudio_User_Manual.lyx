@@ -11675,6 +11675,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename Figures/add_mesh_data_generator.png
+	scale 50
 
 \end_inset
 
@@ -12088,6 +12089,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename Figures/mesh_data_visual.png
+	scale 50
 
 \end_inset
 
@@ -14591,7 +14593,7 @@ Run FEBio
 menu,
  or from the main toolbar by clicking the corresponding tool button 
 \begin_inset Graphics
-	filename Figures/febio.png
+	filename Figures/run_febio.png
 	width 0.17in
 	special height=0.17in
 
@@ -15541,6 +15543,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename Figures/febio_monitor.png
+	scale 30
 
 \end_inset
 
@@ -15830,6 +15833,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename Figures/batch_view.png
+	scale 40
 
 \end_inset
 
@@ -17658,6 +17662,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename Figures/ray-trace.png
+	scale 50
 
 \end_inset
 
@@ -25138,6 +25143,7 @@ status open
 \align center
 \begin_inset Graphics
 	filename Figures/python_editor.png
+	scale 50
 
 \end_inset
 
