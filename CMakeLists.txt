@@ -694,7 +694,14 @@ if(BUILD_UPDATER)
 
     target_compile_definitions(FEBioStudioUpdater PUBLIC "UPDATER")
 
-    findLib(FEBio_LIB_DIR XML_LIB xml)
+    if (WIN32)
+        find_library(XML_LIB_RELEASE NAMES xml 
+            PATHS ${FEBio_LIB_DIR} PATH_SUFFIXES Release NO_DEFAULT_PATH)
 
-    target_link_libraries(FEBioStudioUpdater Qt6::Widgets Qt6::Network ${XML_LIB} ${LIBZIP_LIB})
+        target_link_libraries(FEBioStudioUpdater Qt6::Widgets Qt6::Network ${XML_LIB_RELEASE} ${LIBZIP_LIB})
+    else()
+        findLib(FEBio_LIB_DIR XML_LIB xml)
+        target_link_libraries(FEBioStudioUpdater Qt6::Widgets Qt6::Network ${XML_LIB} ${LIBZIP_LIB})
+    endif()
+
 endif()

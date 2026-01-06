@@ -39,6 +39,7 @@
 #include "ZipThread.h"
 
 #include <iostream>
+#include <filesystem>
 
 namespace Ui
 {
@@ -623,10 +624,14 @@ void CMainWindow::addNewFile(const QString filename)
 void CMainWindow::downloadsFinished()
 {
     // Run install commands
+	auto cwd = std::filesystem::current_path();
+	std::filesystem::current_path(QApplication::applicationDirPath().toStdString());
     for(auto cmd : ui->updateWidget->installCmds)
     {
         std::system(cmd.toStdString().c_str());
     }
+	// restore old CWD
+	std::filesystem::current_path(cwd);
 
 	QStringList oldFiles;
 	QStringList oldDirs;
