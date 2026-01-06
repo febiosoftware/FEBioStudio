@@ -26,6 +26,6 @@ SOFTWARE.*/
 #pragma once
 
 #ifndef PY_EXTERNAL
-void init_fbs_python();
+void init_fbs_python(std::wstring pythonHome);
 void finish_fbs_python();
 #endif

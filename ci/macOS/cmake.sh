@@ -1,4 +1,4 @@
-QT_ROOT="$HOME/local/x86_64/QtNew/6.7.3/macos"
+QT_ROOT="$HOME/QtNew/6.9.3/macos"
 run_cmake() {
 	cmake -L . -B cmbuild \
 		-DQt_Root=$QT_ROOT \
@@ -16,7 +16,9 @@ run_cmake() {
 		-DHOMEBREW=ON \
         -DUSE_MKL_OMP=ON \
         -DMKL_OMP=/opt/intel/oneapi/compiler/latest/mac/compiler/lib/libiomp5.dylib \
-        -DOMP_INC=/Users/gitRunner/local/x86_64/homebrew/opt/libomp/include
+        -DOMP_INC=/Users/gitRunner/local/x86_64/homebrew/opt/libomp/include \
+        -DFFMPEG_INC=/Users/gitRunner/local/x86_64/include \
+        -DFFMPEG_LIB_DIR=/Users/gitRunner/local/x86_64/lib
 }
 
 

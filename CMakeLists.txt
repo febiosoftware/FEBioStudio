@@ -357,6 +357,7 @@ if(USE_FFMPEG)
 endif()
 
 if(USE_PYTHON)
+    add_definitions(-DHAS_PYTHON)
     include_directories(${PYBIND11_INC})
 endif()
 
@@ -389,11 +390,6 @@ foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 endforeach(name)
 
 ##### Add binaries #####
-
-if(USE_PYTHON)
-    add_definitions(-DHAS_PYTHON)
-    link_libraries(Python3::Python)
-endif()
 
 if(WIN32)
 	add_executable(${FBS_BIN_NAME} WIN32 ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
@@ -611,6 +607,10 @@ endif()
 
 if(USE_ZLIB)
     target_link_libraries(${FBS_BIN_NAME} ${ZLIB_LIBRARY_RELEASE})
+endif()
+
+if(USE_PYTHON)
+    target_link_libraries(PyLib Python3::Python)
 endif()
 
 target_link_libraries(${FBS_BIN_NAME} ${FEBIOSTUDIO_LIBS})

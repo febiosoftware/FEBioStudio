@@ -1,6 +1,6 @@
-call "%VS2019INSTALLDIR%\VC\Auxiliary\Build\vcvars64.bat"
+call "%VS2022INSTALLDIR%\VC\Auxiliary\Build\vcvars64.bat"
 
-set Qt_Root="c:/usr/local/Qt/6.7.3/msvc2019_64"
+set Qt_Root="c:/usr/local/Qt/6.9.3/msvc2022_64"
 cmake -L . -B cmbuild ^
   -DQt_Root=%Qt_Root% ^
   -DFEBio_SDK=febio4-sdk ^
@@ -16,9 +16,12 @@ cmake -L . -B cmbuild ^
   -DUSE_ITK=ON ^
   -DBUILD_UPDATER=ON ^
   -DUSE_PYTHON=ON ^
+  -DMMG_LIB_DIR="C:\usr\local\lib" ^
+  -DFFMPEG_LIB_DIR="C:\Program Files\FFmpeg\lib" ^
+  -DSSH_LIB_DIR="C:\vcpkg\packages\libssh_x64-windows\lib" ^
   -DPython3_INCLUDE_DIR="C:\Program Files\Python313\include" ^
   -DPython3_LIBRARY="C:\Program Files\Python313\libs\python313.lib" ^
-  -DPython3_EXECUTABLE="C:\Program Files\Python313\python.exe"
+  -DPython3_EXECUTABLE="C:\Program Files\Python313\python.exe" 
 
 cd cmbuild
 msbuild /v:m /P:Configuration=Release  /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS% ALL_BUILD.vcxproj

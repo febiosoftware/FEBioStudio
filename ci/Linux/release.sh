@@ -1,8 +1,6 @@
 #!/bin/bash
 
 export FEBIO_REPO=$GITHUB_WORKSPACE/FEBio
-CHEM_REPO=$GITHUB_WORKSPACE/FEBioChem
-HEAT_REPO=$GITHUB_WORKSPACE/FEBioHeat
 export FBS_REPO=$GITHUB_WORKSPACE/FEBioStudio
 export RELEASE_DIR=$GITHUB_WORKSPACE/release
 UPLOAD_DIR=$GITHUB_WORKSPACE/upload
@@ -11,14 +9,6 @@ UPLOAD_DIR=$GITHUB_WORKSPACE/upload
 cd $FEBIO_REPO
 ./ci/Linux/build.sh
 ./ci/Linux/create-sdk.sh
-
-ln -s $FEBIO_REPO/febio4-sdk $CHEM_REPO/
-cd $CHEM_REPO
-./ci/Linux/build.sh
-
-ln -s $FEBIO_REPO/febio4-sdk $HEAT_REPO/
-cd $HEAT_REPO
-./ci/Linux/build.sh
 
 ln -s $FEBIO_REPO/febio4-sdk $FBS_REPO/
 cd $FBS_REPO
@@ -39,7 +29,6 @@ mkdir $UPLOAD_DIR/updater
 bins=(
     $FEBIO_REPO/cmbuild/bin/febio4
     $FBS_REPO/cmbuild/bin/FEBioStudio
-    $FBS_REPO/ci/Linux/febio.xml
 )
 
 updater=(
@@ -58,9 +47,6 @@ febioLibs=(
     $FEBIO_REPO/cmbuild/lib/libfeimglib.so
     $FEBIO_REPO/cmbuild/lib/libfebiomix.so
     $FEBIO_REPO/cmbuild/lib/libfebiomech.so
-
-    $CHEM_REPO/cmbuild/lib/*.so
-    $HEAT_REPO/cmbuild/lib/*.so
 )
 
 libs=(
@@ -72,7 +58,7 @@ libs=(
     /lib/x86_64-linux-gnu/libz.so.1
 
     # Qt
-    /opt/Qt/6.7.3/gcc_64/lib/libQt6Network.so.6
+    /opt/Qt/6.9.3/gcc_64/lib/libQt6Network.so.6
         /lib/x86_64-linux-gnu/libzstd.so.1
         /lib/x86_64-linux-gnu/libgssapi_krb5.so.2
             /lib/x86_64-linux-gnu/libkrb5.so.3
@@ -81,21 +67,21 @@ libs=(
             /lib/x86_64-linux-gnu/libcom_err.so.2
             /lib/x86_64-linux-gnu/libkrb5support.so.0
         /lib/x86_64-linux-gnu/libresolv.so.2
-    /opt/Qt/6.7.3/gcc_64/lib/libQt6OpenGLWidgets.so.6
-        /opt/Qt/6.7.3/gcc_64/lib/libQt6OpenGL.so.6
+    /opt/Qt/6.9.3/gcc_64/lib/libQt6OpenGLWidgets.so.6
+        /opt/Qt/6.9.3/gcc_64/lib/libQt6OpenGL.so.6
         /lib/x86_64-linux-gnu/libxkbcommon.so.0
-    /opt/Qt/6.7.3/gcc_64/lib/libQt6Widgets.so.6
-    /opt/Qt/6.7.3/gcc_64/lib/libQt6Gui.so.6
+    /opt/Qt/6.9.3/gcc_64/lib/libQt6Widgets.so.6
+    /opt/Qt/6.9.3/gcc_64/lib/libQt6Gui.so.6
         /lib/x86_64-linux-gnu/libEGL.so.1
         /lib/x86_64-linux-gnu/libfontconfig.so.1
             /lib/x86_64-linux-gnu/libexpat.so.1
             /lib/x86_64-linux-gnu/libuuid.so.1
-        /opt/Qt/6.7.3/gcc_64/lib/libQt6DBus.so.6
+        /opt/Qt/6.9.3/gcc_64/lib/libQt6DBus.so.6
             /lib/x86_64-linux-gnu/libdbus-1.so.3
-    /opt/Qt/6.7.3/gcc_64/lib/libQt6Core.so.6
-        /opt/Qt/6.7.3/gcc_64/lib/libicui18n.so.73
-        /opt/Qt/6.7.3/gcc_64/lib/libicuuc.so.73
-        /opt/Qt/6.7.3/gcc_64/lib/libicudata.so.73
+    /opt/Qt/6.9.3/gcc_64/lib/libQt6Core.so.6
+        /opt/Qt/6.9.3/gcc_64/lib/libicui18n.so.73
+        /opt/Qt/6.9.3/gcc_64/lib/libicuuc.so.73
+        /opt/Qt/6.9.3/gcc_64/lib/libicudata.so.73
         /lib/x86_64-linux-gnu/librt.so.1
 
     # NetGen
@@ -159,8 +145,11 @@ libs=(
     /usr/local/lib/libavutil.so.58
     /usr/local/lib/libswscale.so.7
 
-    # GLEW
-    /lib/x86_64-linux-gnu/libGLEW.so.2.2
+    # FFTW
+    /usr/local/lib/x86_64-linux-gnu/libfftw3.so.3
+
+    # Python
+    /home/ubuntu/.pyenv/versions/3.13.1/lib/libpython3.13.so.1.0
 
     # Required for libQt6XcbQpa.so
     /lib/x86_64-linux-gnu/libxcb-cursor.so.0
@@ -186,9 +175,9 @@ for item in ${libs[@]}; do
 done
 
 # Get Qt plugins
-cp -r /opt/Qt/6.7.3/gcc_64/plugins/xcbglintegrations $RELEASE_DIR/lib/
-cp -r /opt/Qt/6.7.3/gcc_64/plugins/tls $RELEASE_DIR/lib/
-cp -r /opt/Qt/6.7.3/gcc_64/plugins/platformthemes $RELEASE_DIR/lib/
+cp -r /opt/Qt/6.9.3/gcc_64/plugins/xcbglintegrations $RELEASE_DIR/lib/
+cp -r /opt/Qt/6.9.3/gcc_64/plugins/tls $RELEASE_DIR/lib/
+cp -r /opt/Qt/6.9.3/gcc_64/plugins/platformthemes $RELEASE_DIR/lib/
 
 # Remove extra "debug" files
 rm $RELEASE_DIR/lib/xcbglintegrations/*.debug
@@ -197,8 +186,8 @@ rm $RELEASE_DIR/lib/platformthemes/*.debug
 
 # Get Qt platforms
 mkdir $RELEASE_DIR/lib/platforms
-cp /opt/Qt/6.7.3/gcc_64/plugins/platforms/libqxcb.so $RELEASE_DIR/lib/platforms
-cp /opt/Qt/6.7.3/gcc_64/lib/libQt6XcbQpa.so.6 $RELEASE_DIR/lib
+cp /opt/Qt/6.9.3/gcc_64/plugins/platforms/libqxcb.so $RELEASE_DIR/lib/platforms
+cp /opt/Qt/6.9.3/gcc_64/lib/libQt6XcbQpa.so.6 $RELEASE_DIR/lib
 
 patchelf --set-rpath '$ORIGIN/..' $RELEASE_DIR/lib/platforms/libqxcb.so
 
@@ -208,6 +197,11 @@ patchelf --set-rpath '$ORIGIN/../lib' $RELEASE_DIR/lib/libTK*
 # Create qt.conf
 echo "[Paths]
 Plugins = ../lib" > $RELEASE_DIR/bin/qt.conf
+
+# Get Python home dir
+mkdir -p $RELEASE_DIR/lib/python/lib
+cp -r /home/ubuntu/.pyenv/versions/3.13.1/lib/python3.13 $RELEASE_DIR/lib/python/lib/
+rm -r $RELEASE_DIR/lib/python/lib/python3.13/test
 
 # Create docs
 docs=(
@@ -252,3 +246,6 @@ builder build $FBS_REPO/ci/installBuilder.xml --license $GITHUB_WORKSPACE/licens
 
 mkdir $UPLOAD_DIR/installer
 cp /opt/installbuilder-23.11.0/output/*.run $UPLOAD_DIR/installer
+
+# make sdk visible to plugins
+echo "FEBIO_SDK=$GITHUB_WORKSPACE/FEBio/febio4-sdk" >> $GITHUB_ENV 

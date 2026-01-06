@@ -83,6 +83,7 @@ public:
 	QAction* actionFEBioCheck;
 	QAction* actionFEBioPause;
 	QAction* actionFEBioNext;
+    QAction* actionPluginRepo;
 
 	// PHYSICS menu
 	QAction* actionAddRigidConnector;

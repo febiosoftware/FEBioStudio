@@ -123,6 +123,7 @@ void Ui::CMainWindow::buildToolbars(::CMainWindow* mainWindow)
 	mainToolBar->addAction(mainMenu->actionNewModel);
 	mainToolBar->addAction(mainMenu->actionOpen);
 	mainToolBar->addAction(mainMenu->actionSave);
+    mainToolBar->addAction(mainMenu->actionPluginRepo);
 	mainToolBar->addAction(mainMenu->actionSnapShot);
 	mainToolBar->addAction(mainMenu->actionRayTrace);
 

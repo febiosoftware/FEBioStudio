@@ -1,4 +1,4 @@
-QT_DIR="/opt/Qt/6.7.3/gcc_64"
+QT_DIR="/opt/Qt/6.9.3/gcc_64"
 run_cmake() {
 	cmake -L . -B cmbuild \
 		-DQt_Root=$QT_DIR \
@@ -12,5 +12,11 @@ run_cmake() {
 		-DUSE_NETGEN=ON \
 		-DUSE_ITK=ON \
         -DUSE_PYTHON=ON \
-		-DBUILD_UPDATER=ON
+		-DBUILD_UPDATER=ON \
+        -DFFMPEG_INC=/usr/local/include \
+        -DFFMPEG_LIB_DIR=/usr/local/lib \
+        -DPython3_ROOT_DIR=/home/ubuntu/.pyenv/versions/3.13.1 \
+        -DPython3_EXECUTABLE=/home/ubuntu/.pyenv/versions/3.13.1/bin/python3 \
+        -DPython3_INCLUDE_DIR=/home/ubuntu/.pyenv/versions/3.13.1/include/python3.13 \
+        -DPython3_LIBRARY=/home/ubuntu/.pyenv/versions/3.13.1/lib/libpython3.13.so 
 }

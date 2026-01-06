@@ -1,26 +1,16 @@
 #!/bin/bash
 
 export FEBIO_REPO=$GITHUB_WORKSPACE/FEBio
-export CHEM_REPO=$GITHUB_WORKSPACE/FEBioChem
-export HEAT_REPO=$GITHUB_WORKSPACE/FEBioHeat
 export FBS_REPO=$GITHUB_WORKSPACE/FEBioStudio
 export RELEASE_DIR=$GITHUB_WORKSPACE/release
 UPLOAD_DIR=$GITHUB_WORKSPACE/upload
-APP_BUDLE=$FBS_REPO/cmbuild/bin/FEBioStudio.app
+APP_BUNDLE=$FBS_REPO/cmbuild/bin/FEBioStudio.app
 
 # Build repos
 
 cd $FEBIO_REPO
 ./ci/macOS/build.sh
 ./ci/macOS/create-sdk.sh
-
-ln -s $FEBIO_REPO/febio4-sdk $CHEM_REPO/
-cd $CHEM_REPO
-./ci/macOS/build.sh
-
-ln -s $FEBIO_REPO/febio4-sdk $HEAT_REPO/
-cd $HEAT_REPO
-./ci/macOS/build.sh
 
 ln -s $FEBIO_REPO/febio4-sdk $FBS_REPO/
 cd $FBS_REPO
@@ -30,7 +20,7 @@ cd $GITHUB_WORKSPACE
 
 mkdir $RELEASE_DIR
 
-cp -r $APP_BUDLE $RELEASE_DIR
+cp -r $APP_BUNDLE $RELEASE_DIR
 
 mkdir $UPLOAD_DIR
 mkdir $UPLOAD_DIR/MacOS
@@ -39,30 +29,26 @@ mkdir $UPLOAD_DIR/doc
 mkdir $UPLOAD_DIR/updater
 
 bins=(
-    $APP_BUDLE/Contents/MacOS/febio4
-    $APP_BUDLE/Contents/MacOS/FEBioStudio
-    $APP_BUDLE/Contents/MacOS/febio.xml
+    $APP_BUNDLE/Contents/MacOS/febio4
+    $APP_BUNDLE/Contents/MacOS/FEBioStudio
 )
 
 updater=(
-    $APP_BUDLE/Contents/MacOS/FEBioStudioUpdater
-    $APP_BUDLE/Contents/MacOS/mvUtil
+    $APP_BUNDLE/Contents/MacOS/FEBioStudioUpdater
+    $APP_BUNDLE/Contents/MacOS/mvUtil
 )
 
 febioLibs=(
-    $APP_BUDLE/Contents/Frameworks/libfebiolib.dylib
-    $APP_BUDLE/Contents/Frameworks/libfecore.dylib
-    $APP_BUDLE/Contents/Frameworks/libnumcore.dylib
-    $APP_BUDLE/Contents/Frameworks/libfebioopt.dylib
-    $APP_BUDLE/Contents/Frameworks/libfebiofluid.dylib
-    $APP_BUDLE/Contents/Frameworks/libfeamr.dylib
-    $APP_BUDLE/Contents/Frameworks/libfebiorve.dylib
-    $APP_BUDLE/Contents/Frameworks/libfeimglib.dylib
-    $APP_BUDLE/Contents/Frameworks/libfebiomix.dylib
-    $APP_BUDLE/Contents/Frameworks/libfebiomech.dylib
-
-    $APP_BUDLE/Contents/Frameworks/libFEBioChem.dylib
-    $APP_BUDLE/Contents/Frameworks/libFEBioHeat.dylib
+    $APP_BUNDLE/Contents/Frameworks/libfebiolib.dylib
+    $APP_BUNDLE/Contents/Frameworks/libfecore.dylib
+    $APP_BUNDLE/Contents/Frameworks/libnumcore.dylib
+    $APP_BUNDLE/Contents/Frameworks/libfebioopt.dylib
+    $APP_BUNDLE/Contents/Frameworks/libfebiofluid.dylib
+    $APP_BUNDLE/Contents/Frameworks/libfeamr.dylib
+    $APP_BUNDLE/Contents/Frameworks/libfebiorve.dylib
+    $APP_BUNDLE/Contents/Frameworks/libfeimglib.dylib
+    $APP_BUNDLE/Contents/Frameworks/libfebiomix.dylib
+    $APP_BUNDLE/Contents/Frameworks/libfebiomech.dylib
 )
 
 for item in ${bins[@]}; do
@@ -76,6 +62,18 @@ done
 for item in ${febioLibs[@]}; do
     cp $item $UPLOAD_DIR/Frameworks
 done
+
+# Copy Python into app bundle
+cp -r ~/local/x86_64/Python/Python.framework/ $APP_BUNDLE/Contents/Frameworks/Python.framework
+rm -rf $APP_BUNDLE/Contents/Frameworks/Python.framework/Versions/3.13/lib/python3.13/test
+rm -rf $APP_BUNDLE/Contents/Frameworks/Python.framework/Headers
+rm -rf $APP_BUNDLE/Contents/Frameworks/Python.framework/Versions/3.13/Headers
+rm -rf $APP_BUNDLE/Contents/Frameworks/Python.framework/Versions/3.13/include
+rm -rf $APP_BUNDLE/Contents/Frameworks/Python.framework/Versions/3.13/share
+rm -rf $APP_BUNDLE/Contents/Frameworks/Python.framework/Versions/3.13/Resources
+rm $APP_BUNDLE/Contents/Frameworks/Python.framework/Versions/3.13/bin/idle*
+rm $APP_BUNDLE/Contents/Frameworks/Python.framework/Versions/3.13/bin/pydoc*
+rm $APP_BUNDLE/Contents/Frameworks/Python.framework/Versions/3.13/bin/pip*
 
 # Create docs
 docs=(
@@ -134,3 +132,6 @@ rm $INSTALLER_NAME.zip
 zip -r $INSTALLER_NAME.zip $INSTALLER_NAME
 rm -r $INSTALLER_NAME
 cd $GITHUB_WORKSPACE
+
+# make sdk visible to plugins
+echo "FEBIO_SDK=$GITHUB_WORKSPACE/FEBio/febio4-sdk" >> $GITHUB_ENV 

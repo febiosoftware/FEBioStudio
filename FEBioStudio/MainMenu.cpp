@@ -157,7 +157,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	QAction* actionFEBioOptimize = createAction("Create optimization Study ...", "actionFEBioOptimize");
 	QAction* actionFEBioTangent = createAction("Generate tangent diagnostic ...", "actionFEBioTangent");
 	QAction* actionFEBioInfo = createAction("FEBio Info ...", "actionFEBioInfo");
-    QAction* actionPluginRepo = createAction("Plugin Repository ...", "actionPluginRepo");
+    actionPluginRepo = createAction("Plugin Repository ...", "actionPluginRepo", "plugin"); actionPluginRepo->setToolTip("Open the FEBio Plugin Repository");
 	QAction* actionCreatePlugin = createAction("Create FEBio plugin ...", "actionCreatePlugin");
 
 	// --- Tools menu ---

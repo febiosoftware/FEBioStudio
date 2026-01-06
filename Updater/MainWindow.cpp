@@ -214,9 +214,9 @@ CMainWindow::CMainWindow(bool devChannel, bool updaterUpdateCheck, QString& bran
 
 	setWizardStyle(QWizard::ModernStyle);
 
-	setPixmap(QWizard::WatermarkPixmap, QPixmap(":/images/leftSide.png"));
-	setPixmap(QWizard::BackgroundPixmap, QPixmap(":/images/leftSide.png"));
-	setPixmap(QWizard::LogoPixmap, QPixmap(":/images/FEBioStudio.png"));
+	setPixmap(QWizard::WatermarkPixmap, QPixmap(":/Documentation/InstallerImages/Left Side Image Transparent.png"));
+	setPixmap(QWizard::BackgroundPixmap, QPixmap(":/Documentation/InstallerImages/Left Side Image Transparent.png"));
+	setPixmap(QWizard::LogoPixmap, QPixmap("/icons/FEBioStudio.png"));
 
 	ui->setup(this, correctDir);
 
@@ -425,7 +425,7 @@ void CMainWindow::unzipFinished()
 {
     ReleaseFile& currentFile = ui->updateWidget->updateFiles[ui->zippedFiles[ui->currentZippedIndex]];
 
-    QFile zip = QApplication::applicationDirPath() + QString(REL_ROOT) + currentFile.name;
+    QFile zip = QFile(QApplication::applicationDirPath() + QString(REL_ROOT) + currentFile.name);
 
     if(zip.exists())
     {

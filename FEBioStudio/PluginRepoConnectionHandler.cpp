@@ -354,7 +354,7 @@ void CPluginRepoConnectionHandler::getPluginFilesReply(QNetworkReply *r)
 	}
 	else
 	{
-		QString msg = "An unknown server error has occurred.\nHTTP Staus Code: ";
+		QString msg = "An unknown server error has occurred.\nHTTP Status Code: ";
 		msg += std::to_string(statusCode).c_str();
 
 		manager->OnHTMLError(msg);
@@ -377,7 +377,7 @@ void CPluginRepoConnectionHandler::postPluginReply(QNetworkReply *r)
     }
     else
     {
-        QString msg = "An unknown server error has occurred.\nHTTP Staus Code: ";
+        QString msg = "An unknown server error has occurred.\nHTTP Status Code: ";
 		msg += std::to_string(statusCode).c_str();
 
 		manager->HTMLError(msg);
@@ -411,7 +411,7 @@ void CPluginRepoConnectionHandler::uploadImageReply(QNetworkReply *r)
         }
         default:
         {
-            QString msg = "An unknown server error has occurred.\nHTTP Staus Code: ";
+            QString msg = "An unknown server error has occurred.\nHTTP Status Code: ";
             msg += std::to_string(statusCode).c_str();
             manager->HTMLError(msg);
             break;
