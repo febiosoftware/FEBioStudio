@@ -1453,8 +1453,7 @@ void CGLView::captureFrameReady(QImage img)
 	if (m_pframe && m_pframe->visible())
 	{
 		// crop based on the capture frame
-		double dpr = devicePixelRatio();
-		img = img.copy((int)(dpr*m_pframe->x()), (int)(dpr*m_pframe->y()), (int)(dpr*m_pframe->w()), (int)(dpr*m_pframe->h()));
+		img = img.copy(m_pframe->x(), m_pframe->y(), m_pframe->w(), m_pframe->h());
 	}
 
 	// NOTE: The image returned from grabFrameBuffer has a format of QImage::Format_ARGB32_Premultiplied.
