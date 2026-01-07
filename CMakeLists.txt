@@ -2,7 +2,16 @@ cmake_minimum_required(VERSION 3.5.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(THREADS_PREFER_PTHREADS ON)
+
+IF(APPLE)
+    set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+    set(CMAKE_HAVE_THREADS_LIBRARY 1)
+    set(CMAKE_USE_PTHREADS_INIT 1)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+ELSE()
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_package(Threads REQUIRED)
+ENDIF()
 
 project(FEBioStudio)
 
@@ -536,8 +545,7 @@ if(USE_TETGEN)
 endif()
 
 if(CAD_FEATURES)
-	target_link_libraries(${FBS_BIN_NAME} optimized ${NETGEN_LIBS})
-    
+	target_link_libraries(${FBS_BIN_NAME} optimized ${NETGEN_LIBS} Threads::Threads) 	
     if(DEFINED NETGEN_DBG_LIBS)
         target_link_libraries(${FBS_BIN_NAME} debug ${NETGEN_DBG_LIBS})
     else()
