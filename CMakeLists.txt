@@ -137,7 +137,7 @@ if(USE_TETGEN)
 endif()
 
 if(CAD_FEATURES)
-    set(NETGEN_LIB_NAMES nglib)
+    set(NETGEN_LIB_NAMES nglib ngcore)
     
     foreach(name IN LISTS NETGEN_LIB_NAMES)
         findLib(NETGEN_LIB_DIR NETGEN_LIB ${name})
