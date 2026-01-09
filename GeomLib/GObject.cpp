@@ -522,7 +522,7 @@ void GObject::UpdateGNodes()
 FSMesh* GObject::ReplaceFEMesh(FSMesh* pm)
 {
 	FSMesh* oldMesh = GetFEMesh();
-	if (pm)
+	if (pm && oldMesh)
 	{
 		pm->TakeItemLists(oldMesh);
 		pm->TakeMeshData(oldMesh);
@@ -614,27 +614,15 @@ void GObject::UpdateFEElementMatIDs()
 	}
 }
 
-//-----------------------------------------------------------------------------
-// \todo This function deletes the old mesh. However, the tetgen remesher
-//		uses the old mesh to create the new mesh and when the user undoes the last
-//		mesh we need to be able to restore that mesh. Therefore, we should not delete
-//		the old mesh.
 FSMesh* GObject::BuildMesh()
 {
 	if (imp->m_pMesher)
 	{
-		// keep a pointer to the old mesh since some mesher use the old
-		// mesh to create a new mesh
-		FSMesh* pold = imp->m_pmesh;
 		SetFEMesh(imp->m_pMesher->BuildMesh());
-
-		// now it is safe to delete the old mesh
-		if (pold) delete pold;
-
 		Update();
 		return imp->m_pmesh;
 	}
-	else return 0;
+	else return nullptr;
 }
 
 //-----------------------------------------------------------------------------

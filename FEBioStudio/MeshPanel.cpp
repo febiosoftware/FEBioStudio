@@ -449,6 +449,9 @@ void CMeshPanel::on_apply_clicked(bool b)
 		doc->UpdateSelection();
 	}
 
+	// keep a pointer to the old mesh
+	FSMesh* oldMesh = activeObject->GetFEMesh();
+
 	MeshingThread* thread = new MeshingThread(activeObject);
 	CDlgStartThread dlg(GetMainWindow(), thread);
 	if (dlg.exec())
@@ -461,7 +464,11 @@ void CMeshPanel::on_apply_clicked(bool b)
 			QString error = QString("Meshing Failed:\n") + errMsg;
 			QMessageBox::critical(this, "Meshing", error);
 		}
-		else doc->AppendChangeLog(QString("Object \"%1\" meshed").arg(QString::fromStdString(activeObject->GetName())));
+		else
+		{
+			doc->AddCommand(new CCmdChangeFEMesh(activeObject, oldMesh));
+			doc->AppendChangeLog(QString("Object \"%1\" meshed").arg(QString::fromStdString(activeObject->GetName())));
+		}
 
 		doc->Update();
 		Update();
