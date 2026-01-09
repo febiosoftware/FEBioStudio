@@ -1579,6 +1579,10 @@ void CGLView::RenderScene(GLRenderEngine& re)
 	// position the light
 	vec3f lp = m_view.m_light; lp.Normalize();
 	re.setLightPosition(0, lp);
+	float a = m_view.m_ambient;
+	float d = m_view.m_diffuse;
+	re.setLightAmbientColor(0, GLColor::FromRGBf(a, a, a));
+	re.setLightDiffuseColor(0, GLColor::FromRGBf(d, d, d));
 	if (view.m_bLighting)
 	{
 		re.setLightEnabled(0, true);
