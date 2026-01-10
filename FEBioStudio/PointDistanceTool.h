@@ -41,6 +41,8 @@ private:
 	QVariant GetPropertyValue(int i) override;
 	void SetPropertyValue(int i, const QVariant& v) override;
 
+	void UpdateDistance();
+
 private:
 	int			m_node1, m_node2;	// mesh nodes
 	vec3d		m_d;				// separation vector

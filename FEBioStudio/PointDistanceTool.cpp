@@ -46,8 +46,26 @@ QVariant CPointDistanceTool::GetPropertyValue(int i)
 
 void CPointDistanceTool::SetPropertyValue(int i, const QVariant& v)
 {
-	if (i==0) m_node1 = v.toInt();
-	if (i==1) m_node2 = v.toInt();
+	if (i == 0)
+	{
+		int n = v.toInt();
+		if (n != m_node1)
+		{
+			m_node1 = n;
+			UpdateDistance();
+			SetModified(true);
+		}
+	}
+	if (i == 1)
+	{
+		int n = v.toInt();
+		if (n != m_node2)
+		{
+			m_node2 = n;
+			UpdateDistance();
+			SetModified(true);
+		}
+	}
 }
 
 CPointDistanceTool::CPointDistanceTool(CMainWindow* wnd) : CBasicTool(wnd, "Point Distance")
@@ -74,35 +92,43 @@ void CPointDistanceTool::Activate()
 
 void CPointDistanceTool::Update()
 {
+	FSMeshBase* mesh = GetActiveEditMesh();
+	if (mesh)
+	{
+		int nsel = 0;
+		for (int i = 0; i < mesh->Nodes(); ++i)
+		{
+			FSNode& node = mesh->Node(i);
+			int nid = i + 1;
+			if (node.IsSelected())
+			{
+				nsel++;
+				if (m_node1 == 0) m_node1 = nid;
+				else if (m_node2 == 0) m_node2 = nid;
+				else
+				{
+					m_node1 = m_node2;
+					m_node2 = nid;
+				}
+			}
+		}
+		if (nsel == 0)
+		{
+			m_node1 = m_node2 = 0;
+		}
+	}
+	UpdateDistance();
+}
+
+void CPointDistanceTool::UpdateDistance()
+{
 	SetDecoration(nullptr);
 	m_d = vec3d(0, 0, 0);
 
 	FSMeshBase* mesh = GetActiveEditMesh();
 	if (mesh == nullptr) return;
 
-	int nsel = 0;
-	for (int i = 0; i < mesh->Nodes(); ++i)
-	{
-		FSNode& node = mesh->Node(i);
-		int nid = i + 1;
-		if (node.IsSelected())
-		{
-			nsel++;
-			if      (m_node1 == 0) m_node1 = nid;
-			else if (m_node2 == 0) m_node2 = nid;
-			else
-			{
-				m_node1 = m_node2;
-				m_node2 = nid;
-			}
-		}
-	}
-
-	if (nsel == 0)
-	{
-		m_node1 = m_node2 = 0;
-	}
-	else if ((m_node1 > 0) && (m_node2 > 0))
+	if ((m_node1 > 0) && (m_node2 > 0))
 	{
 		vec3d a = mesh->NodePosition(m_node1 - 1);
 		vec3d b = mesh->NodePosition(m_node2 - 1);
