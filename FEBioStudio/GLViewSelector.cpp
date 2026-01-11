@@ -212,9 +212,9 @@ void GLViewSelector::TagBackfacingFaces(FSMeshBase& mesh)
 			case FE_FACE_TRI7:
 			case FE_FACE_TRI10:
 			{
-				r[0] = mesh.Node(f.n[0]).r;
-				r[1] = mesh.Node(f.n[1]).r;
-				r[2] = mesh.Node(f.n[2]).r;
+				r[0] = mesh.NodePosition(f.n[0]);
+				r[1] = mesh.NodePosition(f.n[1]);
+				r[2] = mesh.NodePosition(f.n[2]);
 
 				p1[0] = transform.WorldToScreen(r[0]);
 				p1[1] = transform.WorldToScreen(r[1]);
@@ -228,10 +228,10 @@ void GLViewSelector::TagBackfacingFaces(FSMeshBase& mesh)
 			case FE_FACE_QUAD8:
 			case FE_FACE_QUAD9:
 			{
-				r[0] = mesh.Node(f.n[0]).r;
-				r[1] = mesh.Node(f.n[1]).r;
-				r[2] = mesh.Node(f.n[2]).r;
-				r[3] = mesh.Node(f.n[3]).r;
+				r[0] = mesh.NodePosition(f.n[0]);
+				r[1] = mesh.NodePosition(f.n[1]);
+				r[2] = mesh.NodePosition(f.n[2]);
+				r[3] = mesh.NodePosition(f.n[3]);
 
 				p1[0] = transform.WorldToScreen(r[0]);
 				p1[1] = transform.WorldToScreen(r[1]);
@@ -378,9 +378,9 @@ void GLViewSelector::TagBackfacingElements(FSMesh& mesh)
 					case FE_FACE_TRI7:
 					case FE_FACE_TRI10:
 					{
-						r[0] = mesh.Node(f.n[0]).r;
-						r[1] = mesh.Node(f.n[1]).r;
-						r[2] = mesh.Node(f.n[2]).r;
+						r[0] = mesh.NodePosition(f.n[0]);
+						r[1] = mesh.NodePosition(f.n[1]);
+						r[2] = mesh.NodePosition(f.n[2]);
 
 						p1[0] = transform.WorldToScreen(r[0]);
 						p1[1] = transform.WorldToScreen(r[1]);
@@ -393,10 +393,10 @@ void GLViewSelector::TagBackfacingElements(FSMesh& mesh)
 					case FE_FACE_QUAD8:
 					case FE_FACE_QUAD9:
 					{
-						r[0] = mesh.Node(f.n[0]).r;
-						r[1] = mesh.Node(f.n[1]).r;
-						r[2] = mesh.Node(f.n[2]).r;
-						r[3] = mesh.Node(f.n[3]).r;
+						r[0] = mesh.NodePosition(f.n[0]);
+						r[1] = mesh.NodePosition(f.n[1]);
+						r[2] = mesh.NodePosition(f.n[2]);
+						r[3] = mesh.NodePosition(f.n[3]);
 
 						p1[0] = transform.WorldToScreen(r[0]);
 						p1[1] = transform.WorldToScreen(r[1]);
@@ -433,9 +433,9 @@ void GLViewSelector::TagBackfacingElements(FSMesh& mesh)
 					case FE_FACE_TRI7:
 					case FE_FACE_TRI10:
 					{
-						r[0] = mesh.Node(f.n[0]).r;
-						r[1] = mesh.Node(f.n[1]).r;
-						r[2] = mesh.Node(f.n[2]).r;
+						r[0] = mesh.NodePosition(f.n[0]);
+						r[1] = mesh.NodePosition(f.n[1]);
+						r[2] = mesh.NodePosition(f.n[2]);
 
 						p1[0] = transform.WorldToScreen(r[0]);
 						p1[1] = transform.WorldToScreen(r[1]);
@@ -448,10 +448,10 @@ void GLViewSelector::TagBackfacingElements(FSMesh& mesh)
 					case FE_FACE_QUAD8:
 					case FE_FACE_QUAD9:
 					{
-						r[0] = mesh.Node(f.n[0]).r;
-						r[1] = mesh.Node(f.n[1]).r;
-						r[2] = mesh.Node(f.n[2]).r;
-						r[3] = mesh.Node(f.n[3]).r;
+						r[0] = mesh.NodePosition(f.n[0]);
+						r[1] = mesh.NodePosition(f.n[1]);
+						r[2] = mesh.NodePosition(f.n[2]);
+						r[3] = mesh.NodePosition(f.n[3]);
 
 						p1[0] = transform.WorldToScreen(r[0]);
 						p1[1] = transform.WorldToScreen(r[1]);
