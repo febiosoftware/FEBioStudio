@@ -44,8 +44,8 @@ private:
 	void UpdateDistance();
 
 private:
-	int			m_node1, m_node2;	// mesh nodes
-	vec3d		m_d;				// separation vector
+	int			m_node[2];	// mesh nodes
+	vec3d		m_d;		// separation vector
 
 	friend class Props;
 };

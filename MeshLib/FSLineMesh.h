@@ -67,6 +67,18 @@ public: // node interface
 	//! Tag all nodes with the specified tag value
 	void TagAllNodes(int ntag);
 
+	//! Return node index from its nodal ID
+	int NodeIndexFromID(int nid);
+
+	//! Re-generate nodal IDs (startID must be larger than 0!)
+	int GenerateNodalIDs(int startID = 1);
+
+	//! Build node lookup table
+	void BuildNLT();
+
+	//! Clear node lookup table
+	void ClearNLT();
+
 public: // edge interface
 
 	//! Get the number of edges in the mesh
@@ -125,6 +137,11 @@ protected:
 	std::vector<FSEdge>	m_Edge;
 	//! Node-edge connectivity list
 	FSNodeEdgeList		m_NLL;
+
+	//! Node ID lookup table
+	std::vector<int> m_NLT;
+	//! The minimum node ID
+	int m_nltmin;
 };
 
 namespace MeshTools {

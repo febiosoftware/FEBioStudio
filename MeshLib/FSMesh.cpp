@@ -47,7 +47,6 @@ using namespace std;
 FSMesh::FSMesh()
 {
 	m_pobj = 0;
-	m_nltmin = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -2595,80 +2594,6 @@ void FSMesh::SetUniformShellThickness(double h)
 		int ne = el.Nodes();
 		for (int j = 0; j < ne; ++j) el.m_h[j] = h;
 	}
-}
-
-//-----------------------------------------------------------------------------
-int FSMesh::NodeIndexFromID(int nid)
-{
-	if (m_NLT.empty()) return nid - 1;
-
-	if (nid < m_nltmin) return -1;
-	nid -= m_nltmin;
-	if (nid >= m_NLT.size()) return -1;
-	return m_NLT[nid];
-}
-
-//-----------------------------------------------------------------------------
-int FSMesh::GenerateNodalIDs(int startID)
-{
-	assert(startID > 0);
-	if (startID <= 0) startID = 1;
-	int nextID = startID;
-	for (int i = 0; i < Nodes(); ++i) Node(i).m_nid = nextID++;
-	BuildNLT();
-	return nextID;
-}
-
-//-----------------------------------------------------------------------------
-void FSMesh::BuildNLT()
-{
-	// Do some clean up first
-	m_NLT.clear();
-	m_nltmin = 0;
-	int N = Nodes();
-	if (N == 0) return;
-
-	// Figure out the min and max IDs
-	int minid = Node(0).m_nid;
-	int maxid = minid;
-	for (int i = 1; i < N; ++i)
-	{
-		int nid = Node(i).m_nid;
-		if (nid > maxid) maxid = nid;
-		if (nid < minid) minid = nid;
-	}
-
-	// if node IDs were not assigned yet, they should all be -1
-	// In that case, we're done
-	if (maxid < 0) return;
-
-	// Figure out the size
-	int nsize = maxid - minid + 1;
-	if (nsize < N)
-	{
-		// Hmm, that shouldn't be. 
-		// Let's clear up and get out of here.
-		ClearNLT();
-		return;
-	}
-
-	// Ok, look's like we're good to go
-	m_NLT.assign(nsize, -1);
-	for (int i = 0; i < N; ++i)
-	{
-		int nid = Node(i).m_nid;
-		m_NLT[nid - minid] = i;
-	}
-	m_nltmin = minid;
-}
-
-//-----------------------------------------------------------------------------
-void FSMesh::ClearNLT()
-{
-	if (m_NLT.empty()) return;
-	m_NLT.clear();
-	m_nltmin = 0;
-	for (int i = 0; i < Nodes(); ++i) m_Node[i].m_nid = -1;
 }
 
 //-----------------------------------------------------------------------------

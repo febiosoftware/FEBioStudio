@@ -112,17 +112,6 @@ public:
 	//! Count selected elements
 	int CountSelectedElements() const;
 
-	//! Return node index from its nodal ID
-	int NodeIndexFromID(int nid);
-
-	//! Re-generate nodal IDs (startID must be larger than 0!)
-	int GenerateNodalIDs(int startID = 1);
-
-	//! Build node lookup table
-	void BuildNLT();
-	//! Clear node lookup table
-	void ClearNLT();
-
 	//! Return element index from its element ID
 	int ElementIndexFromID(int eid);
 
@@ -373,10 +362,6 @@ protected:
 	FSObjectList<FSMeshPartition>	m_Dom;
 
 protected:
-	//! Node ID lookup table
-	std::vector<int> m_NLT;
-	//! The minimum node ID
-	int m_nltmin;
 
 	//! Element ID lookup table
 	std::vector<int> m_ELT;

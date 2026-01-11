@@ -34,8 +34,8 @@ QVariant CPointDistanceTool::GetPropertyValue(int i)
 {
 	switch (i)
 	{
-	case 0: return m_node1; break;
-	case 1: return m_node2; break;
+	case 0: return m_node[0]; break;
+	case 1: return m_node[1]; break;
 	case 2: return fabs(m_d.x); break;
 	case 3: return fabs(m_d.y); break;
 	case 4: return fabs(m_d.z); break;
@@ -49,9 +49,9 @@ void CPointDistanceTool::SetPropertyValue(int i, const QVariant& v)
 	if (i == 0)
 	{
 		int n = v.toInt();
-		if (n != m_node1)
+		if (n != m_node[0])
 		{
-			m_node1 = n;
+			m_node[0] = n;
 			UpdateDistance();
 			SetModified(true);
 		}
@@ -59,9 +59,9 @@ void CPointDistanceTool::SetPropertyValue(int i, const QVariant& v)
 	if (i == 1)
 	{
 		int n = v.toInt();
-		if (n != m_node2)
+		if (n != m_node[1])
 		{
-			m_node2 = n;
+			m_node[1] = n;
 			UpdateDistance();
 			SetModified(true);
 		}
@@ -70,8 +70,8 @@ void CPointDistanceTool::SetPropertyValue(int i, const QVariant& v)
 
 CPointDistanceTool::CPointDistanceTool(CMainWindow* wnd) : CBasicTool(wnd, "Point Distance")
 { 
-	m_node1 = 0; 
-	m_node2 = 0; 
+	m_node[0] = 0; 
+	m_node[1] = 0; 
 	m_d = vec3d(0,0,0); 
 
 	addProperty("node 1", CProperty::Int);
@@ -99,22 +99,23 @@ void CPointDistanceTool::Update()
 		for (int i = 0; i < mesh->Nodes(); ++i)
 		{
 			FSNode& node = mesh->Node(i);
-			int nid = i + 1;
+			int nid = node.GetID();
+			if (nid == -1) nid = i + 1;
 			if (node.IsSelected())
 			{
 				nsel++;
-				if (m_node1 == 0) m_node1 = nid;
-				else if (m_node2 == 0) m_node2 = nid;
+				if (m_node[0] == 0) m_node[0] = nid;
+				else if (m_node[1] == 0) m_node[1] = nid;
 				else
 				{
-					m_node1 = m_node2;
-					m_node2 = nid;
+					m_node[0] = m_node[1];
+					m_node[1] = nid;
 				}
 			}
 		}
 		if (nsel == 0)
 		{
-			m_node1 = m_node2 = 0;
+			m_node[0] = m_node[1] = 0;
 		}
 	}
 	UpdateDistance();
@@ -128,17 +129,22 @@ void CPointDistanceTool::UpdateDistance()
 	FSMeshBase* mesh = GetActiveEditMesh();
 	if (mesh == nullptr) return;
 
-	if ((m_node1 > 0) && (m_node2 > 0))
+	if ((m_node[0] > 0) && (m_node[1] > 0))
 	{
-		vec3d a = mesh->NodePosition(m_node1 - 1);
-		vec3d b = mesh->NodePosition(m_node2 - 1);
+		int n0 = mesh->NodeIndexFromID(m_node[0]);
+		int n1 = mesh->NodeIndexFromID(m_node[1]);
+		if ((n0 > 0) && (n1 > 0))
+		{
+			vec3d a = mesh->NodePosition(n0);
+			vec3d b = mesh->NodePosition(n1);
 
-		m_d = b - a;
+			m_d = b - a;
 
-		GCompositeDecoration* deco = new GCompositeDecoration;
-		deco->AddDecoration(new GPointDecoration(to_vec3f(a)));
-		deco->AddDecoration(new GPointDecoration(to_vec3f(b)));
-		deco->AddDecoration(new GLineDecoration(to_vec3f(a), to_vec3f(b)));
-		SetDecoration(deco);
+			GCompositeDecoration* deco = new GCompositeDecoration;
+			deco->AddDecoration(new GPointDecoration(to_vec3f(a)));
+			deco->AddDecoration(new GPointDecoration(to_vec3f(b)));
+			deco->AddDecoration(new GLineDecoration(to_vec3f(a), to_vec3f(b)));
+			SetDecoration(deco);
+		}
 	}
 }
