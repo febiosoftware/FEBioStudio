@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include <QFile>
 #include <QDir>
 #include <string.h>
-#include <XML/XMLReader.h>
+#include "XMLReader.h"
 
 // starting point of application
 int main(int argc, char* argv[])

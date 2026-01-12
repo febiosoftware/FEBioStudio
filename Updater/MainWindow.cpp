@@ -32,7 +32,7 @@
 #include <QXmlStreamReader>
 #include "FEBioStudioUpdater.h"
 #include "MainWindow.h"
-#include <XML/XMLWriter.h>
+#include "XMLWriter.h"
 #include <FEBioStudio/UpdateChecker.h>
 #include <FEBioStudio/ServerSettings.h>
 #include <FEBioStudio/PluginManager.h>

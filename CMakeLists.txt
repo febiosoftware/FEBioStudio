@@ -680,8 +680,9 @@ if(BUILD_UPDATER)
     endif()
 
     set(UPDATER_SOURCES Updater/FEBioStudioUpdater.cpp Updater/MainWindow.cpp Updater/ZipThread.cpp
-        Updater/getapppath.cpp Updater/FEBioStudioUpdater.qrc FEBioStudio/UpdateChecker.cpp 
-        FEBioStudio/ServerSettings.cpp FEBioStudio/PluginManager.cpp FEBioStudio/PluginRepoConnectionHandler.cpp
+        Updater/getapppath.cpp Updater/FEBioStudioUpdater.qrc Updater/XMLReader.cpp
+        Updater/XMLWriter.cpp FEBioStudio/UpdateChecker.cpp FEBioStudio/ServerSettings.cpp 
+        FEBioStudio/PluginManager.cpp FEBioStudio/PluginRepoConnectionHandler.cpp
         FEBioStudio/PluginDatabaseHandler.cpp FEBioStudio/DatabaseInterface.cpp FEBioStudio/PluginXML.cpp)
 
     add_executable(FEBioStudioUpdater ${UPDATER_SOURCES})
@@ -700,14 +701,5 @@ if(BUILD_UPDATER)
 
     target_compile_definitions(FEBioStudioUpdater PUBLIC "UPDATER")
 
-    if (WIN32)
-        find_library(XML_LIB_RELEASE NAMES xml 
-            PATHS ${FEBio_LIB_DIR} PATH_SUFFIXES Release NO_DEFAULT_PATH)
-
-        target_link_libraries(FEBioStudioUpdater Qt6::Widgets Qt6::Network ${XML_LIB_RELEASE} ${LIBZIP_LIB})
-    else()
-        findLib(FEBio_LIB_DIR XML_LIB xml)
-        target_link_libraries(FEBioStudioUpdater Qt6::Widgets Qt6::Network ${XML_LIB} ${LIBZIP_LIB})
-    endif()
-
+    target_link_libraries(FEBioStudioUpdater Qt6::Widgets Qt6::Network ${LIBZIP_LIB})
 endif()
