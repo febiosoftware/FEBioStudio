@@ -768,9 +768,6 @@ bool FEBioExport3::Write(const char* szfile)
 
 		if (m_writeNotes) WriteNote(&mdl);
 
-		// set modified formats
-		XMLElement::intFormat = "%d";
-
 		XMLElement el;
 
 		// output root element
@@ -1701,7 +1698,6 @@ void FEBioExport3::WriteMaterialParams(FSMaterial* pm, bool isTopLevel)
 	if (pm->m_axes && (pm->m_axes->m_naopt > -1))
 	{
 		XMLElement el("mat_axis");
-		XMLElement::intFormat = "%d";
 		if (pm->m_axes->m_naopt == MaterialAxesGeneratorType::AXES_LOCAL)
 		{
 			el.add_attribute("type", "local");
@@ -1749,7 +1745,6 @@ void FEBioExport3::WriteMaterialParams(FSMaterial* pm, bool isTopLevel)
 			}
 			m_xml.close_branch();
 		}
-		XMLElement::setDefaultFormats();
 	}
 }
 

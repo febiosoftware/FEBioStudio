@@ -266,7 +266,7 @@ if(USE_ZLIB)
 endif()
 
 # Find FEBio Libs
-set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot febiofluid febiomix feamr febioopt)
+set(FEBio_LIB_NAMES fecore febiolib febiomech febioplot febiofluid febiomix feamr febioopt febioxml)
 
 if (WIN32)
     set(FEBio_DEBUG_LIBS "")

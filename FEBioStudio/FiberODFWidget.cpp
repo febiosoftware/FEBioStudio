@@ -66,7 +66,7 @@ SOFTWARE.*/
 #include "DlgStartThread.h"
 #include "PropertyListForm.h"
 #include "PropertyList.h"
-#include <XML/XMLWriter.h>
+#include <FEBioXML/XMLWriter.h>
 #include <GLWLib/GLTriad.h>
 #include <GLWLib/GLLegendBar.h>
 #include <GLLib/GLScene.h>

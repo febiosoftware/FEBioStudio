@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEFileReader.h"
-#include <XML/XMLReader.h>
+#include <FEBioXML/XMLReader.h>
 
 class FSMesh;
 

@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEBioStudioProject.h"
-#include <XML/XMLWriter.h>
-#include <XML/XMLReader.h>
+#include <FEBioXML/XMLWriter.h>
+#include <FEBioXML/XMLReader.h>
 #include <QDir>
 #include <sstream>
 

@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "PluginXML.h"
 #include "PluginManager.h"
-#include <XML/XMLReader.h>
-#include <XML/XMLWriter.h>
+#include <FEBioXML/XMLReader.h>
+#include <FEBioXML/XMLWriter.h>
 
 CPluginXML::CPluginXML(CPluginManager* manager) 
     :  m_manager(manager), m_busy(false)

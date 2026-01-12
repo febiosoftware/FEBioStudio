@@ -637,9 +637,6 @@ bool FEBioExport4::Write(const char* szfile)
 			}
 		}
 
-		// set modified formats
-		XMLElement::intFormat = "%d";
-
 		XMLElement el;
 
 		// output root element

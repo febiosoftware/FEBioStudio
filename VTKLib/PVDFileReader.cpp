@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "PVDFileReader.h"
 #include "PVTUFileReader.h"
-#include <XML/XMLReader.h>
+#include <FEBioXML/XMLReader.h>
 using namespace VTK;
 
 PVDFileReader::PVDFileReader()

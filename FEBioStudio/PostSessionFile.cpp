@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "PostSessionFile.h"
 #include <QtCore/QDir>
-#include <XML/XMLWriter.h>
-#include <XML/XMLReader.h>
+#include <FEBioXML/XMLWriter.h>
+#include <FEBioXML/XMLReader.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLMusclePath.h>
 #include "PostDocument.h"

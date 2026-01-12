@@ -1547,7 +1547,6 @@ void FEBioExport25::WriteMaterialParams(FSMaterial* pm, bool topLevel)
 	if (pm->m_axes && (pm->m_axes->m_naopt > -1))
 	{
 		XMLElement el("mat_axis");
-		XMLElement::intFormat = "%d";
 		if (pm->m_axes->m_naopt == MaterialAxesGeneratorType::AXES_LOCAL)
 		{
 			el.add_attribute("type", "local");
@@ -1595,7 +1594,6 @@ void FEBioExport25::WriteMaterialParams(FSMaterial* pm, bool topLevel)
 			}
 			m_xml.close_branch();
 		}
-		XMLElement::setDefaultFormats();
 	}
 }
 

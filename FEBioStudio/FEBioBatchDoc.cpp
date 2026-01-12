@@ -28,8 +28,8 @@ SOFTWARE.*/
 #include "LocalJobProcess.h"
 #include "FEBioJob.h"
 #include <FEBioMonitor/FEBioReportDoc.h>
-#include <XML/XMLWriter.h>
-#include <XML/XMLReader.h>
+#include <FEBioXML/XMLWriter.h>
+#include <FEBioXML/XMLReader.h>
 #include <chrono>
 #include <queue>
 #include "MainWindow.h"
