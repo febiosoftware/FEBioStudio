@@ -38,6 +38,8 @@ public:
 	void Update() override;
 
 private:
+	bool onPickEvent(const FESelection& sel) override;
+
 	QVariant GetPropertyValue(int i) override;
 	void SetPropertyValue(int i, const QVariant& v) override;
 

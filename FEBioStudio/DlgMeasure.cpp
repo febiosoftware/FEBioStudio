@@ -185,6 +185,11 @@ void CDlgMeasure::Update()
 	}
 }
 
+CAbstractTool* CDlgMeasure::activeTool()
+{
+	return ui->m_activeTool;
+}
+
 void CDlgMeasure::onMeasureChanged(int n)
 {
 	if (ui->m_activeTool) ui->m_activeTool->Deactivate();

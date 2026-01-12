@@ -32,6 +32,7 @@ namespace Ui {
 }
 
 class CMainWindow;
+class CAbstractTool;
 
 class CDlgMeasure : public QDialog
 {
@@ -45,6 +46,8 @@ public:
 
 	void showEvent(QShowEvent* ev) override;
 	void closeEvent(QCloseEvent* ev) override;
+
+	CAbstractTool* activeTool();
 
 public slots:
 	void onMeasureChanged(int n);

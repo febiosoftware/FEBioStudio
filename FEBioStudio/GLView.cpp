@@ -58,6 +58,7 @@ SOFTWARE.*/
 #include "GLViewScene.h"
 #include <GLLib/glx.h>
 #include <QPainterPath>
+#include "Tool.h"
 
 using namespace std::chrono;
 
@@ -977,13 +978,13 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 					else m_bpick = false;
 
 					// get the active command window
+					FESelection* sel = pdoc->GetCurrentSelection();
 					CBuildPanel* panel = m_pWnd->GetBuildPanel();
 					if (panel)
 					{
 						CWindowPanel* cmdPanel = panel->GetActivePanel();
 						if (cmdPanel)
 						{
-							FESelection* sel = pdoc->GetCurrentSelection();
 							if (sel && cmdPanel->OnPickEvent(*sel))
 							{
 								return;
@@ -991,6 +992,13 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 						}
 					}
 
+					// get the active tool (if any)
+					CAbstractTool* tool = m_pWnd->GetActiveTool();
+					if (sel && tool && tool->onPickEvent(*sel))
+					{
+						m_bsel = false;
+						return;
+					}
 				}
 				else
 				{

@@ -28,25 +28,28 @@ SOFTWARE.*/
 #include "PointDistanceTool.h"
 #include <GLLib/GDecoration.h>
 #include <GeomLib/GObject.h>
+#include <MeshTools/FESelection.h>
 #include <MeshLib/FSMesh.h>
 
 QVariant CPointDistanceTool::GetPropertyValue(int i)
 {
 	switch (i)
 	{
-	case 0: return m_node[0]; break;
-	case 1: return m_node[1]; break;
-	case 2: return fabs(m_d.x); break;
-	case 3: return fabs(m_d.y); break;
-	case 4: return fabs(m_d.z); break;
-	case 5: return m_d.Length(); break;
+	case 0: break; // group
+	case 1: return m_node[0]; break;
+	case 2: return m_node[1]; break;
+	case 3: break; // group
+	case 4: return fabs(m_d.x); break;
+	case 5: return fabs(m_d.y); break;
+	case 6: return fabs(m_d.z); break;
+	case 7: return m_d.Length(); break;
 	}
 	return QVariant();
 }
 
 void CPointDistanceTool::SetPropertyValue(int i, const QVariant& v)
 {
-	if (i == 0)
+	if (i == 1)
 	{
 		int n = v.toInt();
 		if (n != m_node[0])
@@ -56,7 +59,7 @@ void CPointDistanceTool::SetPropertyValue(int i, const QVariant& v)
 			SetModified(true);
 		}
 	}
-	if (i == 1)
+	if (i == 2)
 	{
 		int n = v.toInt();
 		if (n != m_node[1])
@@ -74,8 +77,10 @@ CPointDistanceTool::CPointDistanceTool(CMainWindow* wnd) : CBasicTool(wnd, "Poin
 	m_node[1] = 0; 
 	m_d = vec3d(0,0,0); 
 
+	addProperty("Select two nodes:", CProperty::Group);
 	addProperty("node 1", CProperty::Int);
 	addProperty("node 2", CProperty::Int);
+	addProperty("Distance Components:", CProperty::Group);
 	addProperty("Dx", CProperty::Float)->setFlags(CProperty::Visible);
 	addProperty("Dy", CProperty::Float)->setFlags(CProperty::Visible);
 	addProperty("Dz", CProperty::Float)->setFlags(CProperty::Visible);
@@ -90,34 +95,39 @@ void CPointDistanceTool::Activate()
 	Update();
 }
 
-void CPointDistanceTool::Update()
+bool CPointDistanceTool::onPickEvent(const FESelection& sel)
 {
-	FSMeshBase* mesh = GetActiveEditMesh();
-	if (mesh)
+	FESelection& s = const_cast<FESelection&>(sel);
+	FENodeSelection* nodeSel = dynamic_cast<FENodeSelection*>(&s);
+	if (nodeSel == nullptr) return false;
+
+	if (nodeSel->Count() == 0)
 	{
-		int nsel = 0;
-		for (int i = 0; i < mesh->Nodes(); ++i)
+		m_node[0] = m_node[1] = 0;
+	}
+	else
+	{
+		int N = nodeSel->Count();
+		FENodeSelection::Iterator it = nodeSel->First();
+		for (int i = 0; i < N; ++i, ++it)
 		{
-			FSNode& node = mesh->Node(i);
-			int nid = node.GetID();
-			if (nid == -1) nid = i + 1;
-			if (node.IsSelected())
+			int nid = it->GetID();
+			if (nid == -1) nid = nodeSel->NodeIndex(i) + 1;
+			if (m_node[0] == 0) m_node[0] = nid;
+			else if (m_node[1] == 0) m_node[1] = nid;
+			else
 			{
-				nsel++;
-				if (m_node[0] == 0) m_node[0] = nid;
-				else if (m_node[1] == 0) m_node[1] = nid;
-				else
-				{
-					m_node[0] = m_node[1];
-					m_node[1] = nid;
-				}
+				m_node[0] = m_node[1];
+				m_node[1] = nid;
 			}
 		}
-		if (nsel == 0)
-		{
-			m_node[0] = m_node[1] = 0;
-		}
 	}
+	UpdateDistance();
+	updateUi();
+}
+
+void CPointDistanceTool::Update()
+{
 	UpdateDistance();
 }
 

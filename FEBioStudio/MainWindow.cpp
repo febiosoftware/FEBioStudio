@@ -1333,6 +1333,15 @@ void CMainWindow::CloseProject()
 	for (int i = 0; i < n; ++i) ui->centralWidget->tab->closeView(0);
 }
 
+CAbstractTool* CMainWindow::GetActiveTool()
+{
+	if (ui->measureTool && ui->measureTool->isVisible())
+	{
+		return ui->measureTool->activeTool();
+	}
+	else return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 //! This function resets the GL View. It is called when creating a new file new
 //! (CWnd::OnFileNew) or when opening a file (CWnd::OnFileOpen). 

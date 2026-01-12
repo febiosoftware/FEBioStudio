@@ -65,6 +65,7 @@ class CMainStatusBar;
 class CPluginManager;
 struct ProgressTracker; // in FEBio/FEBioExport4
 class COptimizationStudy;
+class CAbstractTool;
 
 enum class GraphicsAPI {
 	API_NULL,
@@ -171,6 +172,8 @@ public:
 	CModelViewer* GetModelViewer();
 
 	CMainStatusBar* GetStatusBar();
+
+	CAbstractTool* GetActiveTool();
 
 	// sets the current folder
 	void SetCurrentFolder(const QString& folder);
