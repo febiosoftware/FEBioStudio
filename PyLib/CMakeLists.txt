@@ -167,7 +167,7 @@ macro(findHdrSrcFEBio name)
 endmacro()
 
 set(FEBIOSTUDIO_LIBS GeomLib MeshIO MeshTools MeshLib FEMLib FSCore PostLib XPLTLib FEBioLink GLLib)
-set(FEBIO_LIBS FECore FEBioLib FEBioMech FEBioXML FEBioPlot XML NumCore FEBioTest FEBioFluid FEBioMix)
+set(FEBIO_LIBS FECore FEBioLib FEBioMech FEBioXML FEBioPlot NumCore FEBioTest FEBioFluid FEBioMix)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
