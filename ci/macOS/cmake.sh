@@ -2,7 +2,7 @@ QT_ROOT="$HOME/QtNew/6.9.3/macos"
 run_cmake() {
 	cmake -L . -B cmbuild \
 		-DQt_Root=$QT_ROOT \
-		-DCMAKE_PREFIX_PATH=febio4-sdk
+		-DCMAKE_PREFIX_PATH=febio4-sdk \
 		-DUSE_FFMPEG=ON \
 		-DUSE_TETGEN=ON \
 		-DUSE_MMG=ON \
