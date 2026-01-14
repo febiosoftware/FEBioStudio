@@ -1055,8 +1055,7 @@ CFEBioSettingsWidget::CFEBioSettingsWidget(QWidget* parent) : QWidget(parent)
 	layout->addLayout(pathLayout);
 
 	QFormLayout* f = new QFormLayout;
-	f->addRow("FEBio SDK Include path: ", m_sdkInc = new QLineEdit);
-	f->addRow("FEBio SDK Library path: ", m_sdkLib = new QLineEdit);
+	f->addRow("FEBio SDK path: ", m_sdkPath = new QLineEdit);
 	f->addRow("FEBio create plugin path:", m_pluginPath = new QLineEdit);
 	layout->addLayout(f);
 	 
@@ -1071,11 +1070,8 @@ QString CFEBioSettingsWidget::GetConfigFileName() { return m_configEdit->text();
 void CFEBioSettingsWidget::SetLoadConfigFlag(bool b) { m_loadConfig->setChecked(b); }
 void CFEBioSettingsWidget::SetConfigFileName(QString s) { m_configEdit->setText(s); }
 
-QString CFEBioSettingsWidget::GetSDKIncludePath() const { return m_sdkInc->text(); }
-void CFEBioSettingsWidget::SetSDKIncludePath(const QString& s) { m_sdkInc->setText(s); }
-
-QString CFEBioSettingsWidget::GetSDKLibraryPath() const { return m_sdkLib->text(); }
-void CFEBioSettingsWidget::SetSDKLibraryPath(const QString& s) { m_sdkLib->setText(s); }
+QString CFEBioSettingsWidget::GetSDKPath() const { return m_sdkPath->text(); }
+void CFEBioSettingsWidget::SetSDKPath(const QString& s) { m_sdkPath->setText(s); }
 
 QString CFEBioSettingsWidget::GetCreatePluginPath() const { return m_pluginPath->text(); }
 void CFEBioSettingsWidget::SetCreatePluginPath(const QString& s) { m_pluginPath->setText(s); }
@@ -1301,8 +1297,7 @@ void CDlgSettings::UpdateSettings()
 	ui->m_febio->SetLoadConfigFlag(m_pwnd->GetLoadConfigFlag());
 	ui->m_febio->SetConfigFileName(m_pwnd->GetConfigFileName());
 
-	ui->m_febio->SetSDKIncludePath(m_pwnd->GetSDKIncludePath());
-	ui->m_febio->SetSDKLibraryPath(m_pwnd->GetSDKLibraryPath());
+	ui->m_febio->SetSDKPath(m_pwnd->GetSDKPath());
 	ui->m_febio->SetCreatePluginPath(m_pwnd->GetCreatePluginPath());
 }
 
@@ -1447,8 +1442,7 @@ void CDlgSettings::apply()
 
 	m_pwnd->SetLoadConfigFlag(ui->m_febio->GetLoadConfigFlag());
 	m_pwnd->SetConfigFileName(ui->m_febio->GetConfigFileName());
-	m_pwnd->SetSDKIncludePath(ui->m_febio->GetSDKIncludePath());
-	m_pwnd->SetSDKLibraryPath(ui->m_febio->GetSDKLibraryPath());
+	m_pwnd->SetSDKPath(ui->m_febio->GetSDKPath());
 	m_pwnd->SetCreatePluginPath(ui->m_febio->GetCreatePluginPath());
 
 	m_pwnd->RedrawGL();

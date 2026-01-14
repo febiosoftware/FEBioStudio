@@ -175,11 +175,8 @@ public:
 	void SetLoadConfigFlag(bool b);
 	void SetConfigFileName(QString s);
 
-	QString GetSDKIncludePath() const;
-	void SetSDKIncludePath(const QString& s);
-
-	QString GetSDKLibraryPath() const;
-	void SetSDKLibraryPath(const QString& s);
+	QString GetSDKPath() const;
+	void SetSDKPath(const QString& s);
 
 	QString GetCreatePluginPath() const;
 	void SetCreatePluginPath(const QString& s);
@@ -190,8 +187,7 @@ protected slots:
 private:
 	QCheckBox* m_loadConfig = nullptr;
 	QLineEdit* m_configEdit = nullptr;
-	QLineEdit* m_sdkInc = nullptr;
-	QLineEdit* m_sdkLib = nullptr;
+	QLineEdit* m_sdkPath = nullptr;
 	QLineEdit* m_pluginPath = nullptr;
 };
 

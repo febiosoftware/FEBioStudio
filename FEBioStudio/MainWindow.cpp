@@ -1957,8 +1957,7 @@ void CMainWindow::writeSettings()
 		// FEBio
 		settings.setValue("loadFEBioConfigFile", ui->m_settings.loadFEBioConfigFile);
 		settings.setValue("febioConfigFileName", ui->m_settings.febioConfigFileName);
-		settings.setValue("FEBioSDKInclude", ui->m_settings.FEBioSDKInc);
-		settings.setValue("FEBioSDKLibrary", ui->m_settings.FEBioSDKLib);
+		settings.setValue("FEBioSDK", ui->m_settings.FEBioSDKPath);
 		settings.setValue("createPluginPath", ui->m_settings.createPluginPath);
 
 		// Lighting
@@ -2122,8 +2121,7 @@ void CMainWindow::readSettings()
 		ui->m_settings.loadFEBioConfigFile = settings.value("loadFEBioConfigFile", true).toBool();
 		ui->m_settings.febioConfigFileName = settings.value("febioConfigFileName", ui->m_settings.febioConfigFileName).toString();
 		QString defaultSDK = QFileInfo(QApplication::applicationDirPath() + QString(REL_ROOT) + "sdk/").absoluteFilePath();
-		ui->m_settings.FEBioSDKInc = settings.value("FEBioSDKInclude", defaultSDK + "include").toString();
-		ui->m_settings.FEBioSDKLib = settings.value("FEBioSDKLibrary", defaultSDK + "lib").toString();
+		ui->m_settings.FEBioSDKPath = settings.value("FEBioSDK", defaultSDK).toString();
 		ui->m_settings.createPluginPath = settings.value("createPluginPath", "").toString();
 
 		// Lighting
@@ -3635,12 +3633,10 @@ void CMainWindow::on_selectionChanged()
 
 CPluginManager* CMainWindow::GetPluginManager() { return &ui->m_pluginManager; }
 
-QString CMainWindow::GetSDKIncludePath() const { return ui->m_settings.FEBioSDKInc; }
-QString CMainWindow::GetSDKLibraryPath() const { return ui->m_settings.FEBioSDKLib; }
+QString CMainWindow::GetSDKPath() const { return ui->m_settings.FEBioSDKPath; }
 QString CMainWindow::GetCreatePluginPath() const { return ui->m_settings.createPluginPath; }
 
-void CMainWindow::SetSDKIncludePath(const QString& s) { ui->m_settings.FEBioSDKInc = s; }
-void CMainWindow::SetSDKLibraryPath(const QString& s) { ui->m_settings.FEBioSDKLib = s; }
+void CMainWindow::SetSDKPath(const QString& s) { ui->m_settings.FEBioSDKPath = s; }
 void CMainWindow::SetCreatePluginPath(const QString& s) { ui->m_settings.createPluginPath = s; }
 
 void CMainWindow::on_planecut_dataChanged()

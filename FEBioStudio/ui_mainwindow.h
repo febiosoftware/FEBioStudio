@@ -233,8 +233,7 @@ struct FBS_SETTINGS
 	bool	loadFEBioConfigFile;	// load the FEBio config file on startup
 	QString	febioConfigFileName;	// the path to the default FEBio config file
 
-	QString FEBioSDKInc;	// path to FEBio SDK includes
-	QString FEBioSDKLib;	// path to FEBio SDK libraries
+    QString FEBioSDKPath;	// path to FEBio SDK
 	QString createPluginPath;	// default path to FEBio plugins
 
 	bool	clearUndoOnSave;	// clear the undo stack on save

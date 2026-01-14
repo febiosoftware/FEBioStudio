@@ -72,20 +72,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-# Find FEBio Libs
-set(FEBIO_LIBS "")
-set(FEBIO_DEBUG_LIBS "")
-
-foreach(name IN LISTS FEBIO_LIB_NAMES)
-    find_library(TEMP NAMES ${name} PATHS "$(PLUGIN_SDK_LIBS)Release")
-    list(APPEND FEBIO_LIBS ${TEMP})
-    unset(TEMP CACHE)
-
-    find_library(TEMP NAMES ${name} PATHS "$(PLUGIN_SDK_LIBS)Debug")
-    list(APPEND FEBIO_DEBUG_LIBS ${TEMP})
-    unset(TEMP CACHE)
-endforeach(name)
-
+find_package(FEBio REQUIRED)
 
 ##### Set definitions and compile options #####
 if(WIN32)
@@ -102,22 +89,14 @@ else()
     set(CMAKE_BUILD_RPATH $ORIGIN/../lib/)
 endif()
 
-# Set include directory
-include_directories($(PLUGIN_SDK_INCLUDE))
-
 # Add library
 add_library($(PLUGIN_NAME) SHARED $(CLASS_NAME).h $(CLASS_NAME).cpp main.cpp)
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT $(PLUGIN_NAME))
 
 # Link FEBio Libraries
-foreach(name IN LISTS FEBIO_LIBS)
-    target_link_libraries($(PLUGIN_NAME) optimized ${name})
+foreach(name IN LISTS FEBIO_LIB_NAMES)
+    target_link_libraries($(PLUGIN_NAME) FEBio::${name})
 endforeach()
-
-foreach(name IN LISTS FEBIO_DEBUG_LIBS)
-    target_link_libraries($(PLUGIN_NAME) debug ${name})
-endforeach()
-
 )delim";
 
 // This defines the main.cpp file, which registers feature classes.

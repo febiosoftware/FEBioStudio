@@ -317,11 +317,8 @@ public:
 public:
     CPluginManager* GetPluginManager();
 
-	QString GetSDKIncludePath() const;
-	void SetSDKIncludePath(const QString& s);
-
-	QString GetSDKLibraryPath() const;
-	void SetSDKLibraryPath(const QString& s);
+	QString GetSDKPath() const;
+	void SetSDKPath(const QString& s);
 
 	QString GetCreatePluginPath() const;
 	void SetCreatePluginPath(const QString& s);

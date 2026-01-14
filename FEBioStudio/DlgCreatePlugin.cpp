@@ -174,8 +174,6 @@ void CDlgCreatePlugin::accept()
 	config.headerTxt   = pluginTemplate->m_header;
 	config.sourceTxt   = pluginTemplate->m_source;
 	config.args        = ui->opsPage->GetOptions();
-	config.sdkInc      = ui->m_wnd->GetSDKIncludePath();
-	config.sdkLib      = ui->m_wnd->GetSDKLibraryPath();
     config.febioLibs   = febioLibs;
 	config.headerFile  = config.path + sep + config.className + ".h";
 	config.sourceFile  = config.path + sep + config.className + ".cpp";
@@ -258,8 +256,6 @@ void CDlgAddPluginClass::accept()
 	config.headerTxt = pluginTemplate->m_header;
 	config.sourceTxt = pluginTemplate->m_source;
 	config.args = ui->opsPage->GetOptions();
-	config.sdkInc = ui->m_wnd->GetSDKIncludePath();
-	config.sdkLib = ui->m_wnd->GetSDKLibraryPath();
     config.febioLibs = QStringList() << "FECore" << "FEBioMech";
 	config.headerFile = config.path + sep + config.className + ".h";
 	config.sourceFile = config.path + sep + config.className + ".cpp";

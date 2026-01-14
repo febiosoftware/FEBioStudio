@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include "PostDocument.h"
 #include "FEBioStudioProject.h"
+#include <QApplication>
 #include <QTreeWidget>
 #include <QFileSystemModel>
 #include <QBoxLayout>
@@ -917,7 +918,12 @@ CConfigurePluginProcess::CConfigurePluginProcess(QObject* parent) : CPluginProce
 
 void CConfigurePluginProcess::run()
 {
-	start("cmake", QStringList() << "-S" << "." << "-B" << "./build");
+    CMainWindow* wnd = dynamic_cast<CMainWindow*>(QApplication::activeWindow());
+    if (wnd == nullptr) return;
+
+    QString sdkPath = "-DCMAKE_PREFIX_PATH=" + wnd->GetSDKPath();
+
+	start("cmake", QStringList() << "-S" << "." << "-B" << "./build" << sdkPath);
 }
 
 CBuildPluginProcess::CBuildPluginProcess(QObject* parent) : CPluginProcess(parent)

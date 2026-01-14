@@ -151,8 +151,6 @@ struct PluginConfig
 	QString headerTxt;
 	QString sourceTxt;
 
-	QString sdkInc;
-	QString sdkLib;
     QStringList febioLibs;
 };
 
