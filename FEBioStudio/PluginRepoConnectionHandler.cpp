@@ -32,7 +32,6 @@ SOFTWARE.*/
 #include <QDir>
 #include <QSaveFile>
 #include "PluginRepoConnectionHandler.h"
-#include "MainWindow.h"
 #include "ServerSettings.h"
 #include "PluginDatabaseHandler.h"
 #include "PluginManager.h"

@@ -3,7 +3,7 @@ call "%VS2022INSTALLDIR%\VC\Auxiliary\Build\vcvars64.bat"
 set Qt_Root="c:/usr/local/Qt/6.9.3/msvc2022_64"
 cmake -L . -B cmbuild ^
   -DQt_Root=%Qt_Root% ^
-  -DFEBio_SDK=febio4-sdk ^
+  -DCMAKE_PREFIX_PATH=febio4-sdk ^
   -DWINDEPLOYQT_EXECUTABLE="%Qt_Root%\bin\windeployqt.exe" ^
   -DUSE_FFMPEG=ON ^
   -DUSE_TETGEN=ON ^

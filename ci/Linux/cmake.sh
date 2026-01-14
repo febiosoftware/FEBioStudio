@@ -2,7 +2,7 @@ QT_DIR="/opt/Qt/6.9.3/gcc_64"
 run_cmake() {
 	cmake -L . -B cmbuild \
 		-DQt_Root=$QT_DIR \
-		-DFEBio_SDK=febio4-sdk \
+        -DCMAKE_PREFIX_PATH=febio4-sdk \
 		-DUSE_FFMPEG=ON \
 		-DUSE_TETGEN=ON \
 		-DUSE_MMG=ON \

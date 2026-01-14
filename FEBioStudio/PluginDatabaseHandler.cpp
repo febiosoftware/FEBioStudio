@@ -32,7 +32,10 @@ SOFTWARE.*/
 #include <QString>
 #include "DatabaseInterface.h"
 #include "PluginManager.h"
-#include <FECore/version.h>
+
+#ifndef UPDATER
+    #include <FECore/version.h>
+#endif
 
 #ifdef WIN32
     #define OS_ID "1"
@@ -197,6 +200,8 @@ bool CPluginDatabaseHandler::IsPluginNameInUse(QString& name)
     return rows > 0;
 }
 
+#ifndef UPDATER
+
 std::vector<std::pair<std::string, uint64_t>> CPluginDatabaseHandler::GetPluginVersions(int ID, bool develop)
 {
     std::vector<std::pair<std::string, uint64_t>> versions;
@@ -232,6 +237,8 @@ std::vector<std::pair<std::string, uint64_t>> CPluginDatabaseHandler::GetPluginV
 
     return versions;
 }
+
+#endif
 
 std::unordered_set<int> CPluginDatabaseHandler::GetPluginSearchResults(const QString& searchTerm)
 {

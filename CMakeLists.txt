@@ -1,19 +1,9 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.15)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-IF(APPLE)
-    set(CMAKE_THREAD_LIBS_INIT "-lpthread")
-    set(CMAKE_HAVE_THREADS_LIBRARY 1)
-    set(CMAKE_USE_PTHREADS_INIT 1)
-    set(THREADS_PREFER_PTHREAD_FLAG ON)
-ENDIF()
-
 project(FEBioStudio)
-
-# set the name of the executable
-set(FBS_BIN_NAME FEBioStudio)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -64,7 +54,7 @@ if(NOT Qt6_DIR OR NOT CMAKE_PREFIX_PATH)
     if(Qt_TEMP)
         set(Qt6_DIR ${Qt_TEMP} CACHE INTERNAL "Path to Qt6 installation prefix.")
 
-        set(CMAKE_PREFIX_PATH ${Qt_TEMP}/../../.. CACHE INTERNAL "Qt Prefix.")
+        list(APPEND CMAKE_PREFIX_PATH ${Qt_TEMP}/../../..)
 
         unset(Qt_TEMP CACHE)
     else()
@@ -78,10 +68,6 @@ endif()
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-
-if(CMAKE_VERSION VERSION_LESS "3.7.0")
-    set(CMAKE_INCLUDE_CURRENT_DIR ON)
-endif()
 
 ##### Search for library and include directories #####
 
@@ -265,40 +251,6 @@ if(USE_ZLIB)
 	endif()
 endif()
 
-# Find FEBio Libs
-set(FEBio_LIB_NAMES fecore febiolib febiomech febioplot febiofluid febiomix feamr febioopt febioxml)
-
-if (WIN32)
-    set(FEBio_DEBUG_LIBS "")
-    set(FEBio_RELEASE_LIBS "")
-
-    foreach(name IN LISTS FEBio_LIB_NAMES)
-        find_library(TEMP NAMES ${name} 
-            PATHS ${FEBio_LIB_DIR} PATH_SUFFIXES Debug NO_DEFAULT_PATH)
-        list(APPEND FEBio_DEBUG_LIBS ${TEMP})
-        unset(TEMP CACHE)
-    endforeach(name)
-
-    foreach(name IN LISTS FEBio_LIB_NAMES)
-        find_library(TEMP NAMES ${name} 
-            PATHS ${FEBio_LIB_DIR} PATH_SUFFIXES Release NO_DEFAULT_PATH)
-        list(APPEND FEBio_RELEASE_LIBS ${TEMP})
-        unset(TEMP CACHE)
-    endforeach(name)
-
-    unset(FEBio_LIB_NAMES)
-else()
-    set(FEBio_LIBS "")
-
-    foreach(name IN LISTS FEBio_LIB_NAMES)
-        findLib(FEBio_LIB_DIR FEBio_LIB ${name})
-        list(APPEND FEBio_LIBS ${FEBio_LIB})
-        unset(FEBio_LIB)
-    endforeach(name)
-
-    unset(FEBio_LIB_NAMES)
-endif()
-
 ##### Stupid OMP stuff for stupid macOS #####
 
 if(UNIX)
@@ -316,13 +268,17 @@ if(WIN32)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
+
+    set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+    set(CMAKE_HAVE_THREADS_LIBRARY 1)
+    set(CMAKE_USE_PTHREADS_INIT 1)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
     
     if(${OpenMP_C_FOUND})
         add_compile_options(-Xpreprocessor -fopenmp -w)
     endif()
     add_compile_options(-w)
-    
+
 else()
 	add_definitions(-DLINUX)
     add_compile_options(-w -Wall)
@@ -379,8 +335,6 @@ if(USE_ITK)
     include_directories(${SimpleITK_INCLUDE_DIRS})
 endif()
 
-include_directories(${FEBio_INC})
-
 ##### Find Source Files #####
 
 macro(findHdrSrc name)
@@ -399,10 +353,10 @@ endforeach(name)
 ##### Add binaries #####
 
 if(WIN32)
-	add_executable(${FBS_BIN_NAME} WIN32 ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
-	set_property(TARGET ${FBS_BIN_NAME} PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+	add_executable(FEBioStudio WIN32 ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
+	set_property(TARGET FEBioStudio PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
     include(set_icon.cmake)
-    set_icon(${FBS_BIN_NAME} icons/febiostudio.ico)
+    set_icon(FEBioStudio icons/febiostudio.ico)
 
 elseif(APPLE)
 	# set bundle icon
@@ -410,12 +364,12 @@ elseif(APPLE)
 	set(MACOSX_BUNDLE_ICON_FILE FEBioStudio.icns)
 	set_source_files_properties(${FBS_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 	
-	add_executable(${FBS_BIN_NAME} MACOSX_BUNDLE ${FBS_ICON} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
-	set_property(TARGET ${FBS_BIN_NAME} PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+	add_executable(FEBioStudio MACOSX_BUNDLE ${FBS_ICON} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
+	set_property(TARGET FEBioStudio PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
 
 else()
-	add_executable(${FBS_BIN_NAME} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
-	set_property(TARGET ${FBS_BIN_NAME} PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+	add_executable(FEBioStudio ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
+	set_property(TARGET FEBioStudio PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
 endif()
 
 macro(addLib name)
@@ -426,7 +380,6 @@ endmacro()
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	addLib(${name})
 endforeach(name)
-
 
 ##### Set dev commit information #####
 
@@ -471,7 +424,7 @@ if(${SET_DEVCOMMIT} AND EXISTS ${CMAKE_SOURCE_DIR}/.git)
             crossExecProcess(DEVCOMMIT)
             
             if(${SUCCESS} EQUAL 0)
-                target_compile_definitions(${FBS_BIN_NAME} PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
+                target_compile_definitions(FEBioStudio PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
             endif()
         endif()
     else()
@@ -482,14 +435,23 @@ endif()
 
 ##### Link Libraries #####
 
-# Linking the Qt libraries also pulls in the include files
-target_link_libraries(${FBS_BIN_NAME} Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::GuiPrivate)
+# Link the FEBio libraries
+target_link_libraries(FEBioStudio FEBio::FEBioXML FEBio::FEBioPlot FEBio::FEAMR)
+
+# Everything needs FECore
+foreach(name IN LISTS FEBIOSTUDIO_LIBS)
+    target_link_libraries(${name} FEBio::FECore)
+endforeach()
+
+target_link_libraries(FEBioLink FEBio::FEBioLib FEBio::FEBioFluid FEBio::FEBioMech FEBio::FEBioMix)
+target_link_libraries(ImageLib FEBio::FEBioOpt)
+
+# Link the Qt libraries
+target_link_libraries(FEBioStudio Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::GuiPrivate)
 target_link_libraries(CUILib Qt6::Widgets Qt6::Gui)
 target_link_libraries(GLWLib Qt6::Gui Qt6::Widgets)
 target_link_libraries(PostGL Qt6::Gui)
 target_link_libraries(PostLib Qt6::Gui)
-target_link_libraries(GLLib)
-target_link_libraries(RTLib)
 target_link_libraries(RHILib Qt6::Core Qt6::Widgets Qt6::Gui Qt6::GuiPrivate)
 target_link_libraries(FSCore Qt6::Core)
 target_link_libraries(MeshIO Qt6::Core)
@@ -501,30 +463,30 @@ target_link_libraries(FEBioMonitor Qt6::Core Qt6::Widgets Qt6::Gui)
 if(WIN32)
 elseif(APPLE)
 else()
-    target_link_libraries(${FBS_BIN_NAME} -static-libstdc++ -static-libgcc)
+    target_link_libraries(FEBioStudio -static-libstdc++ -static-libgcc)
     
-	target_link_libraries(${FBS_BIN_NAME} -Wl,--allow-shlib-undefined -Wl,--start-group)
+	target_link_libraries(FEBioStudio -Wl,--allow-shlib-undefined -Wl,--start-group)
 endif()
 
 if(UNIX)
     if(${USE_MKL_OMP})
-        target_link_libraries(${FBS_BIN_NAME} ${MKL_OMP})
+        target_link_libraries(FEBioStudio ${MKL_OMP})
         target_include_directories(RTLib PRIVATE ${OpenMP_C_INCLUDE_DIRS} ${OMP_INC})
         target_include_directories(GLLib PRIVATE ${OpenMP_C_INCLUDE_DIRS} ${OMP_INC})
     else()
-        target_link_libraries(${FBS_BIN_NAME} ${OpenMP_C_LIBRARIES})
+        target_link_libraries(FEBioStudio ${OpenMP_C_LIBRARIES})
         target_include_directories(RTLib PRIVATE ${OpenMP_C_INCLUDE_DIRS} ${OMP_INC})
         target_include_directories(GLLib PRIVATE ${OpenMP_C_INCLUDE_DIRS} ${OMP_INC})
     endif()
 endif()
 
 if(USE_MMG)
-	target_link_libraries(${FBS_BIN_NAME} optimized ${MMG_LIBS})
+	target_link_libraries(FEBioStudio optimized ${MMG_LIBS})
     
     if(DEFINED MMG_DBG_LIBS)
-        target_link_libraries(${FBS_BIN_NAME} debug ${MMG_DBG_LIBS})
+        target_link_libraries(FEBioStudio debug ${MMG_DBG_LIBS})
     else()
-        target_link_libraries(${FBS_BIN_NAME} debug ${MMG_LIBS})
+        target_link_libraries(FEBioStudio debug ${MMG_LIBS})
     endif()
 endif()
 
@@ -532,112 +494,100 @@ if(USE_TETGEN)
     target_compile_definitions(MeshTools PRIVATE TETLIBRARY)
     target_include_directories(MeshTools PRIVATE ${TETGEN_INC})
 
-	target_link_libraries(${FBS_BIN_NAME} optimized ${TETGEN_LIB})
+	target_link_libraries(FEBioStudio optimized ${TETGEN_LIB})
     
     if(DEFINED TETGEN_DBG_LIBS)
-        target_link_libraries(${FBS_BIN_NAME} debug ${TETGEN_DBG_LIB})
+        target_link_libraries(FEBioStudio debug ${TETGEN_DBG_LIB})
     else()
-        target_link_libraries(${FBS_BIN_NAME} debug ${TETGEN_LIB})
+        target_link_libraries(FEBioStudio debug ${TETGEN_LIB})
     endif()
 endif()
 
 if(CAD_FEATURES)
-	target_link_libraries(${FBS_BIN_NAME} optimized ${NETGEN_LIBS} Threads::Threads) 	
+	target_link_libraries(FEBioStudio optimized ${NETGEN_LIBS} Threads::Threads) 	
     if(DEFINED NETGEN_DBG_LIBS)
-        target_link_libraries(${FBS_BIN_NAME} debug ${NETGEN_DBG_LIBS})
+        target_link_libraries(FEBioStudio debug ${NETGEN_DBG_LIBS})
     else()
-        target_link_libraries(${FBS_BIN_NAME} debug ${NETGEN_LIBS})
+        target_link_libraries(FEBioStudio debug ${NETGEN_LIBS})
     endif()
 
-    target_link_libraries(${FBS_BIN_NAME} optimized ${OCCT_LIBS})
+    target_link_libraries(FEBioStudio optimized ${OCCT_LIBS})
     
     if(DEFINED OCCT_DBG_LIBS)
-        target_link_libraries(${FBS_BIN_NAME} debug ${OCCT_DBG_LIBS})
+        target_link_libraries(FEBioStudio debug ${OCCT_DBG_LIBS})
     else()
-        target_link_libraries(${FBS_BIN_NAME} debug ${OCCT_LIBS})
+        target_link_libraries(FEBioStudio debug ${OCCT_LIBS})
     endif()
 endif()
 
 if(USE_SSH)
-	target_link_libraries(${FBS_BIN_NAME} optimized ${SSH_LIB})
+	target_link_libraries(FEBioStudio optimized ${SSH_LIB})
     
     if(DEFINED SSH_DBG_LIB)
-        target_link_libraries(${FBS_BIN_NAME} debug ${SSH_DBG_LIB})
+        target_link_libraries(FEBioStudio debug ${SSH_DBG_LIB})
     else()
-        target_link_libraries(${FBS_BIN_NAME} debug ${SSH_LIB})
+        target_link_libraries(FEBioStudio debug ${SSH_LIB})
     endif()
     
-    target_link_libraries(${FBS_BIN_NAME} optimized ${SSL_LIBS})
+    target_link_libraries(FEBioStudio optimized ${SSL_LIBS})
     
     if(DEFINED SSL_DBG_LIBS)
-        target_link_libraries(${FBS_BIN_NAME} debug ${SSL_DBG_LIBS})
+        target_link_libraries(FEBioStudio debug ${SSL_DBG_LIBS})
     else()
-        target_link_libraries(${FBS_BIN_NAME} debug ${SSL_LIBS})
+        target_link_libraries(FEBioStudio debug ${SSL_LIBS})
     endif()
 endif()
 
 if(MODEL_REPO)
-    target_compile_definitions(${FBS_BIN_NAME} PUBLIC "MODEL_REPO" "HAS_LIBZIP")
-    target_include_directories(${FBS_BIN_NAME} PRIVATE ${LIBZIP_INC} ${SQLITE_INC})
+    target_compile_definitions(FEBioStudio PUBLIC "MODEL_REPO" "HAS_LIBZIP")
+    target_include_directories(FEBioStudio PRIVATE ${LIBZIP_INC} ${SQLITE_INC})
 
-	target_link_libraries(${FBS_BIN_NAME} optimized ${LIBZIP_LIB})
+	target_link_libraries(FEBioStudio optimized ${LIBZIP_LIB})
     
     if(DEFINED LIBZIP_DBG_LIB)
-        target_link_libraries(${FBS_BIN_NAME} debug ${LIBZIP_DBG_LIB})
+        target_link_libraries(FEBioStudio debug ${LIBZIP_DBG_LIB})
     else()
-        target_link_libraries(${FBS_BIN_NAME} debug ${LIBZIP_LIB})
+        target_link_libraries(FEBioStudio debug ${LIBZIP_LIB})
     endif()
     
-    target_link_libraries(${FBS_BIN_NAME} optimized ${SQLITE_LIB})
+    target_link_libraries(FEBioStudio optimized ${SQLITE_LIB})
 
     if(DEFINED SQLITE_DBG_LIB)
-        target_link_libraries(${FBS_BIN_NAME} debug ${SQLITE_DBG_LIB})
+        target_link_libraries(FEBioStudio debug ${SQLITE_DBG_LIB})
     else()
-        target_link_libraries(${FBS_BIN_NAME} debug ${SQLITE_LIB})
+        target_link_libraries(FEBioStudio debug ${SQLITE_LIB})
     endif()
 endif()
 
 if(USE_FFMPEG)
-    target_link_libraries(${FBS_BIN_NAME} optimized ${FFMPEG_LIBS})
+    target_link_libraries(FEBioStudio optimized ${FFMPEG_LIBS})
     
     if(DEFINED FFMPEG_DBG_LIBS)
-        target_link_libraries(${FBS_BIN_NAME} debug ${FFMPEG_DBG_LIBS})
+        target_link_libraries(FEBioStudio debug ${FFMPEG_DBG_LIBS})
     else()
-        target_link_libraries(${FBS_BIN_NAME} debug ${FFMPEG_LIBS})
+        target_link_libraries(FEBioStudio debug ${FFMPEG_LIBS})
     endif()
 endif()
 
 if(USE_ITK)
-    target_link_libraries(${FBS_BIN_NAME} ${SimpleITK_LIBRARIES})
+    target_link_libraries(FEBioStudio ${SimpleITK_LIBRARIES})
 endif()
 
 if(USE_ZLIB)
-    target_link_libraries(${FBS_BIN_NAME} ${ZLIB_LIBRARY_RELEASE})
+    target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})
 endif()
 
 if(USE_PYTHON)
     target_link_libraries(PyLib Python3::Python)
 endif()
 
-target_link_libraries(${FBS_BIN_NAME} ${FEBIOSTUDIO_LIBS})
-
-if (WIN32)
-    foreach(name IN LISTS FEBio_RELEASE_LIBS)
-        target_link_libraries(${FBS_BIN_NAME} optimized ${name})
-    endforeach()
-
-    foreach(name IN LISTS FEBio_DEBUG_LIBS)
-        target_link_libraries(${FBS_BIN_NAME} debug ${name})
-    endforeach()
-else()
-    target_link_libraries(${FBS_BIN_NAME} ${FEBio_LIBS})
-endif()
+target_link_libraries(FEBioStudio ${FEBIOSTUDIO_LIBS})
 
 if(WIN32)
-    target_link_libraries(${FBS_BIN_NAME} vfw32.lib)
+    target_link_libraries(FEBioStudio vfw32.lib)
 elseif(APPLE)
 else()
-    target_link_libraries(${FBS_BIN_NAME} -Wl,--end-group)
+    target_link_libraries(FEBioStudio -Wl,--end-group)
 endif()
 
 set(SHADER_FILES
@@ -661,9 +611,16 @@ set(SHADER_FILES
     RHILib/shaders/diffuse.frag
 )
 
-qt_add_shaders(${FBS_BIN_NAME} "rhi_shaders"
+# Silence the annoying Qt shader messages
+set(_temp_message_level ${CMAKE_MESSAGE_LOG_LEVEL})
+set(CMAKE_MESSAGE_LOG_LEVEL WARNING)
+
+qt_add_shaders(FEBioStudio "rhi_shaders"
     FILES ${SHADER_FILES}
 )
+
+# Restore the log level from before 
+set(CMAKE_MESSAGE_LOG_LEVEL ${_temp_message_level})
 
 option(BUILD_UPDATER "Build updater" OFF)
 if(BUILD_UPDATER)
