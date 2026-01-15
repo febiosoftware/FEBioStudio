@@ -94,7 +94,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		}
 
 		// By default, the job path will be the project folder
-		defaultJobPath = docFolder + "/jobs";
+		defaultJobPath = QDir::toNativeSeparators(docFolder + "/jobs");
         defaultJobName = docName;
 
         for (int i = 0; i < modelDoc->FEBioJobs(); ++i)
@@ -113,11 +113,11 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	dlg.SetLaunchConfig(ui->m_settings.m_launch_configs, lastLaunchConfigIndex);
     dlg.ShowAdvancedSettings(showAdvancedSettings);
 	dlg.SetGenerateReport(generateReport);
-    
+	dlg.SetWorkingDirectory(defaultJobPath);
+
     if(jobs.empty())
     {
         dlg.SetJobName(defaultJobName);
-        dlg.SetWorkingDirectory(defaultJobPath);
     }
     else
     {

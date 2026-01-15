@@ -175,6 +175,10 @@ std::string CFEBioJob::GetWorkingDirectory()
     QFileInfo info(m_febFile.c_str());
     QString dir = info.absoluteDir().absolutePath();
 
+	// see if this directory exists
+	if (!QDir(dir).exists())
+		return "";
+
     return dir.toStdString();
 }
 

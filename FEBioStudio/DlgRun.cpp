@@ -258,14 +258,21 @@ void CDlgRun::on_jobName_currentIndexChanged(int index)
     if(index < 0 || index >= m_jobs.size()) return;
 
     CFEBioJob* job = m_jobs[index];
-    ui->cwd->setText(job->GetWorkingDirectory().c_str());
+
+	QString cwd = QString::fromStdString(job->GetWorkingDirectory());
+	if (!cwd.isEmpty())
+		ui->cwd->setText(cwd);
+
     ui->writeNotes->setChecked(job->m_writeNotes);
     ui->allowMixedMesh->setChecked(job->m_allowMixedMesh);
     ui->configFile->setText(job->GetConfigFileName().c_str());
     ui->taskName->setCurrentText(job->GetTask().c_str());
     ui->taskFile->setText(job->GetTaskFileName().c_str());
     ui->debug->setChecked(job->m_debug);
-    ui->cmd->setText(job->GetCommand().c_str());
+
+	const std::string& cmd = job->GetCommand();
+	if (!cmd.empty())
+		ui->cmd->setText(cmd.c_str());
 }
 
 void CDlgRun::updateDefaultCommand()
