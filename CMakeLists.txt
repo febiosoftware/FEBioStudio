@@ -460,6 +460,11 @@ target_link_libraries(ImageLib Qt6::Core Qt6::Gui)
 target_link_libraries(PyLib Qt6::Core Qt6::Gui Qt6::Widgets)
 target_link_libraries(FEBioMonitor Qt6::Core Qt6::Widgets Qt6::Gui)
 
+if(QT_6_10)
+    target_link_libraries(FEBioStudio Qt6::GuiPrivate)
+    target_link_libraries(RHILib Qt6::GuiPrivate)
+endif()
+
 if(WIN32)
 elseif(APPLE)
 else()
