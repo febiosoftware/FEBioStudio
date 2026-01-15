@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "GLView.h"
 #include "MainWindow.h"
 #include <QApplication>
+#include <QQuaternion>
 #include <QStyleHints>
 #include "BuildPanel.h"
 #include "CreatePanel.h"

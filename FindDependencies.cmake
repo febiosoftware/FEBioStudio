@@ -2,7 +2,15 @@
 find_package(Qt6 COMPONENTS Widgets Gui Network OpenGL OpenGLWidgets ShaderTools REQUIRED) 
 
 mark_as_advanced(Qt6_DIR Qt6Core_DIR Qt6CoreTools_DIR Qt6DBusTools_DIR Qt6DBus_DIR Qt6GuiTools_DIR 
-    Qt6Gui_DIR Qt6Network_DIR Qt6OpenGLWidgets_DIR Qt6OpenGL_DIR Qt6WidgetsTools_DIR Qt6Widgets_DIR)
+    Qt6Gui_DIR Qt6Network_DIR Qt6OpenGLWidgets_DIR Qt6OpenGL_DIR Qt6WidgetsTools_DIR Qt6Widgets_DIR
+    Qt6ShaderTools_DIR Qt6ShaderToolsTools_DIR)
+
+set(QT_6_10 FALSE CACHE BOOL "Qt version 6.10 or higher")
+mark_as_advanced(QT_6_10)
+
+if(QT_6_10)
+    find_package(Qt6 COMPONENTS GuiPrivate REQUIRED)
+endif()
 
 # FEBio
 find_package(FEBio REQUIRED)
