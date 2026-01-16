@@ -40,8 +40,13 @@ SOFTWARE.*/
 #include <FEBioLib/febio.h>
 #include <map>
 #include <FEBioLink/FEBioClass.h>
+#include <FEBioLink/FEBioModule.h>
 #include <FECore/FEModule.h>
 #include <FEBioLib/version.h>
+#include <QJsonObject>
+#include <QJsonArray>
+#include "PropertyList.h"
+#include <FECore/FEModelParam.h>
 
 using namespace std;
 
@@ -55,6 +60,7 @@ public:
 	QComboBox* pc;
 	QComboBox* modules;
 	QLineEdit* search;
+	QPushButton* exportBtn;
 
 public:
 	void setup(QDialog* dlg)
@@ -85,6 +91,7 @@ public:
 		h->addWidget(modules = new QComboBox);
 		h->addWidget(new QLabel("Filter:"));
 		h->addWidget(search = new QLineEdit);
+		h->addWidget(exportBtn = new QPushButton("Export..."));
 //		h->addStretch();
 
 		l->addLayout(h);
@@ -113,9 +120,155 @@ public:
 		l->addWidget(bb);
 
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
+		QObject::connect(exportBtn, SIGNAL(clicked()), dlg, SLOT(onExport()));
 		dlg->setLayout(l);
 	}
 };
+
+void CDlgFEBioInfo::onExport()
+{
+	// get all the FEBio modules
+	QJsonArray moduleArray;
+	std::vector<FEBio::FEBioModule> moduleList = FEBio::GetAllModules();
+	for (auto m : moduleList)
+	{
+		QJsonObject modObj;
+
+		// the module description is actually a JSON object
+		QJsonParseError error;
+		QString desc = QString(m.m_szdesc);
+		QJsonDocument doc = QJsonDocument::fromJson(desc.toUtf8(), &error);
+
+		if (error.error == QJsonParseError::NoError) {
+			modObj = doc.object();
+			modObj["name"] = m.m_szname;
+		}
+		else
+		{
+			modObj["name"] = m.m_szname;
+			modObj["info"] = m.m_szdesc;
+		}
+		moduleArray.append(modObj);
+	}
+
+	// loop over all items visible in the tree
+	QJsonArray featureArray;
+	for (int i = 0; i < ui->pw->topLevelItemCount(); ++i)
+	{
+		QTreeWidgetItem* item = ui->pw->topLevelItem(i);
+		QJsonObject feature;
+		QJsonArray paramArray;
+		// get the parameters for this item
+		int index = item->data(0, Qt::UserRole).toInt();
+		FECoreKernel& febio = FECoreKernel::GetInstance();
+		FECoreBase* pcb = nullptr;
+		const FECoreFactory* fac = febio.GetFactoryClass(index);
+		if (fac)
+		{
+			try {
+				pcb = fac->Create(nullptr);
+			}
+			catch (...)
+			{
+				pcb = nullptr;
+			}
+		}
+		if (pcb)
+		{
+			FEParameterList& pl = pcb->GetParameterList();
+			int N = pl.Parameters();
+			auto it = pl.first();
+			for (int j = 0; j < N; ++j, ++it)
+			{
+				FEParam& pi = *it;
+
+				// skip hidden parameters
+				bool isHidden = (pi.GetFlags() & FE_PARAM_HIDDEN);
+				if (isHidden) continue;
+
+				QJsonObject paramObj;
+				QString paramVal("");
+				if (pi.dim() == 1)
+				{
+					switch (pi.type())
+					{
+					case FE_PARAM_INT   : paramVal = QString::number(pi.value<int>()); break;
+					case FE_PARAM_DOUBLE: paramVal = QString::number(pi.value<double>()); break;
+					case FE_PARAM_BOOL  : paramVal = QString(pi.value<bool>() ? "true" : "false"); break;
+					case FE_PARAM_VEC3D : paramVal = Vec3dToString(pi.value<vec3d>()); break;
+					case FE_PARAM_DOUBLE_MAPPED:
+					{
+						FEParamDouble& v = pi.value<FEParamDouble>();
+						if (v.isConst()) paramVal = QString::number(v.constValue());
+					}
+					break;
+					case FE_PARAM_VEC3D_MAPPED:
+					{
+						FEParamVec3& v = pi.value<FEParamVec3>();
+						if (v.isConst()) paramVal = Vec3dToString(v.constValue());
+					}
+					break;
+					}
+				}
+				paramObj["name"] = pi.name();
+				paramObj["description"] = pi.longName();
+				paramObj["default"] = paramVal;
+				paramObj["units"] = (pi.units() ? pi.units() : "");
+				paramArray.append(paramObj);
+			}
+			N = pcb->PropertyClasses();
+			for (int i = 0; i < N; ++i)
+			{
+				FEProperty* prop = pcb->PropertyClass(i);
+				if (prop)
+				{
+					const char* szname = prop->GetName();
+					if (szname)
+					{
+						QJsonObject paramObj;
+						paramObj["name"] = szname;
+						paramObj["description"] = "";
+						paramObj["default"] = "";
+						paramObj["units"] = "";
+						paramArray.append(paramObj);
+					}
+				}
+			}
+
+			feature["type_string"] = item->text(0);
+			feature["super_class_id"] = item->text(1);
+			feature["class_name"] = item->text(2);
+			feature["base_class"] = item->text(3);
+			feature["module"] = item->text(4);
+			feature["source"] = item->text(5);
+			feature["parameters"] = paramArray;
+			delete pcb;
+		}
+
+		featureArray.append(feature);
+	}
+
+	QJsonObject root;
+	root["features"] = featureArray;
+	root["modules"] = moduleArray;
+
+	// request output file name
+	QString fileName = QFileDialog::getSaveFileName(this, "Export FEBio features", "", "JSON Files (*.json);;All Files (*)");
+	if (fileName.isEmpty()) return;
+
+	// store the json array to file
+	QFile jsonFile(fileName);
+	if (jsonFile.open(QIODevice::WriteOnly | QIODevice::Text))
+	{
+		QJsonDocument jsonDoc(root);
+		jsonFile.write(jsonDoc.toJson());
+		jsonFile.close();
+	}
+	else
+	{
+		QMessageBox::warning(this, "Export FEBio features", QString("Could not open file %1 for writing").arg(fileName));
+	}
+}
 
 void CDlgFEBioInfo::onTreeChanged()
 {

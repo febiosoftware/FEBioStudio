@@ -38,6 +38,7 @@ public:
 public slots:
 	void onTreeChanged();
 	void Update();
+	void onExport();
 
 private:
 	void UpdateModules();
