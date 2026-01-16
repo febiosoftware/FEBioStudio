@@ -169,6 +169,10 @@ void CMainWindow::on_actionFEBioRun_triggered()
         UpdateModel(job);
 
         std::string jobPath = job->GetWorkingDirectory();
+		if (jobPath.empty())
+		{
+			jobPath = dlg.GetWorkingDirectory().toStdString();
+		}
 
 		// do string replacement
 		QString absDir = QString::fromStdString(FSDir::expandMacros(jobPath));
