@@ -143,7 +143,7 @@ QWidget* XMLItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewIt
             }
             else if(ancestor->data(TAG) == "Contact")
             {
-                *m_superID = FESURFACEINTERFACE_ID;
+                *m_superID = FESURFACEINTERACTION_ID;
             }
             else if(ancestor->data(TAG) == "Load")
             {

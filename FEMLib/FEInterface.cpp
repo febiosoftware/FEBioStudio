@@ -41,7 +41,7 @@ FSInterface::FSInterface(int ntype, FSModel* ps, int nstep) : FSStepComponent(ps
 {
 	m_ntype = ntype;
 	m_nstepID = nstep;
-	m_superClassID = FESURFACEINTERFACE_ID;
+	m_superClassID = FESURFACEINTERACTION_ID;
 	m_bActive = true;
 }
 

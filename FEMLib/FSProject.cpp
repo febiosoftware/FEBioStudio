@@ -428,19 +428,19 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FSNodalVelocities            , MODULE_MECH, FEIC_ID               , FE_INIT_NODAL_VELOCITIES        , "Velocity");
 	REGISTER_FE_CLASS(FSNodalShellVelocities       , MODULE_MECH, FEIC_ID               , FE_INIT_NODAL_SHELL_VELOCITIES  , "Shell velocity");
 	REGISTER_FE_CLASS(FSInitPrestrain              , MODULE_MECH, FEIC_ID               , FE_INIT_PRESTRAIN               , "Initialize Prestrain");
-	REGISTER_FE_CLASS(FSRigidInterface             , MODULE_MECH, FESURFACEINTERFACE_ID , FE_RIGID_INTERFACE              , "Rigid");
-	REGISTER_FE_CLASS(FSSlidingWithGapsInterface   , MODULE_MECH, FESURFACEINTERFACE_ID , FE_SLIDING_WITH_GAPS            , "Sliding node-on-facet");
-	REGISTER_FE_CLASS(FSFacetOnFacetInterface      , MODULE_MECH, FESURFACEINTERFACE_ID , FE_FACET_ON_FACET_SLIDING       , "Sliding facet-on-facet");
-    REGISTER_FE_CLASS(FSTensionCompressionInterface, MODULE_MECH, FESURFACEINTERFACE_ID , FE_TENSCOMP_INTERFACE           , "Sliding elastic");
-	REGISTER_FE_CLASS(FSTiedInterface              , MODULE_MECH, FESURFACEINTERFACE_ID , FE_TIED_INTERFACE               , "Tied node-on-facet");
-	REGISTER_FE_CLASS(FSF2FTiedInterface           , MODULE_MECH, FESURFACEINTERFACE_ID , FE_FACET_ON_FACET_TIED          , "Tied facet-on-facet");
-    REGISTER_FE_CLASS(FSTiedElasticInterface       , MODULE_MECH, FESURFACEINTERFACE_ID , FE_TIED_ELASTIC_INTERFACE       , "Tied elastic");
-    REGISTER_FE_CLASS(FSContactPotentialInterface  , MODULE_MECH, FESURFACEINTERFACE_ID , FE_CONTACTPOTENTIAL_CONTACT     , "contact potential");
-	REGISTER_FE_CLASS(FSStickyInterface            , MODULE_MECH, FESURFACEINTERFACE_ID , FE_STICKY_INTERFACE             , "Sticky");
-	REGISTER_FE_CLASS(FSPeriodicBoundary           , MODULE_MECH, FESURFACEINTERFACE_ID , FE_PERIODIC_BOUNDARY            , "Periodic boundary");
-	REGISTER_FE_CLASS(FSRigidWallInterface         , MODULE_MECH, FESURFACEINTERFACE_ID , FE_RIGID_WALL                   , "Rigid wall");
-	REGISTER_FE_CLASS(FSRigidSphereInterface       , MODULE_MECH, FESURFACEINTERFACE_ID , FE_RIGID_SPHERE_CONTACT         , "Rigid sphere");
-	REGISTER_FE_CLASS(FSRigidJoint                 , MODULE_MECH, FESURFACEINTERFACE_ID , FE_RIGID_JOINT                  , "Rigid joint");
+	REGISTER_FE_CLASS(FSRigidInterface             , MODULE_MECH, FESURFACEINTERACTION_ID, FE_RIGID_INTERFACE              , "Rigid");
+	REGISTER_FE_CLASS(FSSlidingWithGapsInterface   , MODULE_MECH, FESURFACEINTERACTION_ID, FE_SLIDING_WITH_GAPS            , "Sliding node-on-facet");
+	REGISTER_FE_CLASS(FSFacetOnFacetInterface      , MODULE_MECH, FESURFACEINTERACTION_ID, FE_FACET_ON_FACET_SLIDING       , "Sliding facet-on-facet");
+    REGISTER_FE_CLASS(FSTensionCompressionInterface, MODULE_MECH, FESURFACEINTERACTION_ID, FE_TENSCOMP_INTERFACE           , "Sliding elastic");
+	REGISTER_FE_CLASS(FSTiedInterface              , MODULE_MECH, FESURFACEINTERACTION_ID, FE_TIED_INTERFACE               , "Tied node-on-facet");
+	REGISTER_FE_CLASS(FSF2FTiedInterface           , MODULE_MECH, FESURFACEINTERACTION_ID, FE_FACET_ON_FACET_TIED          , "Tied facet-on-facet");
+    REGISTER_FE_CLASS(FSTiedElasticInterface       , MODULE_MECH, FESURFACEINTERACTION_ID, FE_TIED_ELASTIC_INTERFACE       , "Tied elastic");
+    REGISTER_FE_CLASS(FSContactPotentialInterface  , MODULE_MECH, FESURFACEINTERACTION_ID, FE_CONTACTPOTENTIAL_CONTACT     , "contact potential");
+	REGISTER_FE_CLASS(FSStickyInterface            , MODULE_MECH, FESURFACEINTERACTION_ID, FE_STICKY_INTERFACE             , "Sticky");
+	REGISTER_FE_CLASS(FSPeriodicBoundary           , MODULE_MECH, FESURFACEINTERACTION_ID, FE_PERIODIC_BOUNDARY            , "Periodic boundary");
+	REGISTER_FE_CLASS(FSRigidWallInterface         , MODULE_MECH, FESURFACEINTERACTION_ID, FE_RIGID_WALL                   , "Rigid wall");
+	REGISTER_FE_CLASS(FSRigidSphereInterface       , MODULE_MECH, FESURFACEINTERACTION_ID, FE_RIGID_SPHERE_CONTACT         , "Rigid sphere");
+	REGISTER_FE_CLASS(FSRigidJoint                 , MODULE_MECH, FESURFACEINTERACTION_ID, FE_RIGID_JOINT                  , "Rigid joint");
 	REGISTER_FE_CLASS(FSConstBodyForce             , MODULE_MECH, FELOAD_ID        , FE_CONST_BODY_FORCE             , "Const body force");
 	REGISTER_FE_CLASS(FSNonConstBodyForce          , MODULE_MECH, FELOAD_ID        , FE_NON_CONST_BODY_FORCE         , "Non-const body force");
     REGISTER_FE_CLASS(FSCentrifugalBodyForce       , MODULE_MECH, FELOAD_ID        , FE_CENTRIFUGAL_BODY_FORCE       , "Centrifugal body force");
@@ -479,7 +479,7 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FSConvectiveHeatFlux   , MODULE_HEAT, FELOAD_ID       , FE_CONV_HEAT_FLUX        , "convective_heatflux");
 	REGISTER_FE_CLASS(FSInitTemperature      , MODULE_HEAT, FEIC_ID              , FE_INIT_TEMPERATURE      , "temperature");
 	REGISTER_FE_CLASS(FSHeatSource           , MODULE_HEAT, FELOAD_ID       , FE_HEAT_SOURCE           , "heat_source");
-	REGISTER_FE_CLASS(FSGapHeatFluxInterface , MODULE_HEAT, FESURFACEINTERFACE_ID, FE_GAPHEATFLUX_INTERFACE , "gap heat flux");
+	REGISTER_FE_CLASS(FSGapHeatFluxInterface , MODULE_HEAT, FESURFACEINTERACTION_ID, FE_GAPHEATFLUX_INTERFACE , "gap heat flux");
 
 	// --- BIPHASIC MODULE ---
 	REGISTER_FE_CLASS(FSNonLinearBiphasic      , MODULE_BIPHASIC, FEANALYSIS_ID        , FE_STEP_BIPHASIC            , "Biphasic");
@@ -489,8 +489,8 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FSBPNormalTraction       , MODULE_BIPHASIC, FELOAD_ID       , FE_BP_NORMAL_TRACTION       , "Mixture normal traction");
 	REGISTER_FE_CLASS(FSInitFluidPressure      , MODULE_BIPHASIC, FEIC_ID              , FE_INIT_FLUID_PRESSURE      , "Fluid pressure");
     REGISTER_FE_CLASS(FSInitShellFluidPressure , MODULE_BIPHASIC, FEIC_ID              , FE_INIT_SHELL_FLUID_PRESSURE, "Shell fluid pressure");
-    REGISTER_FE_CLASS(FSPoroContact            , MODULE_BIPHASIC, FESURFACEINTERFACE_ID, FE_PORO_INTERFACE           , "Biphasic contact");
-    REGISTER_FE_CLASS(FSTiedBiphasicInterface  , MODULE_BIPHASIC, FESURFACEINTERFACE_ID, FE_TIEDBIPHASIC_INTERFACE   , "Tied biphasic contact");
+    REGISTER_FE_CLASS(FSPoroContact            , MODULE_BIPHASIC, FESURFACEINTERACTION_ID, FE_PORO_INTERFACE           , "Biphasic contact");
+    REGISTER_FE_CLASS(FSTiedBiphasicInterface  , MODULE_BIPHASIC, FESURFACEINTERACTION_ID, FE_TIEDBIPHASIC_INTERFACE   , "Tied biphasic contact");
 
 	// --- SOLUTES MODULE ---
 	REGISTER_FE_CLASS(FSFixedConcentration      , MODULE_SOLUTES, FEBC_ID, FE_FIXED_CONCENTRATION      , "Zero concentration");
@@ -501,9 +501,9 @@ void FSProject::InitModules()
 	// --- MULTIPHASIC MODULE ---
 	REGISTER_FE_CLASS(FSBiphasicSolutes           , MODULE_MULTIPHASIC, FEANALYSIS_ID        , FE_STEP_BIPHASIC_SOLUTE     , "Biphasic-solute");
 	REGISTER_FE_CLASS(FSMultiphasicAnalysis       , MODULE_MULTIPHASIC, FEANALYSIS_ID        , FE_STEP_MULTIPHASIC         , "Multiphasic");
-	REGISTER_FE_CLASS(FSPoroSoluteContact         , MODULE_MULTIPHASIC, FESURFACEINTERFACE_ID, FE_PORO_SOLUTE_INTERFACE    , "Biphasic-solute contact");
-	REGISTER_FE_CLASS(FSMultiphasicContact        , MODULE_MULTIPHASIC, FESURFACEINTERFACE_ID, FE_MULTIPHASIC_INTERFACE    , "Multiphasic contact");
-	REGISTER_FE_CLASS(FSTiedMultiphasicInterface  , MODULE_MULTIPHASIC, FESURFACEINTERFACE_ID, FE_TIEDMULTIPHASIC_INTERFACE, "Tied multiphasic contact");
+	REGISTER_FE_CLASS(FSPoroSoluteContact         , MODULE_MULTIPHASIC, FESURFACEINTERACTION_ID, FE_PORO_SOLUTE_INTERFACE    , "Biphasic-solute contact");
+	REGISTER_FE_CLASS(FSMultiphasicContact        , MODULE_MULTIPHASIC, FESURFACEINTERACTION_ID, FE_MULTIPHASIC_INTERFACE    , "Multiphasic contact");
+	REGISTER_FE_CLASS(FSTiedMultiphasicInterface  , MODULE_MULTIPHASIC, FESURFACEINTERACTION_ID, FE_TIEDMULTIPHASIC_INTERFACE, "Tied multiphasic contact");
 	REGISTER_FE_CLASS(FSSoluteFlux                , MODULE_MULTIPHASIC, FELOAD_ID            , FE_SOLUTE_FLUX              , "Solute flux");
 	REGISTER_FE_CLASS(FSSoluteNaturalFlux         , MODULE_MULTIPHASIC, FELOAD_ID            , FE_SOLUTE_NATURAL_FLUX      , "Solute natural flux");
 	REGISTER_FE_CLASS(FSMatchingOsmoticCoefficient, MODULE_MULTIPHASIC, FELOAD_ID            , FE_MATCHING_OSM_COEF        , "Matching osmotic coefficient");
@@ -563,7 +563,7 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FEBioNodalLoad        , 0, FELOAD_ID        , FE_FEBIO_NODAL_LOAD        , "[febio]");
 	REGISTER_FE_CLASS(FEBioSurfaceLoad      , 0, FELOAD_ID        , FE_FEBIO_SURFACE_LOAD      , "[febio]");
 	REGISTER_FE_CLASS(FEBioBodyLoad         , 0, FELOAD_ID        , FE_FEBIO_BODY_LOAD         , "[febio]");
-	REGISTER_FE_CLASS(FEBioInterface        , 0, FESURFACEINTERFACE_ID , FE_FEBIO_INTERFACE         , "[febio]");
+	REGISTER_FE_CLASS(FEBioInterface        , 0, FESURFACEINTERACTION_ID, FE_FEBIO_INTERFACE         , "[febio]");
 	REGISTER_FE_CLASS(FEBioInitialCondition , 0, FEIC_ID               , FE_FEBIO_INITIAL_CONDITION , "[febio]");
 	REGISTER_FE_CLASS(FEBioNLConstraint     , 0, FENLCONSTRAINT_ID     , FE_FEBIO_NLCONSTRAINT      , "[febio]");
 	REGISTER_FE_CLASS(FEBioSurfaceConstraint, 0, FENLCONSTRAINT_ID     , FE_FEBIO_SURFACECONSTRAINT , "[febio]");

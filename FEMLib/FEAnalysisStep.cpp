@@ -1126,7 +1126,7 @@ void FSStep::Load(IArchive &ar)
 					// check obsolete interfaces first
 					if      (ntype == FE_SLIDING_INTERFACE   ) pi = new FSSlidingInterface(fem);
 					else if (ntype == FE_SPRINGTIED_INTERFACE) pi = new FSSpringTiedInterface(fem);
-					else pi = fscore_new<FSInterface>(fem, FESURFACEINTERFACE_ID, ntype);
+					else pi = fscore_new<FSInterface>(fem, FESURFACEINTERACTION_ID, ntype);
 
 					// make sure we were able to allocate an interface
 					if (pi == 0)

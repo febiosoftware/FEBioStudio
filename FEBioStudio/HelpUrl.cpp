@@ -269,7 +269,7 @@ const unordered_map<int, unordered_map<string, string>> URLs =
     },
     // Contact Interfaces
     {
-        FESURFACEINTERFACE_ID,
+		FESURFACEINTERACTION_ID,
         {
             { "sliding-node-on-facet", SLIDING_INTERFACES_HTML },
             { "sliding-facet-on-facet", SLIDING_INTERFACES_HTML },

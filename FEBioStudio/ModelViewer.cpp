@@ -2250,7 +2250,7 @@ void CModelViewer::OnReplaceContactInterface()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Replace Contact Interface", FESURFACEINTERFACE_ID, -1, &fem, true, true, this);
+	CDlgAddPhysicsItem dlg("Replace Contact Interface", FESURFACEINTERACTION_ID, -1, &fem, true, true, this);
 	if (dlg.exec())
 	{
 		int id = dlg.GetClassID();

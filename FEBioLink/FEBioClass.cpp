@@ -586,7 +586,7 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 		else pc = new FEBioInitialCondition(fem);
 	}
 	break;
-	case FESURFACEINTERFACE_ID: pc = new FEBioInterface(fem); break;
+	case FESURFACEINTERACTION_ID: pc = new FEBioInterface(fem); break;
 	case FELOAD_ID:
 	{
 		if      (baseClassId == FEBio::GetBaseClassIndex("FENodalLoad"  )) pc = new FEBioNodalLoad(fem);
@@ -1438,7 +1438,7 @@ FSBodyLoad* FEBio::CreateBodyLoad(const std::string& typeStr, FSModel* fem)
 
 FSPairedInterface* FEBio::CreatePairedInterface(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioInterface>(FESURFACEINTERFACE_ID, typeStr, fem);
+	return CreateModelComponent<FEBioInterface>(FESURFACEINTERACTION_ID, typeStr, fem);
 }
 
 FSModelConstraint* FEBio::CreateModelConstraint(const std::string& typeStr, FSModel* fem)

@@ -420,7 +420,7 @@ void CMainWindow::on_actionAddContact_triggered()
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 	GModel& gm = fem.GetModel();
-	CDlgAddPhysicsItem dlg("Add Contact Interface", FESURFACEINTERFACE_ID, -1, &fem, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Contact Interface", FESURFACEINTERACTION_ID, -1, &fem, true, true, this);
 	if (dlg.exec())
 	{
         int id = dlg.GetClassID();
