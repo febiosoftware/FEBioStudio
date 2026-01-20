@@ -235,7 +235,11 @@ void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 
 	FSMesh* pm = glm.GetActiveMesh();
 
-	GLMesh* gm = glm.GetPostObject()->GetFERenderMesh();
+	CPostObject* po = glm.GetPostObject();
+	if (po == nullptr) return;
+
+	GLMesh* gm = po->GetFERenderMesh();
+	if (gm == nullptr) return;
 
 	const int VISIBLE_FLAG = 1;
 	const int SELECT_FLAG = 2;
@@ -335,6 +339,8 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 	bool frontOnly = rc.m_settings.m_identifyBackfacing;
 
 	CPostObject* po = glm.GetPostObject();
+	if (po == nullptr) return;
+
 	GLMesh* mesh = po->GetFERenderMesh();
 	if (mesh == nullptr) return;
 
@@ -1473,7 +1479,13 @@ void CGLPostScene::UpdateTracking()
 	{
 		// calculate new tracking position and orientation
 		CGLModel& gm = *m_doc->GetGLModel();
-		FSMeshBase* pm = gm.GetPostObject()->GetFEMesh();
+
+		CPostObject* po = gm.GetPostObject();
+		if (po == nullptr) return;
+
+		FSMeshBase* pm = po->GetFEMesh();
+		if (pm == nullptr) return;
+
 		int* nt = m_ntrack;
 		vec3d a = pm->Node(nt[0]).r;
 		vec3d b = pm->Node(nt[1]).r;
@@ -1520,6 +1532,7 @@ void CGLPostScene::ToggleTrackSelection()
 
 		Post::CGLModel* model = m_doc->GetGLModel(); assert(model);
 		CPostObject* po = model->GetPostObject(); assert(po);
+		if (po == nullptr) return;
 
 		int m[3] = { -1, -1, -1 };
 		int nmode = model->GetSelectionType();
