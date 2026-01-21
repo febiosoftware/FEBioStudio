@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSplitter>
+#include <QJsonParseError>
 #include <QLineEdit>
 #include <QHeaderView>
 #include <FECore/FECoreKernel.h>
