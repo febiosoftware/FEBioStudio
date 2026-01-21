@@ -1380,11 +1380,11 @@ void CMainWindow::on_actionRayTrace_triggered()
 	H = GetGLView()->height();
 	if ((W == 0) || (H == 0)) return;
 
-	RayTracer* rayTracer = new RayTracer;
+	std::unique_ptr<RayTracer> rayTracer = std::make_unique<RayTracer>();
 	rayTracer->setWidth(W);
 	rayTracer->setHeight(H);
 
-	CDlgEditObject dlg(rayTracer, "RayTracer Settings", this);
+	CDlgEditObject dlg(rayTracer.get(), "RayTracer Settings", this);
 	if (dlg.exec())
 	{
 		W = rayTracer->surfaceWidth();
@@ -1393,21 +1393,28 @@ void CMainWindow::on_actionRayTrace_triggered()
 		GLCamera& cam = scene->GetCamera();
 
 		GLContext rc;
-		rc.m_settings = GetGLView()->GetViewSettings();
+		GLViewSettings& view = GetGLView()->GetViewSettings();
+		rc.m_settings = view;
 		rc.m_cam = &cam;
 		QImage img(W, H, QImage::Format_ARGB32);
 
 		rayTracer->setProjection(cam.GetFOV(), cam.GetNearPlane(), cam.GetFarPlane());
 		rayTracer->setClearColor(rc.m_settings.m_col1);
+		rayTracer->setLightEnabled(0, view.m_bLighting);
 
-		CRayTracerThread* render_thread = new CRayTracerThread(scene, rc, &img, rayTracer);
+		CRayTracerThread* render_thread = new CRayTracerThread(scene, rc, &img, rayTracer.get());
 		CDlgStartThread dlg2(this, render_thread);
 		dlg2.setTask("Rendering scene ...");
 		if (dlg2.exec())
 		{
+			if (GetGLView()->ShowSafeFrame())
+			{
+				QRect rt = GetGLView()->CaptureFrameRect();
+				img = img.copy(rt);
+			}
+
 			ShowImageViewer(img);
 		}
-		delete rayTracer;
 	}
 }
 

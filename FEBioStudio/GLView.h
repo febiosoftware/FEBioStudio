@@ -174,8 +174,11 @@ public:
 	void RenderPivot(GLRenderEngine& re);
 
 	void ShowSafeFrame(bool b);
+	bool ShowSafeFrame() const;
 
 	vec3d GetPickPosition();
+
+	QRect CaptureFrameRect() const;
 
 public:
 	vec3d GetPivotPosition();

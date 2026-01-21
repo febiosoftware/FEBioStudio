@@ -2050,6 +2050,26 @@ void CGLView::ShowSafeFrame(bool b)
 	}
 }
 
+bool CGLView::ShowSafeFrame() const
+{
+	if (m_pframe) return m_pframe->visible();
+	return false;
+}
+
+QRect CGLView::CaptureFrameRect() const
+{
+	QSize sz = size();
+	QRect rc(0, 0, sz.width(), sz.height());
+	if (m_pframe && m_pframe->visible())
+	{
+		rc.setX(m_pframe->x());
+		rc.setY(m_pframe->y());
+		rc.setWidth(m_pframe->w());
+		rc.setHeight(m_pframe->h());
+	}
+	return rc;
+}
+
 void CGLView::SetViewMode(View_Mode n)
 {
 	GLScene* scene = GetActiveScene();
