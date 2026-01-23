@@ -151,6 +151,12 @@ void CDlgFEBioInfo::onExport()
 		moduleArray.append(modObj);
 	}
 
+#ifdef FEBIO_EXPERIMENTAL
+	bool includeExperimentals = true;
+#else
+	bool includeExperimentals = false;
+#endif
+
 	// loop over all items visible in the tree
 	QJsonArray featureArray;
 	for (int i = 0; i < ui->pw->topLevelItemCount(); ++i)
@@ -162,8 +168,9 @@ void CDlgFEBioInfo::onExport()
 		int index = item->data(0, Qt::UserRole).toInt();
 		FECoreKernel& febio = FECoreKernel::GetInstance();
 		FECoreBase* pcb = nullptr;
+
 		const FECoreFactory* fac = febio.GetFactoryClass(index);
-		if (fac)
+		if (fac && ((fac->GetSpecID() != FECORE_EXPERIMENTAL) || includeExperimentals))
 		{
 			try {
 				pcb = fac->Create(nullptr);
@@ -284,9 +291,16 @@ void CDlgFEBioInfo::onTreeChanged()
 	int index = it->data(0, Qt::UserRole).toInt();
 	if ((index < 0) || (index >= febio.FactoryClasses())) return;
 
+#ifdef FEBIO_EXPERIMENTAL
+	bool includeExperimentals = true;
+#else
+	bool includeExperimentals = false;
+#endif
+
+
 	FECoreBase* pcb = nullptr;
 	const FECoreFactory* fac = febio.GetFactoryClass(index);
-	if (fac)
+	if (fac && ((fac->GetSpecID() != FECORE_EXPERIMENTAL) || includeExperimentals))
 	{
 		try {
 			pcb = fac->Create(&febioModel);
@@ -421,70 +435,80 @@ void CDlgFEBioInfo::Update()
 
 	bool addModuleDependencies = false;
 
+#ifdef FEBIO_EXPERIMENTAL
+	bool includeExperimentals = true;
+#else
+	bool includeExperimentals = false;
+#endif
+
 	for (int i = 0; i < fecore.FactoryClasses(); ++i)
 	{
 		const FECoreFactory* fac = fecore.GetFactoryClass(i);
-		const char* sztype = fac->GetTypeStr();
-		const char* szclass = fac->GetClassName();
-		const char* szbase = fac->GetBaseClassName();
-		unsigned int mod = fac->GetModuleID();
-		SUPER_CLASS_ID sid = fac->GetSuperClassID();
-		int allocId = fac->GetAllocatorID();
 
-		if ((nfilter == -1) || (sid == nfilter))
+		if (fac && ((fac->GetSpecID() != FECORE_EXPERIMENTAL) || includeExperimentals))
 		{
-			// check the modules
-			bool add = (nmod == -1 ? true : false);
-			QString modules;
-			if (mod > 0)
+			const char* sztype = fac->GetTypeStr();
+			const char* szclass = fac->GetClassName();
+			const char* szbase = fac->GetBaseClassName();
+			unsigned int mod = fac->GetModuleID();
+			SUPER_CLASS_ID sid = fac->GetSuperClassID();
+			int allocId = fac->GetAllocatorID();
+
+			if ((nfilter == -1) || (sid == nfilter))
 			{
-				modules.append(fecore.GetModuleName(mod - 1));
-				if (nmod == mod - 1) add = true;
-
-				if (addModuleDependencies)
+				// check the modules
+				bool add = (nmod == -1 ? true : false);
+				QString modules;
+				if (mod > 0)
 				{
-					vector<int> moddeps = fecore.GetModuleDependencies(mod - 1);
-					for (int j = 0; j < moddeps.size(); ++j)
-					{
-						modules.append(", ");
-						modules.append(fecore.GetModuleName(moddeps[j] - 1));
+					modules.append(fecore.GetModuleName(mod - 1));
+					if (nmod == mod - 1) add = true;
 
-						if (nmod == moddeps[j] - 1)
+					if (addModuleDependencies)
+					{
+						vector<int> moddeps = fecore.GetModuleDependencies(mod - 1);
+						for (int j = 0; j < moddeps.size(); ++j)
 						{
-							add = true;
+							modules.append(", ");
+							modules.append(fecore.GetModuleName(moddeps[j] - 1));
+
+							if (nmod == moddeps[j] - 1)
+							{
+								add = true;
+							}
 						}
 					}
 				}
-			}
 
-			if (add)
-			{
-				const char* szid = FEBio::GetSuperClassString(sid);
-				if (szid == nullptr) szid = "(unknown)";
-
-				const char* szalloc = febio::GetPluginName(allocId);
-				if (szalloc == nullptr) szalloc = "";
-
-				QString typeStr(sztype);
-				QString idStr(szid);
-				QString classStr(szclass);
-				QString baseStr(szbase);
-				QString allocStr(szalloc);
-
-				if ((search == false) ||
-					typeStr.contains(searchString, Qt::CaseInsensitive) ||
-					idStr.contains(searchString, Qt::CaseInsensitive) ||
-					classStr.contains(searchString, Qt::CaseInsensitive) ||
-					baseStr.contains(searchString, Qt::CaseInsensitive) ||
-					allocStr.contains(searchString, Qt::CaseInsensitive))
+				if (add)
 				{
-					QTreeWidgetItem* it = new QTreeWidgetItem(ui->pw);
-					it->setText(0, typeStr); it->setData(0, Qt::UserRole, i);
-					it->setText(1, idStr); it->setData(1, Qt::UserRole, sid);
-					it->setText(2, classStr);
-					it->setText(3, baseStr);
-					it->setText(4, modules);
-					it->setText(5, allocStr);
+					const char* szid = FEBio::GetSuperClassString(sid);
+					if (szid == nullptr) szid = "(unknown)";
+
+					const char* szalloc = febio::GetPluginName(allocId);
+					if (szalloc == nullptr) szalloc = "";
+
+					QString typeStr(sztype);
+					QString idStr(szid);
+					QString classStr(szclass);
+					QString baseStr(szbase);
+					QString allocStr(szalloc);
+
+					if ((search == false) ||
+						typeStr.contains(searchString, Qt::CaseInsensitive) ||
+						idStr.contains(searchString, Qt::CaseInsensitive) ||
+						classStr.contains(searchString, Qt::CaseInsensitive) ||
+						baseStr.contains(searchString, Qt::CaseInsensitive) ||
+						allocStr.contains(searchString, Qt::CaseInsensitive))
+					{
+						QTreeWidgetItem* it = new QTreeWidgetItem(ui->pw);
+						it->setText(0, typeStr); it->setData(0, Qt::UserRole, i);
+						it->setText(1, idStr); it->setData(1, Qt::UserRole, sid);
+						it->setText(2, classStr);
+						it->setText(3, baseStr);
+						it->setText(4, modules);
+						it->setText(5, allocStr);
+					}
 				}
 			}
 		}
