@@ -1151,18 +1151,30 @@ void CPostDataPanel::on_AddEquation_triggered()
 			if (classType == NODE_DATA)
 			{
 				Post::FEMathNodeDataField* pd = new Post::FEMathNodeDataField(&fem);
-				pd->SetEquationString(eq.toStdString());
-
-				// add it to the model
-				fem.AddDataField(pd, name.toStdString());
+				if (!pd->SetEquationString(eq.toStdString()))
+				{
+					delete pd;
+					QMessageBox::critical(this, "FEBio Studio", "The equation field could not be added. Probably due to a typo in the equation.");
+				}
+				else
+				{
+					// add it to the model
+					fem.AddDataField(pd, name.toStdString());
+				}
 			}
 			else if (classType == ELEM_DATA)
 			{
 				Post::FEMathElemDataField* pd = new Post::FEMathElemDataField(&fem);
-				pd->SetEquationString(eq.toStdString());
-
-				// add it to the model
-				fem.AddDataField(pd, name.toStdString());
+				if (!pd->SetEquationString(eq.toStdString()))
+				{
+					delete pd;
+					QMessageBox::critical(this, "FEBio Studio", "The equation field could not be added. Probably due to a typo in the equation.");
+				}
+				else
+				{
+					// add it to the model
+					fem.AddDataField(pd, name.toStdString());
+				}
 			}
 			else QMessageBox::critical(this, "FEBio Studio", "The selected class is not support for scalar expressions.");
 		}
@@ -1181,11 +1193,17 @@ void CPostDataPanel::on_AddEquation_triggered()
 			if (classType == NODE_DATA)
 			{
 				Post::FEMathVec3DataField* pd = new Post::FEMathVec3DataField(&fem);
-				pd->SetEquationStrings(x.toStdString(), y.toStdString(), z.toStdString());
-
-				// add it to the model
-				Post::FEPostModel& fem = *glm->GetFSModel();
-				fem.AddDataField(pd, name.toStdString());
+				if (!pd->SetEquationStrings(x.toStdString(), y.toStdString(), z.toStdString()))
+				{
+					delete pd;
+					QMessageBox::critical(this, "FEBio Studio", "The equation field could not be added. Probably due to a typo in the equation.");
+				}
+				else
+				{
+					// add it to the model
+					Post::FEPostModel& fem = *glm->GetFSModel();
+					fem.AddDataField(pd, name.toStdString());
+				}
 			}
 			else QMessageBox::critical(this, "FEBio Studio", "The selected class is not support for vector expressions.");
 		}
@@ -1199,11 +1217,23 @@ void CPostDataPanel::on_AddEquation_triggered()
 			{
 				// create new math data field
 				Post::FEMathMat3DataField* pd = new Post::FEMathMat3DataField(&fem);
-				for (int i = 0; i < 9; ++i) pd->SetEquationString(i, s.at(i).toStdString());
+				for (int i = 0; i < 9; ++i)
+				{
+					if (!pd->SetEquationString(i, s.at(i).toStdString()))
+					{
+						delete pd;
+						pd = nullptr;
+						QMessageBox::critical(this, "FEBio Studio", "The equation field could not be added. Probably due to a typo in the equation.");
+						break;
+					}
+				}
 
 				// add it to the model
-				Post::FEPostModel& fem = *glm->GetFSModel();
-				fem.AddDataField(pd, name.toStdString());
+				if (pd)
+				{
+					Post::FEPostModel& fem = *glm->GetFSModel();
+					fem.AddDataField(pd, name.toStdString());
+				}
 			}
 			else QMessageBox::critical(this, "FEBio Studio", "The selected class is not support for math expressions.");
 		}

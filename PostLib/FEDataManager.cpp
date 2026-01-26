@@ -93,7 +93,13 @@ int FEDataManager::FindDataField(const std::string& fieldName)
 
 FEDataFieldPtr FEDataManager::DataField(int i)
 {
+	if ((i < 0) || (i >= m_Data.size())) return m_Data.end();
 	return m_Data.begin() + i;
+}
+
+bool FEDataManager::IsValid(FEDataFieldPtr pdf) const
+{
+	return (pdf != m_Data.end());
 }
 
 std::string FEDataManager::getDataString(int nfield, Data_Tensor_Type ntype)

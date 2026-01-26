@@ -84,7 +84,8 @@ bool FEMathNodeDataField::BuildMath(bool updateVars)
 		m_math.AddVariable("y", 0.0);
 		m_math.AddVariable("z", 0.0);
 		m_math.AddVariable("t", 0.0);
-		bool b = m_math.Create(expr, true); assert(b);
+		bool b = m_math.Create(expr, true);
+		if (!b) return false;
 
 		FEPostModel* fem = m_fem;
 		Post::FEDataManager* pDM = fem->GetDataManager();
@@ -95,9 +96,13 @@ bool FEMathNodeDataField::BuildMath(bool updateVars)
 			MVariable* pv = m_math.Variable(i);
 			const std::string& varName = pv->Name();
 			int nfield = pDM->FindDataField(varName); assert(nfield >= 0);
-			ModelDataField* pdf = *pDM->DataField(nfield);
+			Post::FEDataFieldPtr ppdf = pDM->DataField(nfield);
+			if (!pDM->IsValid(ppdf)) return false;
+
+			Post::ModelDataField* pdf = *ppdf;
 			if (pdf->DataClass() != NODE_DATA) return false;
 			if (pdf->Format() != DATA_ITEM) return false;
+			if (pdf->Type() != DATA_SCALAR) return false;
 			m_var.push_back(std::make_pair(varName, pdf));
 		}
 	}
@@ -155,7 +160,8 @@ bool FEMathElemDataField::BuildMath(bool updateVars)
 		m_math.AddVariable("y", 0.0);
 		m_math.AddVariable("z", 0.0);
 		m_math.AddVariable("t", 0.0);
-		bool b = m_math.Create(expr, true); assert(b);
+		bool b = m_math.Create(expr, true);
+		if (!b) return false;
 
 		FEPostModel* fem = m_fem;
 		Post::FEDataManager* pDM = fem->GetDataManager();
@@ -166,9 +172,12 @@ bool FEMathElemDataField::BuildMath(bool updateVars)
 			MVariable* pv = m_math.Variable(i);
 			const std::string& varName = pv->Name();
 			int nfield = pDM->FindDataField(varName); assert(nfield >= 0);
-			ModelDataField* pdf = *pDM->DataField(nfield);
+			Post::FEDataFieldPtr ppdf = pDM->DataField(nfield);
+			if (!pDM->IsValid(ppdf)) return false;
+			Post::ModelDataField* pdf = *ppdf;
 			if (pdf->DataClass() != ELEM_DATA) return false;
 			if (pdf->Format() != DATA_ITEM) return false;
+			if (pdf->Type() != DATA_SCALAR) return false;
 			m_var.push_back(std::make_pair(varName, pdf));
 		}
 	}
@@ -240,15 +249,15 @@ FEMathVec3DataField::FEMathVec3DataField(Post::FEPostModel* fem, unsigned int fl
 		m_math[i].AddVariable("z");
 		m_math[i].AddVariable("t");
 	}
-	BuildMath();
 }
 
-void FEMathVec3DataField::BuildMath()
+bool FEMathVec3DataField::BuildMath()
 {
 	for (int i = 0; i < 3; ++i)
 	{
-		m_math[i].Create(m_eq[i]);
+		if (!m_math[i].Create(m_eq[i])) return false;
 	}
+	return true;
 }
 
 vec3d FEMathVec3DataField::value(double x, double y, double z, double t)
@@ -299,12 +308,13 @@ FEMathMat3DataField::FEMathMat3DataField(Post::FEPostModel* fem, unsigned int fl
 	BuildMath();
 }
 
-void FEMathMat3DataField::BuildMath()
+bool FEMathMat3DataField::BuildMath()
 {
 	for (int i = 0; i < 9; ++i)
 	{
-		m_math[i].Create(m_eq[i]);
+		if (!m_math[i].Create(m_eq[i])) return false;
 	}
+	return true;
 }
 
 mat3d FEMathMat3DataField::value(double x, double y, double z, double t)

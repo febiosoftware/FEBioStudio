@@ -61,6 +61,8 @@ public:
 	//! find the data field given an index
 	FEDataFieldPtr DataField(int i);
 
+	bool IsValid(FEDataFieldPtr pdf) const;
+
 	std::string getDataString(int nfield, Data_Tensor_Type ntype);
 
 	const char* getDataUnits(int nfield);

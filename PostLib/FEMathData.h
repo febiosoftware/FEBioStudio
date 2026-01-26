@@ -95,7 +95,7 @@ class FEScalarMathDataField : public ModelDataField
 public:
 	FEScalarMathDataField(Post::FEPostModel* fem, DATA_CLASS dataClass, unsigned int flag = 0);
 
-	void SetEquationString(const std::string& eq, bool updateVars = true) { m_eq = eq; BuildMath(updateVars); }
+	bool SetEquationString(const std::string& eq, bool updateVars = true) { m_eq = eq; return BuildMath(updateVars); }
 
 	const std::string& EquationString() const { return m_eq; }
 
@@ -146,7 +146,7 @@ public:
 	//! FEMeshData constructor
 	FEMeshData* CreateData(FEState* pstate) override;
 
-	void SetEquationString(const std::string& eq, bool updateVars = true) { m_eq = eq; BuildMath(updateVars); }
+	bool SetEquationString(const std::string& eq, bool updateVars = true) { m_eq = eq; return BuildMath(updateVars); }
 
 private:
 	bool BuildMath(bool updateVars) override;
@@ -171,22 +171,22 @@ public:
 		return new FEMathVec3Data(pstate, this);
 	}
 
-	void SetEquationStrings(const std::string& x, const std::string& y, const std::string& z)
+	bool SetEquationStrings(const std::string& x, const std::string& y, const std::string& z)
 	{
 		m_eq[0] = x; 
 		m_eq[1] = y;
 		m_eq[2] = z;
-		BuildMath();
+		return BuildMath();
 	}
 
-	void SetEquationString(int n, const std::string& eq) { m_eq[n] = eq; BuildMath(); }
+	bool SetEquationString(int n, const std::string& eq) { m_eq[n] = eq; return BuildMath(); }
 
 	const std::string& EquationString(int n) const { return m_eq[n]; }
 
 	vec3d value(double x, double y, double z, double t);
 
 private:
-	void BuildMath();
+	bool BuildMath();
 
 private:
 	std::string	m_eq[3];		//!< equation string
@@ -216,7 +216,7 @@ public:
 		return new FEMathMat3Data(pstate, this);
 	}
 
-	void SetEquationStrings(
+	bool SetEquationStrings(
 		const std::string& m00, const std::string& m01, const std::string& m02,
 		const std::string& m10, const std::string& m11, const std::string& m12,
 		const std::string& m20, const std::string& m21, const std::string& m22)
@@ -224,17 +224,17 @@ public:
 		m_eq[0] = m00; m_eq[1] = m01; m_eq[2] = m02;
 		m_eq[3] = m10; m_eq[4] = m11; m_eq[5] = m12;
 		m_eq[6] = m20; m_eq[7] = m21; m_eq[8] = m22;
-		BuildMath();
+		return BuildMath();
 	}
 
-	void SetEquationString(int n, const std::string& eq) { m_eq[n] = eq; BuildMath(); }
+	bool SetEquationString(int n, const std::string& eq) { m_eq[n] = eq; return BuildMath(); }
 
 	const std::string& EquationString(int n) const { return m_eq[n]; }
 
 	mat3d value(double x, double y, double z, double t);
 
 private:
-	void BuildMath();
+	bool BuildMath();
 
 private:
 	std::string	m_eq[9];		//!< equation string
