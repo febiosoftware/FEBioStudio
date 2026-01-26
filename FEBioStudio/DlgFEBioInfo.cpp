@@ -171,7 +171,12 @@ void CDlgFEBioInfo::onExport()
 		FECoreBase* pcb = nullptr;
 
 		const FECoreFactory* fac = febio.GetFactoryClass(index);
-		if (fac && ((fac->GetSpecID() != FECORE_EXPERIMENTAL) || includeExperimentals))
+		int spec = (fac ? fac->GetSpecID() : -1);
+		bool isExperimental = (spec == FECORE_EXPERIMENTAL);
+		bool isDeprecated   = (spec == FECORE_DEPRECATED);
+		if (fac && 
+			(!isExperimental || includeExperimentals) &&
+			!isDeprecated)
 		{
 			try {
 				pcb = fac->Create(nullptr);
@@ -190,9 +195,8 @@ void CDlgFEBioInfo::onExport()
 			{
 				FEParam& pi = *it;
 
-				// skip hidden parameters
-				bool isHidden = (pi.GetFlags() & FE_PARAM_HIDDEN);
-				if (isHidden) continue;
+				// skip hidden and obsolete parameters
+				if (pi.IsHidden() || pi.IsObsolete()) continue;
 
 				QJsonObject paramObj;
 				QString paramVal("");
@@ -250,10 +254,10 @@ void CDlgFEBioInfo::onExport()
 			feature["module"] = item->text(4);
 			feature["source"] = item->text(5);
 			feature["parameters"] = paramArray;
+			featureArray.append(feature);
+
 			delete pcb;
 		}
-
-		featureArray.append(feature);
 	}
 
 	QJsonObject root;
