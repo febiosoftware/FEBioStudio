@@ -328,6 +328,7 @@ void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::D
 	m_currentMat.specular = GLColor(0, 0, 0);
 	m_currentMat.reflection = 0;
 	m_currentMat.shininess = 0;
+	m_currentMat.opacity = (double)c.a / 255.0;
 
 	if (map == GLMaterial::TEXTURE_1D)
 	{
