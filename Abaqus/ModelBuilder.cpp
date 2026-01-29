@@ -345,6 +345,91 @@ void ModelBuilder::build_surfaces(AbaqusModel::PART* pg, FSMesh* pm)
 	}
 }
 
+void add_element_face_to_surface(FSSurface* ps, FSElement& el, int sn)
+{
+
+	if (el.IsType(FE_HEX8))
+	{
+		int n = -1;
+		switch (sn)
+		{
+		case 1: n = el.m_face[4]; break;
+		case 2: n = el.m_face[5]; break;
+		case 3: n = el.m_face[0]; break;
+		case 4: n = el.m_face[1]; break;
+		case 5: n = el.m_face[2]; break;
+		case 6: n = el.m_face[3]; break;
+		}
+		assert(n >= 0);
+		ps->add(n);
+	}
+	else if (el.IsType(FE_PENTA6))
+	{
+		int n = -1;
+		switch (sn)
+		{
+		case 1: n = el.m_face[3]; break;
+		case 2: n = el.m_face[4]; break;
+		case 3: n = el.m_face[0]; break;
+		case 4: n = el.m_face[1]; break;
+		case 5: n = el.m_face[2]; break;
+		}
+		assert(n >= 0);
+		ps->add(n);
+	}
+	else if (el.IsType(FE_TET4))
+	{
+		int n = -1;
+		switch (sn)
+		{
+		case 1: n = el.m_face[3]; break;
+		case 2: n = el.m_face[0]; break;
+		case 3: n = el.m_face[1]; break;
+		case 4: n = el.m_face[2]; break;
+		}
+		assert(n >= 0);
+		ps->add(n);
+	}
+	else if (el.IsType(FE_TET10))
+	{
+		int n = -1;
+		switch (sn)
+		{
+		case 1: n = el.m_face[3]; break;
+		case 2: n = el.m_face[0]; break;
+		case 3: n = el.m_face[1]; break;
+		case 4: n = el.m_face[2]; break;
+		}
+		assert(n >= 0);
+		ps->add(n);
+	}
+	else if (el.IsType(FE_QUAD4))
+	{
+		int n = el.m_face[0];
+		ps->add(n);
+	}
+	else if (el.IsType(FE_QUAD8))
+	{
+		int n = el.m_face[0];
+		ps->add(n);
+	}
+	else if (el.IsType(FE_QUAD9))
+	{
+		int n = el.m_face[0];
+		ps->add(n);
+	}
+	else if (el.IsType(FE_TRI3))
+	{
+		int n = el.m_face[0];
+		ps->add(n);
+	}
+	else if (el.IsType(FE_TRI6))
+	{
+		int n = el.m_face[0];
+		ps->add(n);
+	}
+}
+
 FSSurface* ModelBuilder::build_surface(AbaqusModel::SURFACE& surf, FSMesh* pm)
 {
 	if (pm == nullptr) return nullptr;
@@ -370,92 +455,26 @@ FSSurface* ModelBuilder::build_surface(AbaqusModel::SURFACE& surf, FSMesh* pm)
 
 			// assume ref is an element set name
 			vector<AbaqusModel::ELEMENT_SET*> esets = pg->FindElementSets(ref);
-			for (auto eset : esets)
+			if (esets.empty())
 			{
-				vector<int> elem = get_element_indices(eset);
-				for (int i = 0; i < elem.size(); ++i)
+				// hmm, maybe ref is just an element ID
+				int eid = std::stoi(ref);
+				int n = pm->ElementIndexFromID(eid);
+				if ((n >= 0) && (n < pm->Elements()))
 				{
-					FSElement& el = pm->Element(elem[i]);
-
-					if (el.IsType(FE_HEX8))
+					FSElement& el = pm->Element(n);
+					add_element_face_to_surface(ps, el, sn);
+				}
+			}
+			else
+			{
+				for (auto eset : esets)
+				{
+					vector<int> elem = get_element_indices(eset);
+					for (int i = 0; i < elem.size(); ++i)
 					{
-						int n = -1;
-						switch (sn)
-						{
-						case 1: n = el.m_face[4]; break;
-						case 2: n = el.m_face[5]; break;
-						case 3: n = el.m_face[0]; break;
-						case 4: n = el.m_face[1]; break;
-						case 5: n = el.m_face[2]; break;
-						case 6: n = el.m_face[3]; break;
-						}
-						assert(n >= 0);
-						ps->add(n);
-					}
-					else if (el.IsType(FE_PENTA6))
-					{
-						int n = -1;
-						switch (sn)
-						{
-						case 1: n = el.m_face[3]; break;
-						case 2: n = el.m_face[4]; break;
-						case 3: n = el.m_face[0]; break;
-						case 4: n = el.m_face[1]; break;
-						case 5: n = el.m_face[2]; break;
-						}
-						assert(n >= 0);
-						ps->add(n);
-					}
-					else if (el.IsType(FE_TET4))
-					{
-						int n = -1;
-						switch (sn)
-						{
-						case 1: n = el.m_face[3]; break;
-						case 2: n = el.m_face[0]; break;
-						case 3: n = el.m_face[1]; break;
-						case 4: n = el.m_face[2]; break;
-						}
-						assert(n >= 0);
-						ps->add(n);
-					}
-					else if (el.IsType(FE_TET10))
-					{
-						int n = -1;
-						switch (sn)
-						{
-						case 1: n = el.m_face[3]; break;
-						case 2: n = el.m_face[0]; break;
-						case 3: n = el.m_face[1]; break;
-						case 4: n = el.m_face[2]; break;
-						}
-						assert(n >= 0);
-						ps->add(n);
-					}
-					else if (el.IsType(FE_QUAD4))
-					{
-						int n = el.m_face[0];
-						ps->add(n);
-					}
-					else if (el.IsType(FE_QUAD8))
-					{
-						int n = el.m_face[0];
-						ps->add(n);
-					}
-					else if (el.IsType(FE_QUAD9))
-					{
-						int n = el.m_face[0];
-						ps->add(n);
-					}
-					else if (el.IsType(FE_TRI3))
-					{
-						int n = el.m_face[0];
-						ps->add(n);
-					}
-					else if (el.IsType(FE_TRI6))
-					{
-						int n = el.m_face[0];
-						ps->add(n);
+						FSElement& el = pm->Element(elem[i]);
+						add_element_face_to_surface(ps, el, sn);
 					}
 				}
 			}
