@@ -539,6 +539,8 @@ void CGLColorMap::UpdateRenderMesh(int n0, int n1, float dt)
 			}
 		}
 	}
+
+	gmsh->setModified(true);
 }
 
 void CGLColorMap::UpdateState(int ntime, bool breset)
