@@ -109,16 +109,18 @@ GDiscreteSpringSet* AddSpringSet(FSModel& fem, const std::string& name, const st
 	return set;
 }
 
-bool ExportFEB(std::string& fileName)
+bool ExportFEB(FSModel& fem, std::string& fileName)
 {
 	CModelDocument* doc = GetActiveDocument();
+	assert(doc->GetFSModel() == &fem);
 	FEBioExport4 feb(doc->GetProject());
 	return feb.Write(fileName.c_str());
 }
 
-bool ExportVTK(std::string& fileName)
+bool ExportVTK(FSModel& fem, std::string& fileName)
 {
 	CModelDocument* doc = GetActiveDocument();
+	assert(doc->GetFSModel() == &fem);
 	VTKExport vtk(doc->GetProject());
 	return vtk.Write(fileName.c_str());
 }
