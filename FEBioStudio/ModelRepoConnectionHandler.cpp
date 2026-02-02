@@ -860,7 +860,7 @@ void CModelRepoConnectionHandler::loggedOut()
 
 #else
 
-CModelRepoConnectionHandler::CModelRepoConnectionHandler(CRepositoryPanel* dbPanel, CLocalDatabaseHandler* dbHandler, CMainWindow* wnd){}
+CModelRepoConnectionHandler::CModelRepoConnectionHandler(CRepositoryPanel* dbPanel, CModelDatabaseHandler* dbHandler, CMainWindow* wnd){}
 CModelRepoConnectionHandler::~CModelRepoConnectionHandler(){}
 void CModelRepoConnectionHandler::authenticate(QString userName, QString password){}
 void CModelRepoConnectionHandler::getFile(int id, int type){}
