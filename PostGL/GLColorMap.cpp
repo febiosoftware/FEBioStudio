@@ -51,6 +51,7 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 	AddDoubleParam(0, "user_min");
 	AddBoolParam(false, "show_minmax_markers", "Show min/max markers");
 	AddColorParam(GLColor(200, 200, 200), "inactive_color");
+	AddBoolParam(false, "ignore_hidden_mesh", "Ignore hidden mesh");
 
 	m_range.min = m_range.max = 0;
 	m_range.mintype = m_range.maxtype = m_defaultRngType;
@@ -166,6 +167,8 @@ void CGLColorMap::UpdateRange(int n0, int n1, float dt, bool breset)
 
 	m_rmin = m_rmax = vec3d(0, 0, 0);
 
+	bool ignoreHiddenMesh = GetBoolValue(IGNORE_HIDDEN_MESH);
+
 	// update the range
 	float fmin = 1e29f, fmax = -1e29f;
 	if (IS_ELEM_FIELD(m_nfield) && (m_bDispNodeVals == false))
@@ -177,6 +180,8 @@ void CGLColorMap::UpdateRange(int n0, int n1, float dt, bool breset)
 			for (int i = 0; i < NE; ++i)
 			{
 				FSElement_& el = pm->ElementRef(i);
+				if (ignoreHiddenMesh && !el.IsVisible()) continue;
+
 				ELEMDATA& d0 = s0.m_ELEM[i];
 				ELEMDATA& d1 = s1.m_ELEM[i];
 				if ((d0.m_state & StatusFlags::ACTIVE) && (d1.m_state & StatusFlags::ACTIVE))
@@ -198,6 +203,8 @@ void CGLColorMap::UpdateRange(int n0, int n1, float dt, bool breset)
 			for (int i = 0; i < NE; ++i)
 			{
 				FSElement_& el = pm->ElementRef(i);
+				if (ignoreHiddenMesh && !el.IsVisible()) continue;
+
 				ELEMDATA& d0 = s0.m_ELEM[i];
 				ELEMDATA& d1 = s1.m_ELEM[i];
 				if ((d0.m_state & StatusFlags::ACTIVE) && (d1.m_state & StatusFlags::ACTIVE))
@@ -223,6 +230,8 @@ void CGLColorMap::UpdateRange(int n0, int n1, float dt, bool breset)
 			for (int i = 0; i < NF; ++i)
 			{
 				FSFace& face = pm->Face(i);
+				if (ignoreHiddenMesh && !face.IsVisible()) continue;
+
 				FACEDATA& d0 = s0.m_FACE[i];
 				FACEDATA& d1 = s1.m_FACE[i];
 				vec3d r = pm->FaceCenter(face);
@@ -241,6 +250,8 @@ void CGLColorMap::UpdateRange(int n0, int n1, float dt, bool breset)
 			for (int i = 0; i < NF; ++i)
 			{
 				FSFace& face = pm->Face(i);
+				if (ignoreHiddenMesh && !face.IsVisible()) continue;
+
 				FACEDATA& fd0 = s0.m_FACE[i];
 				FACEDATA& fd1 = s1.m_FACE[i];
 				if (face.IsEnabled() && (fd0.m_ntag > 0))
@@ -266,6 +277,8 @@ void CGLColorMap::UpdateRange(int n0, int n1, float dt, bool breset)
 		for (int i = 0; i < pm->Nodes(); ++i)
 		{
 			FSNode& node = pm->Node(i);
+			if (ignoreHiddenMesh && !node.IsVisible()) continue;
+
 			NODEDATA& d0 = s0.m_NODE[i];
 			NODEDATA& d1 = s1.m_NODE[i];
 			if ((node.IsEnabled()) && (d0.m_ntag > 0) && (d1.m_ntag > 0))
