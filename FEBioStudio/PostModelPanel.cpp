@@ -1432,7 +1432,7 @@ void CPostModelPanel::OnHideElements()
 	FSObject* po = ui->currentObject();
 	if (po == nullptr) return;
 	
-	CGLModelDocument* pdoc = GetActiveDocument();
+	CPostDocument* pdoc = dynamic_cast<CPostDocument*>(GetActiveDocument());
 	if (pdoc == nullptr) return;
 
 	GObject* pgo = pdoc->GetActiveObject();
@@ -1447,6 +1447,8 @@ void CPostModelPanel::OnHideElements()
 
 		assert(pg->GetMesh() == pgo->GetFEMesh());
 		pdoc->DoCommand(new CCmdHideElements(pgo, pgl));
+
+		pdoc->GetGLModel()->UpdateMeshVisibility();
 	}
 
 	GetMainWindow()->RedrawGL();

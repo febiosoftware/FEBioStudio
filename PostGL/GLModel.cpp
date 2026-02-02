@@ -748,7 +748,10 @@ void CGLModel::HideSelectedElements()
 	for (int i=0; i<NF; ++i)
 	{
 		FSFace& f = mesh.Face(i);
-		if (mesh.ElementRef(f.m_elem[0].eid).IsHidden()) f.Hide();
+		int el0 = f.m_elem[0].eid;
+		int el1 = f.m_elem[1].eid;
+		if (mesh.ElementRef(el0).IsHidden() && 
+			((el1 < 0) || (mesh.ElementRef(el1).IsHidden()))) f.Hide();
 	}
 
 	// hide edges
