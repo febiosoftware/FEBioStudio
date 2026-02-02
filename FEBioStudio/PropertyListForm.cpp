@@ -454,6 +454,7 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 				fileNames.append("(none)");
 			}
 			CLinkPropertyEdit* edit = new CLinkPropertyEdit(fileNames[0], fileNames[1], true);
+			QObject::connect(edit, &CLinkPropertyEdit::pathModified, this, &CPropertyListForm::onDataChanged);
 			return edit;
 		}
 		break;
@@ -467,6 +468,7 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 				fileNames.append("(none)");
 			}
 			CLinkPropertyEdit* edit = new CLinkPropertyEdit(fileNames[0], fileNames[1]);
+			QObject::connect(edit, &CLinkPropertyEdit::pathModified, this, &CPropertyListForm::onDataChanged);
 			return edit;
 		}
 		break;
@@ -903,6 +905,14 @@ void CPropertyListForm::onDataChanged()
                 if (edit) m_list->SetPropertyValue(propIndex, edit->text());
             }
             break;
+		case CProperty::InternalLink:
+		case CProperty::ExternalLink:
+			{
+				CLinkPropertyEdit* edit = qobject_cast<CLinkPropertyEdit*>(pw);
+				if (edit)
+					m_list->SetPropertyValue(propIndex, edit->fullPath());
+			}
+			break;
         }
     }
 

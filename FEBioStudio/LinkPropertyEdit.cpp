@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QFileInfo>
 #include <QApplication>
 #include "MainWindow.h"
+#include <QFileDialog>
 
 class Ui::CLinkPropertyEdit
 {
@@ -40,13 +41,14 @@ public:
 	QString fullPath;
 	QString relativePath;
 	bool internal = false;
+	QLineEdit* relativePathEdit = nullptr;
 
 public:
 	CLinkPropertyEdit() {}
 
 	void setup(QWidget* w)
 	{
-		QLineEdit* relativePathEdit = new QLineEdit(relativePath);
+		relativePathEdit = new QLineEdit(relativePath);
 		relativePathEdit->setDisabled(true);
 		relativePathEdit->setToolTip(fullPath);
 
@@ -76,12 +78,19 @@ CLinkPropertyEdit::CLinkPropertyEdit(const QString& filepath, const QString& rel
 	ui->setup(this);
 }
 
+QString CLinkPropertyEdit::fullPath() const
+{
+	return ui->fullPath;
+}
+
 void CLinkPropertyEdit::buttonPressed()
 {
 	QString filename = ui->fullPath;
 	QFileInfo info = QFileInfo(ui->fullPath);
 
-	if(!info.exists())
+	bool fileFound = info.exists();
+
+	if(!fileFound)
 	{
 		// for plot and log files we'll check for remote versions
 		QString ext = info.suffix();
@@ -89,22 +98,33 @@ void CLinkPropertyEdit::buttonPressed()
 		{
 			QString remoteFile = QString("%1.remote").arg(filename);
 			QFileInfo info2(remoteFile);
-			if (!info2.exists())
+			fileFound = info2.exists();
+			if (fileFound)
 			{
-				// no luck either
-				QMessageBox::critical(this, "FEBio Studio", QString("Cannot open file.\n%1 does not exist.").arg(filename));
-				return;
+				filename = remoteFile;
 			}
-			filename = remoteFile;
 		}
-		else
+
+		if (!fileFound)
 		{
-			QMessageBox::critical(this, "FEBio Studio", QString("Cannot open file.\n%1 does not exist.").arg(filename));
+			if (QMessageBox::question(this, "FEBio Studio", QString("Cannot open file.\n%1 does not exist.\nDo you want to try to locate it?").arg(filename)) == QMessageBox::Yes)
+			{
+				QString filter = QString("%1 files (*.%1)").arg(ext);
+				QString file = QFileDialog::getOpenFileName(this, "Locate file", "", filter);
+				if (!file.isEmpty())
+				{
+					filename = file;
+					ui->fullPath = filename;
+					ui->relativePathEdit->setText(QFileInfo(filename).fileName());
+
+					emit pathModified(filename);
+				}
+			}
 			return;
 		}
 	}
 
-	if(ui->internal)
+	if (ui->internal)
 	{
 		CMainWindow* wnd = dynamic_cast<CMainWindow*>(QApplication::activeWindow()); assert(wnd);
 		wnd->OpenFile(filename, false);

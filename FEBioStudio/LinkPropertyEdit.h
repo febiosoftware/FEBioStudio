@@ -43,8 +43,13 @@ class CLinkPropertyEdit : public QWidget
 public:
 	CLinkPropertyEdit(const QString& filepath, const QString& relPath, bool internal=false, QWidget* parent = 0);
 
+	QString fullPath() const;
+
 private slots:
 	void buttonPressed();
+
+signals:
+	void pathModified(QString newPath);
 
 private:
 	Ui::CLinkPropertyEdit*	ui;

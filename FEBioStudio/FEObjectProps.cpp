@@ -991,6 +991,20 @@ void CFEBioJobProps::SetPropertyValue(int i, const QVariant& v)
 {
 	CFEBioJob* job = m_pobj;
 	if (job == nullptr) return;
+
+	QString newPath = v.toString();
+	switch (i)
+	{
+	case 1:
+		job->SetFEBFileName(newPath.toStdString());
+		break;
+	case 2:
+		job->SetPlotFileName(newPath.toStdString());
+		break;
+	case 3:
+		job->SetLogFileName(newPath.toStdString());
+		break;
+	}
 }
 
 void CDiscreteObjectProps::BuildProperties()
