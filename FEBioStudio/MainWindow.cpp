@@ -770,9 +770,6 @@ void CMainWindow::OpenDocument(const QString& fileName)
 	// start reading the file
 	ReadFile(doc, filePath, reader, QueuedFile::NEW_DOCUMENT);
 
-	// add file to recent list
-	ui->addToRecentFiles(filePath);
-
 	// Check if there is a more recent autosave of this file
 	if(doc->loadPriorAutoSave())
 	{
@@ -1034,12 +1031,10 @@ void CMainWindow::on_finishedReadingFile(QueuedFile file, const QString& errorSt
                     }
 
                     m_fileProcessor->ReadFile(file);
+		            return;
                 }
             }
-
-            return;
         }
-
 
 		if (m_fileProcessor->IsQueueEmpty())
 		{
@@ -1096,6 +1091,10 @@ void CMainWindow::on_finishedReadingFile(QueuedFile file, const QString& errorSt
 		{
 			AddLogEntry("success!\n");
 		}
+
+		// add file to recent list
+		if (file.m_fileName.isEmpty()==false)
+			ui->addToRecentFiles(file.m_fileName);
 
 		// if this was a new document, make it the active one 
 		if (file.m_flags & QueuedFile::NEW_DOCUMENT)

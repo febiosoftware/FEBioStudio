@@ -577,8 +577,8 @@ void FSMaterial::Load(IArchive &ar)
 					{
 						ar.read(szname);
 						prop = FindProperty(szname);
-						assert(prop);
-						prop->Clear();
+						if (prop == nullptr) throw std::exception("Invalid property name in material");
+						if (prop) prop->Clear();
 					}
 					else if (nid == CID_MAT_PROPERTY_MAT)
 					{
