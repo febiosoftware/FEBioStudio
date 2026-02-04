@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <QMouseEvent>
 #include <QTimer>
 
-rhiSceneView::rhiSceneView(CMainWindow* wnd) : m_wnd(wnd)
+rhiSceneView::rhiSceneView()
 {
 }
 

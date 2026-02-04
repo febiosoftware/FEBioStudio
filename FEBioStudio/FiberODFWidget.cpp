@@ -357,7 +357,7 @@ public:
         QVBoxLayout* odfTabLayout = new QVBoxLayout;
         odfTabLayout->setContentsMargins(0,0,0,0);
 
-		glWidget = new rhiSceneView(wnd);
+		glWidget = new rhiSceneView();
 		glWidget->SetScene(m_scene);
 		QWidget* rhiw = QWidget::createWindowContainer(glWidget);
 		rhiw->setMinimumSize(QSize(300, 300));

@@ -341,7 +341,7 @@ public:
 		vl->addWidget(distro);
 		vl->addWidget(propsView);
 
-		glw = new rhiSceneView(CMainWindow::GetInstance());
+		glw = new rhiSceneView();
 		QWidget* rhiw = QWidget::createWindowContainer(glw);
 		rhiw->setMinimumSize(QSize(400, 400));
 

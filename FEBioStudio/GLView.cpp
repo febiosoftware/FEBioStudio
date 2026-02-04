@@ -336,7 +336,7 @@ void RenderBrush(QPainter& painter, int x, int y, double R)
 }
 
 //-----------------------------------------------------------------------------
-CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : rhiSceneView(pwnd), m_pWnd(pwnd), m_pivot(this), m_select(this)
+CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : m_pWnd(pwnd), m_pivot(this), m_select(this)
 {
 	m_bsnap = false;
 

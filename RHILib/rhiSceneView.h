@@ -30,12 +30,10 @@ SOFTWARE.*/
 #include <GLWLib/GLTriad.h>
 #include <GLLib/GLScene.h>
 
-class CMainWindow;
-
 class rhiSceneView : public RhiWindow
 {
 public:
-	rhiSceneView(CMainWindow* wnd);
+	rhiSceneView();
 	~rhiSceneView();
 
 	void SetScene(GLScene* scene);
@@ -58,8 +56,6 @@ protected:
 	void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
-	CMainWindow* m_wnd = nullptr;
-
 	GLScene* m_scene = nullptr;
 
 	rhiRenderer* m_rhiRender = nullptr;
