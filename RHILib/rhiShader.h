@@ -44,11 +44,17 @@ namespace rhi {
 		// return vertex input layout for this shader
 		virtual QRhiVertexInputLayout meshLayout() = 0;
 
+	public:
+		static void setResourcePath(const QString& path) { resourcePath = path; }
+		static QString getResourcePath() { return resourcePath; }
+
 	protected:
 		void create(const QString& vertexShader, const QString& fragmentShader);
 
 	protected:
 		QRhi* m_rhi = nullptr;
+
+		static QString resourcePath;
 
 	private:
 		QVector<QRhiShaderStage> shaders;

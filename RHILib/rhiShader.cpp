@@ -26,11 +26,13 @@ SOFTWARE.*/
 #include "rhiShader.h"
 #include "rhiUtil.h"
 
+QString rhi::Shader::resourcePath = QLatin1String(":/RHILib/shaders/");
+
 void rhi::Shader::create(const QString& vertexShader, const QString& fragmentShader)
 {
 	shaders = {
-		{ QRhiShaderStage::Vertex  , rhi::getShader(vertexShader) },
-		{ QRhiShaderStage::Fragment, rhi::getShader(fragmentShader) }
+		{ QRhiShaderStage::Vertex  , rhi::getShader(resourcePath + vertexShader) },
+		{ QRhiShaderStage::Fragment, rhi::getShader(resourcePath + fragmentShader) }
 	};
 }
 
@@ -79,10 +81,7 @@ public:
 
 PointShader::PointShader(QRhi* rhi) : rhi::Shader(rhi)
 {
-	rhi::Shader::create(
-		QLatin1String(":/RHILib/shaders/point.vert.qsb"),
-		QLatin1String(":/RHILib/shaders/point.frag.qsb")
-	);
+	rhi::Shader::create("point.vert.qsb", "point.frag.qsb");
 }
 
 QRhiVertexInputLayout PointShader::meshLayout()
@@ -149,10 +148,7 @@ public:
 
 LineShader::LineShader(QRhi* rhi) : rhi::Shader(rhi)
 {
-	rhi::Shader::create(
-		QLatin1String(":/RHILib/shaders/lines.vert.qsb"),
-		QLatin1String(":/RHILib/shaders/lines.frag.qsb")
-	);
+	rhi::Shader::create("lines.vert.qsb", "lines.frag.qsb");
 }
 
 QRhiVertexInputLayout LineShader::meshLayout()
@@ -239,10 +235,7 @@ public:
 
 SolidShader::SolidShader(QRhi* rhi) : rhi::Shader(rhi)
 {
-	rhi::Shader::create(
-		QLatin1String(":/RHILib/shaders/color.vert.qsb"),
-		QLatin1String(":/RHILib/shaders/color.frag.qsb")
-	);
+	rhi::Shader::create("color.vert.qsb", "color.frag.qsb");
 }
 
 QRhiVertexInputLayout SolidShader::meshLayout()
@@ -284,9 +277,7 @@ public:
 
 CanvasShader::CanvasShader(QRhi* rhi) : rhi::Shader(rhi)
 {
-	rhi::Shader::create(
-		QLatin1String(":/RHILib/shaders/canvas.vert.qsb"),
-		QLatin1String(":/RHILib/shaders/canvas.frag.qsb"));
+	rhi::Shader::create("canvas.vert.qsb", "canvas.frag.qsb");
 }
 
 QRhiVertexInputLayout CanvasShader::meshLayout()
@@ -309,9 +300,7 @@ rhi::MeshShaderResource* CanvasShader::createShaderResource(QRhi* rhi, rhi::Text
 
 OverlayShader::OverlayShader(QRhi* rhi) : rhi::Shader(rhi)
 {
-	rhi::Shader::create(
-		QLatin1String(":/RHILib/shaders/overlay.vert.qsb"),
-		QLatin1String(":/RHILib/shaders/overlay.frag.qsb"));
+	rhi::Shader::create("overlay.vert.qsb", "overlay.frag.qsb");
 }
 
 QRhiVertexInputLayout OverlayShader::meshLayout()
@@ -353,10 +342,7 @@ public:
 
 TriadShader::TriadShader(QRhi* rhi) : rhi::Shader(rhi)
 {
-	rhi::Shader::create(
-		QLatin1String(":/RHILib/shaders/triad.vert.qsb"),
-		QLatin1String(":/RHILib/shaders/triad.frag.qsb")
-	);
+	rhi::Shader::create("triad.vert.qsb", "triad.frag.qsb");
 }
 
 QRhiVertexInputLayout TriadShader::meshLayout()
@@ -416,10 +402,7 @@ public:
 
 VolumeShader::VolumeShader(QRhi* rhi) : rhi::Shader(rhi)
 {
-	rhi::Shader::create(
-		QLatin1String(":/RHILib/shaders/volume.vert.qsb"),
-		QLatin1String(":/RHILib/shaders/volume.frag.qsb")
-	);
+	rhi::Shader::create("volume.vert.qsb", "volume.frag.qsb");
 }
 
 QRhiVertexInputLayout VolumeShader::meshLayout()
@@ -443,10 +426,7 @@ rhi::MeshShaderResource* VolumeShader::createShaderResource(QRhi* rhi, rhi::Text
 //=============================================================================
 GradientShader::GradientShader(QRhi* rhi) : rhi::Shader(rhi)
 {
-	rhi::Shader::create(
-		QLatin1String(":/RHILib/shaders/grad.vert.qsb"),
-		QLatin1String(":/RHILib/shaders/grad.frag.qsb")
-	);
+	rhi::Shader::create("grad.vert.qsb", "grad.frag.qsb");
 }
 
 QRhiVertexInputLayout GradientShader::meshLayout()
@@ -498,10 +478,7 @@ public:
 
 DiffuseShader::DiffuseShader(QRhi* rhi) : rhi::Shader(rhi)
 {
-	rhi::Shader::create(
-		QLatin1String(":/RHILib/shaders/diffuse.vert.qsb"),
-		QLatin1String(":/RHILib/shaders/diffuse.frag.qsb")
-	);
+	rhi::Shader::create("diffuse.vert.qsb", "diffuse.frag.qsb");
 }
 
 QRhiVertexInputLayout DiffuseShader::meshLayout()
