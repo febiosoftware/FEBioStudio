@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include <GLWLib/GLTriad.h>
 #include <GLLib/GLScene.h>
 
+class QPainter;
+
 class rhiSceneView : public RhiWindow
 {
 public:
@@ -40,6 +42,8 @@ public:
 	virtual GLScene* GetActiveScene() { return m_scene; }
 
 	virtual void RenderScene(GLRenderEngine& re);
+
+	virtual void RenderOverlay(GLRenderEngine& re, QPainter& painter);
 
 	const GLRenderEngine* GetRenderEngine() { return m_rhiRender; }
 

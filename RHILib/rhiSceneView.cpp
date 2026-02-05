@@ -62,6 +62,23 @@ void rhiSceneView::customRender()
 
 	RenderScene(*m_rhiRender);
 
+	if (m_rhiRender->useOverlayImage())
+	{
+		// Create the overlay image that we'll paint in
+		QImage img(m_rhiRender->pixelSize(), QImage::Format_RGBA8888);
+		img.fill(QColor(255, 255, 255, 0));
+		QPainter painter(&img);
+		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+
+		RenderOverlay(*m_rhiRender, painter);
+
+		// all done with drawing
+		painter.end();
+
+		// all done, send it to the renderer
+		m_rhiRender->setOverlayImage(img);
+	}
+
 	m_rhiRender->finish();
 }
 
@@ -87,6 +104,11 @@ void rhiSceneView::RenderScene(GLRenderEngine& re)
 		rc.m_cam = &m_scene->GetCamera();
 		m_scene->Render(*m_rhiRender, rc);
 	}
+}
+
+void rhiSceneView::RenderOverlay(GLRenderEngine& re, QPainter& painter)
+{
+
 }
 
 void rhiSceneView::ShowFPS(bool b)

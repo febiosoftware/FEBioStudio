@@ -205,7 +205,8 @@ protected:
 	void onFrameFinished() override;
 
 private: // overlay rendering
-	void RenderOverlay(GLRenderEngine& re, GLContext& rc);
+	void RenderOverlay(GLRenderEngine& re, QPainter& painter) override;
+
 	void RenderOverlayComponents(QPainter& painter);
 	void RenderTags(QPainter& painter);
 	void RenderDecorations(GLRenderEngine& re);

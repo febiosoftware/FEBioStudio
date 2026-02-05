@@ -1625,47 +1625,51 @@ void CGLView::RenderScene(GLRenderEngine& re)
 
 	RenderDecorations(re);
 
-	RenderOverlay(re, rc);
-
-	if (m_recorder.IsRecording() && !m_stopRequested)
+	if (m_recorder.IsRecording())
 	{
-		rhiRenderer* rhiRender = dynamic_cast<rhiRenderer*>(&re);
-		if (rhiRender)
+		if (!m_stopRequested)
 		{
-			frameCapturesRequested++;
-			rhiRender->setCaptureNextFrame(true);
+			rhiRenderer* rhiRender = dynamic_cast<rhiRenderer*>(&re);
+			if (rhiRender)
+			{
+				frameCapturesRequested++;
+				rhiRender->setCaptureNextFrame(true);
+			}
+		}
+		else if (frameCapturesRequested <= 0)
+		{
+			m_recorder.Stop();
+			m_stopRequested = false;
+			UnlockSafeFrame();
+			m_pWnd->UpdateTitle();	
 		}
 	}
-}
 
-void CGLView::RenderOverlay(GLRenderEngine& re, GLContext& rc)
-{
 	rhiRenderer* rhiRender = dynamic_cast<rhiRenderer*>(&re);
 	if (rhiRender == nullptr) return;
 	rhiRender->useOverlayImage(renderOverlay);
-	if (!renderOverlay) return;
+}
 
-	// Create the overlay image that we'll paint in
-	QImage img(rhiRender->pixelSize(), QImage::Format_RGBA8888);
-	img.fill(QColor(255, 255, 255, 0));
-	QPainter painter(&img);
-	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-
+void CGLView::RenderOverlay(GLRenderEngine& re, QPainter& painter)
+{
 	// compose the overlay image
 	RenderOverlayComponents(painter);
 
-	// all done with drawing
-	painter.end();
-
 	// the triad requires a bit of special handling
-	QRhiViewport vp = { (float)m_ptriad->x(), (float)m_ptriad->y(), (float)m_ptriad->w(), (float)m_ptriad->h() };
-	quatd q = rc.m_cam->GetOrientation();
-	QMatrix4x4 Q; Q.rotate(QQuaternion(q.w, q.x, q.y, q.z));
-	m_ptriad->setOrientation(q);
-	rhiRender->setTriadInfo(Q, vp);
+	rhiRenderer* rhiRender = dynamic_cast<rhiRenderer*>(&re);
+	if (rhiRender)
+	{
+		GLScene* scene = GetActiveScene();
+		if (scene == nullptr) return;
 
-	// all done, send it to the renderer
-	rhiRender->setOverlayImage(img);
+		GLCamera& cam = scene->GetCamera();
+
+		QRhiViewport vp = { (float)m_ptriad->x(), (float)m_ptriad->y(), (float)m_ptriad->w(), (float)m_ptriad->h() };
+		quatd q = cam.GetOrientation();
+		QMatrix4x4 Q; Q.rotate(QQuaternion(q.w, q.x, q.y, q.z));
+		m_ptriad->setOrientation(q);
+		rhiRender->setTriadInfo(Q, vp);
+	}
 }
 
 void CGLView::RenderOverlayComponents(QPainter& painter)

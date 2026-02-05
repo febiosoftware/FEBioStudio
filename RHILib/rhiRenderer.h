@@ -154,6 +154,7 @@ public:
 public:
 	void setOverlayImage(const QImage& img);
 	void useOverlayImage(bool b);
+	bool useOverlayImage() const { return m_useOverlay; }
 
 	double getFPS() const { return timing.m_fps; }
 	void showFPS(bool b);
