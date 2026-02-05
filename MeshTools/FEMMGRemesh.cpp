@@ -48,7 +48,7 @@ MMGRemesh::MMGRemesh() : FEModifier("MMG Remesh")
 	AddDoubleParam(1.3, "grad", "Gradation");
 	AddDoubleParam(45, "angle", "Angle (degrees)");
 	AddBoolParam(false, "Only remesh selection");
-	AddBoolParam(false, "Preserve selected surface");
+	AddBoolParam(false, "Preserve selected faces");
 }
 
 FSMesh* MMGRemesh::Apply(FSMesh* pm)
@@ -193,10 +193,19 @@ FSMesh* MMGRemesh::RemeshTET4(FSMesh* pm)
 	bool preserveSurface = GetBoolValue(PRESERVE_SURFACE);
 	if (preserveSurface)
 	{
+		int nsel = 0;
 		for (int i = 0; i < NF; ++i)
 		{
 			FSFace& f = pm->Face(i);
-			if (f.IsSelected()) MMG3D_Set_requiredTriangle(mmgMesh, i + 1);
+			if (f.IsSelected()) {
+				MMG3D_Set_requiredTriangle(mmgMesh, i + 1);
+				nsel++;
+			}
+		}
+		if (nsel == 0)
+		{
+			SetError("No faces are selected.");
+			return nullptr;
 		}
 	}
 
