@@ -38,7 +38,8 @@ class MMGRemesh : public FEModifier
 		HAUSDORFF,
 		HGRAD,
 		ANGLE,
-		SELECTED_ONLY
+		SELECTED_ONLY,
+		PRESERVE_SURFACE
 	};
 
 public:

@@ -47,7 +47,8 @@ MMGRemesh::MMGRemesh() : FEModifier("MMG Remesh")
 	AddDoubleParam(0.05, "hv", "Global Hausdorff value");
 	AddDoubleParam(1.3, "grad", "Gradation");
 	AddDoubleParam(45, "angle", "Angle (degrees)");
-	AddBoolParam(true, "Only remesh selection");
+	AddBoolParam(false, "Only remesh selection");
+	AddBoolParam(false, "Preserve selected surface");
 }
 
 FSMesh* MMGRemesh::Apply(FSMesh* pm)
@@ -69,42 +70,48 @@ FSMesh* MMGRemesh::Apply(FSGroup* pg)
 	if (pm == nullptr) return nullptr;
 	if (pm->IsType(FE_TET4) == false) return Apply(pm);
 
-	if (dynamic_cast<FSElemSet*>(pg))
+	bool remeshSelectionOnly = GetBoolValue(SELECTED_ONLY);
+	pm->TagAllElements(0);
+
+	if (remeshSelectionOnly)
 	{
-		pm->TagAllElements(0);
-		for (int i = 0; i < pm->Elements(); ++i)
+		if (dynamic_cast<FSElemSet*>(pg))
 		{
-			if (pm->Element(i).IsSelected()) pm->Element(i).m_ntag = 1;
-		}
-		return RemeshTET4(pm);
-	}
-	else if (dynamic_cast<FSSurface*>(pg))
-	{
-		pm->TagAllNodes(0);
-		pm->TagAllElements(0);
-		for (int i = 0; i < pm->Faces(); ++i)
-		{
-			if (pm->Face(i).IsSelected())
+			for (int i = 0; i < pm->Elements(); ++i)
 			{
-				FSFace& face = pm->Face(i);
-				int nn = face.Nodes();
-				for (int j = 0; j < nn; ++j) pm->Node(face.n[j]).m_ntag = 1;
+				if (pm->Element(i).IsSelected()) pm->Element(i).m_ntag = 1;
 			}
+			return RemeshTET4(pm);
 		}
-		for (int i = 0; i < pm->Elements(); ++i)
+		else if (dynamic_cast<FSSurface*>(pg))
 		{
-			FSElement& el = pm->Element(i);
-			int ne = el.Nodes();
-			for (int j = 0; j < ne; ++j)
+			pm->TagAllNodes(0);
+			pm->TagAllElements(0);
+			for (int i = 0; i < pm->Faces(); ++i)
 			{
-				if (pm->Node(el.m_node[j]).m_ntag == 1)
+				if (pm->Face(i).IsSelected())
 				{
-					el.m_ntag = 1;
-					break;
+					FSFace& face = pm->Face(i);
+					int nn = face.Nodes();
+					for (int j = 0; j < nn; ++j) pm->Node(face.n[j]).m_ntag = 1;
 				}
 			}
+			for (int i = 0; i < pm->Elements(); ++i)
+			{
+				FSElement& el = pm->Element(i);
+				int ne = el.Nodes();
+				for (int j = 0; j < ne; ++j)
+				{
+					if (pm->Node(el.m_node[j]).m_ntag == 1)
+					{
+						el.m_ntag = 1;
+						break;
+					}
+				}
+			}
+			return RemeshTET4(pm);
 		}
-		return RemeshTET4(pm);
+		else return Apply(pg->GetMesh());
 	}
 	else return Apply(pg->GetMesh());
 }
@@ -182,6 +189,16 @@ FSMesh* MMGRemesh::RemeshTET4(FSMesh* pm)
 	}
 
 	double h = GetFloatValue(ELEM_SIZE);
+
+	bool preserveSurface = GetBoolValue(PRESERVE_SURFACE);
+	if (preserveSurface)
+	{
+		for (int i = 0; i < NF; ++i)
+		{
+			FSFace& f = pm->Face(i);
+			if (f.IsSelected()) MMG3D_Set_requiredTriangle(mmgMesh, i + 1);
+		}
+	}
 
 	vector<pair<double, int> > edgeLength(NN, pair<double, int>(0.0, 0));
 	int nsel = 0;
@@ -654,13 +671,17 @@ FSSurfaceMesh* MMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 	}
 
 	double h = GetFloatValue(ELEM_SIZE);
+	bool remeshSelectionOnly = GetBoolValue(SELECTED_ONLY);
 
 	vector<pair<double, int> > edgeLength(NN, pair<double, int>(0.0, 0));
 	int nsel = 0;
-	for (int i = 0; i < NF; ++i)
+	if (remeshSelectionOnly)
 	{
-		FSFace& face = pm->Face(i);
-		if (face.IsSelected()) nsel++;
+		for (int i = 0; i < NF; ++i)
+		{
+			FSFace& face = pm->Face(i);
+			if (face.IsSelected()) nsel++;
+		}
 	}
 
 	if (nsel == 0)
@@ -671,7 +692,6 @@ FSSurfaceMesh* MMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 	}
 	else
 	{
-		bool remeshSelectionOnly = GetBoolValue(SELECTED_ONLY);
 		if (remeshSelectionOnly)
 		{
 			for (int i = 0; i < NF; ++i)
