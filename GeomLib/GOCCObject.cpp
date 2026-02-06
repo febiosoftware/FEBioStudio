@@ -151,18 +151,41 @@ void GOCCObject::BuildGObject()
 	for (int i = 1; i <= faceMap.Extent(); ++i)
 	{
 		GFace* face = new GFace(this);
-		face->m_nPID[0] = 0;
 		AddFace(face);
 	}
 
 	// add a part
 	if ((m_occ->m_shape.ShapeType() == TopAbs_SOLID) || (m_occ->m_shape.ShapeType() == TopAbs_COMPOUND))
 	{
-		AddSolidPart();
+		for (TopExp_Explorer ex(shape, TopAbs_SOLID); ex.More(); ex.Next())
+		{
+			const TopoDS_Solid& solid = TopoDS::Solid(ex.Current());
+			GPart* pg = AddSolidPart();
+
+			// get all the faces of this solid
+			TopTools_IndexedMapOfShape solidFaceMap;
+			TopExp::MapShapes(solid, TopAbs_FACE, solidFaceMap);
+
+			for (int i = 1; i <= solidFaceMap.Extent(); ++i)
+			{
+				const TopoDS_Face& face = TopoDS::Face(solidFaceMap(i));
+				
+				int nf = faceMap.FindIndex(face) - 1; // get the global face index (1-based)
+				if ((nf >= 0) && (nf < (int)m_Face.size()))
+				{
+					GFace* pf = Face(nf);
+					int m = 0;
+					if (pf->m_nPID[0] >= 0) m++;
+					if (pf->m_nPID[1] >= 0) m++;
+					pf->m_nPID[m] = pg->GetLocalID();
+				}
+			}
+		}
 	}
 	else
 	{
 		AddShellPart();
+		for (int i = 0; i < Faces(); ++i) Face(i)->m_nPID[0] = 0;
 	}
 #endif
 }

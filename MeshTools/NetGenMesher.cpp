@@ -254,7 +254,9 @@ FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool sec
 
 			// Note that I need to invert the element
 			FSElement& el = mesh->Element(i);
-			el.m_gid = 0;
+
+			el.m_gid = ngel.GetIndex() - 1; assert(el.m_gid >= 0);
+			if (el.m_gid < 0) el.m_gid = 0;
 
 			if (secondOrder == false)
 			{
