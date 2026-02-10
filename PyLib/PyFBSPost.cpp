@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include <PostLib/DataFilter.h>
 #include <PostLib/FEVTKExport.h>
 #include "DocHeaders/PyPostDocs.h"
-
+#include "PyExceptions.h"
 #ifndef PY_EXTERNAL
 #include <FEBioStudio/PostDocument.h>
 #include "PyRunContext.h"
