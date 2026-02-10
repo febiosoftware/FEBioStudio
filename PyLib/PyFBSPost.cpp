@@ -78,6 +78,74 @@ FEPostModel* GetActivePostModel()
 }
 #endif
 
+double PostIntegrateElements(FEPostModel& model, FSElemSet& set, ModelDataField& field, int component, int state)
+{
+	FEState* ps = model.GetState(state);
+	if (ps == nullptr)
+	{
+		throw pyGenericExcept("Invalid state index.");
+	}
+
+	FSMesh* mesh = set.GetMesh();
+	if (mesh == nullptr) return 0.0;
+	std::vector<int> elemList = set.CopyItems();
+
+	// update the model's state
+	Post::FEDataManager* DM = model.GetDataManager();
+	if (DM)
+	{
+		int dispField = DM->GetFieldCode("displacement");
+		if (dispField >= 0)
+		{
+			if (!model.EvaluateNodalPosition(dispField, state))
+			{
+				return 0.0;
+			}
+		}
+	}
+
+	if (!model.Evaluate(field.GetFieldID() | component, state))
+	{
+		return 0.0;
+	}
+
+	return Post::IntegrateElems(*mesh, elemList, ps);
+}
+
+double PostIntegrateFaces(FEPostModel& model, FSSurface& surf, ModelDataField& field, int component, int state)
+{
+	FEState* ps = model.GetState(state);
+	if (ps == nullptr)
+	{
+		throw pyGenericExcept("Invalid state index.");
+	}
+
+	FSMesh* mesh = surf.GetMesh();
+	if (mesh == nullptr) return 0.0;
+	std::vector<int> elemList = surf.CopyItems();
+
+	// update the model's state
+	Post::FEDataManager* DM = model.GetDataManager();
+	if (DM)
+	{
+		int dispField = DM->GetFieldCode("displacement");
+		if (dispField >= 0)
+		{
+			if (!model.EvaluateNodalPosition(dispField, state))
+			{
+				return 0.0;
+			}
+		}
+	}
+
+	if (!model.Evaluate(field.GetFieldID() | component, state, true))
+	{
+		return 0.0;
+	}
+
+	return Post::IntegrateFaces(*mesh, elemList, ps);
+}
+
 void init_FBSPost(py::module& m)
 {
 	py::module post = m.def_submodule("post", "Module used to interact with plot files");
@@ -86,6 +154,9 @@ void init_FBSPost(py::module& m)
 #ifndef PY_EXTERNAL
 	post.def("GetActiveModel", &GetActivePostModel, "Returns the active FEPostModel instance.", py::return_value_policy::reference);
 #endif
+
+	post.def("IntegrateElements", &PostIntegrateElements, "Integrates a data field over an element set.");
+	post.def("IntegrateFaces"   , &PostIntegrateFaces   , "Integrates a data field over a surface.");
 
     InitStandardDataFields();
     post.def("AddStandardDataField", pybind11::overload_cast<FEPostModel&, const std::string&>(&AddStandardDataField), 

@@ -195,21 +195,7 @@ void CGLDisplacementMap::UpdateState(int ntime, bool breset)
 	{
 		m_ntag[ntime] = nfield;
 
-		FEState& s = *pfem->GetState(ntime);
-
-		// get the reference state
-		Post::FERefState& ref = *s.m_ref;
-
-		// set the current nodal positions
-		for (int i = 0; i < pm->Nodes(); ++i)
-		{
-			FSNode& node = pm->Node(i);
-			vec3f dr = pfem->EvaluateNodeVector(i, ntime, nfield);
-
-			// the actual nodal position is stored in the state
-			// this is the field that will be used for strain calculations
-			s.m_NODE[i].m_rt = ref.m_Node[i].m_rt + dr;
-		}
+		pfem->EvaluateNodalPosition(nfield, ntime);
 	}
 }
 

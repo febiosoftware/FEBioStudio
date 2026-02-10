@@ -201,6 +201,30 @@ bool FEPostModel::IsValidFieldCode(int nfield, int nstate)
 	return true;
 }
 
+bool FEPostModel::EvaluateNodalPosition(int nfield, int ntime)
+{
+	FEState* s = GetState(ntime);
+	if (s == nullptr) return false;
+
+	FSMeshBase* pm = s->GetFEMesh();
+
+	// get the reference state
+	Post::FERefState& ref = *s->m_ref;
+
+	// set the current nodal positions
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		FSNode& node = pm->Node(i);
+		vec3f dr = EvaluateNodeVector(i, ntime, nfield);
+
+		// the actual nodal position is stored in the state
+		// this is the field that will be used for strain calculations
+		s->m_NODE[i].m_rt = ref.m_Node[i].m_rt + dr;
+	}
+
+	return true;
+}
+
 //-----------------------------------------------------------------------------
 // Evaluate a data field at a particular time
 bool FEPostModel::Evaluate(int nfield, int ntime, bool breset)
@@ -260,9 +284,11 @@ void FEPostModel::EvalNodeField(int ntime, int nfield)
 			FACEDATA& d = state.m_FACE[i];
 			d.m_val = 0.f;
 			d.m_ntag = 0;
+			f.Deactivate();
 			if (f.IsEnabled())
 			{
 				d.m_ntag = 1;
+				f.Activate();
 				for (int j = 0; j < f.Nodes(); ++j) { float val = state.m_NODE[f.n[j]].m_val; faceData.value(i, j) = val; d.m_val += val; }
 				d.m_val /= (float)f.Nodes();
 			}

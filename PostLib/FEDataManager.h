@@ -58,6 +58,9 @@ public:
 	//! find the index of a datafield
 	int FindDataField(const std::string& fieldName);
 
+	//! Get the field code of a datafield
+	int GetFieldCode(const std::string& fieldName);
+
 	//! find the data field given an index
 	FEDataFieldPtr DataField(int i);
 

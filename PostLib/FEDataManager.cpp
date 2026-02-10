@@ -91,6 +91,17 @@ int FEDataManager::FindDataField(const std::string& fieldName)
 	return -1;
 }
 
+int FEDataManager::GetFieldCode(const std::string& fieldName)
+{
+	int n = FindDataField(fieldName);
+	if (n >= 0)
+	{
+		auto p = DataField(n);
+		return (*p)->GetFieldID();
+	}
+	return -1;
+}
+
 FEDataFieldPtr FEDataManager::DataField(int i)
 {
 	if ((i < 0) || (i >= m_Data.size())) return m_Data.end();

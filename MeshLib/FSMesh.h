@@ -277,6 +277,8 @@ public:
 	FSGroup* FindFEGroup(int nid);
 	//! Find FE part set by name
 	FSPartSet* FindFEPartSet(const std::string& name);
+	//! Find FE element set by name
+	FSElemSet* FindFEElemSet(const std::string& szname);
 	//! Find FE surface by name
 	FSSurface* FindFESurface(const std::string& szname);
 	//! Find FE edge set by name

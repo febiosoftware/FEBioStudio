@@ -2858,6 +2858,11 @@ void FSMesh::UpdateMeshPartitions()
 	}
 }
 
+FSElemSet* FSMesh::FindFEElemSet(const std::string& szname)
+{
+	return m_pFEElemSet.FindByName(szname);
+}
+
 FSSurface* FSMesh::FindFESurface(const string& name)
 {
 	return m_pFESurface.FindByName(name);

@@ -87,6 +87,8 @@ void init_FSMesh(py::module_& m)
 
 		.def("Surfaces", &FSMesh::FESurfaces, DOC(FSMesh, FESurfaces))
 		.def("Surface", &FSMesh::GetFESurface, py::return_value_policy::reference, DOC(FSMesh, GetFESurface))
+		.def("FindSurface", &FSMesh::FindFESurface, py::return_value_policy::reference)
+
 		.def("NodeIndexFromID", &FSMesh::NodeIndexFromID, DOC(FSMesh, NodeIndexFromID))
 
 		.def("MeshDataFields", &FSMesh::MeshDataFields, DOC(FSMesh, MeshDataFields))
@@ -97,6 +99,7 @@ void init_FSMesh(py::module_& m)
 
         .def("ElemSets", &FSMesh::FEElemSets, DOC(FSMesh, FEElemSets))
         .def("ElemSet", &FSMesh::GetFEElemSet, py::return_value_policy::reference, DOC(FSMesh, GetFEElemSet))
+		.def("FindElemSet", &FSMesh::FindFEElemSet, py::return_value_policy::reference)
 
         .def("NodeSets", &FSMesh::FENodeSets, DOC(FSMesh, FENodeSets))
         .def("NodeSet", &FSMesh::GetFENodeSet, py::return_value_policy::reference, DOC(FSMesh, GetFENodeSet))

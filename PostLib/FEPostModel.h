@@ -249,6 +249,9 @@ public:
 	//! Evaluate a field at a given time
 	bool Evaluate(int nfield, int ntime, bool breset = false);
 
+	//! Update the nodal positions based on the displacement field
+	bool EvaluateNodalPosition(int nfield, int ntime);
+
 	//! Get the nodal coordinates of an element at time (returns nr of nodes of element)
 	int GetElementCoords(int iel, int ntime, vec3f* r);
 
