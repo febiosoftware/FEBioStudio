@@ -387,10 +387,12 @@ void FEPostModel::EvalFaceField(int ntime, int nfield)
 			FSFace& f = mesh->Face(i);
 			state.m_FACE[i].m_val = 0.f;
 			state.m_FACE[i].m_ntag = 0;
+			f.Deactivate();
 			if (f.IsEnabled())
 			{
 				if (EvaluateFace(i, ntime, nfield, data, val))
 				{
+					f.Activate();
 					state.m_FACE[i].m_ntag = 1;
 					state.m_FACE[i].m_val = val;
 					for (int j=0; j<f.Nodes(); ++j)
@@ -625,6 +627,8 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 			}
 		}
 
+		f.Deactivate();
+
 		ELEMDATA& e = state.m_ELEM[eid];
 		if (e.m_state & StatusFlags::ACTIVE)
 		{
@@ -669,6 +673,8 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 					d.m_val += vj;
 				}
 				d.m_val /= (float)nf;
+
+				f.Activate();
 			}
 		}
 	}
