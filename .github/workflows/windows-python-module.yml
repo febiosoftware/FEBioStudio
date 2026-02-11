@@ -1,11 +1,10 @@
-name: CI - Windows Push
+name: CI - Windows Python Module
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - develop
-      - febiostudio3
+  repository_dispatch:
+    types: [release-published, python-module]
+
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read  # This is required for actions/checkout
@@ -13,8 +12,9 @@ jobs:
   call_workflow:
     uses: febiosoftware/febio-workflows/.github/workflows/windows-reusable.yml@develop
     with:
-      package-name: febio-studio
-      requires-sdk: true
+      package-name: python-module
+      python-module: true
       publish: true
       aws-ami-id: ${{ vars.WINDOWS_AMI }}
+      build-script: buildPython.bat
     secrets: inherit

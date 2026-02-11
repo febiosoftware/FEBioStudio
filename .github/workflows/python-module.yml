@@ -1,0 +1,17 @@
+name: CI - Python Module
+
+on:
+  workflow_dispatch:
+
+jobs:
+  dispatch-python-workflow:
+    name: "Repository dispatch Python workflow"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Dispatch repository with python-module"
+        uses: febiosoftware/febio-workflows/.github/actions/repository-dispatch@develop
+        with:
+          github-pat-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: "febiosoftware/FEBioStudio"
+          client-payload: "client_payload[ref_name]=${{ github.ref_name }}"
+          event-type: python-module
