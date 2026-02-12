@@ -366,7 +366,8 @@ FEBioClassInfo FEBio::GetClassInfo(int classId)
 	ci.classId = classId;
 	ci.baseClassId = baseClassIndex(fac->GetBaseClassName());
 	ci.sztype = fac->GetTypeStr();
-	ci.szmod = fecore.GetModuleName(modId);
+	ci.szmod = fecore.GetModuleName(modId - 1);
+    ci.superClassName = FECoreKernel::SuperClassString(fac->GetSuperClassID());
 	ci.spec = fac->GetSpecID();
     ci.allocId = fac->GetAllocatorID();
 
@@ -438,6 +439,7 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 				fac->GetTypeStr(),
 				fac->GetClassName(),
 				szmod,
+                FECoreKernel::SuperClassString(fac->GetSuperClassID()),
 				fac->GetSpecID() };
 			facs.push_back(febc);
 		}
@@ -481,6 +483,7 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 						fac->GetTypeStr(),
 						fac->GetClassName(),
 						szmod,
+                        FECoreKernel::SuperClassString(fac->GetSuperClassID()),
 						fac->GetSpecID() };
 					facs.push_back(febc);
 				}
@@ -508,6 +511,7 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllPluginClasses(int allocId)
 				fac->GetTypeStr(),
 				fac->GetClassName(),
 				szmod,
+                FECoreKernel::SuperClassString(fac->GetSuperClassID()),
 				fac->GetSpecID()
 			};
 			facs.push_back(febc);

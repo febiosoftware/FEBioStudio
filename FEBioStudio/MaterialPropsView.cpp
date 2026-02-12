@@ -39,6 +39,10 @@ SOFTWARE.*/
 #include "EditVariableParam.h"
 using namespace std;
 
+#ifndef WIN32
+#define _stricmp strcasecmp
+#endif
+
 QStringList GetEnumValues(FSModel* fem, const char* ch)
 {
 	QStringList ops;
@@ -675,9 +679,77 @@ FSModel* CMaterialPropsModel::Item::GetFSModel()
 //=================================================================================================
 CMaterialPropsDelegate::CMaterialPropsDelegate(QObject* parent) : QStyledItemDelegate(parent) {}
 
-// in MaterialEditor.cpp
-void FillComboBox(QComboBox* pc, int nclass, int module, bool btoplevelonly);
-void FillComboBox2(QComboBox* pc, int nclass, int module, bool btoplevelonly);
+struct MATERIAL_ENTRY
+{
+	const char*	mat_name;
+	int	mat_typeid;
+};
+
+void FillComboBox(QComboBox* pc, int nclass, int module, bool btoplevelonly)
+{
+	FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
+
+	std::vector<MATERIAL_ENTRY> matList;
+
+	FEMatDescIter it = MF.FirstMaterial();
+	int NMAT = MF.Materials();
+	for (int i = 0; i<NMAT; ++i, ++it)
+	{
+		unsigned int nflags = (*it)->GetFlags();
+		int mod = (*it)->GetModule();
+
+		if (mod & module)
+		{
+			if ((btoplevelonly==false) || (nflags & MaterialFlags::TOPLEVEL))
+			{
+				if (nclass < 0x0100)
+				{
+					if ((*it)->GetClassID() & nclass)
+					{
+						const char* szname = (*it)->GetTypeString();
+						matList.push_back({ szname, (*it)->GetTypeID() });
+					}
+				}
+				else
+				{
+					if ((*it)->GetClassID() == nclass)
+					{
+						const char* szname = (*it)->GetTypeString();
+						matList.push_back({ szname, (*it)->GetTypeID() });
+					}
+				}
+			}
+		}
+	}
+
+	// sort the list alphabetically
+	std::sort(matList.begin(), matList.end(), [](MATERIAL_ENTRY a, MATERIAL_ENTRY b) { return _stricmp(a.mat_name, b.mat_name)<0; });
+
+	// add it all to the combobox
+	for (std::vector<MATERIAL_ENTRY>::iterator it = matList.begin(); it != matList.end(); ++it)
+	{
+		pc->addItem(it->mat_name, it->mat_typeid);
+	}
+}
+
+void FillComboBox2(QComboBox* pc, int nclass, int module, bool btoplevelonly)
+{
+	if (nclass < FE_FEBIO_MATERIAL_CLASS) {
+		FillComboBox(pc, nclass, module, btoplevelonly); return;
+	}
+
+	nclass -= FE_FEBIO_MATERIAL_CLASS;
+	std::vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllClasses(-1, -1, nclass, true);
+
+	pc->clear();
+	int classes = classInfo.size();
+	for (int i = 0; i < classes; ++i)
+	{
+		FEBio::FEBioClassInfo& ci = classInfo[i];
+		pc->addItem(ci.sztype, ci.classId);
+	}
+	pc->model()->sort(0);
+}
 
 QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {

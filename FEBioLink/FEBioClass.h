@@ -108,6 +108,7 @@ namespace FEBio {
 		int				baseClassId;	// base class index
 		const char*		sztype;			// the type string
 		const char*		szclass;		// the (C++) class name
+        const char*     superClassName; // the super class name
 		const char*		szmod;			// the module name
 		int				spec;			// spec ID (i.e. FEBio file version)
         int             allocId;		// allocator ID 
