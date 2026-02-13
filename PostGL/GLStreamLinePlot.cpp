@@ -84,20 +84,51 @@ void CGLStreamLinePlot::Update()
 	Update(m_lastTime, m_lastdt, true);
 }
 
+bool CGLStreamLinePlot::UpdateIntValue(int n, int& val)
+{
+	int newVal = GetIntValue(n);
+	if (newVal != val)
+	{
+		val = newVal;
+		return true;
+	}
+	return false;
+}
+
+bool CGLStreamLinePlot::UpdateFloatValue(int n, float& val)
+{
+	float newVal = GetFloatValue(n);
+	if (newVal != val)
+	{
+		val = newVal;
+		return true;
+	}
+	return false;
+}
+
 bool CGLStreamLinePlot::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
-		m_nvec = GetIntValue(DATA_FIELD);
+		bool update = false;
+		update = (update || UpdateIntValue  (DATA_FIELD, m_nvec));
+		update = (update || UpdateFloatValue(STEP_SIZE , m_inc));
+		update = (update || UpdateFloatValue(DENSITY   , m_density));
+		update = (update || UpdateFloatValue(THRESHOLD , m_vtol));
+		update = (update || UpdateIntValue  (RANGE     , m_rangeType));
+		update = (update || UpdateFloatValue(USER_MAX  , m_userMax));
+		update = (update || UpdateFloatValue(USER_MIN  , m_userMin));
+
+		if (m_Col.GetColorMap() != GetIntValue(COLOR_MAP)) update = true;
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
+
+		if (AllowClipping() != GetBoolValue(CLIP)) update = true;
 		AllowClipping(GetBoolValue(CLIP));
-		m_inc = GetFloatValue(STEP_SIZE);
-		m_density = GetFloatValue(DENSITY);
-		m_vtol = GetFloatValue(THRESHOLD);
-		m_rangeType = GetIntValue(RANGE);
+
+		if (m_Col.GetDivisions() != GetIntValue(DIVS)) update = true;
 		m_Col.SetDivisions(GetIntValue(DIVS));
-		m_userMax = GetFloatValue(USER_MAX);
-		m_userMin = GetFloatValue(USER_MIN);
+
+		if (update) Update();
 	}
 	else
 	{

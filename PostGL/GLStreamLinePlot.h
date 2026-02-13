@@ -118,6 +118,10 @@ protected:
 	void UpdateMesh();
 
 private:
+	bool UpdateIntValue(int n, int& val);
+	bool UpdateFloatValue(int n, float& val);
+
+private:
 	int	m_nvec;	// vector field
 
 	float	m_inc;
@@ -142,8 +146,8 @@ private:
 	FSFindElement*	m_find;
 
 	int		m_rangeType;				//!< dynamic, static, or user-defined
-	double	m_userMin, m_userMax;		//!< range for user-defined range
-	double	m_rngMin, m_rngMax;
+	float m_userMin, m_userMax;		//!< range for user-defined range
+	float m_rngMin, m_rngMax;
 
 	GLMesh	m_mesh;
 };
