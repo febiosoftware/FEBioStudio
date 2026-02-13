@@ -49,7 +49,10 @@ protected slots:
 public:
 	void SetLeftSideLayout(QLayout* layout);
 
-	virtual void SetURL() = 0;
+	virtual void UpdateHelpURL() = 0;
+
+protected:
+    void SetURL(int classID);
 
 protected:
 	int		m_module;

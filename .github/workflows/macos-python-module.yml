@@ -1,11 +1,10 @@
-name: CI - macOS Push
+name: CI - macOS Python Module
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - develop
-      - febiostudio3
+  repository_dispatch:
+    types: [release-published, python-module]
+
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read  # This is required for actions/checkout
@@ -14,8 +13,8 @@ jobs:
   call_workflow:
     uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable.yml@develop
     with:
-      package-name: febio-studio
-      requires-sdk: true
-      post-build: true
+      package-name: python-module
+      python-module: true
       publish: true
+      build-script: buildPython.sh
     secrets: inherit

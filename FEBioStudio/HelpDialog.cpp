@@ -33,11 +33,14 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <FEMLib/FSProject.h>
 #include "HelpDialog.h"
-#include "WebDefines.h"
 #include "FEBioStudio.h"
 #include "MainWindow.h"
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLib/version.h>
+#include <FEBioLink/FEBioClass.h>
+
+#define MANUAL_PATH "https://febiosoftware.github.io/febio-feature-manual/features/"
+#define UNSELECTED_HELP "unselected_help"
 
 class Ui::CHelpDialog
 {
@@ -82,26 +85,36 @@ CHelpDialog::~CHelpDialog() { delete ui; }
 
 void CHelpDialog::on_help_clicked()
 {
-    SetURL();
+    UpdateHelpURL();
 
-    if(m_url.isEmpty())
-    {
-        QMessageBox::information(this, "Help", "There is currently no help article available for this item.");
-    }
-    else if(m_url == UNSELECTED_HELP)
+    if(m_url == UNSELECTED_HELP)
     {
         QMessageBox::information(this, "Help", "Please select an item before clicking Help.");
     }
     else
     {
-        QString url = QString(MANUAL_PATH) + "%1-%2/%3";
-        url = url.arg(VERSION).arg(SUBVERSION).arg(m_url);
-
-        QDesktopServices::openUrl(QUrl(url));
+        QDesktopServices::openUrl(QUrl(QString(MANUAL_PATH) + m_url));
     }
 }
 
 void CHelpDialog::SetLeftSideLayout(QLayout* layout)
 {
 	ui->helpLayout->insertLayout(0, layout);
+}
+
+void CHelpDialog::SetURL(int classID)
+{
+    if(classID == -1)
+    {
+        m_url = UNSELECTED_HELP;
+        return;
+    }
+
+    FEBio::FEBioClassInfo classInfo = FEBio::GetClassInfo(classID);
+
+    QString superClass = classInfo.superClassName;
+    superClass.remove(0,2).remove("_ID");
+
+    QString url = QString(classInfo.szmod) + "_" + superClass + "_" + QString(classInfo.sztype);
+    m_url = url.replace(" ", "_").toLower();
 }

@@ -43,9 +43,6 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FSCore/FSCore.h>
-#include "HelpUrl.h"
-
-#include <iostream>
 
 using namespace std;
 
@@ -229,25 +226,18 @@ int CDlgAddPhysicsItem::GetClassID()
 	return (it ? it->data(0, Qt::UserRole).toInt() : -1);
 }
 
-void CDlgAddPhysicsItem::SetURL()
+void CDlgAddPhysicsItem::UpdateHelpURL()
 {
     if(ui->type->selectedItems().size() > 0)
     {
-
         int classID = ui->type->currentItem()->data(0, Qt::UserRole).toInt();
 
-        const char* typeString = FEBio::GetClassInfo(classID).sztype;
-
-        m_url = GetHelpURL(ui->m_superID, typeString);
+        SetURL(classID);
     }
     else
     {
-        m_url = UNSELECTED_HELP;
+        SetURL(-1);
     }
-
-    // cout << "SUPERID " << ui->m_superID << endl;
-
-    // FECoreKernel::GetInstance().List((SUPER_CLASS_ID) ui->m_superID);
 }
 
 class UIDlgCopyPhysicsItem

@@ -7,4 +7,3 @@ fi
 
 chmod +x cmbuild/bin/*
 scp cmbuild/bin/* repo:~/$REMOTE_PATH/bin
-find pythonModule/ | grep .so | xargs -I file scp file repo:~/download

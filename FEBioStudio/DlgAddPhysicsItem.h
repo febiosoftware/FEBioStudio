@@ -46,7 +46,7 @@ public:
 	void ShowNameAndCategoryFields(bool b);
 
 protected:
-	void SetURL();
+	void UpdateHelpURL();
 
 public slots:
 	void Update();

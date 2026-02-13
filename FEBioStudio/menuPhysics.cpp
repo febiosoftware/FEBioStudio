@@ -34,9 +34,6 @@ SOFTWARE.*/
 #include "DlgSoluteTable.h"
 #include "DlgAddChemicalReaction.h"
 #include "DlgAddMembraneReaction.h"
-#include "DlgAddRigidConstraint.h"
-#include "DlgAddRigidConnector.h"
-#include "MaterialEditor.h"
 #include "DlgEditProject.h"
 #include "DlgAddMeshData.h"
 #include "DlgStepViewer.h"
@@ -648,7 +645,6 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel* fem = doc->GetFSModel();
-	//	CDlgAddRigidConnector dlg(prj, this);
 	CDlgAddPhysicsItem dlg("Add Rigid Connector", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FERigidConnector"), fem, true, true, this);
 	if (dlg.exec())
 	{
