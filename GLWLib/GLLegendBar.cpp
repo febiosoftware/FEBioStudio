@@ -429,30 +429,15 @@ void GLLegendBar::draw_gradient_horz(GLPainter* painter)
 
 void GLLegendBar::draw_discrete_vert(GLPainter* painter)
 {
-	// TODO: implement this
-	assert(false);
-}
-
-void GLLegendBar::draw_discrete_horz(GLPainter* painter)
-{
 	int nsteps = m_pMap->GetDivisions();
 	if (nsteps < 1) nsteps = 1;
 
-	int x0, y0, x1, y1;
-	if (m_nrot == ORIENT_VERTICAL)
-	{
-		x0 = x() + w() - 50;
-		y0 = y() + 30;
-		x1 = x0 + 25;
-		y1 = y0 - 40;
-	}
-	else
-	{
-		x0 = x() + 30;
-		y0 = y() + h() - 90;
-		x1 = x() + w() - 50;
-		y1 = y0 + 25;
-	}
+	int x0, y0, x1, y1, x2;
+	x0 = x() + 5;
+	y0 = y() + 10;
+	x1 = x0 + 25;
+	x2 = x() + w() - 5;
+	y1 = y0 + h() - 10;
 
 	double a = fmax(fabs(m_fmin), fabs(m_fmax));
 	int ipow;
@@ -477,27 +462,90 @@ void GLLegendBar::draw_discrete_horz(GLPainter* painter)
 	// render the lines
 	for (int i = 1; i < nsteps + 1; i++)
 	{
-		if (m_nrot == ORIENT_VERTICAL)
+		double yt = y0 + i * (y1 - y0) / (nsteps + 1);
+		double f = 1.f - (i - 1) / denom;
+
+		GLColor c = map.map((float)f);
+		QPen linePen(toQColor(c), 3);
+		painter->setPen(linePen);
+		painter->drawLine(x0 + 1, yt, x1 - 1, yt);
+	}
+
+	// render the title
+	if (m_btitle && m_szlabel)
+	{
+		painter->setPen(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
+		painter->setFont(m_font);
+		painter->drawText(x() + 5, y(), w(), h(), Qt::AlignHCenter | Qt::AlignTop, m_szlabel);
+	}
+
+	if (m_blabels)
+	{
+		painter->setPen(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
+		painter->setFont(m_font);
+		QFontMetrics fm(m_font);
+		int fh = fm.height();
+
+		char szfmt[16] = { 0 }, str[128] = { 0 };
+		sprintf(szfmt, "%%.%dg", m_nprec);
+
+		float denom = (nsteps <= 1 ? 1.f : nsteps - 1.f);
+
+		// render the lines and text
+		for (int i = 1; i < nsteps + 1; i++)
 		{
 			double yt = y0 + i * (y1 - y0) / (nsteps + 1);
-			double f = 1.f - (i - 1) / denom;
+			double f = m_fmax + (i - 1) * (m_fmin - m_fmax) / denom;
 
-			GLColor c = map.map((float)f);
-			pen.setColor(toQColor(c));
-			painter->setPen(pen);
-			painter->drawLine(x0 + 1, yt, x1 - 1, yt);
+			sprintf(str, szfmt, (fabs(f / p) < 1e-5 ? 0 : f / p));
+
+			int xi = x1 + 5;
+			painter->drawText(xi, yt - fh/2, x2 - xi, 20, Qt::AlignLeft, str);
 		}
-		else
-		{
-			int xt = x0 + i * (x1 - x0) / (nsteps + 1);
-			double f = (i - 1) / denom;
+	}
+}
 
-			GLColor c = map.map((float)f);
-			pen.setColor(toQColor(c));
-			painter->setPen(pen);
+void GLLegendBar::draw_discrete_horz(GLPainter* painter)
+{
+	int nsteps = m_pMap->GetDivisions();
+	if (nsteps < 1) nsteps = 1;
 
-			painter->drawLine(xt, y0 + 1, xt, y1 - 1);
-		}
+	int x0, y0, x1, y1;
+	x0 = x() + 30;
+	y0 = y() + h() - 90;
+	x1 = x() + w() - 50;
+	y1 = y0 + 25;
+
+	double a = fmax(fabs(m_fmin), fabs(m_fmax));
+	int ipow;
+	if (a > 0)
+	{
+		double g = log10(a);
+		ipow = (int)floor(g);
+	}
+	else ipow = 0;
+	double p = 1;
+
+	float lineWidth = m_lineWidth;
+	if (lineWidth <= 0.f) lineWidth = 1.f;
+
+	QPen pen(toQColor(m_fgc), m_lineWidth);
+	painter->setPen(pen);
+
+	const CColorMap& map = m_pMap->ColorMap();
+
+	float denom = (nsteps <= 1 ? 1.f : nsteps - 1.f);
+
+	// render the lines
+	for (int i = 1; i < nsteps + 1; i++)
+	{
+		int xt = x0 + i * (x1 - x0) / (nsteps + 1);
+		double f = (i - 1) / denom;
+
+		GLColor c = map.map((float)f);
+		QPen linePen(toQColor(c), 3);
+		painter->setPen(linePen);
+		painter->drawLine(xt, y0 + 1, xt, y1 - 1);
 	}
 
 	// render the title
@@ -527,25 +575,13 @@ void GLLegendBar::draw_discrete_horz(GLPainter* painter)
 		// render the lines and text
 		for (int i = 1; i < nsteps + 1; i++)
 		{
-			if (m_nrot == ORIENT_VERTICAL)
-			{
-				double yt = y0 + i * (y1 - y0) / (nsteps + 1);
-				double f = m_fmax + (i - 1) * (m_fmin - m_fmax) / denom;
+			int xt = x0 + i * (x1 - x0) / (nsteps + 1);
+			double f = m_fmin + (i - 1) * (m_fmax - m_fmin) / denom;
 
-				sprintf(str, szfmt, (fabs(f / p) < 1e-5 ? 0 : f / p));
+			sprintf(str, szfmt, (fabs(f / p) < 1e-5 ? 0 : f / p));
 
-				painter->drawText(x0 - 55, yt - 8, 50, 20, Qt::AlignRight, str);
-			}
-			else
-			{
-				int xt = x0 + i * (x1 - x0) / (nsteps + 1);
-				double f = m_fmin + (i - 1) * (m_fmax - m_fmin) / denom;
-
-				sprintf(str, szfmt, (fabs(f / p) < 1e-5 ? 0 : f / p));
-
-				int fw = fm.horizontalAdvance(str);
-				painter->drawText(xt - fw / 2, y1 + fh + 5, str);
-			}
+			int fw = fm.horizontalAdvance(str);
+			painter->drawText(xt - fw / 2, y1 + fh + 5, str);
 		}
 	}
 }
