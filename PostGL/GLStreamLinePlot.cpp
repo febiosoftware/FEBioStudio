@@ -488,11 +488,11 @@ LegendData CGLStreamLinePlot::GetLegendData() const
 {
 	LegendData l;
 
-	l.discrete = true;
+	l.discrete = false;
 	l.ndivs = GetIntValue(DIVS);
 	l.vmin = m_crng.x;
 	l.vmax = m_crng.y;
-	l.smooth = false;
+	l.smooth = true;
 	l.colormap = GetIntValue(COLOR_MAP);
 	l.title = GetName();
 	
