@@ -282,7 +282,10 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	QAction* actionFEBioResources = createAction("FEBio Knowledgebase", "actionFEBioResources");
 	QAction* actionFEBioUM = createAction("FEBio User Manual", "actionFEBioUM");
 	QAction* actionFEBioTM = createAction("FEBio Theory Manual", "actionFEBioTM");
+	QAction* actionFEBioFM = createAction("FEBio Feature Manual", "actionFEBioFM");
+	QAction* actionFEBioDM = createAction("FEBio Developer Manual", "actionFEBioDM");
 	QAction* actionFBSManual = createAction("FEBio Studio Manual", "actionFBSManual");
+	QAction* actionPyManual = createAction("FBS Python Manual", "actionPyManual");
 	QAction* actionFEBioForum = createAction("FEBio Forums", "actionFEBioForum");
 	QAction* actionFEBioPubs = createAction("FEBio Publications", "actionFEBioPubs");
 	QAction* actionWelcome = createAction("Show Welcome Page", "actionWelcome");
@@ -662,7 +665,10 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuHelp->addAction(actionFEBioResources);
 	menuHelp->addAction(actionFEBioUM);
 	menuHelp->addAction(actionFEBioTM);
+	menuHelp->addAction(actionFEBioFM);
+	menuHelp->addAction(actionFEBioDM);
 	menuHelp->addAction(actionFBSManual);
+	menuHelp->addAction(actionPyManual);
 	menuHelp->addAction(actionFEBioForum);
 	menuHelp->addAction(actionFEBioPubs);
 	menuHelp->addSeparator();

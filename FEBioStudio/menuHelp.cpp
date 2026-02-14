@@ -58,17 +58,32 @@ void CMainWindow::on_actionFEBioURL_triggered()
 
 void CMainWindow::on_actionFEBioUM_triggered()
 {
-	QDesktopServices::openUrl(QUrl("https://help.febio.org/docs/FEBioUser-4-0/UM40.html"));
+	QDesktopServices::openUrl(QUrl("https://help.febio.org/docs/FEBioUser-4-11/UM411.html"));
 }
 
 void CMainWindow::on_actionFEBioTM_triggered()
 {
-	QDesktopServices::openUrl(QUrl("https://help.febio.org/docs/FEBioTheory-4-0/TM40.html"));
+	QDesktopServices::openUrl(QUrl("https://help.febio.org/docs/FEBioTheory-4-11/TM411.html"));
+}
+
+void CMainWindow::on_actionFEBioFM_triggered()
+{
+	QDesktopServices::openUrl(QUrl("https://febiosoftware.github.io/febio-feature-manual/"));
+}
+
+void CMainWindow::on_actionFEBioDM_triggered()
+{
+	QDesktopServices::openUrl(QUrl("https://help.febio.org/doxygen/febio4.11/index.html"));
 }
 
 void CMainWindow::on_actionFBSManual_triggered()
 {
-	QDesktopServices::openUrl(QUrl("https://help.febio.org/docs/FEBioStudio-2-0/FSM20.html"));
+	QDesktopServices::openUrl(QUrl("https://help.febio.org/docs/FEBioStudio-3-0/FSM30.html"));
+}
+
+void CMainWindow::on_actionPyManual_triggered()
+{
+	QDesktopServices::openUrl(QUrl("https://help.febio.org/docs/fbs_module/"));
 }
 
 void CMainWindow::on_actionFEBioForum_triggered()

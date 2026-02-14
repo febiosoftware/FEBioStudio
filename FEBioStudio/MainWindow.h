@@ -650,7 +650,10 @@ public slots:
 	void on_actionFEBioURL_triggered();
 	void on_actionFEBioUM_triggered();
 	void on_actionFEBioTM_triggered();
+	void on_actionFEBioFM_triggered();
+	void on_actionFEBioDM_triggered();
 	void on_actionFBSManual_triggered();
+	void on_actionPyManual_triggered();
 	void on_actionFEBioForum_triggered();
 	void on_actionFEBioResources_triggered();
 	void on_actionFEBioPubs_triggered();
