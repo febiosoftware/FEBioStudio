@@ -1092,10 +1092,6 @@ void CMainWindow::on_finishedReadingFile(QueuedFile file, const QString& errorSt
 			AddLogEntry("success!\n");
 		}
 
-		// add file to recent list
-		if (file.m_fileName.isEmpty()==false)
-			ui->addToRecentFiles(file.m_fileName);
-
 		// if this was a new document, make it the active one 
 		if (file.m_flags & QueuedFile::NEW_DOCUMENT)
 		{
