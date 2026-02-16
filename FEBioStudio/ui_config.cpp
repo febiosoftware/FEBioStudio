@@ -183,6 +183,8 @@ void Ui::CModelConfig::Apply()
 	ui->mainMenu->actionMeshInspector->setEnabled(true);
 	ui->mainMenu->actionMeshDiagnostic->setEnabled(true);
 	ui->mainMenu->actionMaterialTest->setEnabled(true);
+	ui->mainMenu->actionShowMatAxes->setEnabled(true);
+	ui->mainMenu->actionShowFibers->setEnabled(true);
 
 	ui->mainMenu->menuFEBio->menuAction()->setVisible(true);
 	ui->mainMenu->menuRecentGeomFiles->menuAction()->setEnabled(true);
@@ -253,6 +255,8 @@ void Ui::CPostConfig::Apply()
 	ui->mainMenu->menuImportImage->menuAction()->setEnabled(true);
 	ui->mainMenu->actionSnapShot->setEnabled(true);
 	ui->mainMenu->actionRayTrace->setEnabled(true);
+	ui->mainMenu->actionShowMatAxes->setEnabled(false);
+	ui->mainMenu->actionShowFibers->setEnabled(false);
 
 	ui->mainMenu->actionMeshInspector->setEnabled(true);
 	ui->mainMenu->actionMeshDiagnostic->setEnabled(true);
