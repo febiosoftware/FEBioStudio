@@ -60,6 +60,7 @@ SOFTWARE.*/
 #include "FEObjectProps.h"
 #include "GLHighlighter.h"
 #include "Command.h"
+#include "HelpDialog.h" // for ShowHelp
 using namespace std;
 
 class CDlgWarnings : public QDialog
@@ -401,6 +402,44 @@ void CModelViewer::on_syncButton_clicked()
 void CModelViewer::on_refreshButton_clicked()
 {
 	Update(false);
+}
+
+void CModelViewer::on_helpButton_clicked()
+{
+	// make sure we have something selected
+	if (m_currentObject == nullptr)
+	{
+		QMessageBox::information(this, "Help", "No item selected!");
+		return;
+	}
+
+	// find the class ID
+	int classID = -1;
+	GMaterial* gmat = dynamic_cast<GMaterial*>(m_currentObject);
+	if (gmat)
+	{
+		FEBioMaterial* pm = dynamic_cast<FEBioMaterial*>(gmat->GetMaterialProperties());
+		if (pm)
+		{
+			classID = FEBio::GetClassId(pm->GetSuperClassID(), pm->GetTypeString());
+		}
+	}
+	FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(m_currentObject);
+	if (pmc)
+	{
+		classID = FEBio::GetClassId(pmc->GetSuperClassID(), pmc->GetTypeString());
+	}
+
+	// show the help page
+	QString url = ClassIDToURL(classID);
+	if (url.isEmpty())
+	{
+		QMessageBox::critical(this, "Help", "No help available for this item.");
+	}
+	else
+	{
+		ShowHelp(url);
+	}
 }
 
 bool CModelViewer::IsHighlightSelectionEnabled() const

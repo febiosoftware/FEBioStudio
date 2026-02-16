@@ -212,5 +212,6 @@
         <file>icons/helix.png</file>
         <file>icons/teapot.png</file>
         <file>icons/foam.png</file>
+        <file>icons/help.png</file>
 	</qresource>
 </RCC>

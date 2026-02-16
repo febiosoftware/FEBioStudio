@@ -232,11 +232,11 @@ void CDlgAddPhysicsItem::UpdateHelpURL()
     {
         int classID = ui->type->currentItem()->data(0, Qt::UserRole).toInt();
 
-        SetURL(classID);
+        SetURL(ClassIDToURL(classID));
     }
     else
     {
-        SetURL(-1);
+		SetURL(QString());
     }
 }
 

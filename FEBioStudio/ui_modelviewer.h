@@ -129,6 +129,12 @@ public:
 		highlightButton->setCheckable(true);
 		highlightButton->setChecked(false);
 
+		QToolButton* helpButton = new QToolButton;
+		helpButton->setIcon(QIcon(":/icons/help.png"));
+		helpButton->setObjectName("helpButton");
+		helpButton->setAutoRaise(true);
+		helpButton->setToolTip("<font color=\"black\">Help");
+
 		// filter box
 		m_filter = new QComboBox;
 		m_filter->addItems(QStringList() << "All items" << "Geometry" << "Materials" << "Physics" << "Steps" << "Jobs" << "Studies" << "Images");
@@ -184,6 +190,7 @@ public:
 		buttonLayout->addWidget(srcButton);
 		buttonLayout->addWidget(syncButton);
 		buttonLayout->addWidget(refreshButton);
+		buttonLayout->addWidget(helpButton);
 		buttonLayout->addStretch();
 		buttonLayout->setContentsMargins(0,0,0,0);
 

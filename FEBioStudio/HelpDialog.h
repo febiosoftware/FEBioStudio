@@ -27,8 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include <QDialog>
 
-#define UNSELECTED_HELP "unselected_help"
-
 class QLayout;
 
 namespace Ui {
@@ -52,7 +50,7 @@ public:
 	virtual void UpdateHelpURL() = 0;
 
 protected:
-    void SetURL(int classID);
+    void SetURL(const QString& url);
 
 protected:
 	int		m_module;
@@ -61,3 +59,6 @@ protected:
 private:
 	Ui::CHelpDialog* ui;
 };
+
+QString ClassIDToURL(int classID);
+void ShowHelp(const QString& url);

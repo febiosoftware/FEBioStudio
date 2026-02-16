@@ -115,6 +115,7 @@ public slots:
 	void on_syncButton_clicked();
 	void on_refreshButton_clicked();
 	void on_highlightButton_toggled(bool);
+	void on_helpButton_clicked();
 	void on_props_nameChanged(const QString& txt);
 	void on_props_selectionChanged();
 	void on_props_dataChanged(bool b);

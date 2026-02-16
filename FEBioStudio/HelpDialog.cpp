@@ -40,7 +40,6 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 
 #define MANUAL_PATH "https://febiosoftware.github.io/febio-feature-manual/features/"
-#define UNSELECTED_HELP "unselected_help"
 
 class Ui::CHelpDialog
 {
@@ -74,7 +73,7 @@ public:
 };
 
 
-CHelpDialog::CHelpDialog(QWidget* parent) : QDialog(parent), ui(new Ui::CHelpDialog), m_url(UNSELECTED_HELP)
+CHelpDialog::CHelpDialog(QWidget* parent) : QDialog(parent), ui(new Ui::CHelpDialog)
 {
 	ui->setupUi(this);
 
@@ -83,17 +82,22 @@ CHelpDialog::CHelpDialog(QWidget* parent) : QDialog(parent), ui(new Ui::CHelpDia
 
 CHelpDialog::~CHelpDialog() { delete ui; }
 
+void ShowHelp(const QString& url)
+{
+	QDesktopServices::openUrl(QUrl(QString(MANUAL_PATH) + url));
+}
+
 void CHelpDialog::on_help_clicked()
 {
     UpdateHelpURL();
 
-    if(m_url == UNSELECTED_HELP)
+    if(m_url.isEmpty())
     {
         QMessageBox::information(this, "Help", "Please select an item before clicking Help.");
     }
     else
     {
-        QDesktopServices::openUrl(QUrl(QString(MANUAL_PATH) + m_url));
+		ShowHelp(m_url);
     }
 }
 
@@ -102,19 +106,23 @@ void CHelpDialog::SetLeftSideLayout(QLayout* layout)
 	ui->helpLayout->insertLayout(0, layout);
 }
 
-void CHelpDialog::SetURL(int classID)
+QString ClassIDToURL(int classID)
 {
-    if(classID == -1)
-    {
-        m_url = UNSELECTED_HELP;
-        return;
-    }
+	QString url;
+	if (classID != -1)
+	{
+		FEBio::FEBioClassInfo classInfo = FEBio::GetClassInfo(classID);
 
-    FEBio::FEBioClassInfo classInfo = FEBio::GetClassInfo(classID);
+		QString superClass = classInfo.superClassName;
+		superClass.remove(0, 2).remove("_ID");
 
-    QString superClass = classInfo.superClassName;
-    superClass.remove(0,2).remove("_ID");
+		QString tmp = QString(classInfo.szmod) + "_" + superClass + "_" + QString(classInfo.sztype);
+		url = tmp.replace(" ", "_").toLower();
+	}
+	return url;
+}
 
-    QString url = QString(classInfo.szmod) + "_" + superClass + "_" + QString(classInfo.sztype);
-    m_url = url.replace(" ", "_").toLower();
+void CHelpDialog::SetURL(const QString& url)
+{
+	m_url = url;
 }
