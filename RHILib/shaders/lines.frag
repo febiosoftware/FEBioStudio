@@ -2,7 +2,8 @@
 
 // input
 layout(location = 0) in vec3 v_pos;
-layout(location = 1) in vec4 v_col;
+layout(location = 1) in vec3 v_tex;
+layout(location = 2) in vec4 v_col;
 
 // output
 layout(location = 0) out vec4 fragColor;
@@ -26,7 +27,10 @@ layout(std140, binding = 1) uniform MeshBlock {
     vec4 col;
     int useClipping;
     int useVertexColor;
+    int useTexture;
 } mesh;
+
+layout(binding = 2) uniform sampler2D smp;
 
 void main()
 {
@@ -39,6 +43,11 @@ void main()
 
     vec4 col = mesh.col;
     if (mesh.useVertexColor > 0) col = v_col;
+   // textured rendering
+    if (mesh.useTexture > 0)
+    {
+        col.xyz = texture(smp, v_tex.xy).xyz;
+    }    
 
     fragColor = col;
 }

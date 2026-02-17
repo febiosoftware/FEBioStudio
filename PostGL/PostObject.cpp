@@ -191,7 +191,8 @@ void CPostObject::BuildFERenderMesh()
 	if (pm == nullptr) return;
 
 	int nsurf = Faces();
-	if (nsurf == 0) return;
+	int nedge = Edges();
+	if ((nsurf == 0) && (nedge==0)) return;
 
 	vector<vector<vec3d>> faceNodeNormals;
 	if (shellToSolid)

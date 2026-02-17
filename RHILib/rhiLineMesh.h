@@ -56,6 +56,7 @@ namespace rhi {
 					for (int j = 0; j < 2; ++j, ++v) {
 						GLMesh::NODE nd;
 						nd.r = e.vr[j];
+						nd.t = e.vt[j];
 						nd.c = e.c[j];
 						(*v) = nd;
 					}
@@ -72,6 +73,7 @@ namespace rhi {
 						for (int j = 0; j < 2; ++j, ++v) {
 							GLMesh::NODE nd;
 							nd.r = e.vr[j];
+							nd.t = e.vt[j];
 							nd.c = e.c[j];
 							(*v) = nd;
 						}

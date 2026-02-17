@@ -89,11 +89,13 @@ class LineShader : public rhi::Shader
 public:
 	struct Vertex {
 		vec3f r; // position
+		vec3f t; // texture coordinate
 		float c[4] = { 0.f }; // color
 
 		void operator = (const GLMesh::NODE& nd)
 		{ 
 			r = nd.r; 
+			t = nd.t;
 			nd.c.toFloat(c);
 		}
 	};
@@ -103,7 +105,7 @@ public:
 
 	QRhiVertexInputLayout meshLayout() override;
 
-	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf);
+	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D);
 };
 
 class SolidShader : public rhi::Shader

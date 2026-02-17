@@ -106,16 +106,17 @@ rhi::MeshShaderResource* PointShader::createShaderResource(QRhi* rhi, QRhiBuffer
 class LineShaderResource : public rhi::MeshShaderResource
 {
 public:
-	enum { MV, COL, CLIP, VCOL };
+	enum { MV, COL, CLIP, VCOL, TEX };
 
 public:
-	LineShaderResource(QRhi* rhi, QRhiBuffer* globalBuf) : rhi::MeshShaderResource(rhi)
+	LineShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D) : rhi::MeshShaderResource(rhi)
 	{
 		m_data.create({
 			{rhi::UniformBlock::MAT4, "mv"},
 			{rhi::UniformBlock::VEC4, "col"},
 			{rhi::UniformBlock::INT , "useClipping" },
-			{rhi::UniformBlock::INT , "useVertexColor" }
+			{rhi::UniformBlock::INT , "useVertexColor" },
+			{rhi::UniformBlock::INT , "useTexture" }
 			});
 
 		// create the buffer
@@ -129,7 +130,8 @@ public:
 		srb.reset(rhi->newShaderResourceBindings());
 		srb->setBindings({
 				QRhiShaderResourceBinding::uniformBuffer(0, visibility, globalBuf),
-				QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get())
+				QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get()),
+				QRhiShaderResourceBinding::sampledTexture(2, visibility, tex1D.texture.get(), tex1D.sampler.get())
 			});
 		srb->create();
 	}
@@ -143,6 +145,7 @@ public:
 		m_data.setVec4(COL, diffuse);
 		m_data.setInt (CLIP, (m.doClipping ? 1 : 0));
 		m_data.setInt (VCOL, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
+		m_data.setInt (TEX , (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 1 : 0));
 	}
 };
 
@@ -155,18 +158,19 @@ QRhiVertexInputLayout LineShader::meshLayout()
 {
 	QRhiVertexInputLayout meshLayout;
 	meshLayout.setBindings({
-		{ 7 * sizeof(float) }
+		{ 10 * sizeof(float) }
 		});
 	meshLayout.setAttributes({
 		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
-		{ 0, 1, QRhiVertexInputAttribute::Float4, 3 * sizeof(float) } // color
+		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // texture coordinate
+		{ 0, 2, QRhiVertexInputAttribute::Float4, 6 * sizeof(float) } // color
 		});
 	return meshLayout;
 }
 
-rhi::MeshShaderResource* LineShader::createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf)
+rhi::MeshShaderResource* LineShader::createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D)
 {
-	return new LineShaderResource(rhi, globalBuf);
+	return new LineShaderResource(rhi, globalBuf, tex1D);
 }
 
 class ColorShaderResource : public rhi::MeshShaderResource

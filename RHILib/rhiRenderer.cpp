@@ -488,7 +488,10 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 
 void rhiRenderer::setTexture(GLTexture1D& tex)
 {
+	bool modified = tex.DoUpdate();
 	m_solidPass->setTexture1D(tex);
+	tex.Update(modified);
+	m_linePass->setTexture1D(tex);
 }
 
 void rhiRenderer::setTexture(GLTexture3D& tex)

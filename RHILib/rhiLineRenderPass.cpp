@@ -30,6 +30,11 @@ SOFTWARE.*/
 
 void LineRenderPass::create(QRhiSwapChain* sc, QRhiBuffer* globalBuf)
 {
+	// prep 1D texture
+	QImage img(QSize(1024, 1), QImage::Format_RGBA8888);
+	img.fill(Qt::white);
+	m_tex1D.create(img);
+
 	m_globalBuf = globalBuf;
 
 	QRhiRenderPassDescriptor* rp = sc->renderPassDescriptor();
@@ -37,7 +42,7 @@ void LineRenderPass::create(QRhiSwapChain* sc, QRhiBuffer* globalBuf)
 
 	LineShader lineShader(m_rhi);
 
-	m_sr.reset(lineShader.createShaderResource(m_rhi, m_globalBuf));
+	m_sr.reset(lineShader.createShaderResource(m_rhi, m_globalBuf, m_tex1D));
 
 	m_pl.reset(m_rhi->newGraphicsPipeline());
 	m_pl->setRenderPassDescriptor(rp);
@@ -70,5 +75,34 @@ rhi::Mesh* LineRenderPass::newMesh(const GLMesh* mesh)
 
 rhi::MeshShaderResource* LineRenderPass::createShaderResource()
 {
-	return LineShader::createShaderResource(m_rhi, m_globalBuf);
+	return LineShader::createShaderResource(m_rhi, m_globalBuf, m_tex1D);
 }
+
+void LineRenderPass::update(QRhiResourceUpdateBatch* u)
+{
+	if (m_tex1D.needsUpload)
+	{
+		m_tex1D.upload(u);
+		m_tex1D.needsUpload = false;
+	}
+
+	rhi::MeshRenderPass::update(u);
+}
+
+void LineRenderPass::setTexture1D(GLTexture1D& tex)
+{
+	if (tex.DoUpdate())
+	{
+		// update texture data
+		QImage img(tex.Size(), 1, QImage::Format_RGBA8888);
+		for (int i = 0; i < tex.Size(); ++i)
+		{
+			GLColor c = tex.sample((float)i / (tex.Size() - 1.f));
+			img.setPixelColor(i, 0, QColor(c.r, c.g, c.b, c.a));
+		}
+		m_tex1D.image = img;
+		m_tex1D.needsUpload = true;
+		tex.Update(false);
+	}
+}
+
