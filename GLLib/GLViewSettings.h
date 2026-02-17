@@ -165,6 +165,7 @@ struct GLViewSettings
 
 	// UI
 	int		m_apply;	//!< emulate apply via middle mouse button
+	bool	showContextMenu;
 
 	GLViewSettings() { Defaults(0); }
 	void Defaults(int ntheme = 0);

@@ -1351,8 +1351,14 @@ void CGLView::customInit()
 
 void CGLView::ToggleContextMenu()
 {
-	if (m_menu->visible()) m_menu->hide();
-	else m_menu->show();
+	GLViewSettings& vs = GetViewSettings();
+	vs.showContextMenu = !vs.showContextMenu;
+
+	if (m_menu)
+	{
+		if (vs.showContextMenu) m_menu->show();
+		else m_menu->hide();
+	}
 	update();
 }
 
@@ -1899,18 +1905,18 @@ void CGLView::DrawWidgets(QPainter& painter)
 	}
 
 	// only show menu on model docs
-	bool isMenuVisible = (m_menu ? m_menu->visible() : false);
 	if (m_menu)
 	{
+		bool showMenu = GetViewSettings().showContextMenu;
 		if (dynamic_cast<CModelDocument*>(doc) == nullptr)
-			m_menu->hide();
+			showMenu = false;
+
+		if (showMenu && !m_menu->visible()) m_menu->show();
+		if (!showMenu && m_menu->visible()) m_menu->hide();
 	}
 
 	GLPainter glpainter(&painter, nullptr);
 	m_Widget->DrawWidgets(&glpainter);
-
-	// reset menu's visible status
-	if (m_menu && isMenuVisible) m_menu->show();
 }
 
 void CGLView::ShowMeshData(bool b)

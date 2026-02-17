@@ -118,4 +118,6 @@ void GLViewSettings::Defaults(int ntheme)
 	m_explode = false;
 	m_explode_direction = EXPLODE_X;
 	m_explode_strength = 0.5;
+
+	showContextMenu = true;
 }
