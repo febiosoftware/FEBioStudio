@@ -1477,6 +1477,37 @@ FEPostModel::PlotObject* FEPostModel::GetPlotObject(int n)
 	return nullptr;
 }
 
+int FEPostModel::GetPlotObjectIndex(FEPostModel::PlotObject* po)
+{
+	for (int i = 0; i < PointObjects(); ++i)
+	{
+		if (m_Points[i].get() == po) return i;
+	}
+
+	int N0 = PointObjects();
+	for (int i = 0; i < LineObjects(); ++i)
+	{
+		if (m_Lines[i].get() == po) return i + N0;
+	}
+
+	return -1;
+}
+
+FEPostModel::PlotObject* FEPostModel::FindPlotObject(const std::string& name)
+{
+	for (int i=0; i<PointObjects(); ++i)
+	{ 
+		if (m_Points[i]->GetName() == name) return m_Points[i].get();
+	}
+
+	for (int i = 0; i < LineObjects(); ++i)
+	{
+		if (m_Lines[i]->GetName() == name) return m_Lines[i].get();
+	}
+
+	return nullptr;
+}
+
 int FEPostModel::PointObjects() const
 {
 	return (int)m_Points.size();

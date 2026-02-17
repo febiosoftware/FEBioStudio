@@ -223,10 +223,9 @@ CPlotObjectDataSelector::CPlotObjectDataSelector(Post::FEPostModel::PlotObject* 
 
 void CPlotObjectDataSelector::BuildMenu(QMenu* menu)
 {
-	std::vector<PlotObjectData*>& data = m_po->m_data;
-	for (int i = 0; i < (int)data.size(); ++i)
+	for (int i = 0; i < (int) m_po->DataCount(); ++i)
 	{
-		ModelDataField& d = *data[i];
+		PlotObjectData& d = *m_po->GetData(i);
 		int dataClass = d.DataClass();
 		int dataComponents = d.components(TENSOR_SCALAR);
 		if (dataComponents > 0)

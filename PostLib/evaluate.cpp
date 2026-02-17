@@ -2932,3 +2932,56 @@ mat3f FEPostModel::EvaluateElemTensor(int n, int ntime, int nten, int ntype)
 
 	return m;
 }
+
+float FEPostModel::EvaluatePlotObjectData(int nobj, int ntime, int nfield)
+{
+	PlotObject* po = GetPlotObject(nobj);
+
+	Post::FEState* state = GetState(ntime);
+	Post::OBJECTDATA& pointData = state->GetObjectData(nobj);
+
+	Post::ObjectData* data = pointData.data;
+
+	// get the data ID
+	int ndata = FIELD_CODE(nfield);
+
+	// get the component
+	int ncomp = FIELD_COMP(nfield);
+
+	Post::ModelDataField* dataField = po->GetData(ndata);
+
+	float val = 0.f;
+
+	switch (dataField->Type())
+	{
+	case DATA_SCALAR:
+	{
+		val = data->get<float>(ndata);
+	}
+	break;
+	case DATA_VEC3:
+	{
+		vec3f v = data->get<vec3f>(ndata);
+		val = component(v, ncomp);
+	}
+	break;
+	case DATA_MAT3:
+	{
+		mat3f v = data->get<mat3f>(ndata);
+		val = component(v, ncomp);
+	}
+	break;
+	default:
+		assert(false);
+	}
+
+	return val;
+}
+
+float FEPostModel::EvaluatePlotObject(FEPostModel::PlotObject* po, ModelDataField& data, int comp, int ntime)
+{
+	int nobj = GetPlotObjectIndex(po);
+	if (nobj < 0) return 0.f;
+	int nfield = data.GetFieldID() + comp;
+	return EvaluatePlotObjectData(nobj, ntime, nfield);
+}

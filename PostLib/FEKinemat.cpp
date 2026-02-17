@@ -167,11 +167,11 @@ bool FEKinemat::BuildStates(Post::FEPostModel* pfem)
 
 		PlotObjectData* data1 = new PlotObjectData(&fem, DATA_VEC3);
 		data1->SetName("position");
-		ob->m_data.push_back(data1);
+		ob->AddData(data1);
 
 		PlotObjectData* data2 = new PlotObjectData(&fem, DATA_MAT3);
 		data2->SetName("rotation");
-		ob->m_data.push_back(data2);
+		ob->AddData(data2);
 
 		fem.AddPointObject(ob);
 	}

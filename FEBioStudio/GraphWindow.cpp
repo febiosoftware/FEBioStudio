@@ -2262,44 +2262,7 @@ void CModelGraphWindow::TrackObjectHistory(int nobj, float* pval, int nfield, in
 
 	for (int j = 0; j < nn; ++j)
 	{
-		Post::FEState* state = fem.GetState(j + nmin);
-		Post::OBJECTDATA& pointData = state->GetObjectData(nobj);
-
-		Post::ObjectData* data = pointData.data;
-
-		// get the data ID
-		int ndata = FIELD_CODE(nfield);
-
-		// get the component
-		int ncomp = FIELD_COMP(nfield);
-
-		Post::ModelDataField* dataField = po->m_data[ndata];
-
-		float val = 0.f;
-
-		switch (dataField->Type())
-		{
-		case DATA_SCALAR:
-		{
-			val = data->get<float>(ndata);
-		}
-		break;
-		case DATA_VEC3:
-		{
-			vec3f v = data->get<vec3f>(ndata);
-			val = component(v, ncomp);
-		}
-		break;
-		case DATA_MAT3:
-		{
-			mat3f v = data->get<mat3f>(ndata);
-			val = component(v, ncomp);
-		}
-		break;
-		default:
-			assert(false);
-		}
-
+		float val = fem.EvaluatePlotObjectData(nobj, j + nmin, nfield);
 		pval[j] = val;
 	}
 }

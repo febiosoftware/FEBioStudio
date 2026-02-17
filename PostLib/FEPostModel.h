@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <vector>
 #include <memory>
+#include "constants.h"
 
 namespace Post {
 
@@ -84,6 +85,24 @@ public:
 		//! Find the index of object data with the given name
 		int FindObjectDataIndex(const std::string& name) const;
 
+		ModelDataField* GetObjectData(int n) { return m_data[n]; }
+		ModelDataField* FindObjectData(const std::string& name)
+		{ 
+			int n = FindObjectDataIndex(name);
+			if (n < 0) return nullptr;
+			return m_data[n]; 
+		}
+
+		void AddData(PlotObjectData* po)
+		{
+			po->SetFieldID(BUILD_FIELD(DATA_CLASS::OBJECT_DATA, m_data.size(), 0));
+			m_data.push_back(po);
+		}
+
+		PlotObjectData* GetData(int n) { return m_data[n]; }
+
+		size_t DataCount() const { return m_data.size(); }
+
 	public:
 		//! Unique identifier for the plot object
 		int				m_id;
@@ -94,6 +113,7 @@ public:
 		//! Rotation of the plot object
 		quatd			m_rot;
 
+	private:
 		//! Vector of data associated with the plot object
 		std::vector<PlotObjectData*>	m_data;
 	};
@@ -299,6 +319,9 @@ public:
 	//! Check if the field code is valid for the given state
 	bool IsValidFieldCode(int nfield, int nstate);
 
+	float EvaluatePlotObjectData(int nobj, int ntime, int nfield);
+	float EvaluatePlotObject(PlotObject* po, ModelDataField& data, int comp, int ntime);
+
 public:
 	//! Add a dependant object that will be notified of model changes
 	void AddDependant(FEModelDependant* pc);
@@ -344,6 +367,10 @@ public:
 	int PlotObjects() const;
 	//! Get a plot object by index
 	PlotObject* GetPlotObject(int n);
+
+	int GetPlotObjectIndex(PlotObject* po);
+
+	PlotObject* FindPlotObject(const std::string& name);
 
 	//! Get the number of point objects
 	int PointObjects() const;

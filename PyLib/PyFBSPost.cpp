@@ -173,6 +173,11 @@ void init_FBSPost(py::module& m)
         .def("Enabled", &Material::enabled, "Checks if the material is enabled.")
         ;
 
+	py::class_<FEPostModel::PlotObject>(post, "PlotObject")
+		.def("Name", &FEPostModel::PlotObject::GetName, "Returns the name of the plot object.")
+		.def("GetDataField", &FEPostModel::PlotObject::FindObjectData, "Returns the name of the plot object.")
+		;
+
 	py::class_<FEPostModel>(post, "PostModel", DOC(Post, FEPostModel))
 		.def("Materials", &FEPostModel::Materials, DOC(Post, FEPostModel, Materials))
 		.def("Material", &FEPostModel::GetMaterial, DOC(Post, FEPostModel, GetMaterial), py::return_value_policy::reference)
@@ -194,7 +199,10 @@ void init_FBSPost(py::module& m)
                 self.Evaluate(field.GetFieldID() | component, time);
                 return self.GetState(time);
             }, "Evaluates the model at a specific time step. Returns a reference to the state and updates the values stored in the state's member variables.", 
-            py::return_value_policy::reference);
+            py::return_value_policy::reference)
+		.def("GetPlotObject", &FEPostModel::FindPlotObject, py::return_value_policy::reference)
+		.def("EvaluatePlotObject", &FEPostModel::EvaluatePlotObject, py::return_value_policy::reference)
+		;
 
 	py::enum_<Data_Tensor_Type>(post, "DataTensorType")
         .value("DATA_SCALAR", Data_Tensor_Type::TENSOR_SCALAR)

@@ -38,9 +38,9 @@ Post::GLPlotObjectVector::GLPlotObjectVector(Post::FEPostModel::PointObject* po)
 
 	std::vector<std::string> nameList;
 	size_t l = 0;
-	for (int i = 0; i < po->m_data.size(); ++i)
+	for (int i = 0; i < po->DataCount(); ++i)
 	{
-		Post::PlotObjectData* pd = po->m_data[i];
+		Post::PlotObjectData* pd = po->GetData(i);
 		if (pd->Type() == DATA_VEC3)
 		{
 			std::string name = pd->GetName();
@@ -81,9 +81,9 @@ void Post::GLPlotObjectVector::Update(int ntime, float dt, bool breset)
 	Post::OBJ_POINT_DATA& data = state->m_objPt[m_po->m_id];
 
 	int nvec = GetIntValue(DATA_FIELD);
-	for (int i = 0, n = 0; i < m_po->m_data.size(); ++i)
+	for (int i = 0, n = 0; i < m_po->DataCount(); ++i)
 	{
-		Post::PlotObjectData* pd = m_po->m_data[i];
+		Post::PlotObjectData* pd = m_po->GetData(i);
 		if (pd->Type() == DATA_VEC3)
 		{
 			if (nvec == n)

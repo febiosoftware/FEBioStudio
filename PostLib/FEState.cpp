@@ -165,11 +165,11 @@ FEState::FEState(float time, FEPostModel* fem, FSMesh* pmesh) : m_fem(fem), m_me
 		di.m_r1 = po.m_r1;
 		di.m_r2 = po.m_r2;
 
-		int ndata = (int)po.m_data.size();
+		int ndata = (int)po.DataCount();
 		di.data = new ObjectData;
 		for (int j = 0; j < ndata; ++j)
 		{
-			Post::PlotObjectData& dj = *po.m_data[j];
+			Post::PlotObjectData& dj = *po.GetData(j);
 
 			switch (dj.Type())
 			{
@@ -209,11 +209,11 @@ void FEState::AddPointObjectData()
 
 		di.m_rt = po.m_rt;
 
-		int ndata = (int)po.m_data.size();
+		int ndata = (int)po.DataCount();
 		di.data = new ObjectData;
 		for (int j = 0; j < ndata; ++j)
 		{
-			Post::PlotObjectData& dj = *po.m_data[j];
+			Post::PlotObjectData& dj = *po.GetData(j);
 
 			switch (dj.Type())
 			{

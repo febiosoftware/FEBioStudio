@@ -943,7 +943,7 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 
 					PlotObjectData* data = new PlotObjectData(&fem, dataType);
 					data->SetName(szdata);
-					ob->m_data.push_back(data);
+					ob->AddData(data);
 				}
 				break;
 				}
@@ -997,7 +997,7 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 
 					PlotObjectData* data = new PlotObjectData(&fem, dataType);
 					data->SetName(szdata);
-					ob->m_data.push_back(data);
+					ob->AddData(data);
 				}
 				break;
 				}
@@ -1995,11 +1995,12 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 								int nv = m_ar.GetChunkID();
 								if (po)
 								{
-									assert((nv >= 0) && (nv < po->m_data.size()));
+									assert((nv >= 0) && (nv < po->DataCount()));
 
 									ObjectData* pd = m_pstate->m_objPt[objId].data;
 
-									switch (po->m_data[nv]->Type())
+									PlotObjectData* pod = po->GetData(nv);
+									switch (pod->Type())
 									{
 									case DATA_SCALAR: { float v; m_ar.read(v); pd->set(nv, v); } break;
 									case DATA_VEC3 : { vec3f v; m_ar.read(v); pd->set(nv, v); } break;
@@ -2055,11 +2056,11 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 							{
 								int nv = m_ar.GetChunkID();
 
-								assert((nv >= 0) && (nv < po->m_data.size()));
+								assert((nv >= 0) && (nv < po->DataCount()));
 
 								ObjectData* pd = m_pstate->m_objLn[objId].data;
-
-								switch (po->m_data[nv]->Type())
+								PlotObjectData* pod = po->GetData(nv);
+								switch (pod->Type())
 								{
 								case DATA_SCALAR: { float v; m_ar.read(v); pd->set(nv, v); } break;
 								case DATA_VEC3 : { vec3f v; m_ar.read(v); pd->set(nv, v); } break;

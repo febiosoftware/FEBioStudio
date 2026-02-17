@@ -41,6 +41,7 @@ ModelDataField::ModelDataField(FEPostModel* fem, DATA_TYPE ntype, DATA_FORMAT nf
 	m_nclass = ncls;
 	m_flag = flag;
 	m_arraySize = 0;
+	m_nfield = -1;
 }
 
 ModelDataField::~ModelDataField() {}
