@@ -26,7 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "rhiMeshRenderPass.h"
 #include "rhiMesh.h"
-#include <GLLib/GLTexture1D.h>
+#include "rhiTexture.h"
 
 class CRGBAImage;
 
@@ -57,9 +57,9 @@ private:
 class TwoPassSolidRenderPass : public rhi::MeshRenderPass
 {
 public:
-	TwoPassSolidRenderPass(QRhi* rhi) : rhi::MeshRenderPass(rhi), m_tex1D(rhi), m_envTex(rhi) {}
+	TwoPassSolidRenderPass(QRhi* rhi) : rhi::MeshRenderPass(rhi), m_envTex(rhi) {}
 
-	void create(QRhiSwapChain* sc, QRhiBuffer* globalBuf);
+	void create(QRhiSwapChain* sc, QRhiBuffer* globalBuf, rhi::Texture* tex1D);
 
 	void draw(QRhiCommandBuffer* cb) override;
 
@@ -70,8 +70,6 @@ public:
 	rhi::MeshShaderResource* createShaderResource() override;
 
 public:
-	void setTexture1D(GLTexture1D& tex1D);
-
 	unsigned int setEnvironmentMap(const CRGBAImage& img);
 
 private:
@@ -79,8 +77,7 @@ private:
 	std::unique_ptr<FaceRenderPass> m_frontPass;
 
 	QRhiBuffer* m_globalBuf = nullptr;
-
-	rhi::Texture m_tex1D;
+	rhi::Texture* m_tex1D = nullptr;
 
 	rhi::Texture m_envTex;
 	const CRGBAImage* envImg = nullptr;

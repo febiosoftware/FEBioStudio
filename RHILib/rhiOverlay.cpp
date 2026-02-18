@@ -127,10 +127,11 @@ void OverlayRenderPass::create(QRhiSwapChain* sc)
 	m_overlayTex.sampler->create();
 
 	// create overlay texture
-	m_overlayTex.image = QImage(sc->surfacePixelSize(), QImage::Format_RGBA8888);
-	m_overlayTex.image.fill(Qt::transparent);
 	m_overlayTex.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, sc->surfacePixelSize(), 1, QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
 	m_overlayTex.texture->create();
+	QImage img(sc->surfacePixelSize(), QImage::Format_RGBA8888);
+	img.fill(Qt::transparent);
+	m_overlayTex.setImage(img);
 
 	// load shaders
 	OverlayShader shader(m_rhi);
@@ -187,9 +188,9 @@ void OverlayRenderPass::create(QRhiSwapChain* sc)
 void OverlayRenderPass::setImage(const QImage& img)
 {
 	if (m_rhi->isYUpInNDC())
-		m_overlayTex.image = img.mirrored();
+		m_overlayTex.setImage(img.mirrored());
 	else
-		m_overlayTex.image = img;
+		m_overlayTex.setImage(img);
 }
 
 void OverlayRenderPass::setLightPosition(const vec3f& lp)
@@ -227,7 +228,7 @@ void OverlayRenderPass::update(QRhiResourceUpdateBatch* u)
 	}
 
 	// upload before render pass, otherwise our rendering will be overwritten by the texture
-	m_overlayTex.upload(u);
+	m_overlayTex.update(u);
 
 	// update triad stuff
 	QMatrix4x4 proj = m_rhi->clipSpaceCorrMatrix();
@@ -255,7 +256,7 @@ void OverlayRenderPass::update(QRhiResourceUpdateBatch* u)
 
 void OverlayRenderPass::draw(QRhiCommandBuffer* cb)
 {
-	if (m_overlayTex.image.isNull()) return;
+	if (!m_overlayTex.isValid()) return;
 
 	cb->setGraphicsPipeline(m_pl.get());
 	cb->setShaderResources();

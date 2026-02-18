@@ -51,13 +51,17 @@ void rhi::Texture::setImage(const QImage& img)
 		image = img;
 		texture->setPixelSize(img.size());
 		texture->create();
-		needsUpload = true;
 	}
+	else image = img;
+	needsUpload = true;
 }
 
-void rhi::Texture::upload(QRhiResourceUpdateBatch* u)
+void rhi::Texture::update(QRhiResourceUpdateBatch* u)
 {
-	u->uploadTexture(texture.get(), image);
+	if (needsUpload)
+		u->uploadTexture(texture.get(), image);
+
+	needsUpload = false;
 }
 
 void rhi::Texture3D::create(const C3DImage& img)

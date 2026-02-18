@@ -26,25 +26,21 @@ SOFTWARE.*/
 #pragma once
 #include "rhiMeshRenderPass.h"
 #include "rhiMesh.h"
-#include <GLLib/GLTexture1D.h>
+#include "rhiTexture.h"
 
 class LineRenderPass : public rhi::MeshRenderPass
 {
 public:
-	LineRenderPass(QRhi* rhi) : MeshRenderPass(rhi), m_tex1D(rhi) {}
+	LineRenderPass(QRhi* rhi) : MeshRenderPass(rhi) {}
 
-	void create(QRhiSwapChain* sc, QRhiBuffer* globalBuf);
+	void create(QRhiSwapChain* sc, QRhiBuffer* globalBuf, rhi::Texture* tex1D);
 
 	rhi::Mesh* newMesh(const GLMesh* mesh) override;
 
 	rhi::MeshShaderResource* createShaderResource() override;
 
-	void update(QRhiResourceUpdateBatch* u) override;
-
-	void setTexture1D(GLTexture1D& tex1D);
-
 private:
 	std::unique_ptr<rhi::MeshShaderResource> m_sr;
 	QRhiBuffer* m_globalBuf = nullptr;
-	rhi::Texture m_tex1D;
+	rhi::Texture* m_tex1D = nullptr;
 };

@@ -184,7 +184,9 @@ private:
 	std::unique_ptr<PointRenderPass> m_pointOverlayPass;
 	std::unique_ptr<TwoPassSolidRenderPass> m_solidPass;
 	std::unique_ptr<SolidRenderPass> m_solidOverlayPass;
-	std::unique_ptr<VolumeRenderPass> m_volumeRenderPass;
+
+	std::map<GLTexture3D*, std::unique_ptr<VolumeRenderPass>> m_volumeRenderPass;
+	VolumeRenderPass* currentVolumePass = nullptr;
 
 	// 2D render passes
 	std::unique_ptr<GradientRenderPass> m_gradientPass;
@@ -196,6 +198,9 @@ private:
 
 	// used for submitting updates in init.
 	QRhiResourceUpdateBatch* m_initialUpdates = nullptr;
+
+	// textures
+	rhi::Texture m_tex1D;
 
 	// matrix stuff
 	std::array<float, 4> m_viewport{ 0.f };

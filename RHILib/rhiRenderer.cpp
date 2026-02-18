@@ -122,7 +122,7 @@ void CanvasUniformBlock::update(QRhiResourceUpdateBatch* u)
 	u->updateDynamicBuffer(m_ubuf.get(), 0, m_ub.size(), m_ub.data());
 }
 
-rhiRenderer::rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp) : m_rhi(rhi), m_sc(sc), m_rp(rp)
+rhiRenderer::rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp) : m_rhi(rhi), m_sc(sc), m_rp(rp), m_tex1D(rhi)
 {
 }
 
@@ -135,26 +135,28 @@ void rhiRenderer::init()
 {
 	m_initialUpdates = m_rhi->nextResourceUpdateBatch();
 
+	// prep 1D texture
+	QImage img(QSize(1024, 1), QImage::Format_RGBA8888);
+	img.fill(Qt::white);
+	m_tex1D.create(img);
+
 	// create global uniform (used by several shaders)
 	m_global.create(m_rhi);
 
 	// create all render passes
 	m_solidPass.reset(new TwoPassSolidRenderPass(m_rhi));
-	m_solidPass->create(m_sc, m_global.get());
+	m_solidPass->create(m_sc, m_global.get(), &m_tex1D);
 
 	m_solidOverlayPass.reset(new SolidRenderPass(m_rhi));
 	m_solidOverlayPass->setDepthTest(false);
 	m_solidOverlayPass->create(m_sc, m_global.get());
 
-	m_volumeRenderPass.reset(new VolumeRenderPass(m_rhi));
-	m_volumeRenderPass->create(m_sc, m_global.get());
-
 	m_linePass.reset(new LineRenderPass(m_rhi));
-	m_linePass->create(m_sc, m_global.get());
+	m_linePass->create(m_sc, m_global.get(), &m_tex1D);
 
 	m_lineOverlayPass.reset(new LineRenderPass(m_rhi));
 	m_lineOverlayPass->setDepthTest(false);
-	m_lineOverlayPass->create(m_sc, m_global.get());
+	m_lineOverlayPass->create(m_sc, m_global.get(), &m_tex1D);
 
 	m_pointPass.reset(new PointRenderPass(m_rhi));
 	m_pointPass->create(m_sc, m_global.get());
@@ -185,11 +187,11 @@ void rhiRenderer::clearCache()
 {
 	if (m_solidPass) m_solidPass->clearCache();
 	if (m_solidOverlayPass) m_solidOverlayPass->clearCache();
-	if (m_volumeRenderPass) m_volumeRenderPass->clearCache();
 	if (m_linePass ) m_linePass ->clearCache();
 	if (m_lineOverlayPass) m_lineOverlayPass->clearCache();
 	if (m_pointPass) m_pointPass->clearCache();
 	if (m_pointOverlayPass) m_pointOverlayPass->clearCache();
+	for (auto& it : m_volumeRenderPass) it.second->clearCache();
 }
 
 QSize rhiRenderer::pixelSize() const
@@ -212,7 +214,12 @@ GLRenderStats rhiRenderer::GetRenderStats() const
 	stats.cachedObjects += m_lineOverlayPass->cachedMeshes();
 	stats.cachedObjects += m_pointPass->cachedMeshes();
 	stats.cachedObjects += m_pointOverlayPass->cachedMeshes();
-	stats.cachedObjects += m_volumeRenderPass->cachedMeshes();
+
+	for (auto& it : m_volumeRenderPass)
+	{
+		if (it.second->isEnabled())
+			stats.cachedObjects += it.second->cachedMeshes();
+	}
 
 	// note that at this point, nothing has actually been uploaded yet.
 	// so this reflects the total of the last frame. 
@@ -225,22 +232,33 @@ void rhiRenderer::clearUnusedCache()
 {
 	m_solidPass->clearUnusedCache();
 	m_solidOverlayPass->clearUnusedCache();
-	m_volumeRenderPass->clearUnusedCache();
 	m_linePass->clearUnusedCache();
 	m_lineOverlayPass->clearUnusedCache();
 	m_pointPass->clearUnusedCache();
 	m_pointOverlayPass->clearUnusedCache();
+
+	for (auto& it : m_volumeRenderPass) it.second->clearUnusedCache();
+
+	// clear unused volume render passes (if any)
+	for (auto it = m_volumeRenderPass.begin(); it != m_volumeRenderPass.end(); )
+	{
+		if (!it->second->isEnabled())
+			it = m_volumeRenderPass.erase(it);
+		else
+			++it;
+	}
 }
 
 void rhiRenderer::deleteCachedMesh(GLMesh* gm)
 {
 	m_solidPass->removeCachedMesh(gm);
 	m_solidOverlayPass->removeCachedMesh(gm);
-	m_volumeRenderPass->removeCachedMesh(gm);
 	m_linePass->removeCachedMesh(gm);
 	m_lineOverlayPass->removeCachedMesh(gm);
 	m_pointPass->removeCachedMesh(gm);
 	m_pointOverlayPass->removeCachedMesh(gm);
+
+	for (auto& it : m_volumeRenderPass) it.second->removeCachedMesh(gm);
 }
 
 void rhiRenderer::setClearColor(const GLColor& c)
@@ -358,8 +376,11 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 	rhi::SubMesh* pm = nullptr;
 	if (m_currentMat.diffuseMap == GLMaterial::TEXTURE_3D)
 	{
-		rhi::Mesh* rm = m_volumeRenderPass->addGLMesh(mesh, cacheMesh);
-		if (rm) pm = m_volumeRenderPass->getSubMesh(*rm, -1);
+		if (currentVolumePass)
+		{
+			rhi::Mesh* rm = currentVolumePass->addGLMesh(mesh, cacheMesh);
+			if (rm) pm = currentVolumePass->getSubMesh(*rm, -1);
+		}
 	}
 	else if (m_currentMat.type == GLMaterial::OVERLAY)
 	{
@@ -488,15 +509,40 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 
 void rhiRenderer::setTexture(GLTexture1D& tex)
 {
-	bool modified = tex.DoUpdate();
-	m_solidPass->setTexture1D(tex);
-	tex.Update(modified);
-	m_linePass->setTexture1D(tex);
+	if (tex.DoUpdate())
+	{
+		// update texture data
+		QImage img(tex.Size(), 1, QImage::Format_RGBA8888);
+		for (int i = 0; i < tex.Size(); ++i)
+		{
+			GLColor c = tex.sample((float)i / (tex.Size() - 1.f));
+			img.setPixelColor(i, 0, QColor(c.r, c.g, c.b, c.a));
+		}
+		m_tex1D.setImage(img);
+		tex.Update(false);
+	}
 }
 
 void rhiRenderer::setTexture(GLTexture3D& tex)
 {
-	m_volumeRenderPass->setTexture3D(tex);
+	currentVolumePass = nullptr;
+	auto it = m_volumeRenderPass.find(&tex);
+	if (it == m_volumeRenderPass.end())
+	{
+		auto [it, inserted] = m_volumeRenderPass.emplace(&tex, std::make_unique<VolumeRenderPass>(m_rhi));
+		it->second->create(m_sc, m_global.get());
+		currentVolumePass = it->second.get();
+	}
+	else
+	{
+		currentVolumePass = it->second.get();
+	}
+
+	if (currentVolumePass)
+	{
+		currentVolumePass->setTexture3D(tex);
+		currentVolumePass->enable(true);
+	}
 }
 
 void rhiRenderer::setClipPlane(unsigned int n, const double* v)
@@ -576,11 +622,14 @@ void rhiRenderer::start()
 	// start by setting all meshes as inactive
 	m_solidPass->reset();
 	m_solidOverlayPass->reset();
-	m_volumeRenderPass->reset();
 	m_linePass->reset();
 	m_lineOverlayPass->reset();
 	m_pointPass->reset();
 	m_pointOverlayPass->reset();
+	for (auto& it : m_volumeRenderPass) it.second->reset();
+
+	// we also disable all volume renderers
+	for (auto& it : m_volumeRenderPass) it.second->enable(false);
 
 	// reset matrices
 	resetTransform();
@@ -648,10 +697,18 @@ void rhiRenderer::finish()
 	m_global.setZOffset(dz);
 	m_global.update(resourceUpdates);
 
+	// update textures
+	m_tex1D.update(resourceUpdates);
+
 	// update solid mesh data
 	m_solidPass->update(resourceUpdates);
 	m_solidOverlayPass->update(resourceUpdates);
-	m_volumeRenderPass->update(resourceUpdates);
+
+	for (auto& it : m_volumeRenderPass)
+	{
+		if (it.second->isEnabled())
+			it.second->update(resourceUpdates);
+	}
 
 	// update line mesh data
 	m_linePass->update(resourceUpdates);
@@ -719,7 +776,11 @@ void rhiRenderer::finish()
 		m_pointOverlayPass->draw(cb);
 
 		// render volume meshes
-		m_volumeRenderPass->draw(cb);
+		for (auto& it : m_volumeRenderPass)
+		{
+			if (it.second->isEnabled())
+				it.second->draw(cb);
+		}
 
 		// render fps indicator
 		if (m_canvasPass->isEnabled())

@@ -78,9 +78,10 @@ void CanvasRenderPass::update(QRhiResourceUpdateBatch* u)
 	m_fpsub.update(u);
 
 	// update fps indicator
-	QSize size = m_fpsTex.image.size();
+	const QImage& tex = m_fpsTex.getImage();
+	QSize size = tex.size();
 	QImage img(size, QImage::Format_RGBA8888_Premultiplied);
-	double dpr = m_fpsTex.image.devicePixelRatio();
+	double dpr = tex.devicePixelRatio();
 	img.setDevicePixelRatio(dpr);
 	img.fill(Qt::transparent);
 	QPainter painter(&img);
@@ -91,10 +92,10 @@ void CanvasRenderPass::update(QRhiResourceUpdateBatch* u)
 	QString txt = QString("fps: %1 [%2,%3]").arg(m_fps, 0, 'f', 1).arg(m_fpsMin, 0, 'f', 1).arg(m_fpsMax, 0, 'f', 1);
 	painter.drawText(QRectF(10, 0, size.width() - 10, size.height()), txt);
 	if (m_rhi->isYUpInNDC())
-		m_fpsTex.image = img.mirrored();
+		m_fpsTex.setImage(img.mirrored());
 	else
-		m_fpsTex.image = img;
-	m_fpsTex.upload(u);
+		m_fpsTex.setImage(img);
+	m_fpsTex.update(u);
 
 	m_fpsMesh->Update(u);
 }

@@ -55,16 +55,12 @@ void FaceRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, Solid
 	m_pl->create();
 }
 
-void TwoPassSolidRenderPass::create(QRhiSwapChain* sc, QRhiBuffer* globalBuf)
+void TwoPassSolidRenderPass::create(QRhiSwapChain* sc, QRhiBuffer* globalBuf, rhi::Texture* tex1D)
 {
 	m_globalBuf = globalBuf;
+	m_tex1D = tex1D;
 
-	// prep 1D texture
-	QImage img(QSize(1024, 1), QImage::Format_RGBA8888);
-	img.fill(Qt::white);
-	m_tex1D.create(img);
-
-	SolidResources sr = { globalBuf, &m_tex1D, &m_envTex };
+	SolidResources sr = { globalBuf, tex1D, &m_envTex };
 
 	// create with dummy image
 	QImage envImg(QSize(100, 100), QImage::Format_RGB32);
@@ -82,18 +78,7 @@ void TwoPassSolidRenderPass::create(QRhiSwapChain* sc, QRhiBuffer* globalBuf)
 
 void TwoPassSolidRenderPass::update(QRhiResourceUpdateBatch* u)
 {
-	if (m_tex1D.needsUpload)
-	{
-		m_tex1D.upload(u);
-		m_tex1D.needsUpload = false;
-	}
-
-	if (m_envTex.needsUpload)
-	{
-		m_envTex.upload(u);
-		m_envTex.needsUpload = false;
-	}
-
+	m_envTex.update(u);
 	rhi::MeshRenderPass::update(u);
 }
 
@@ -135,24 +120,7 @@ rhi::Mesh* TwoPassSolidRenderPass::newMesh(const GLMesh* mesh)
 
 rhi::MeshShaderResource* TwoPassSolidRenderPass::createShaderResource()
 {
-	return SolidShader::createShaderResource(m_rhi, m_globalBuf, m_tex1D, m_envTex);
-}
-
-void TwoPassSolidRenderPass::setTexture1D(GLTexture1D& tex)
-{
-	if (tex.DoUpdate())
-	{
-		// update texture data
-		QImage img(tex.Size(), 1, QImage::Format_RGBA8888);
-		for (int i = 0; i < tex.Size(); ++i)
-		{
-			GLColor c = tex.sample((float)i / (tex.Size() - 1.f));
-			img.setPixelColor(i, 0, QColor(c.r, c.g, c.b, c.a));
-		}
-		m_tex1D.image = img;
-		m_tex1D.needsUpload = true;
-		tex.Update(false);
-	}
+	return SolidShader::createShaderResource(m_rhi, m_globalBuf, *m_tex1D, m_envTex);
 }
 
 unsigned int TwoPassSolidRenderPass::setEnvironmentMap(const CRGBAImage& img)

@@ -37,18 +37,22 @@ namespace rhi {
 
 		void create(const QImage& img);
 
-		void upload(QRhiResourceUpdateBatch* u);
+		void update(QRhiResourceUpdateBatch* u);
 
 		void setImage(const QImage& img);
 
+		const QImage& getImage() const { return image; }
+
+		bool isValid() const { return !image.isNull(); }
+
 	public:
-		QRhi* m_rhi = nullptr;
 		std::unique_ptr<QRhiTexture> texture;
 		std::unique_ptr<QRhiSampler> sampler;
-		QImage image;
-		bool needsUpload = false;
 
 	private:
+		QRhi* m_rhi = nullptr;
+		bool needsUpload = false;
+		QImage image;
 		Texture(const Texture&) = delete;
 		void operator = (const Texture&) = delete;
 	};
