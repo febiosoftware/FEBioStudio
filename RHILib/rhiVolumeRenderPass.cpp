@@ -130,7 +130,7 @@ void VolumeRenderPass::setTexture3D(GLTexture3D& tex)
 	settings.setFloat( 9, tex.gamma);
 	settings.setInt  (10, tex.cmap);
 
-	if (tex.IsModified())
+	if (tex.IsModified() || !m_tex.texture)
 	{
 		C3DImage* im = tex.Get3DImage();
 		m_tex.create(*im);
