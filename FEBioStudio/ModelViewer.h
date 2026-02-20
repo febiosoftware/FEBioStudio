@@ -208,6 +208,9 @@ signals:
 	void currentObjectChanged(FSObject* po);
 
 private:
+    QString HelpURLFromObject(FSObject* po);
+
+private:
 	Ui::CModelViewer*		ui;
 	FSObject*				m_currentObject;	// object whose properties are displayed
 	std::vector<FSObject*>	m_selection;		// list of selected items

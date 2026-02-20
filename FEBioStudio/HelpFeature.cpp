@@ -24,87 +24,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include <QCoreApplication>
-#include <QBoxLayout>
-#include <QDialogButtonBox>
-#include <QPushButton>
-#include <QTextBrowser>
 #include <QDesktopServices>
-#include <QMessageBox>
-#include <FEMLib/FSProject.h>
-#include "HelpDialog.h"
-#include "FEBioStudio.h"
-#include "MainWindow.h"
-#include <FEBioLink/FEBioModule.h>
-#include <FEBioLib/version.h>
+#include <QUrl>
+#include "HelpFeature.h"
 #include <FEBioLink/FEBioClass.h>
 
 #define MANUAL_PATH "https://febiosoftware.github.io/febio-feature-manual/features/"
-
-class Ui::CHelpDialog
-{
-public:
-	QPushButton* helpButton;
-	QHBoxLayout* helpLayout;
-
-public:
-	void setupUi(QWidget* parent)
-	{
-		QVBoxLayout* mainLayout = new QVBoxLayout;
-		helpLayout = new QHBoxLayout;
-
-		mainLayout->addLayout(helpLayout);
-
-		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-
-        helpButton = new QPushButton("Help");
-        helpButton->setCheckable(true);
-
-        bb->addButton(helpButton, QDialogButtonBox::HelpRole);
-
-		mainLayout->addWidget(bb);
-
-		QObject::connect(bb, SIGNAL(accepted()), parent, SLOT(accept()));
-		QObject::connect(bb, SIGNAL(rejected()), parent, SLOT(reject()));
-		QObject::connect(bb, SIGNAL(helpRequested()), parent, SLOT(on_help_clicked()));
-
-		parent->setLayout(mainLayout);
-	}
-};
-
-
-CHelpDialog::CHelpDialog(QWidget* parent) : QDialog(parent), ui(new Ui::CHelpDialog)
-{
-	ui->setupUi(this);
-
-	m_module = FEBio::GetActiveModule();
-}
-
-CHelpDialog::~CHelpDialog() { delete ui; }
-
-void ShowHelp(const QString& url)
-{
-	QDesktopServices::openUrl(QUrl(QString(MANUAL_PATH) + url));
-}
-
-void CHelpDialog::on_help_clicked()
-{
-    UpdateHelpURL();
-
-    if(m_url.isEmpty())
-    {
-        QMessageBox::information(this, "Help", "Please select an item before clicking Help.");
-    }
-    else
-    {
-		ShowHelp(m_url);
-    }
-}
-
-void CHelpDialog::SetLeftSideLayout(QLayout* layout)
-{
-	ui->helpLayout->insertLayout(0, layout);
-}
 
 QString ClassIDToURL(int classID)
 {
@@ -122,7 +47,7 @@ QString ClassIDToURL(int classID)
 	return url;
 }
 
-void CHelpDialog::SetURL(const QString& url)
+void ShowHelp(const QString& url)
 {
-	m_url = url;
+	QDesktopServices::openUrl(QUrl(QString(MANUAL_PATH) + url));
 }

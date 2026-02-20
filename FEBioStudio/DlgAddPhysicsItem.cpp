@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <QTreeWidgetItem>
 #include <QFormLayout>
 #include <QBoxLayout>
+#include <QMessageBox>
 #include <QLabel>
 #include <QToolButton>
 #include <QHeaderView>
@@ -43,6 +44,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FSCore/FSCore.h>
+#include "HelpFeature.h"
 
 using namespace std;
 
@@ -106,8 +108,15 @@ public:
 		layout->addLayout(h);
 		layout->addWidget(type);
 
-		dlg->SetLeftSideLayout(layout);
+        QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Help);
 
+		layout->addWidget(bb);
+
+		dlg->setLayout(layout);
+        
+        QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
+		QObject::connect(bb, SIGNAL(helpRequested()), dlg, SLOT(on_help_clicked()));
 		QObject::connect(type, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), dlg, SLOT(accept()));
 		QObject::connect(flt, SIGNAL(textChanged(const QString&)), dlg, SLOT(Update()));
 		QObject::connect(tb, SIGNAL(clicked()), dlg, SLOT(Update()));
@@ -118,7 +127,7 @@ public:
 };
 
 CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int baseClassID, FSModel* fem, bool includeModuleDependencies, bool showStepList, QWidget* parent)
-	: CHelpDialog(parent), ui(new UIDlgAddPhysicsItem)
+	: QDialog(parent), ui(new UIDlgAddPhysicsItem)
 {
 	setWindowTitle(windowName);
 	setMinimumSize(800, 600);
@@ -138,13 +147,11 @@ CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int base
 		}
 	}
 
-	m_module = FEBio::GetActiveModule();
-
 	unsigned int searchFlags = 0;
 	if (ui->m_modDepends) searchFlags |= FEBio::ClassSearchFlags::IncludeModuleDependencies;
 
 	// set the types
-	vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(m_module, ui->m_superID, ui->m_baseClassID, searchFlags);
+	vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(FEBio::GetActiveModule(), ui->m_superID, ui->m_baseClassID, searchFlags);
 	for (int i = 0; i < (int)l.size(); ++i)
 	{
 		FEBio::FEBioClassInfo& fac = l[i];
@@ -210,6 +217,20 @@ void CDlgAddPhysicsItem::Update()
 	ui->type->model()->sort(0);
 }
 
+void CDlgAddPhysicsItem::on_help_clicked()
+{
+    if(ui->type->selectedItems().size() > 0)
+    {
+        int classID = ui->type->currentItem()->data(0, Qt::UserRole).toInt();
+
+        ShowHelp(ClassIDToURL(classID));
+    }
+    else
+    {
+		QMessageBox::information(this, "Help", "Please select an item before clicking Help.");
+    }
+}
+
 std::string CDlgAddPhysicsItem::GetName()
 {
 	return ui->name->text().toStdString();
@@ -224,20 +245,6 @@ int CDlgAddPhysicsItem::GetClassID()
 {
 	QTreeWidgetItem* it = ui->type->currentItem();
 	return (it ? it->data(0, Qt::UserRole).toInt() : -1);
-}
-
-void CDlgAddPhysicsItem::UpdateHelpURL()
-{
-    if(ui->type->selectedItems().size() > 0)
-    {
-        int classID = ui->type->currentItem()->data(0, Qt::UserRole).toInt();
-
-        SetURL(ClassIDToURL(classID));
-    }
-    else
-    {
-		SetURL(QString());
-    }
 }
 
 class UIDlgCopyPhysicsItem
