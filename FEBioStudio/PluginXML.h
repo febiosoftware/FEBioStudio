@@ -39,6 +39,8 @@ public:
     bool LoadXML();
     void WriteXML();
 
+    void WriteConfigFile(const std::string& fileName);
+
 private:
     CPluginManager* m_manager;
     std::string m_path;

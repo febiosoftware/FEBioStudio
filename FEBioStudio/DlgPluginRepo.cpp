@@ -308,6 +308,7 @@ public:
 
     QPushButton* loadLocalButton;
     QPushButton* submitPluginButton;
+    QPushButton* writeConfigButton;
     QPushButton* closeButton;
 
     void setupUI(::CDlgPluginRepo* dlg, CPluginManager* manager)
@@ -524,6 +525,12 @@ public:
         buttonBar->addWidget(submitPluginButton = new QPushButton("Sumbit a Plugin to the Repository"));
         submitPluginButton->setFocusPolicy(Qt::NoFocus);
 
+        buttonBar->addWidget(writeConfigButton = new QPushButton("Save FEBio Config File"));
+        writeConfigButton->setFocusPolicy(Qt::NoFocus);
+        writeConfigButton->setToolTip("Writes the current plugin configuration to an FEBio config file. "
+            "This allows you to easily load these plugins into FEBio when launched from the command line by "
+            "referencing the config file.");
+
         QWidget* spacer = new QWidget();
         spacer->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
         buttonBar->addWidget(spacer);
@@ -549,6 +556,7 @@ public:
 
         QObject::connect(loadLocalButton, &QPushButton::clicked, dlg, &::CDlgPluginRepo::on_loadLocalButton_clicked);
         QObject::connect(submitPluginButton, &QPushButton::clicked, dlg, &::CDlgPluginRepo::on_submitPluginButton_clicked);
+        QObject::connect(writeConfigButton, &QPushButton::clicked, dlg, &::CDlgPluginRepo::on_writeConfigButton_clicked);
         QObject::connect(closeButton, &QPushButton::clicked, dlg, &::CDlgPluginRepo::reject);
     }
 
@@ -885,6 +893,8 @@ void CDlgPluginRepo::on_PluginsReady()
 
     for (auto& [id, plugin] : plugins)
     {
+        if(plugin.status == PLUGIN_UNAVAILABLE) continue;
+
         ui->pluginListWidget->AddPlugin(plugin);
     }
 
@@ -1032,4 +1042,13 @@ void CDlgPluginRepo::on_submitPluginButton_clicked()
 {
     DlgSubmitPlugin dlg(ui->m_manager);
     dlg.exec();
+}
+
+void CDlgPluginRepo::on_writeConfigButton_clicked()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, "Save FEBio Config File", "febio.xml", "XML Files (*.xml)");
+
+    if(fileName.isEmpty()) return;
+
+    ui->m_manager->WriteConfigFile(fileName.toStdString());
 }

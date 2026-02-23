@@ -113,6 +113,7 @@ private slots:
     // void on_bbButton_clicked(QAbstractButton *button);
     void on_loadLocalButton_clicked();
     void on_submitPluginButton_clicked();
+    void on_writeConfigButton_clicked();
     
 private:
     friend class Ui::CDlgPluginRepo;

@@ -460,6 +460,11 @@ Plugin* CPluginManager::AddNonRepoPlugin()
     return &imp->m_plugins[imp->m_localID + 1];
 }
 
+void CPluginManager::WriteConfigFile(const std::string& fileName)
+{
+    imp->m_xml.WriteConfigFile(fileName);
+}
+
 #ifndef UPDATER
 
 void CPluginManager::AddRepoPlugin(char** argv)

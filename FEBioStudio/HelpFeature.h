@@ -25,40 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <QDialog>
-
-class QLayout;
-
-namespace Ui {
-	class CHelpDialog;
-};
-
-class CHelpDialog : public QDialog
-{
-	Q_OBJECT
-
-public:
-	CHelpDialog(QWidget* parent);
-	virtual ~CHelpDialog();
-
-protected slots:
-	void on_help_clicked();
-
-public:
-	void SetLeftSideLayout(QLayout* layout);
-
-	virtual void UpdateHelpURL() = 0;
-
-protected:
-    void SetURL(const QString& url);
-
-protected:
-	int		m_module;
-	QString m_url;
-	QString m_unselectedHelp;
-private:
-	Ui::CHelpDialog* ui;
-};
+#include <QString>
 
 QString ClassIDToURL(int classID);
 void ShowHelp(const QString& url);

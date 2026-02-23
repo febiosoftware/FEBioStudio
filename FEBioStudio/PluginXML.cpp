@@ -184,3 +184,28 @@ void CPluginXML::WriteXML()
 
     m_busy = false;
 }
+
+void CPluginXML::WriteConfigFile(const std::string& fileName)
+{
+    XMLWriter xml;
+    xml.open(fileName.c_str());
+    
+    XMLElement febioConfig("febio_config");
+    febioConfig.add_attribute("version", "3.0");
+    xml.add_branch(febioConfig);
+
+    const std::unordered_map<int, Plugin>& plugins = m_manager->GetPlugins();
+
+    for (const auto& [id, plugin] : plugins)
+    {
+        if(plugin.localCopy)
+        {
+            XMLElement import("import");
+            import.value(plugin.files[plugin.mainFileIndex]);
+            xml.add_leaf(import);
+        }  
+    }
+
+    xml.close_branch(); // Close febio_config branch
+    xml.close(); // Close the XML file
+}

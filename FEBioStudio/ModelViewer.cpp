@@ -60,7 +60,7 @@ SOFTWARE.*/
 #include "FEObjectProps.h"
 #include "GLHighlighter.h"
 #include "Command.h"
-#include "HelpDialog.h" // for ShowHelp
+#include "HelpFeature.h"
 using namespace std;
 
 class CDlgWarnings : public QDialog
@@ -413,26 +413,8 @@ void CModelViewer::on_helpButton_clicked()
 		return;
 	}
 
-	// find the class ID
-	int classID = -1;
-	GMaterial* gmat = dynamic_cast<GMaterial*>(m_currentObject);
-	if (gmat)
-	{
-		FEBioMaterial* pm = dynamic_cast<FEBioMaterial*>(gmat->GetMaterialProperties());
-		if (pm)
-		{
-			classID = FEBio::GetClassId(pm->GetSuperClassID(), pm->GetTypeString());
-		}
-	}
-	FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(m_currentObject);
-	if (pmc)
-	{
-		classID = FEBio::GetClassId(pmc->GetSuperClassID(), pmc->GetTypeString());
-	}
-
-	// show the help page
-	QString url = ClassIDToURL(classID);
-	if (url.isEmpty())
+	QString url = HelpURLFromObject(m_currentObject);
+    if (url.isEmpty())
 	{
 		QMessageBox::critical(this, "Help", "No help available for this item.");
 	}
@@ -2202,6 +2184,13 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		return;
 	}
 
+    QString url = HelpURLFromObject(data->obj);
+    if (!url.isEmpty())
+    {
+        menu.addSeparator();
+        menu.addAction("View Help", [=](){ ShowHelp(url); });
+    }
+
 	if (del) 
 	{
 		menu.addSeparator();
@@ -2733,4 +2722,26 @@ void CModelViewer::OnExportNRRD()
             QMessageBox::critical(GetMainWindow(), "Export image", msg);
         }
     }
+}
+
+QString CModelViewer::HelpURLFromObject(FSObject* po)
+{
+    // find the class ID
+	int classID = -1;
+	GMaterial* gmat = dynamic_cast<GMaterial*>(po);
+	if (gmat)
+	{
+		FEBioMaterial* pm = dynamic_cast<FEBioMaterial*>(gmat->GetMaterialProperties());
+		if (pm)
+		{
+			classID = FEBio::GetClassId(pm->GetSuperClassID(), pm->GetTypeString());
+		}
+	}
+	FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(po);
+	if (pmc)
+	{
+		classID = FEBio::GetClassId(pmc->GetSuperClassID(), pmc->GetTypeString());
+	}
+    
+    return ClassIDToURL(classID);
 }

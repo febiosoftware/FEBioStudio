@@ -25,14 +25,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "HelpDialog.h"
+#include <QDialog>
 
 class UIDlgAddPhysicsItem;
 class UIDlgCopyPhysicsItem;
 class FSModel;
 class FSModelComponent;
 
-class CDlgAddPhysicsItem : public CHelpDialog
+class CDlgAddPhysicsItem : public QDialog
 {
 	Q_OBJECT
 
@@ -45,11 +45,9 @@ public:
 
 	void ShowNameAndCategoryFields(bool b);
 
-protected:
-	void UpdateHelpURL();
-
 public slots:
 	void Update();
+    void on_help_clicked();
 
 private:
 	UIDlgAddPhysicsItem*	ui;
