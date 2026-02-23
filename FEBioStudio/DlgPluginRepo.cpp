@@ -885,6 +885,8 @@ void CDlgPluginRepo::on_PluginsReady()
 
     for (auto& [id, plugin] : plugins)
     {
+        if(plugin.status == PLUGIN_UNAVAILABLE) continue;
+
         ui->pluginListWidget->AddPlugin(plugin);
     }
 
