@@ -893,7 +893,7 @@ void CDlgPluginRepo::on_PluginsReady()
 
     for (auto& [id, plugin] : plugins)
     {
-        if(plugin.status == PLUGIN_UNAVAILABLE) continue;
+        if(plugin.status == PLUGIN_UNAVAILABLE && !plugin.localCopy) continue;
 
         ui->pluginListWidget->AddPlugin(plugin);
     }
@@ -1021,17 +1021,6 @@ void CDlgPluginRepo::on_retryButton_clicked()
 
     ui->SetRepoStatus();
 }
-
-// void CDlgPluginRepo::on_bbButton_clicked(QAbstractButton *button)
-// {
-//     if(ui->bb->buttonRole(button) == QDialogButtonBox::ResetRole)
-//     {
-//         // 
-
-//         DlgSubmitPlugin dlg(ui->m_manager);
-//         dlg.exec();
-//     }
-// }
 
 void CDlgPluginRepo::on_loadLocalButton_clicked()
 {
