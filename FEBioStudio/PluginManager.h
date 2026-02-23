@@ -132,6 +132,8 @@ public:
     void SumbitPlugin(QByteArray& pluginInfo);
     void UploadImage(QByteArray& token, QString& filename);
 
+    void WriteConfigFile(const std::string& fileName);
+
 signals:
     void DownloadFinished(int id);
     void HTMLError(QString& message);
