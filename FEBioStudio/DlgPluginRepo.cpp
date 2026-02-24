@@ -289,9 +289,9 @@ public:
     QLabel* downloadNumberLabel;
     QLabel* errorLabel;
     QLabel* nameLabel;
-    QLabel* byLabel;
-    QLabel* ownerLabel;
+    // QLabel* byLabel;
     QLabel* descriptionLabel;
+    QLabel* ownerLabel;
     QLabel* tagLabel;
     CFrameButton* downloadButton;
     CFrameButton* downloadingButton;
@@ -445,31 +445,11 @@ public:
         errorLabel->setWordWrap(true);
         pluginRightLayout->addWidget(errorLabel);
 
-        QHBoxLayout* nameLayout = new QHBoxLayout;
-        nameLayout->setContentsMargins(0, 0, 0, 0);
-
-        nameLayout->addWidget(nameLabel = new QLabel);
+        pluginRightLayout->addWidget(nameLabel = new QLabel);
         QFont nameFont = nameLabel->font();
         nameFont.setBold(true);
         nameFont.setPointSize(18);
         nameLabel->setFont(nameFont);
-
-        byLabel = new QLabel("by");
-        QFont byFont = byLabel->font();
-        byFont.setPointSize(18);
-        byLabel->setFont(byFont);
-
-        nameLayout->addWidget(byLabel);
-
-        nameLayout->addWidget(ownerLabel = new QLabel);
-        QFont font2 = ownerLabel->font();
-        font2.setItalic(true);
-        font2.setPointSize(18);
-        ownerLabel->setFont(font2);
-
-        nameLayout->addStretch();
-
-        pluginRightLayout->addLayout(nameLayout);
 
         QScrollArea* scrollArea = new QScrollArea;
         scrollArea->setWidgetResizable(true);
@@ -482,6 +462,9 @@ public:
         descriptionLabel->setWordWrap(true);
 
         scrollLayout->addWidget(publicationWidget = new ::CPublicationWidgetView(::CPublicationWidgetView::LIST, false));
+
+        scrollLayout->addWidget(ownerLabel = new QLabel);
+        ownerLabel->setWordWrap(true);
 
         scrollLayout->addWidget(tagLabel = new QLabel);
         tagLabel->setWordWrap(true);
@@ -522,14 +505,14 @@ public:
         buttonBar->addWidget(loadLocalButton = new QPushButton("Load Local Plugin"));
         loadLocalButton->setFocusPolicy(Qt::NoFocus);
 
-        buttonBar->addWidget(submitPluginButton = new QPushButton("Sumbit a Plugin to the Repository"));
-        submitPluginButton->setFocusPolicy(Qt::NoFocus);
-
         buttonBar->addWidget(writeConfigButton = new QPushButton("Save FEBio Config File"));
         writeConfigButton->setFocusPolicy(Qt::NoFocus);
         writeConfigButton->setToolTip("Writes the current plugin configuration to an FEBio config file. "
             "This allows you to easily load these plugins into FEBio when launched from the command line by "
             "referencing the config file.");
+
+        buttonBar->addWidget(submitPluginButton = new QPushButton("Sumbit a Plugin to the Repository"));
+        submitPluginButton->setFocusPolicy(Qt::NoFocus);
 
         QWidget* spacer = new QWidget();
         spacer->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
@@ -602,8 +585,8 @@ public:
         if(id > 0)
         {
             nameLabel->setText(plugin->name.c_str());
-            byLabel->show();
-            ownerLabel->setText(plugin->owner.c_str());
+            ownerLabel->setText(QString("Author: ") + plugin->owner.c_str());
+            ownerLabel->show();
             downloadLabel->show();
             downloadNumberLabel->setText(QString::number(plugin->downloads));
             downloadNumberLabel->show();
@@ -626,8 +609,7 @@ public:
         else
         {
             nameLabel->setText(plugin->name.c_str());
-            byLabel->hide();
-            ownerLabel->setText("");
+            ownerLabel->hide();
             downloadLabel->hide();
             downloadNumberLabel->hide();
             descriptionLabel->setText(QString::fromStdString( plugin->description + "\n\nPath: " + plugin->files[0]));
