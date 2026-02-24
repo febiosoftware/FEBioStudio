@@ -315,7 +315,9 @@ void GLViewSelector::RegionSelectFENodes(const SelectRegion& region)
 	else
 		pm->TagAllNodes(0);
 
-//	double* a = m_glv->PlaneCoordinates();
+	GLViewSettings& vs = m_glv->GetViewSettings();
+
+	double* a = vs.m_planeCut;
 
 	vector<int> selectedNodes;
 	for (int i = 0; i < pm->Nodes(); ++i)
@@ -325,7 +327,7 @@ void GLViewSelector::RegionSelectFENodes(const SelectRegion& region)
 		{
 			vec3d r = T.LocalToGlobal(node.r);
 
-//			if ((m_glv->ShowPlaneCut() == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] >= 0.0))
+			if ((vs.m_showPlaneCut == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] >= 0.0))
 			{
 				vec3d p = transform.WorldToScreen(r);
 
@@ -507,7 +509,7 @@ void GLViewSelector::RegionSelectFEElems(const SelectRegion& region)
 	}
 	else pm->TagAllElements(0);
 
-//	double* a = m_glv->PlaneCoordinates();
+	double* a = view.m_planeCut;
 
 	vector<int> selectedElements;
 	int NE = pm->Elements();
@@ -544,7 +546,8 @@ void GLViewSelector::RegionSelectFEElems(const SelectRegion& region)
 				{
 					vec3d r = T.LocalToGlobal(pm->Node(el.m_node[j]).r);
 
-//					if ((m_glv->ShowPlaneCut()  == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] > 0))
+					if ((view.m_showPlaneCut == false) || 
+						(r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] > 0))
 					{
 						vec3d p = transform.WorldToScreen(r);
 						if (region.IsInside((int)p.x, (int)p.y))
@@ -686,16 +689,16 @@ void GLViewSelector::RegionSelectFEFaces(const SelectRegion& region)
 			bool b = regionFaceIntersect(transform, region, face, pm);
 
 			if (b)
-//			if (b && m_glv->ShowPlaneCut())
+			if (b && view.m_showPlaneCut)
 			{
-//				double* a = m_glv->PlaneCoordinates();
+				double* a = view.m_planeCut;
 				b = false;
 				vec3d r[FSFace::MAX_NODES];
 				pm->FaceNodePosition(face, r);
 				for (int j = 0; j < face.Nodes(); ++j)
 				{
 					vec3d p = pm->LocalToGlobal(r[j]);
-//					if (p.x * a[0] + p.y * a[1] + p.z * a[2] + a[3] > 0)
+					if (p.x * a[0] + p.y * a[1] + p.z * a[2] + a[3] > 0)
 					{
 						b = true;
 						break;
@@ -762,7 +765,7 @@ void GLViewSelector::RegionSelectFEEdges(const SelectRegion& region)
 	else
 		pm->TagAllEdges(0);
 
-//	double* a = m_glv->PlaneCoordinates();
+	double* a = view.m_planeCut;
 	vector<int> selectedEdges;
 	int NE = pm->Edges();
 	for (int i = 0; i < NE; ++i)
@@ -773,10 +776,10 @@ void GLViewSelector::RegionSelectFEEdges(const SelectRegion& region)
 			vec3d r0 = T.LocalToGlobal(pm->Node(edge.n[0]).r);
 			vec3d r1 = T.LocalToGlobal(pm->Node(edge.n[1]).r);
 
-//			double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
-//			double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
+			double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
+			double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
 
-//			if ((m_glv->ShowPlaneCut() == false) || ((d0 >= 0) || (d1 >= 0)))
+			if ((view.m_showPlaneCut == false) || ((d0 >= 0) || (d1 >= 0)))
 			{
 				vec3d p0 = transform.WorldToScreen(r0);
 				vec3d p1 = transform.WorldToScreen(r1);
@@ -1066,15 +1069,20 @@ void GLViewSelector::SelectFEElements(int x, int y)
 	bool bfound = FindElementIntersection(localRay, *pm, q, m_selectionMode == SELECT_SUBTRACT);
 
 	// see if the intersection with the plane cut is closer
-/*
-	if (bfound && m_glv->ShowPlaneCut())
+	GLViewSettings& vs = m_glv->GetViewSettings();
+
+	if (bfound && vs.m_showPlaneCut)
 	{
 		vec3d p = T.LocalToGlobal(q.point);
-		GLPlaneCut& planeCut = m_glv->GetPlaneCut();
-		bool bintersect = planeCut.Intersect(p, ray, q);
-		if (bintersect) bfound = bintersect;
+
+		double* a = vs.m_planeCut;
+		vec3d N(a[0], a[1], a[2]);
+		double lam = N*p + a[3];
+		if (lam < 0)
+		{
+			bfound = false;
+		}
 	}
-*/
 
 	// the selection command that will be executed
 	CCommand* pcmd = nullptr;
@@ -1192,16 +1200,16 @@ void GLViewSelector::SelectFEFaces(int x, int y)
 
 	bool bfound = FindFaceIntersection(ray, *pm, q);
 
-	if (bfound) // && m_glv->ShowPlaneCut())
+	if (bfound && view.m_showPlaneCut)
 	{
 		vec3d p = T.LocalToGlobal(q.point);
 
 		// see if the intersection lies behind the plane cut. 
-//		double* a = m_glv->PlaneCoordinates();
-//		double d = p.x * a[0] + p.y * a[1] + p.z * a[2] + a[3];
-//		if (d < 0)
+		double* a = view.m_planeCut;
+		double d = p.x * a[0] + p.y * a[1] + p.z * a[2] + a[3];
+		if (d < 0)
 		{
-//			bfound = false;
+			bfound = false;
 		}
 	}
 
@@ -1298,7 +1306,7 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 
 	vec3d o(0, 0, 0);
 	vec3d O = transform.WorldToScreen(o);
-//	double* a = m_glv->PlaneCoordinates();
+	double* a = view.m_planeCut;
 
 	int index = -1;
 	float zmin = 0.f;
@@ -1319,14 +1327,14 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 			// see if the edge intersects
 			bool bfound = intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt);
 
-/*			if (bfound && m_glv->ShowPlaneCut())
+			if (bfound && view.m_showPlaneCut)
 			{
 				// make sure one point is in front of plane
 				double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
 				double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
 				if ((d0 < 0) && (d1 < 0)) bfound = false;
 			}
-*/
+
 			if (bfound)
 			{
 				if ((index == -1) || (p0.z < zmin))
@@ -1621,7 +1629,8 @@ void GLViewSelector::SelectParts(int x, int y)
 					Triangle tri = { r0, r1, r2 };
 					if (IntersectTriangle(ray, tri, q))
 					{
-	//					if ((m_glv->ShowPlaneCut() == false) || (q.point.x * a[0] + q.point.y * a[1] + q.point.z * a[2] + a[3] > 0))
+						double* a = view.m_planeCut;
+						if ((view.m_showPlaneCut == false) || (q.point.x * a[0] + q.point.y * a[1] + q.point.z * a[2] + a[3] > 0))
 						{
 							double distance = ray.direction * (q.point - ray.origin);
 							if ((closestPart == 0) || ((distance >= 0.0) && (distance < minDist)))
@@ -1708,7 +1717,7 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 	GLViewTransform transform(m_glv);
 	Ray ray = transform.PointToRay(x, y);
 
-//	double* a = m_glv->PlaneCoordinates();
+	double* a = view.m_planeCut;
 	GFace* closestSurface = 0;
 	Intersection q;
 	double minDist = 0;
@@ -1743,7 +1752,7 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 						Triangle tri = { r0, r1, r2 };
 						if (IntersectTriangle(ray, tri, q))
 						{
-//							if ((m_glv->ShowPlaneCut() == false) || (q.point.x * a[0] + q.point.y * a[1] + q.point.z * a[2] + a[3] > 0))
+							if ((view.m_showPlaneCut == false) || (q.point.x * a[0] + q.point.y * a[1] + q.point.z * a[2] + a[3] > 0))
 							{
 								double distance = ray.direction * (q.point - ray.origin);
 								if ((closestSurface == 0) || ((distance >= 0.0) && (distance < minDist)))
@@ -1786,7 +1795,8 @@ GEdge* GLViewSelector::SelectClosestEdge(GLObjectItem* objItem, GLViewTransform&
 
 	Transform T = objItem->GetTransform();
 
-//	double* a = m_glv->PlaneCoordinates();
+	GLViewSettings& view = m_glv->GetViewSettings();
+	double* a = view.m_planeCut;
 
 	GEdge* closestEdge = nullptr;
 	zmin = 0.0;
@@ -1799,10 +1809,10 @@ GEdge* GLViewSelector::SelectClosestEdge(GLObjectItem* objItem, GLViewTransform&
 		vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(edge.n[0]).r));
 		vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(edge.n[1]).r));
 
-//		double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
-//		double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
+		double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
+		double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
 
-//		if ((m_glv->ShowPlaneCut() == false) || ((d0 > 0) || (d1 > 0)))
+		if ((view.m_showPlaneCut == false) || ((d0 > 0) || (d1 > 0)))
 		{
 			vec3d p0 = transform.WorldToScreen(r0);
 			vec3d p1 = transform.WorldToScreen(r1);
@@ -1933,7 +1943,9 @@ void GLViewSelector::SelectNodes(int x, int y)
 					vec3d r0 = node.LocalPosition();
 					vec3d r = T.LocalToGlobal(r0);
 
-//					if ((m_glv->ShowPlaneCut() == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] >= 0))
+					double* a = view.m_planeCut;
+
+					if ((view.m_showPlaneCut == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] >= 0))
 					{
 						vec3d p = transform.WorldToScreen(r);
 						if (rt.contains(QPoint((int)p.x, (int)p.y)))
@@ -2672,7 +2684,7 @@ void GLViewSelector::RegionSelectNodes(const SelectRegion& region)
 	GModel& model = ps->GetModel();
 
 	GLViewTransform transform(m_glv);
-//	double* a = m_glv->PlaneCoordinates();
+	double* a = view.m_planeCut;
 
 	vector<int> selectedNodes;
 
@@ -2695,7 +2707,7 @@ void GLViewSelector::RegionSelectNodes(const SelectRegion& region)
 				{
 					vec3d r = T.LocalToGlobal(node->LocalPosition());
 
-//					if ((m_glv->ShowPlaneCut() == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] >= 0.0))
+					if ((view.m_showPlaneCut == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] >= 0.0))
 					{
 						vec3d p = transform.WorldToScreen(r);
 
@@ -2813,7 +2825,7 @@ void GLViewSelector::SelectFENodes(int x, int y)
 
 	GLViewTransform transform(m_glv);
 
-//	double* a = m_glv->PlaneCoordinates();
+	double* a = view.m_planeCut;
 	int index = -1;
 	int globalIndex = -1;
 	float zmin = 0.f;
@@ -2824,9 +2836,9 @@ void GLViewSelector::SelectFENodes(int x, int y)
 		if (node.IsVisible() && ((view.m_bext == false) || node.IsExterior()))
 		{
 			vec3d r = T.LocalToGlobal(pm->Node(i).r);
-//			double D = r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3];
+			double D = r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3];
 
-//			if ((m_glv->ShowPlaneCut() == false) || (D >= 0))
+			if ((view.m_showPlaneCut == false) || (D >= 0))
 			{
 				vec3d p = transform.WorldToScreen(r);
 
