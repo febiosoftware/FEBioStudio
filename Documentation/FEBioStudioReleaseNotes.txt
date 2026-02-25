@@ -6,6 +6,65 @@
 
 ===========================================================================
 
+ R E L E A S E   3.1   2/25/2026
+
+===========================================================================
+
+New Features:
+* Added option to save an FEBio configuration file file from plugin repo dialog box.
+* A new context help menu was implemented that allows users to quickly find the online documentation of any feature in the model. (#259)
+* Added support for exporting plot object data from Python.
+* Added option to ignore hidden parts of mesh when calculating range of colormap. (#221)
+* Added export button to FEBio info dialog to export json file of all FEBio modules and features.
+
+Improvements:
+* The minor cosmetic changes were applied to the plugin repo dialog.
+* Ensured that unavailable plugins are still listed in the plugin repo if there is a local copy.
+* Unavailable plugins will no longer be displayed in the repo
+* Ambient and diffuse lighting settings are now stored in the settings file.
+* Disabled menus for viewing fibers and mat axes on post side.
+* Added IntegrateElements and IntegrateFaces to Python post module.
+* Added option to MMG remesher to preserve selected surface.
+* Added error check to prevent crash when a material property is not defined.
+* When a job file cannot be found, the user is prompted to try to locate it. (#249)
+* Added safety checks when creating equation fields on Post side to avoid crashes.
+* Deprecated features are not exported from FEBio info dialog.
+* Updated plugin template and building system to use new FEBioConfig.cmake
+* Modified how point-distance tool tracks selected nodes. Had to make change in GLView to give the active tool a chance to process pickEvent.
+
+Bug Fixes:
+* Fixed potential crash when exporting geometry to PVO file.
+* Restored feature that prevented selection of mesh items that are in front of the planecut.
+* Fixed issue with volume renderer not updating images.
+* Multiple 3D textures can now be displayed again.
+* Fixed issue with graphics context menu being responsive on post side (where it's not visible).
+* Beam and discrete elements now show correct coloring when colormap is active.
+* Fixed issue that all files were added to recent file list.
+* Streamlines plot now uses smooth legendbar again. (#258)
+* Implemented rendering for vertical discrete legend bars (#258)
+* Streamlines are automatically updated when parameters change.
+* Fixed issue with face activation when evaluating face and element fields. (This was causing problems when using external Python interface.)
+* Fixed some issues with constructing and meshing compound OCC objects.
+* Fixed problem where recording with opengl backend did not stop.
+* Fixed couple issues with hiding elements.
+* Made sure that mesh colors are updated after changing colormap settings.
+* Fixed function definition for ExportFEB and ExportVTK so they can be used by the Python interpreter.
+* Fixed issue with transparent material when colormap is enabled. (#250)
+* Added additional support for reading surfaces via element face indices.
+* Fixed bug where current jobpath is empty.
+* Added some checks to ensure the febio command line and working directory are valid for existing jobs.
+* Modified point distance tool so that users can enter node numbers manually.
+* Fixed issue with identifying backfacing faces.
+* Made sure that the ambient and diffuse strength of light are passed to render engine. (#238)
+* Made sure that generating mesh can be undone (#243)
+* Fixed screenshot feature on high DPI displays.
+
+Documentation:
+* Updated help feature to point to the new FEBio feature manual (https://febiosoftware.github.io/febio-feature-manual/)
+
+
+===========================================================================
+
  R E L E A S E   3.0   1/5/2026
 
 ===========================================================================

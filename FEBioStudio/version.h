@@ -29,7 +29,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // VERSION INFORMATION
 #define FBS_VERSION			3
-#define FBS_SUBVERSION		0
+#define FBS_SUBVERSION		1
 #define FBS_SUBSUBVERSION	0
 
 //-----------------------------------------------------------------------------
