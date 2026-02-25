@@ -35,16 +35,38 @@ SOFTWARE.*/
 #include <QResizeEvent>
 #include <QPixmap>
 #include <QPainter>
+#include <QScrollBar>
 #include "PluginListWidget.h"
 #include "PluginManager.h"
 #include "DlgPluginRepo.h"
+
+// A custom scroll area that only shows a vertical scrollbar, and resizes the viewport to fit the width of the contents
+class VerticalScrollArea : public QScrollArea
+{
+public:
+    explicit VerticalScrollArea(QWidget *parent = nullptr)
+    {
+        setWidgetResizable(true);
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    }
+
+    bool eventFilter(QObject *o, QEvent *e) override
+    {
+        // This works because QScrollArea::setWidget installs an eventFilter on the widget
+        if(o && o == widget() && e->type() == QEvent::Resize)
+        setMinimumWidth(widget()->minimumSizeHint().width() + verticalScrollBar()->width());
+
+        return QScrollArea::eventFilter(o, e);
+    }
+};
 
 class Ui::PluginThumbnail
 {
 public:
     QLabel* imageLabel;
     QLabel* nameLabel;
-    QLabel* ownerLabel;
+    QLabel* centerLabel;
     QLabel* statusLabel;
 
 public:
@@ -75,11 +97,11 @@ public:
             layout->setAlignment(Qt::AlignHCenter);
 
             nameLabel = new QLabel;
-            ownerLabel = new QLabel("<b>Connecting...</b>");
+            centerLabel = new QLabel("<b>Connecting...</b>");
             statusLabel = new QLabel;
 
             layout->addWidget(nameLabel, 0, Qt::AlignHCenter);
-            layout->addWidget(ownerLabel, 0, Qt::AlignHCenter);
+            layout->addWidget(centerLabel, 0, Qt::AlignHCenter);
             layout->addWidget(statusLabel, 0, Qt::AlignHCenter);
 
             m_parent->setLayout(layout);
@@ -101,18 +123,18 @@ public:
         nameFont.setBold(true);
         nameLabel->setFont(nameFont);
         
-        ownerLabel = new QLabel(QString::fromStdString("<i>" + plugin->owner + "</i>"));
-        ownerLabel->setAlignment(Qt::AlignLeft);
-        QFont ownerFont = ownerLabel->font();
+        centerLabel = new QLabel;
+        centerLabel->setAlignment(Qt::AlignLeft);
+        QFont ownerFont = centerLabel->font();
         ownerFont.setItalic(true);
-        ownerLabel->setFont(ownerFont);
+        centerLabel->setFont(ownerFont);
 
         statusLabel = new QLabel(QString::fromStdString(plugin->description));
         statusLabel->setAlignment(Qt::AlignLeft);
         QFont statusFont = statusLabel->font();
 
         infoLayout->addWidget(nameLabel);
-        infoLayout->addWidget(ownerLabel);
+        infoLayout->addWidget(centerLabel);
         infoLayout->addWidget(statusLabel);
 
         // In order to get the appropriate size for the image label, we need
@@ -214,11 +236,14 @@ void PluginThumbnail::SetProgress(float progress)
 
 void PluginThumbnail::SetErrorText(const QString& text)
 {
-    ui->ownerLabel->setText(text);
+    ui->centerLabel->setText(text);
+    ui->centerLabel->show();
 }
 
 void PluginThumbnail::SetStatus(int status)
 {
+    ui->centerLabel->hide();
+
     ui->imageLabel->setPixmap(ui->pixmap);
 
     QPixmap pluginImg = ui->imageLabel->pixmap();
@@ -254,7 +279,6 @@ void PluginThumbnail::SetStatus(int status)
     case PLUGIN_LOCAL:
         setToolTip("This plugin in not part of the repository, but was loaded from a local file.");
         ui->statusLabel->setText("Local Plugin");
-        ui->ownerLabel->hide();
         break;
     case PLUGIN_DOWNLOADING:
         setToolTip("Downloading...");
@@ -339,7 +363,7 @@ public:
         QVBoxLayout* mainLayout = new QVBoxLayout;
         mainLayout->setContentsMargins(0, 0, 0, 0);
 
-        QScrollArea* scrollArea = new QScrollArea;
+        VerticalScrollArea* scrollArea = new VerticalScrollArea;
         QWidget* scrollWidget = new QWidget;
         QVBoxLayout* scrollLayout = new QVBoxLayout;
         scrollLayout->setContentsMargins(0,0,0,0);
@@ -380,8 +404,6 @@ public:
         mainLayout->addWidget(scrollArea);
 
         parent->setLayout(mainLayout);
-
-        parent->setMinimumWidth(250);
     }
 
     void updateUi(int repoStatus = CPluginManager::CONNECTED)
