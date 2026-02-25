@@ -49,6 +49,8 @@ febioLibs=(
     $APP_BUNDLE/Contents/Frameworks/libfeimglib.dylib
     $APP_BUNDLE/Contents/Frameworks/libfebiomix.dylib
     $APP_BUNDLE/Contents/Frameworks/libfebiomech.dylib
+    $APP_BUNDLE/Contents/Frameworks/libfebioxml.dylib
+    $APP_BUNDLE/Contents/Frameworks/libfebioplot.dylib
 )
 
 for item in ${bins[@]}; do

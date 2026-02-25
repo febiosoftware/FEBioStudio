@@ -47,6 +47,8 @@ febioLibs=(
     $FEBIO_REPO/cmbuild/lib/libfeimglib.so
     $FEBIO_REPO/cmbuild/lib/libfebiomix.so
     $FEBIO_REPO/cmbuild/lib/libfebiomech.so
+    $FEBIO_REPO/cmbuild/lib/libfebioxml.so
+    $FEBIO_REPO/cmbuild/lib/libfebioplot.so
 )
 
 libs=(
