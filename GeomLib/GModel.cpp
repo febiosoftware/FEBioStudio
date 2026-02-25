@@ -95,7 +95,7 @@ bool GNodeIterator::isValid() const { return (m_node >= 0); }
 
 void GNodeIterator::reset()
 {
-	if (m_mdl.Objects() > 0)
+	if (m_mdl.Nodes() > 0)
 	{
 		m_node = 0;
 		m_obj = 0;
