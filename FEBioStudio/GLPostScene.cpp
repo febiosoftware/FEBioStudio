@@ -146,13 +146,6 @@ void GLPostModelItem::render(GLRenderEngine& re, GLContext& rc)
 	// Render discrete elements
 	RenderDiscrete(re, rc);
 
-	// render min/max markers
-	Post::CGLColorMap* pcm = glm->GetColorMap();
-	if (pcm && pcm->ShowMinMaxMarkers())
-	{
-		RenderMinMaxMarkers(re);
-	}
-
 	CGLPlaneCutPlot::DisableClipPlanes(re);
 }
 
@@ -1025,40 +1018,6 @@ void GLPostModelItem::RenderDiscreteElementAsSolid(GLRenderEngine& re, int i, do
 	}
 }
 
-void GLPostModelItem::RenderMinMaxMarkers(GLRenderEngine& re)
-{
-	Post::CGLModel& gm = *m_scene->GetGLModel();
-
-	Post::CGLColorMap* pcm = gm.GetColorMap();
-	if ((pcm == nullptr) || (pcm->IsActive() == false)) return;
-
-	vec3d rmin = pcm->GetMinPosition();
-	vec3d rmax = pcm->GetMaxPosition();
-
-	GLColor c0 = m_tex.sample(0.f);
-	GLColor c1 = m_tex.sample(1.f);
-
-	// TODO: Can I render this as tags instead of here
-	re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
-
-	float pointSize = re.pointSize();
-	re.setPointSize(15.f);
-
-	re.begin(GLRenderEngine::POINTS);
-	re.setColor(GLColor::White());
-	re.vertex(rmin);
-	re.vertex(rmax);
-	re.end();
-
-	re.setPointSize(10.f);
-	re.begin(GLRenderEngine::POINTS);
-	re.setColor(c0.r); re.vertex(rmin);
-	re.setColor(c1.r); re.vertex(rmax);
-	re.end();
-
-	re.setPointSize(pointSize);
-}
-
 void GLPostPlotItem::render(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& gm = *m_scene->GetGLModel();
@@ -1471,6 +1430,32 @@ void CGLPostScene::CreateTags(GLContext& rc)
 			}
 		}
 	}
+
+	// min/max markers
+	// render min/max markers
+	Post::CGLColorMap* pcm = gm.GetColorMap();
+	if (pcm && pcm->ShowMinMaxMarkers())
+	{
+		Post::CGLColorMap* pcm = gm.GetColorMap();
+		if ((pcm == nullptr) || (pcm->IsActive() == false)) return;
+
+		vec3d rmin = pcm->GetMinPosition();
+		vec3d rmax = pcm->GetMaxPosition();
+
+		GLColor c0 = GLColor::Blue();
+		GLColor c1 = GLColor::Red();
+
+		tag.r = rmin;
+		tag.c = c0;
+		tag.size = 8;
+		AddTag(tag);
+
+		tag.r = rmax;
+		tag.c = c1;
+		tag.size = 8;
+		AddTag(tag);
+	}
+
 }
 
 void CGLPostScene::UpdateTracking()

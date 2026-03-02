@@ -2760,15 +2760,16 @@ void CGLView::RenderTags(QPainter& painter)
 	int H = height();
 
 	double dpr = devicePixelRatio();
+	painter.setPen(QPen(Qt::white, 2));
 	for (int i = 0; i< ntags; i++)
 	{
 		GLTAG& tag = scene->Tag(i);
+		int size = tag.size;
+		if (size <= 0) size = 4;
 		int x = (int)(tag.wx * dpr);
 		int y = (int)(tag.wy * dpr);
-		painter.setBrush(QColor(0,0,0));
-		painter.drawEllipse(QPoint(x, y), 4, 4);
 		painter.setBrush(toQColor(tag.c));
-		painter.drawEllipse(QPoint(x-1, y-1), 4, 4);
+		painter.drawEllipse(QPoint(x, y), size, size);
 	}
 	GLViewSettings& vs = GetViewSettings();
 

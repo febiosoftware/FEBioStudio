@@ -38,10 +38,11 @@ class QPainter;
 // tag structure
 struct GLTAG
 {
-	char	sztag[64];	// name of tag
+	char	sztag[64] = { 0 };	// name of tag
 	float	wx, wy;		// window coordinates for tag
 	vec3d	r;			// world coordinates of tag
 	GLColor	c;			// tag color
+	int		size = -1;	// tag font size (if -1, use default)
 };
 
 class GLSceneItem;
