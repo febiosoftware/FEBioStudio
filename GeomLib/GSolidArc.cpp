@@ -201,7 +201,8 @@ void GSolidArc::Create()
 		edge[2] = FE[i][2];
 		edge[3] = FE[i][3];
 		if (i<4) AddFacet(edge, FACE_EXTRUDE);
-		else AddFacet(edge, FACE_POLYGON);
+		else if (i==4) AddFacet(edge, FACE_POLYGON, vec3d(0,0,-1));
+		else if (i==5) AddFacet(edge, FACE_POLYGON, vec3d(0,0, 1));
 	}
 
 	Update();

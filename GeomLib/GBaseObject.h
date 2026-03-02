@@ -108,7 +108,7 @@ public:
 	//! Add a facet with specified nodes and edges
 	void AddFacet(const std::vector<int>& node, const std::vector<std::pair<int, int> >& edge, int ntype);
 	//! Add a facet with specified edges
-	void AddFacet(const std::vector<int>& edge, int ntype);
+	void AddFacet(const std::vector<int>& edge, int ntype, vec3d normal = vec3d(0,0,0));
 	//! Add a surface to the object
 	void AddSurface(GFace* f);
 	//! Add a part to the object

@@ -274,22 +274,26 @@ GLMesh* triangulate(GFace& face)
 #endif
 
 	// find the (approximate) face normal
-	vec3d fc(0, 0, 0);
-	for (int i = 0; i < face.Nodes(); ++i)
+	vec3d fn = face.m_normal;
+	if (fn.Length() == 0.0)
 	{
-		GNode& node = *obj.Node(face.m_node[i]);
-		fc += node.LocalPosition();
-	}
-	fc /= face.Nodes();
+		// if the face normal is not defined, then we need to compute it ourselves.
+		vec3d fc(0, 0, 0);
+		for (int i = 0; i < face.Nodes(); ++i)
+		{
+			GNode& node = *obj.Node(face.m_node[i]);
+			fc += node.LocalPosition();
+		}
+		fc /= face.Nodes();
 
-	vec3d fn(0, 0, 0);
-	for (int i = 0; i < face.Nodes() - 1; ++i)
-	{
-		vec3d r0 = obj.Node(face.m_node[i  ])->LocalPosition();
-		vec3d r1 = obj.Node(face.m_node[i+1])->LocalPosition();
-		fn += (r0 - fc) ^ (r1 - fc);
+		for (int i = 0; i < face.Nodes() - 1; ++i)
+		{
+			vec3d r0 = obj.Node(face.m_node[i])->LocalPosition();
+			vec3d r1 = obj.Node(face.m_node[i + 1])->LocalPosition();
+			fn += (r0 - fc) ^ (r1 - fc);
+		}
+		fn.Normalize();
 	}
-	fn.Normalize();
 
 	// find the rotation to bring it back to the x-y plane
 	quatd q(fn, vec3d(0, 0, 1));
