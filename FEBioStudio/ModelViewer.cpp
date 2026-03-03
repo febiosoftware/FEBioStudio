@@ -406,6 +406,27 @@ void CModelViewer::on_refreshButton_clicked()
 
 void CModelViewer::on_helpButton_clicked()
 {
+	// firs check for plotfile
+	QTreeWidgetItem* it = ui->tree->currentItem();
+	if (it)
+	{
+		QString url;
+		if (it->text(0) == "plotfile")
+		{
+			url = GetPlotHelpURL();
+		}
+		else if (it->text(0) == "logfile")
+		{
+			url = GetLogHelpURL();
+		}
+
+		if (!url.isEmpty())
+		{
+			ShowHelp(url);
+			return;
+		}
+	}
+
 	// make sure we have something selected
 	if (m_currentObject == nullptr)
 	{
@@ -1980,10 +2001,12 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_PROJECT_OUTPUT:
 	case MT_PROJECT_OUTPUT_PLT:
-		menu.addAction("Edit output...", this, SLOT(OnEditOutput()));
+		menu.addAction("Edit Output...", this, SLOT(OnEditOutput()));
+		menu.addAction("View Help ...", this, SLOT(on_helpButton_clicked()));
 		break;
 	case MT_PROJECT_OUTPUT_LOG:
-		menu.addAction("Edit output...", this, SLOT(OnEditOutputLog()));
+		menu.addAction("Edit Output...", this, SLOT(OnEditOutputLog()));
+		menu.addAction("View Help ...", this, SLOT(on_helpButton_clicked()));
 		break;
 	case MT_NAMED_SELECTION:
 		menu.addAction("Remove empty", this, SLOT(OnRemoveEmptySelections()));
@@ -2188,7 +2211,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
     if (!url.isEmpty())
     {
         menu.addSeparator();
-        menu.addAction("View Help", [=](){ ShowHelp(url); });
+        menu.addAction("View Help ...", [=](){ ShowHelp(url); });
     }
 
 	if (del) 
@@ -2735,6 +2758,13 @@ QString CModelViewer::HelpURLFromObject(FSObject* po)
 		if (pm)
 		{
 			classID = FEBio::GetClassId(pm->GetSuperClassID(), pm->GetTypeString());
+		}
+	}
+	if (auto ds = dynamic_cast<GDiscreteSpringSet*>(po))
+	{
+		if (auto dm = ds->GetMaterial())
+		{
+			classID = FEBio::GetClassId(dm->GetSuperClassID(), dm->GetTypeString());
 		}
 	}
 	FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(po);

@@ -28,4 +28,6 @@ SOFTWARE.*/
 #include <QString>
 
 QString ClassIDToURL(int classID);
+QString GetPlotHelpURL();
+QString GetLogHelpURL();
 void ShowHelp(const QString& url);

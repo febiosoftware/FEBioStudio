@@ -1220,8 +1220,14 @@ void CModelTree::UpdateDiscrete(QTreeWidgetItem* t1, FSModel& fem)
 		{
 			GDiscreteSpringSet* pg = dynamic_cast<GDiscreteSpringSet*>(po);
 
+			QString name = QString::fromStdString(pg->GetName());
+			if (auto dm = pg->GetMaterial())
+			{
+				name += QString(" [") + QString::fromStdString(dm->GetTypeString()) + "]";
+			}
+
 			QTreeWidgetItem* t2 = nullptr;
-			t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg);
+			t2 = AddTreeItem(t1, name, MT_DISCRETE_SET, pg->size(), pg);
 
 			if (t2 && !pg->IsActive())
 			{

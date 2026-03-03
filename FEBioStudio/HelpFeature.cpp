@@ -29,7 +29,17 @@ SOFTWARE.*/
 #include "HelpFeature.h"
 #include <FEBioLink/FEBioClass.h>
 
-#define MANUAL_PATH "https://febiosoftware.github.io/febio-feature-manual/features/"
+#define MANUAL_PATH "https://febiosoftware.github.io/febio-feature-manual/"
+
+QString GetPlotHelpURL()
+{
+	return "plotvars";
+}
+
+QString GetLogHelpURL()
+{
+	return "logvars";
+}
 
 QString ClassIDToURL(int classID)
 {
@@ -43,6 +53,7 @@ QString ClassIDToURL(int classID)
 
 		QString tmp = QString(classInfo.szmod) + "_" + superClass + "_" + QString(classInfo.sztype);
 		url = tmp.replace(" ", "_").toLower();
+		url = "features/" + url;
 	}
 	return url;
 }
