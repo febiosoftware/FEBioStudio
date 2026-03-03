@@ -665,7 +665,7 @@ public:
 		{
 			lc->SetExtendMode(plc->GetParam("extend")->GetIntValue());
 			lc->SetInterpolator(plc->GetParam("interpolate")->GetIntValue());
-			plt->SetLoadCurve(lc);
+			plt->SetPointCurve(lc);
 		}
 	}
 
@@ -676,7 +676,7 @@ public:
 		fec->SetFEClass(nullptr, nullptr);
 		propStack->setCurrentIndex(PROPS_MATH);
 		plt->Clear();
-		plt->SetLoadCurve(nullptr);
+		plt->SetPointCurve(nullptr);
 
 		if (plc == nullptr) return;
 
@@ -692,7 +692,7 @@ public:
 		fec->SetFEClass(nullptr, nullptr);
 		propStack->setCurrentIndex(PROPS_MATH_INTERVAL);
 		plt->Clear();
-		plt->SetLoadCurve(nullptr);
+		plt->SetPointCurve(nullptr);
 
 		if (plc == nullptr) return;
 

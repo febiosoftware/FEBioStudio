@@ -133,6 +133,25 @@ void CCurveEditor::Update()
 	}
 }
 
+void CCurveEditor::SelectObject(FSObject* po)
+{
+	// iterate over the tree and find the item that corresponds to this object
+	QTreeWidgetItemIterator it(ui->tree);
+	while (*it)
+	{
+		CCurveEditorItem* item = dynamic_cast<CCurveEditorItem*>(*it);
+		if (item)
+		{
+			if (item->GetFunction() == po)
+			{
+				ui->tree->setCurrentItem(item);
+				return;
+			}
+		}
+		++it;
+	}
+}
+
 void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSModelComponent* po, const std::string& name)
 {
 	string oname = name;
@@ -151,7 +170,7 @@ void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSModelComponent* po, co
 		}
 	}
 
-	int NP = po->Properties();
+	int NP = (int)po->Properties();
 	for (int n = 0; n < NP; ++n)
 	{
 		FSProperty& prop = po->GetProperty(n);
@@ -366,14 +385,27 @@ void CCurveEditor::AddModelComponent(QTreeWidgetItem* t1, FSModelComponent* po)
 		QString propName = QString::fromStdString(prop.GetName());
 		if (prop.Size() == 1)
 		{
-			FSModelComponent* pm = dynamic_cast<FSModelComponent*>(prop.GetComponent());
-			if (pm)
+			if (prop.GetSuperClassID() == FEFUNCTION1D_ID)
 			{
-				const char* sztype = pm->GetTypeString();
-				QString name = propName;
-				if (sztype) name = QString("%1 [%2]").arg(propName).arg(sztype);
-				QTreeWidgetItem* tc = ui->addTreeItem(t1, name);
-				AddModelComponent(tc, pm);
+				auto f = dynamic_cast<FSFunction1D*>(prop.GetComponent());
+				CCurveEditorItem* child = new CCurveEditorItem(t1);
+				child->SetFunction(f);
+				child->setText(0, propName);
+
+				child->setItalicFont(true);
+				child->setBoldFont(f != nullptr);
+			}
+			else
+			{
+				FSModelComponent* pm = dynamic_cast<FSModelComponent*>(prop.GetComponent());
+				if (pm)
+				{
+					const char* sztype = pm->GetTypeString();
+					QString name = propName;
+					if (sztype) name = QString("%1 [%2]").arg(propName).arg(sztype);
+					QTreeWidgetItem* tc = ui->addTreeItem(t1, name);
+					AddModelComponent(tc, pm);
+				}
 			}
 		}
 		else
@@ -626,11 +658,41 @@ void CCurveEditor::on_tree_currentItemChanged(QTreeWidgetItem* current, QTreeWid
 	m_currentItem = dynamic_cast<CCurveEditorItem*>(current);
 	if (m_currentItem)
 	{
-		Param* p = m_currentItem->GetParam();
-		if (p)
+		if (m_currentItem->isParam())
 		{
-			int lcId = p->GetLoadCurveID();
-			ui->setCurrentLC(lcId);
+			ui->selectLC->show();
+			ui->plot->ShowTimeRange(true);
+			Param* p = m_currentItem->GetParam();
+			if (p)
+			{
+				int lcId = p->GetLoadCurveID();
+				ui->lcWidget->show();
+				ui->setCurrentLC(lcId);
+
+			}
+			else
+				ui->setCurrentLC(-1);
+
+			// force an update of the combo box to ensure that the plot widget updates
+			emit ui->selectLC->currentIndexChanged(ui->selectLC->currentIndex());
+		}
+		else if (m_currentItem->isFunction())
+		{
+			ui->lcWidget->hide();
+			m_plc = nullptr;
+			ui->plot->ShowTimeRange(false);
+
+			FSFunction1D* f = m_currentItem->GetFunction();
+
+			if (f)
+			{
+				LoadCurve* lc = f->CreateLoadCurve();
+				ui->plot->SetPointCurve(lc);
+				ui->plot->on_zoomToFit_clicked();
+				ui->plot->repaint();
+				ui->stack->setCurrentIndex(1);
+			}
+			else ui->stack->setCurrentIndex(0);
 		}
 		else ui->deactivate();
 	}
@@ -638,6 +700,7 @@ void CCurveEditor::on_tree_currentItemChanged(QTreeWidgetItem* current, QTreeWid
 	{
 		ui->setCurrentLC(-1);
 		ui->deactivate();
+		ui->selectLC->hide();
 	}
 }
 
@@ -655,7 +718,7 @@ void CCurveEditor::SetActiveLoadController(FSLoadController* plc)
 	if (plc->IsType("loadcurve"))
 	{
 		panel = 1;
-		ui->plot->SetLoadCurve(plc->CreateLoadCurve());
+		ui->plot->SetPointCurve(plc->CreateLoadCurve());
 		ui->plot->on_zoomToFit_clicked();
 		ui->plot->repaint();
 	}
@@ -730,6 +793,11 @@ void CCurveEditor::on_newLC_clicked(bool b)
 			plc->SetName(name);
 			fem->AddLoadController(plc);
 
+			if (m_currentItem)
+			{
+				m_currentItem->setBoldFont(true);
+			}
+
 			// add it to the list
 			ui->selectLC->addItem(QString::fromStdString(plc->GetName()), plc->GetID());
 			ui->setCurrentLC(plc->GetID());
@@ -764,13 +832,19 @@ void CCurveEditor::on_plot_dataChanged()
 {
 	if (m_currentItem == nullptr) return;
 	Param* p = m_currentItem->GetParam();
-	if (p == nullptr) return;
-	
-	int lcid = p->GetLoadCurveID();
-	if (lcid < 0) return;
+	if (p)
+	{
+		int lcid = p->GetLoadCurveID();
+		if (lcid < 0) return;
 
-	FSLoadController* plc = m_fem->GetLoadControllerFromID(lcid); assert(plc);
-	if (plc) plc->UpdateData(true);
+		FSLoadController* plc = m_fem->GetLoadControllerFromID(lcid); assert(plc);
+		if (plc) plc->UpdateData(true);
+	}
+	FSFunction1D* f = m_currentItem->GetFunction();
+	if (f)
+	{
+		f->UpdateData(true);
+	}
 }
 
 void CCurveEditor::on_math_mathChanged(QString s)

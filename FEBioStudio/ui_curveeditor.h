@@ -43,17 +43,44 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "FEClassPropsView.h"
 
+class FSFunction1D;
+
 class CCurveEditorItem : public QTreeWidgetItem
 {
+	enum Type { NONE, PARAM, FUNCTION };
+
 public:
 	CCurveEditorItem(QTreeWidget* tree) : QTreeWidgetItem(tree) { m_pp = 0; }
 	CCurveEditorItem(QTreeWidgetItem* item) : QTreeWidgetItem(item) { m_pp = 0; }
 
-	void SetParam(Param* pp) { m_pp = pp; }
+	void SetParam(Param* pp) { m_pp = pp; m_f1d = nullptr; type = PARAM; }
 	Param* GetParam() { return m_pp; }
 
+	void SetFunction(FSFunction1D* f) { m_f1d = f; m_pp = nullptr; type = FUNCTION; }
+	FSFunction1D* GetFunction() { return m_f1d; }
+
+	bool isParam() const { return (type == PARAM); }
+	bool isFunction() const { return (type == FUNCTION); }
+
+	void setBoldFont(bool b)
+	{
+		QFont currentFont = font(0);
+		currentFont.setBold(b);
+		setFont(0, currentFont);
+	}
+
+	void setItalicFont(bool b)
+	{
+		QFont currentFont = font(0);
+		currentFont.setItalic(b);
+		setFont(0, currentFont);
+	}
+
+
 private:
-	Param*			m_pp;
+	Type type = NONE;
+	Param*			m_pp = nullptr;
+	FSFunction1D*	m_f1d = nullptr;
 };
 
 class Ui::CCurveEdior
@@ -136,7 +163,8 @@ public:
 		lcWidget->setLayout(lcLayout);
 
 		stack = new QStackedWidget;
-		stack->addWidget(new QLabel("(no controller)"));
+		QLabel* lbl = new QLabel("(nothing to display)"); lbl->setAlignment(Qt::AlignCenter);
+		stack->addWidget(lbl);
 		stack->addWidget(plot);
 		stack->addWidget(math);
 		stack->addWidget(math2);
@@ -165,7 +193,7 @@ public:
 		if (pp && (pp->GetLoadCurveID() > 0)) {
 			QFont f = child->font(0); f.setBold(true); child->setFont(0, f);
 		}
-		child->SetParam(pp);
+		if (pp) child->SetParam(pp);
 		child->setText(0, txt);
 		return child;
 	}
@@ -186,6 +214,7 @@ public:
 
 	void deactivate()
 	{
+		if (!lcWidget->isVisible()) lcWidget->show();
 		lcWidget->setEnabled(false);
 		stack->setCurrentIndex(0);
 	}

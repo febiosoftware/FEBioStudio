@@ -1048,7 +1048,7 @@ void CPlotWidget::paintEvent(QPaintEvent* pe)
 		// clear the background
 		p.fillRect(m_screenRect, m_data.m_bgCol);
 
-	if (m_hlrng[1] > m_hlrng[0])
+	if (m_showHighlightInterval && (m_hlrng[1] > m_hlrng[0]))
 	{
 		int x0 = ViewToScreenX(m_hlrng[0]);
 		int x1 = ViewToScreenX(m_hlrng[1]);

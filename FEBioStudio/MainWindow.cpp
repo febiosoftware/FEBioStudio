@@ -2308,8 +2308,8 @@ void CMainWindow::UpdateToolbar()
 //-----------------------------------------------------------------------------
 void CMainWindow::OpenInCurveEditor(FSObject* po)
 {
-	//	OnToolsCurveEditor(0, 0);
-	//	m_pCurveEdit->Select(po);
+	ui->showCurveEditor();
+	if (ui->curveWnd) ui->curveWnd->SelectObject(po);
 }
 
 //-----------------------------------------------------------------------------

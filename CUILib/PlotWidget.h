@@ -293,6 +293,7 @@ public:
 	bool		m_bautoRngUpdate;
 	bool		m_newSelect;
 	bool		m_bdragging;
+	bool		m_showHighlightInterval = true;
 
 	QString		m_customXAxisLabel;
 	QString		m_customYAxisLabel;

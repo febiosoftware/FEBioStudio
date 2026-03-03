@@ -54,6 +54,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include "SelectionBox.h"
 #include "DlgAddPhysicsItem.h"
+#include "MainWindow.h"
 using namespace std;
 
 // in MaterialPropsView.cpp
@@ -1906,15 +1907,18 @@ public:
 
 	FSMeshSelection* m_pms;
 
+	CMainWindow* m_wnd = nullptr;
+
 public:
 	void setup(CMainWindow* wnd, QWidget* w)
 	{
 		m_pms = nullptr;
+		m_wnd = wnd;
 
 		feprops = new FEClassPropsWidget;
 
 		stack = new QStackedWidget;
-		stack->addWidget(plt  = new CCurveEditWidget);
+		stack->addWidget(plt  = new CCurveEditWidget); plt->ShowOpenCEButton(true);
 		stack->addWidget(math = new CMathEditWidget);
 
 		QVBoxLayout* l = new QVBoxLayout;
@@ -1930,6 +1934,7 @@ public:
 		QObject::connect(feprops, SIGNAL(paramChanged(FSCoreBase*, Param*)), w, SLOT(on_paramChanged(FSCoreBase*, Param*)));
 		QObject::connect(plt, SIGNAL(dataChanged()), w, SLOT(onPlotChanged()));
 		QObject::connect(math, SIGNAL(mathChanged(QString)), w, SLOT(onMathChanged(QString)));
+		QObject::connect(plt, SIGNAL(openCEButtonClicked()), w, SLOT(onOpenCEButtonClicked()));
 	}
 
 	void SetFunction1D(FSFunction1D* pf)
@@ -1941,7 +1946,7 @@ public:
 			{
 				stack->setCurrentIndex(0);
 				LoadCurve* pc = pf->CreateLoadCurve();
-				plt->SetLoadCurve(pc);
+				plt->SetPointCurve(pc);
 				stack->show();
 			}
 			else if (pf && pf->IsType("math"))
@@ -2051,4 +2056,18 @@ void FEClassEdit::onPlotChanged()
 void FEClassEdit::on_paramChanged(FSCoreBase* pc, Param* p)
 {
 	emit paramChanged(pc, p);
+}
+
+void FEClassEdit::onOpenCEButtonClicked()
+{
+	FSProperty* prop = ui->feprops->getSelectedProperty();
+	if (prop && (prop->GetSuperClassID() == FEFUNCTION1D_ID))
+	{
+		FSFunction1D* pf = dynamic_cast<FSFunction1D*>(prop->GetComponent(0));
+		if (pf && pf->IsType("point"))
+		{
+			ui->stack->hide();
+			ui->m_wnd->OpenInCurveEditor(pf);
+		}
+	}
 }

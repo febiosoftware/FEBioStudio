@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "CommandManager.h"
 #include <CUILib/PlotWidget.h>
 
-class LoadCurve;
+class PointCurve;
 
 class UICurveEditWidget;
 
@@ -41,9 +41,13 @@ public:
 
 	void Clear();
 
-	void SetLoadCurve(LoadCurve* lc);
+	void SetPointCurve(PointCurve* lc);
 
 	void SetXRange(double xmin, double xmax);
+
+	void ShowTimeRange(bool b);
+
+	void ShowOpenCEButton(bool b);
 
 public slots:
 	void on_plot_pointClicked(QPointF p, bool shift);
@@ -68,11 +72,13 @@ public slots:
 	void on_paste_clicked(bool b);
 	void on_open_clicked(bool b);
 	void on_save_clicked(bool b);
+	void on_openCE_clicked(bool b);
 	void on_clear_clicked();
 	void on_showDeriv_toggled(bool b);
 
 signals:
 	void dataChanged();
+	void openCEButtonClicked();
 
 private:
 	void UpdateSelection();
@@ -83,23 +89,4 @@ private:
 
 	// undo stack
 	CBasicCmdManager	m_cmd;
-};
-
-class CCurvePlotWidget : public CPlotWidget
-{
-	Q_OBJECT
-
-public:
-	CCurvePlotWidget(QWidget* parent = nullptr);
-
-	void DrawPlotData(QPainter& p, CPlotData& data) override;
-
-	void SetLoadCurve(LoadCurve* lc);
-	LoadCurve* GetLoadCurve();
-
-	void ShowDeriv(bool b);
-
-private:
-	LoadCurve* m_lc;
-	bool	m_showDeriv;
 };
