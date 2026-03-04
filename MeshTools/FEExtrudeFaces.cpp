@@ -356,7 +356,7 @@ bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 			if (face.Nodes() == 3)
 			{
 				el.SetType(FE_PENTA6);
-				el.m_gid = nid;
+				el.m_gid = nid + face.m_gid;
 
 				el.m_node[0] = face.n[0];
 				el.m_node[1] = face.n[1];
@@ -378,7 +378,7 @@ bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 			else if (face.Nodes() == 4)
 			{
 				el.SetType(FE_HEX8);
-				el.m_gid = nid;
+				el.m_gid = nid + face.m_gid;
 
 				el.m_node[0] = face.n[0];
 				el.m_node[1] = face.n[1];
@@ -402,7 +402,7 @@ bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 			}
 			else if (face.Nodes() == 6) {
 				el.SetType(FE_PENTA15);
-				el.m_gid = nid;
+				el.m_gid = nid + face.m_gid;
 
 				el.m_node[0] = face.n[0];
 				el.m_node[1] = face.n[1];
@@ -438,7 +438,7 @@ bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 			}
 			else if (face.Nodes() == 8) {
 				el.SetType(FE_HEX20);
-				el.m_gid = nid;
+				el.m_gid = nid + face.m_gid;
 
 				el.m_node[0] = face.n[0];
 				el.m_node[1] = face.n[1];
@@ -481,7 +481,7 @@ bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 			}
 			else if (face.Nodes() == 9) {
 				el.SetType(FE_HEX27);
-				el.m_gid = nid;
+				el.m_gid = nid + face.m_gid;
 
 				el.m_node[0] = face.n[0];
 				el.m_node[1] = face.n[1];
@@ -534,6 +534,7 @@ bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 			}
 		}
 	}
+	pm->UpdateElementPartitions();
 
 	// rebuilding the mesh is going to scramble the nodal (geometry) IDs. 
 	// let's keep track of them so we can restore them later
