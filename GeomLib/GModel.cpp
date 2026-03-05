@@ -1905,7 +1905,15 @@ GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newOb
 					allPrimitives = false; break;
 				}
 				else
+				{
+					// make sure it's not a shell primitive
+					// since those cannot be merged into a multi-block
+					if (dynamic_cast<GShellPrimitive*>(p)) {
+						allPrimitives = false;
+						break;
+					}
 					prim.push_back(p);
+				}
 			}
 
 			if (allPrimitives)
