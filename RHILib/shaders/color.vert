@@ -49,12 +49,12 @@ layout(binding = 3) uniform sampler2D envSmp;
 
 void main()
 {
-    float a = clamp(mesh.opacity, 0.0, 1.0);
 
-    if (mesh.useVertexColor > 0) v_color = vec4(color.xyz, a);
+    if (mesh.useVertexColor > 0) v_color = color;
     else {
+	    float a = clamp(mesh.opacity, 0.0, 1.0);
         v_color = mesh.diffuse;
-        v_color.a = mesh.opacity;
+        v_color.a = a;
     }
 
     v_normal = normalize((mesh.mv*vec4(normal, 0)).xyz);
