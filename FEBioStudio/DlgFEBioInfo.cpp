@@ -222,9 +222,56 @@ void CDlgFEBioInfo::onExport()
 					break;
 					}
 				}
+
+				// get the range for the parameter
+				RANGE rng(FE_DONT_CARE);
+				if (auto iv = dynamic_cast<FEIntValidator*>(pi.GetValidator()))
+				{
+					rng = iv->GetRange();
+				}
+				if (auto dv = dynamic_cast<FEDoubleValidator*>(pi.GetValidator()))
+				{
+					rng = dv->GetRange();
+				}
+				if (auto pv = dynamic_cast<FEParamDoubleValidator*>(pi.GetValidator()))
+				{
+					rng = pv->GetRange();
+				}
+
+				// convert to string
+				QString rangeStr("");
+				switch (rng.m_rt)
+				{
+				case FE_DONT_CARE:
+				{
+					switch (pi.type())
+					{
+					case FE_PARAM_INT: rangeStr = QString("$\\in \\mathbb{Z}$"); break;
+					case FE_PARAM_DOUBLE:
+					case FE_PARAM_DOUBLE_MAPPED: rangeStr = QString("$\\in \\mathbb{R}$"); break;
+					case FE_PARAM_BOOL: rangeStr = QString("$\\{0, 1\\}$"); break;
+					case FE_PARAM_VEC3D: 
+					case FE_PARAM_VEC3D_MAPPED: rangeStr = QString("$\\in \\mathbb{R}^3$"); break;
+					default:
+						rangeStr = QString("N/A");
+					}
+					break;
+				}
+				case FE_GREATER         : rangeStr = QString("$\\gt %1$").arg(rng.m_fmin); break;
+				case FE_GREATER_OR_EQUAL: rangeStr = QString("$\\ge %1$").arg(rng.m_fmin); break;
+				case FE_LESS            : rangeStr = QString("$\\lt %1$").arg(rng.m_fmax); break;
+				case FE_LESS_OR_EQUAL   : rangeStr = QString("$\\le %1$").arg(rng.m_fmax); break;
+				case FE_OPEN            : rangeStr = QString("$(%1, %2)$").arg(rng.m_fmin).arg(rng.m_fmax); break;
+				case FE_CLOSED          : rangeStr = QString("$[%1, %2]$").arg(rng.m_fmin).arg(rng.m_fmax); break;
+				case FE_LEFT_OPEN       : rangeStr = QString("$(%1, %2]$").arg(rng.m_fmin).arg(rng.m_fmax); break;
+				case FE_RIGHT_OPEN      : rangeStr = QString("$[%1, %2)$").arg(rng.m_fmin).arg(rng.m_fmax); break;
+				case FE_NOT_EQUAL       : rangeStr = QString("$\\neq %1$").arg(rng.m_fmin); break;
+				}
+
 				paramObj["name"] = pi.name();
 				paramObj["description"] = (pi.longName() ? pi.longName() : "");
 				paramObj["default"] = paramVal;
+				paramObj["range"] = rangeStr;
 				paramObj["units"] = (pi.units() ? pi.units() : "");
 				paramArray.append(paramObj);
 			}
@@ -241,6 +288,7 @@ void CDlgFEBioInfo::onExport()
 						paramObj["name"] = szname;
 						paramObj["description"] = (prop->GetLongName() ? prop->GetLongName() : "");
 						paramObj["default"] = "";
+						paramObj["range"] = "N/A";
 						paramObj["units"] = "";
 						paramArray.append(paramObj);
 					}
