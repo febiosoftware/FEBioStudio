@@ -223,7 +223,7 @@ void CDlgFEBioInfo::onExport()
 					}
 				}
 				paramObj["name"] = pi.name();
-				paramObj["description"] = pi.longName();
+				paramObj["description"] = (pi.longName() ? pi.longName() : "");
 				paramObj["default"] = paramVal;
 				paramObj["units"] = (pi.units() ? pi.units() : "");
 				paramArray.append(paramObj);
@@ -239,7 +239,7 @@ void CDlgFEBioInfo::onExport()
 					{
 						QJsonObject paramObj;
 						paramObj["name"] = szname;
-						paramObj["description"] = "";
+						paramObj["description"] = (prop->GetLongName() ? prop->GetLongName() : "");
 						paramObj["default"] = "";
 						paramObj["units"] = "";
 						paramArray.append(paramObj);

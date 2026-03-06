@@ -197,7 +197,7 @@ public:
 				Param& p = m_pm->GetParam(m_paramId);
 				if (column == 0)
 				{
-					QString name(p.GetLongName());
+					QString name(p.GetShortName());
 					if (m_flag & Item_Indented)
 					{
 						name = "  " + name;

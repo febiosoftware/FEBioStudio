@@ -659,8 +659,8 @@ void CModelViewer::on_props_paramChanged(FSCoreBase* pc, Param* p)
 	}
 
 	QString sp;
-	if (po) sp = QString("\"%1.%2\"").arg(QString::fromStdString(po->GetName())).arg(p->GetLongName());
-	else sp = QString("\"%1\"").arg(p->GetLongName());
+	if (po) sp = QString("\"%1.%2\"").arg(QString::fromStdString(po->GetName())).arg(p->GetShortName());
+	else sp = QString("\"%1\"").arg(p->GetShortName());
 
 	QString sv;
 	switch (p->GetParamType())

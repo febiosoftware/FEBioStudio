@@ -165,7 +165,7 @@ void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSModelComponent* po, co
 		if (p.GetLoadCurveID() > 0)
 		{
 			assert(p.IsVolatile());
-			string pname = oname + "." + p.GetLongName();
+			string pname = oname + "." + p.GetShortName();
 			ui->addTreeItem(t1, QString::fromStdString(pname), &p);
 		}
 	}

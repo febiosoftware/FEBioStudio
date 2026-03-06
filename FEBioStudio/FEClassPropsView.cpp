@@ -89,7 +89,7 @@ void CPropertySelector::onSelectionChanged(int n)
 // also opening a custom dialog, and that works without any issues (with this object's destructor running
 // after this function exits as expected). 
 #ifndef __APPLE__
-		QString title = QString("Remove %1").arg(QString::fromStdString(m_pp->GetLongName()));
+		QString title = QString("Remove %1").arg(QString::fromStdString(m_pp->GetName()));
 		if (QMessageBox::question(this, title, "Are you sure you want to remove this property?", QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
 		{
 			emit currentDataChanged(n);
@@ -103,7 +103,7 @@ void CPropertySelector::onSelectionChanged(int n)
 	{
 		int superID = m_pp->GetSuperClassID();
 		int baseID = m_pp->GetPropertyType();
-		QString title = QString("Add %1").arg(QString::fromStdString(m_pp->GetLongName()));
+		QString title = QString("Add %1").arg(QString::fromStdString(m_pp->GetName()));
 		CDlgAddPhysicsItem dlg(title, superID, baseID, nullptr, true, false, this);
 		dlg.ShowNameAndCategoryFields(false);
 		if (dlg.exec())
@@ -120,7 +120,7 @@ void CPropertySelector::onSelectionChanged(int n)
 	{
 		int superID = m_pp->GetSuperClassID();
 		int baseID = m_pp->GetPropertyType();
-		QString title = QString("Copy %1").arg(QString::fromStdString(m_pp->GetLongName()));
+		QString title = QString("Copy %1").arg(QString::fromStdString(m_pp->GetName()));
 		FSModelComponent* src = dynamic_cast<FSModelComponent*>(m_pp->GetParent());
 		CDlgCopyPhysicsItem dlg(title, superID, baseID, src, m_fem, this);
 		if (dlg.exec())
@@ -231,8 +231,8 @@ public:
 						QString name;
 						if (m_index == -1)
 						{
-							string sname = p.GetLongName();
-//							string sname = FSCore::beautify_string(p.GetLongName());
+							string sname = p.GetShortName();
+//							string sname = FSCore::beautify_string(p.GetShortName());
 							name = QString::fromStdString(sname);
 						}
 						else
@@ -253,7 +253,10 @@ public:
 					{
 						if (m_index == -1)
 						{
-							QString toolTip = QString("<p><b>parameter:</b> <code>%1</code></p>").arg(p.GetShortName());
+							QString toolTip;
+							if (p.GetLongName())
+								toolTip = QString("<p><b>%1: </b>%2</p>").arg(p.GetShortName()).arg(p.GetLongName());
+
 							if (p.IsVolatile())
 							{
 								if (p.GetLoadCurveID() > 0)
@@ -534,14 +537,14 @@ public:
 					{
 						if ((p.maxSize()==1) || (m_index < 0))
 						{
-							QString s = QString("<b>property:</b> <code>%1</code>").arg(QString::fromStdString(p.GetName()));
+							QString s = QString("<b>%1: </b>%2").arg(QString::fromStdString(p.GetName())).arg(QString::fromStdString(p.GetLongName()));
 							return s;
 						}
 					}
 					else
 					{
-//						string sname = FSCore::beautify_string(p.GetLongName().c_str());
-                        string sname = p.GetLongName().c_str();
+//						string sname = FSCore::beautify_string(p.GetName().c_str());
+                        string sname = p.GetName().c_str();
 						QString s = QString::fromStdString(sname);
 						if (p.maxSize() != 1)
 						{
@@ -1047,7 +1050,7 @@ public:
 			if (paramId >= 0)
 			{
 				Param& p = pc->GetParam(paramId);
-				QString name = p.GetLongName();
+				QString name = p.GetShortName();
 
 				if (name.contains(m_filter, Qt::CaseInsensitive) == false)
 				{

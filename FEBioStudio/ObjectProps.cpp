@@ -41,7 +41,7 @@ void CObjectProps::AddParameter(Param& p)
 {
 	CProperty* prop = nullptr;
 
-	const char* szname = p.GetLongName();
+	const char* szname = p.GetShortName();
 	std::string sname = (m_beautify ? FSCore::beautify_string(szname) : szname);
 	QString paramName = QString::fromStdString(sname);
 
