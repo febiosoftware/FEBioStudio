@@ -13,6 +13,7 @@
     <enableTimestamp>1</enableTimestamp>
     <vendor>University of Utah</vendor>
     <windows64bitMode>1</windows64bitMode>
+    <rebootRequired>0</rebootRequired>
     <windowsSoftwareRegistryPrefix>${product_fullname}</windowsSoftwareRegistryPrefix>
     <osxSigningPkcs12File>/Users/GitRunner/osx_app_signing.p12</osxSigningPkcs12File>
     <osxSigningPkcs12Password>${env(MACOS_PKCS12_PSWD)}</osxSigningPkcs12Password>
@@ -247,6 +248,17 @@
                         <fileTest condition="exists" path="${oldLocation}"/>
                     </ruleList>
                 </throwError>
+
+                <!-- Check if FEBio Studio is currently running -->
+                <throwError>
+                    <text>FEBio Studio is currently running. Please close it before proceeding with the installation.</text>
+                    <ruleList>
+                        <processTest>
+                            <logic>is_running</logic>
+                            <name>FEBioStudio.exe</name>
+                        </processTest>
+                    </ruleList>
+                </throwError>
             </actionList>
             <ruleList>
                 <platformTest type="windows"/>
@@ -417,6 +429,17 @@ MimeType=application/x-febiostudioproject;application/x-febiostudiomodel;applica
         <!-- Windows -->
         <actionGroup>
             <actionList>
+                <!-- Check if FEBio Studio is currently running -->
+                <throwError>
+                    <text>FEBio Studio is currently running. Please close it before proceeding with the uninstallation.</text>
+                    <ruleList>
+                        <processTest>
+                            <logic>is_running</logic>
+                            <name>FEBioStudio.exe</name>
+                        </processTest>
+                    </ruleList>
+                </throwError>
+
                 <registryDelete>
                     <key>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\App Paths\FEBioStudio.exe</key>
                     <name></name>
