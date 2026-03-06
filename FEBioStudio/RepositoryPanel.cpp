@@ -855,6 +855,9 @@ void CRepositoryPanel::GetFileMetaDataForUpload(QVariantList& fileInfoList, QStr
 
 void CRepositoryPanel::SearchDatabase(QString searchTerm)
 {
+	// Here we split the search term into a list of pairs, where the first item in the pair is the data type
+	// to be searched (e.g. "all", "material", etc.) and the second item is a list of search terms to be 
+	// searched for within that data type.
     vector<pair<QString, QStringList>> termList;
 
     QRegularExpression regex("\\w*:.*?(?=(?:\\w*:)|$)");
@@ -926,6 +929,9 @@ void CRepositoryPanel::SearchDatabase(QString searchTerm)
         }
     }
 
+	// This will store the number of matches for each item that is found in the search, and whether the item 
+	// was found by searching the project data or the file data (the bool in the pair is true if the item was
+	//  found by searching the project data and false if it was found by searching the file data)
     map<pair<int, bool>,int> IDs;
 
     ui->searchTree->blockSignals(true);
@@ -940,6 +946,11 @@ void CRepositoryPanel::SearchDatabase(QString searchTerm)
 
         map<int,int> itemIDs;
 
+		// Search the project data for the current term and update the number of matches for each item 
+		// that is found. If an item is found that was not found in a previous term, we add it to the 
+		// map with the number of matches for the current term. If an item is found that was found in a 
+		// previous term, we update the number of matches for that item by adding the number of matches 
+		// for the current term to the number of matches that were previously found for that item.
         for(auto term : terms)
         {
             set<int> tempIDs = dbHandler->ProjectSearch(dataType, term);
@@ -959,6 +970,9 @@ void CRepositoryPanel::SearchDatabase(QString searchTerm)
             }
         }
 
+		// If this is the first term, we just add all of the items that were found to the map. If this
+		// is not the first term, then we only keep items that were found in previous terms and in the 
+		// current term, and we update the number of matches for those items.
         if(firstTerm)
         {
             for(auto& item : itemIDs)
@@ -993,6 +1007,8 @@ void CRepositoryPanel::SearchDatabase(QString searchTerm)
             }
         }
 
+		// Now we do the same thing for the file data, except that if an item is found in the file data,
+		// we set the bool in the pair to false
         itemIDs.clear();
 
         for(auto term : terms)
@@ -1051,6 +1067,9 @@ void CRepositoryPanel::SearchDatabase(QString searchTerm)
         firstTerm = false;
     }
 
+	// Now we have a map of all of the items that were found in the search, along with the number of
+	// matches for each item and whether the item was found by searching the project data or the file
+	//data. We want to sort these items by the number of matches, so we put them in a vector and sort the vector.
     vector<pair<pair<int,bool>,int>> results;
 
     for(auto item : IDs)
@@ -1066,15 +1085,21 @@ void CRepositoryPanel::SearchDatabase(QString searchTerm)
         }
     );
 
+	// Finally, we loop over the sorted items and add them to the search results tree, with the items that have
+	// the most matches at the top
     SearchItem* searchItem;
     for(auto item : results)
     {
         if(item.first.second)
         {
+			// If a matched item is from an unauthorized project, it won't be in the projectItemsByID map, so we skip it
+			if(ui->projectItemsByID.count(item.first.first) == 0) continue;
             searchItem = new SearchItem(ui->projectItemsByID[item.first.first]);
         }
         else
         {
+			// If a matched item is from an unauthorized project, it won't be in the fileItemsByID map, so we skip it
+			if(ui->fileItemsByID.count(item.first.first) == 0) continue;
             searchItem = new SearchItem(ui->fileItemsByID[item.first.first]);
         }
 
