@@ -1323,6 +1323,16 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 			if (p->IsVariable())
 			{
 				CEditVariableParam* pw = new CEditVariableParam(parent);
+
+				// We got to use a const_cast here since closeEditor requires the non-const pointer to the delegate
+				// but we're inside a const member.
+				FEClassPropsDelegate* that = const_cast<FEClassPropsDelegate*>(this);
+
+				connect(pw, &CEditVariableParam::requestClose, this, [that, pw]() {
+					emit that->closeEditor(pw, QAbstractItemDelegate::NoHint);
+					});
+
+
 /*				FSModel* fem = item->GetFSModel();
 				if (fem)
 				{
@@ -1494,7 +1504,7 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 					{
 						QSpinBox* pw = new QSpinBox(parent);
 						pw->setMinimum(0);
-						pw->setValue(v.size());
+						pw->setValue((int)v.size());
 						return pw;
 					}
 					else
@@ -1511,7 +1521,7 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 					{
 						QSpinBox* pw = new QSpinBox(parent);
 						pw->setMinimum(0);
-						pw->setValue(v.size());
+						pw->setValue((int)v.size());
 						return pw;
 					}
 					else
@@ -1676,6 +1686,20 @@ void FEClassPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* mod
 			int matId = pw->currentData(Qt::UserRole).toInt();
 			model->setData(index, matId);
 			return;
+		}
+	}
+	else if (dynamic_cast<CEditVariableParam*>(editor))
+	{
+		CEditVariableParam* pw = dynamic_cast<CEditVariableParam*>(editor);
+		FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
+		if (item->isParameter())
+		{
+			Param* p = item->parameter();
+			if (p && p->IsVariable())
+			{
+				model->setData(index, pw->text());
+				return;
+			}
 		}
 	}
 	QStyledItemDelegate::setModelData(editor, model, index);

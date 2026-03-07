@@ -1,10 +1,11 @@
 #pragma once
-#include <QComboBox>
+#include <QWidget>
 
 class Param;
 
-//-----------------------------------------------------------------------------
-class CEditVariableParam : public QComboBox
+class UIEditVariableParam;
+
+class CEditVariableParam : public QWidget
 {
 	Q_OBJECT
 
@@ -13,14 +14,18 @@ public:
 
 	void setParam(Param* p);
 
+	QString text() const;
+
 public slots:
 	void onCurrentIndexChanged(int index);
-	void onEditTextChanged(const QString& txt);
+	void onTextChanged(const QString& txt);
+	void onEditPressed();
 
 signals:
 	void typeChanged();
+	void requestClose();
 
 private:
-	Param* m_param;
+	UIEditVariableParam* ui;
 };
 

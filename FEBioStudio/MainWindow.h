@@ -141,6 +141,8 @@ public:
 
 	void ClearPythonLog();
 
+	void OpenCodeEditor(const QString& scriptName);
+
 	CGLView* GetGLView();
 
 	CImageSliceView* GetImageSliceView();

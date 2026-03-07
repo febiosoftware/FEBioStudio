@@ -3655,3 +3655,8 @@ void CMainWindow::on_planecut_dataChanged()
 	}
 	if (glview) glview->UpdateScene();
 }
+
+void CMainWindow::OpenCodeEditor(const QString& scriptName)
+{
+	QMessageBox::information(nullptr, "Code Editor", QString("This would open the code editor for script: %1").arg(scriptName));
+}

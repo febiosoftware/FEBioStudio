@@ -290,6 +290,8 @@ void Param::clear()
 
 void Param::SetParamType(Param_Type t)
 {
+	if (t == m_ntype) return;
+
 	clear();
 	m_ntype = t;
 	switch (t)
