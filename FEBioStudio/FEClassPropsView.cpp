@@ -57,8 +57,28 @@ SOFTWARE.*/
 #include "MainWindow.h"
 using namespace std;
 
-// in MaterialPropsView.cpp
-QStringList GetEnumValues(FSModel* fem, const char* ch);
+QStringList GetEnumValues(FSModel* fem, const char* ch)
+{
+	QStringList ops;
+	char sz[2048] = { 0 };
+	if (ch[0] == '$')
+	{
+		if (fem)
+		{
+			fem->GetVariableNames(ch, sz);
+			ch = sz;
+		}
+		else ch = 0;
+	}
+
+	while (ch && (*ch))
+	{
+		ops << QString(ch);
+		ch = ch + strlen(ch) + 1;
+	}
+
+	return ops;
+}
 
 //=================================================================================
 CPropertySelector::CPropertySelector(FSProperty* pp, FSCoreBase* pc, int index, FSModel* fem, QWidget* parent) : QComboBox(parent)
@@ -1101,12 +1121,6 @@ public:
 
 		Item* item = static_cast<Item*>(index.internalPointer());
 
-/*		if (role == Qt::BackgroundRole)
-		{
-			// This color has to match the color in CMaterialPropsView::drawBranches
-			if (item->isProperty()) return QColor(Qt::darkGray);
-		}
-*/
 		if ((role == Qt::FontRole))
 		{
 			QFont font;
@@ -1121,32 +1135,6 @@ public:
 
 			return font;
 		}
-
-	/*	if ((role == Qt::BackgroundRole) && (index.column() == 1) && item->isParameter())
-		{
-			Param* p = item->parameter();
-			if (p && p->IsModified())
-			{
-				QPalette palette = qApp->palette();
-				QColor tc = palette.color(QPalette::WindowText);
-
-				QLinearGradient gradient(0, 0, 100, 0);
-				if (tc.red() == 0)
-				{
-					gradient.setColorAt(0, QColor::fromRgb(220, 255, 255, 0));
-					gradient.setColorAt(0.5, QColor::fromRgb(220, 255, 255, 0));
-					gradient.setColorAt(1, QColor::fromRgb(220, 255, 255, 255));
-				}
-				else
-				{
-					gradient.setColorAt(0, QColor::fromRgb(32, 64, 72, 0));
-					gradient.setColorAt(0.5, QColor::fromRgb(32, 64, 72, 0));
-					gradient.setColorAt(1, QColor::fromRgb(32, 64, 72, 255));
-				}
-				return QBrush(gradient);
-			}
-		}
-		*/
 
 		if ((index.column() == 0) && (role == Qt::DecorationRole))
 		{

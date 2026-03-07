@@ -65,7 +65,6 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <MeshLib/FSElementData.h>
 #include "Commands.h"
-#include "MaterialPropsView.h"
 #include "FEClassPropsView.h"
 #include "CurveEditWidget.h"
 #include "MathEditWidget.h"
@@ -402,7 +401,6 @@ class Ui::CModelPropsPanel
 	enum {
 		PROPS_VIEW,
 		PROPS_FORM,
-//		PROPS_MAT,
 		PROPS_FECLASS,
 		PROPS_PLOT,
 		PROPS_MATH,
@@ -416,7 +414,6 @@ public:
 	CItemListSelectionBox* sel2;
 	::CPropertyListView* props;
 	::CPropertyListForm* form;
-//	CMaterialPropsView*	mat;
 	FEClassEdit*		fec;
 	CCurveEditWidget* plt;
 	CMathEditWidget* math;
