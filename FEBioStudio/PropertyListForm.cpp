@@ -412,6 +412,7 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 		break;
 	case CProperty::String:
 	case CProperty::MathString:
+	case CProperty::CodeString:
 		{
 			if (pi.values.empty() == false)
 			{
@@ -859,6 +860,17 @@ void CPropertyListForm::onDataChanged()
                 }
             }
             break;
+		case CProperty::CodeString:
+		{
+			CEditVariableProperty* e = qobject_cast<CEditVariableProperty*>(pw);
+			if (e) m_list->SetPropertyValue(propIndex, e->currentText());
+			else
+			{
+				QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+				if (edit) m_list->SetPropertyValue(propIndex, edit->text());
+			}
+		}
+		break;
         case CProperty::Vec3:
             {
                 QLineEdit* edit = qobject_cast<QLineEdit*>(pw);

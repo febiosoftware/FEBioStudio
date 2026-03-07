@@ -399,6 +399,20 @@ public:
 						return v;
 					}
 					break;
+					case Param_CODE:
+					{
+						string s = p.GetCodeString();
+						QString v = QString("{ ") + QString::fromStdString(s) + QString(" }");
+						const char* szunit = p.GetUnit();
+						if (szunit)
+						{
+							QString unitString = Units::GetUnitString(szunit);
+							if (unitString.isEmpty() == false)
+								v += QString(" %1").arg(unitString);
+						}
+						return v;
+					}
+					break;
 					case Param_STD_VECTOR_INT:
 					{
 						std::vector<int> v = p.val<std::vector<int> >();
@@ -495,6 +509,7 @@ public:
 					case Param_MAT3DS: return Mat3dsToString(p.val<mat3ds>()); break;
 					case Param_MATH: return QString::fromStdString(p.GetMathString()); break;
 					case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
+					case Param_CODE: return QString::fromStdString(p.GetCodeString()); break;
 					case Param_STD_VECTOR_INT: return -1; break;
 					case Param_STD_VECTOR_DOUBLE:
 					{
@@ -731,6 +746,19 @@ public:
 
 					if (p.GetStringValue() != s) {
 						p.SetStringValue(s);
+						p.SetModified(true);
+					}
+				}
+				break;
+				case Param_CODE:
+				{
+					string s = value.toString().toStdString();
+					int l = (int)s.length();
+					if ((s.empty() == false) && (s[0] == '{')) s.erase(s.begin());
+					if ((s.empty() == false) && (s[l-1] == '}')) s.erase(s.back());
+
+					if (p.GetCodeString() != s) {
+						p.SetCodeString(s);
 						p.SetModified(true);
 					}
 				}

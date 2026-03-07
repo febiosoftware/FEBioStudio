@@ -671,6 +671,7 @@ void CModelViewer::on_props_paramChanged(FSCoreBase* pc, Param* p)
 	case Param_VEC3D : sv = Vec3dToString(p->GetVec3dValue()); break;
 	case Param_STRING: sv = QString("\"%1\"").arg(QString::fromStdString(p->GetStringValue())); break;
 	case Param_MATH  : sv = QString("\"%1\"").arg(QString::fromStdString(p->GetMathString())); break;
+	case Param_CODE  : sv = QString("\"%1\"").arg(QString::fromStdString(p->GetCodeString())); break;
 	case Param_COLOR : break;
 	case Param_MAT3D : sv = Mat3dToString(p->GetMat3dValue()); break;
 	case Param_MAT3DS: sv = Mat3dsToString(p->GetMat3dsValue()); break;

@@ -270,6 +270,16 @@ void FEBioExport::WriteParam(Param &p)
 		e.value(s.c_str());
 	}
 	break;
+	case Param_CODE:
+	{
+		if (p.IsVariable())
+		{
+			e.add_attribute("type", "code");
+		}
+		std::string s = p.GetCodeString();
+		e.value(s.c_str());
+	}
+	break;
 	case Param_STD_VECTOR_VEC2D:
 	{
 		std::vector<vec2d> v = p.GetVectorVec2dValue();

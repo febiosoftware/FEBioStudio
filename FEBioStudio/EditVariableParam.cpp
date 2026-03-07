@@ -8,6 +8,7 @@ CEditVariableParam::CEditVariableParam(QWidget* parent) : QComboBox(parent)
 	addItem("<constant>");
 	addItem("<math>");
 	addItem("<map>");
+	addItem("<code>");
 
 	setEditable(true);
 	setInsertPolicy(QComboBox::NoInsert);
@@ -65,6 +66,11 @@ void CEditVariableParam::setParam(Param* p)
 		setCurrentIndex(2);
 		setEditText(QString::fromStdString(p->GetStringValue()));
 	}
+	else if (p->GetParamType() == Param_Type::Param_CODE)
+	{
+		setCurrentIndex(3);
+		setEditText(QString::fromStdString(p->GetCodeString()));
+	}
 	else
 	{
 		assert(false);
@@ -79,6 +85,7 @@ void CEditVariableParam::onCurrentIndexChanged(int index)
 	if (index == 0) m_param->SetParamType(m_param->GetVariableType());
 	if (index == 1) m_param->SetParamType(Param_MATH);
 	if (index == 2) m_param->SetParamType(Param_STRING);
+	if (index == 3) m_param->SetParamType(Param_CODE);
 
 	setParam(m_param);
 
@@ -104,6 +111,14 @@ void CEditVariableParam::onEditTextChanged(const QString& txt)
 		p->SetParamType(Param_STRING);
 		blockSignals(true);
 		setCurrentIndex(2);
+		setEditText(txt);
+		blockSignals(false);
+	}
+	else if ((txt[0] == '{') && (p->GetParamType() != Param_CODE))
+	{
+		p->SetParamType(Param_CODE);
+		blockSignals(true);
+		setCurrentIndex(3);
 		setEditText(txt);
 		blockSignals(false);
 	}

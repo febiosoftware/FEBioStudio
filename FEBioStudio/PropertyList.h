@@ -48,6 +48,7 @@ public:
 		ExternalLink,
 		Group,
 		MathString,
+		CodeString,
 		ColorMap,
 		Vec3,
 		Mat3,

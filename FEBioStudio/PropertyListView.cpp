@@ -55,6 +55,7 @@ CEditVariableProperty::CEditVariableProperty(QWidget* parent) : QComboBox(parent
 	addItem("<constant>");
 	addItem("<math>");
 	addItem("<map>");
+	addItem("<code>");
 
 	setEditable(true);
 	setInsertPolicy(QComboBox::NoInsert);
@@ -87,6 +88,11 @@ void CEditVariableProperty::setProperty(CProperty* p, QVariant data)
 		setCurrentIndex(2);
 		setEditText(data.toString());
 	}
+	else if (p->type == CProperty::CodeString)
+	{
+		setCurrentIndex(3);
+		setEditText(data.toString());
+	}
 	else
 	{
 		assert(false);
@@ -101,6 +107,7 @@ void CEditVariableProperty::onCurrentIndexChanged(int index)
 	case 0: m_prop->type = CProperty::Float; break;
 	case 1: m_prop->type = CProperty::MathString; break;
 	case 2: m_prop->type = CProperty::String; break;
+	case 3: m_prop->type = CProperty::CodeString; break;
 	}
 
 	if (m_prop->param)
@@ -109,6 +116,7 @@ void CEditVariableProperty::onCurrentIndexChanged(int index)
 		if (index == 0) p->SetParamType(Param_FLOAT);
 		if (index == 1) p->SetParamType(Param_MATH);
 		if (index == 2) p->SetParamType(Param_STRING);
+		if (index == 3) p->SetParamType(Param_CODE);
 	}
 
 	setEditText("0");
@@ -136,6 +144,16 @@ void CEditVariableProperty::onEditTextChanged(const QString& txt)
 	{
 		m_prop->type = CProperty::String;
 		p->SetParamType(Param_STRING);
+		blockSignals(true);
+		setCurrentIndex(2);
+		setEditText(txt);
+		blockSignals(false);
+		emit typeChanged();
+	}
+	else if ((txt[0] == '{') && (p->GetParamType() != Param_CODE))
+	{
+		m_prop->type = CProperty::String;
+		p->SetParamType(Param_CODE);
 		blockSignals(true);
 		setCurrentIndex(2);
 		setEditText(txt);

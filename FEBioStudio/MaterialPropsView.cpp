@@ -296,6 +296,20 @@ public:
 						return v;
 					}
 					break;
+					case Param_CODE:
+					{
+						string s = p.GetCodeString();
+						QString v = QString("{ ") + QString::fromStdString(s) + QString(" }");
+						const char* szunit = p.GetUnit();
+						if (szunit)
+						{
+							QString unitString = Units::GetUnitString(szunit);
+							if (unitString.isEmpty() == false)
+								v += QString(" %1").arg(unitString);
+						}
+						return v;
+					}
+					break;
 					case Param_STRING:
 					{
 						string s = p.GetStringValue();
@@ -330,6 +344,7 @@ public:
 					case Param_MAT3D: return Mat3dToString(p.val<mat3d>()); break;
 					case Param_MAT3DS: return Mat3dsToString(p.val<mat3ds>()); break;
 					case Param_MATH: return QString::fromStdString(p.GetMathString()); break;
+					case Param_CODE: return QString::fromStdString(p.GetCodeString()); break;
 					case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
 					default:
 						assert(false);
@@ -435,6 +450,15 @@ public:
 					string s = value.toString().toStdString();
 					if ((s.empty() == false) && (s[0] == '=')) s.erase(s.begin());
 					p.SetMathString(s);
+				}
+				break;
+				case Param_CODE:
+				{
+					string s = value.toString().toStdString();
+					int l = (int)s.length();
+					if ((s.empty() == false) && (s[0] == '{')) s.erase(s.begin());
+					if ((s.empty() == false) && (s[l-1] == '}')) s.erase(s.back());
+					p.SetCodeString(s);
 				}
 				break;
 				case Param_STRING:
