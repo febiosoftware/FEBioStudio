@@ -52,6 +52,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "IconProvider.h"
 #include "LaunchConfig.h"
+#include <FECore/FECodeValuator.h>
 
 // list of warnings generated
 #define WARNING_NONE				0
@@ -68,6 +69,7 @@ SOFTWARE.*/
 #define WARNING_IMAGE_NO_LOAD		11
 #define WARNING_DISCRETE_SET_EMPTY	12
 #define WARNING_ZERO_SHELL_THICKNESS	13
+#define WARNING_SCRIPT_DOES_NOT_COMPILE	14
 
 // base class for object validators
 // - define warning IDs (see list above)
@@ -390,6 +392,35 @@ public:
 	{
 		return (m_po && (m_po->size() > 0));
 	}
+};
+
+class CScriptValidator : public CObjectValidator_T<FEBCodeScript>
+{
+public:
+	CScriptValidator() {}
+
+	QString GetErrorString() const override
+	{
+		FEBCodeScript* script = m_po;
+		if (script == nullptr) return "nullptr!";
+		return QString::fromStdString(err);
+	}
+
+	unsigned int GetWarningID() const override { return WARNING_SCRIPT_DOES_NOT_COMPILE; };
+
+	bool IsValid() override
+	{
+		FEBCodeScript* script = m_po;
+		if (script == nullptr) return false;
+
+		err.clear();
+		isValid = ValidateScript(script->GetCode(), err);
+		return isValid;
+	}
+
+private:
+	bool isValid = true;
+	std::string err;
 };
 
 //=============================================================================
@@ -1162,7 +1193,7 @@ void CModelTree::BuildPropertyLists(CModelDocument* doc)
 	m_props[MT_IC                 ] = { new CFSObjectProps(&fem), new CBCValidator()};
 	m_props[MT_BC                 ] = { new CFSObjectProps(&fem), new CBCValidator()};
 	m_props[MT_STEP               ] = { new CStepSettings(prj), nullptr };
-	m_props[MT_SCRIPT             ] = { new CScriptSettings(&fem), nullptr };
+	m_props[MT_SCRIPT             ] = { new CScriptSettings(&fem), new CScriptValidator()};
 }
 
 void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CModelDocument* doc)

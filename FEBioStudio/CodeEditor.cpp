@@ -55,12 +55,14 @@ void CCodeEditor::SetScript(CDocument* doc, FEBCodeScript* script)
 	{
 		SetDocument(doc);
 	}
-
+	ui->script = nullptr;
 	ui->edit->clear();
 	ui->script = script;
 	if (script)
 	{
+		ui->edit->blockSignals(true);
 		ui->edit->appendPlainText(QString::fromStdString(script->GetCode()));
+		ui->edit->blockSignals(false);
 		updateWindowTitle();
 	}
 	else
