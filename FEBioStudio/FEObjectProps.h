@@ -49,6 +49,7 @@ class CMainWindow;
 class CFEBioJob;
 class CImageModel;
 class GDiscreteObject;
+class FEBCodeScript;
 
 namespace Post {
 	class CGLModel;
@@ -270,4 +271,16 @@ public:
 	FSGlobalsProps(FSModel* fem) : CFSObjectProps(fem) {}
 
 	void SetFSObject(FSObject* po) override;
+};
+
+class CScriptSettings : public CFSObjectProps_T<FEBCodeScript>
+{
+public:
+	CScriptSettings(FSModel* fem) : CFSObjectProps_T<FEBCodeScript>(fem) {}
+	
+	void BuildProperties() override;
+
+	QVariant GetPropertyValue(int i) override;
+
+	void SetPropertyValue(int i, const QVariant& v) override;
 };

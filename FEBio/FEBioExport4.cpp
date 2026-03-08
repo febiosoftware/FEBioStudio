@@ -3332,8 +3332,8 @@ void FEBioExport4::WriteScriptsSection()
 		FEBCodeScript* ps = fem.GetScript(i);
 		XMLElement el;
 		el.name("script");
-		el.add_attribute("name", ps->name);
-		string script = ps->code;
+		el.add_attribute("name", ps->GetName());
+		string script = ps->GetCode();
 
 		script = "<![CDATA[\n" + script + "\n]]>";
 

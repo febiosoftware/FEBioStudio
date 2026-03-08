@@ -1047,6 +1047,13 @@ void CModelTree::Build(CModelDocument* doc)
 		UpdateLoadControllers(t2, fem);
 	}
 
+	// add scripts
+	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+	{
+		t2 = AddTreeItem(t1, "Scripts", MT_SCRIPT_LIST);
+		UpdateScripts(t2, fem);
+	}
+
 	// add the output
 	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 	{
@@ -1155,6 +1162,7 @@ void CModelTree::BuildPropertyLists(CModelDocument* doc)
 	m_props[MT_IC                 ] = { new CFSObjectProps(&fem), new CBCValidator()};
 	m_props[MT_BC                 ] = { new CFSObjectProps(&fem), new CBCValidator()};
 	m_props[MT_STEP               ] = { new CStepSettings(prj), nullptr };
+	m_props[MT_SCRIPT             ] = { new CScriptSettings(&fem), nullptr };
 }
 
 void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CModelDocument* doc)
@@ -1758,6 +1766,19 @@ void CModelTree::UpdateLoadControllers(QTreeWidgetItem* t1, FSModel& fem)
 
 	int n = t1->childCount();
 	if (n != 0) t1->setText(0, QString("Load Controllers (%1)").arg(n));
+}
+
+void CModelTree::UpdateScripts(QTreeWidgetItem* t1, FSModel& fem)
+{
+	for (int i = 0; i < fem.Scripts(); ++i)
+	{
+		FEBCodeScript* ps = fem.GetScript(i);
+		string name = ps->GetName();
+		AddTreeItem(t1, QString::fromStdString(name), MT_SCRIPT, 0, ps, 1);
+	}
+
+	int n = t1->childCount();
+	if (n != 0) t1->setText(0, QString("Scripts (%1)").arg(n));
 }
 
 void CModelTree::UpdateOutput(QTreeWidgetItem* t1, FSProject& prj)

@@ -60,7 +60,7 @@ void CCodeEditor::SetScript(CDocument* doc, FEBCodeScript* script)
 	ui->script = script;
 	if (script)
 	{
-		ui->edit->appendPlainText(QString::fromStdString(script->code));
+		ui->edit->appendPlainText(QString::fromStdString(script->GetCode()));
 		updateWindowTitle();
 	}
 	else
@@ -106,7 +106,7 @@ void CCodeEditor::updateWindowTitle()
 	}
 	else
 	{
-		QString name = QString::fromStdString(ui->script->name);
+		QString name = QString::fromStdString(ui->script->GetName());
 		setWindowTitle("FEBCode Editor [" + name + "]");
 	}
 }
@@ -132,6 +132,6 @@ void CCodeEditor::on_edit_textChanged()
 {
 	if (ui->script)
 	{
-		ui->script->code = ui->edit->toPlainText().toStdString();
+		ui->script->SetCode(ui->edit->toPlainText().toStdString());
 	}
 }

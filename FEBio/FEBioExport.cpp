@@ -279,7 +279,8 @@ void FEBioExport::WriteParam(Param &p)
 		int id = p.GetScriptID();
 
 		FEBCodeScript* ps = fem.GetScriptFromID(id);
-		e.value(ps ? ps->name.c_str() : "(invalid)");
+		string name = (ps ? ps->GetName() : "(invalid)");
+		e.value(name.c_str());
 	}
 	break;
 	case Param_STD_VECTOR_VEC2D:

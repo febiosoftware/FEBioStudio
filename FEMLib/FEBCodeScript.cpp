@@ -23,25 +23,35 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include <string>
-#include <FSCore/FSObject.h>
+#include "FEBCodeScript.h"
 
-class FEBCodeScript : public FSObject
+FEBCodeScript::FEBCodeScript(const std::string& name, const std::string& code) : FSObject(nullptr), code(code)
 {
-public:
-	FEBCodeScript(const std::string& name, const std::string& code);
+	id = -1;
+	SetName(name);
+	SetTypeString("febcode");
+}
 
-	void SetID(int n) { id = n; }
-	int GetID() const { return id; }
+void FEBCodeScript::Save(OArchive& ar)
+{
+	std::string name = GetName();
+	ar.WriteChunk(CID_SCRIPT_ID  , id);
+	ar.WriteChunk(CID_SCRIPT_NAME, name);
+	ar.WriteChunk(CID_SCRIPT_CODE, code);
+}
 
-	void SetCode(const std::string& s) { code = s; }
-	std::string GetCode() const { return code; }
-
-	void Save(OArchive& ar) override;
-	void Load(IArchive& ar) override;
-
-private:
-	int id; // unique ID for the script, assigned by the model when the script is added to the model
-	std::string code;
-};
+void FEBCodeScript::Load(IArchive& ar)
+{
+	std::string name;
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int ntype = ar.GetChunkID();
+		if      (ntype == CID_SCRIPT_ID  ) ar.read(id);
+		else if (ntype == CID_SCRIPT_NAME) ar.read(name);
+		else if (ntype == CID_SCRIPT_CODE) ar.read(code);
+		else throw ReadError("unknown CID in FEBCodeScript::Load");
+		ar.CloseChunk();
+	}
+	assert(id != -1);
+	SetName(name);
+}

@@ -117,7 +117,7 @@ void CEditVariableParam::setParam(Param* p)
 			FEBCodeScript* ps = ui->m_fem->GetScriptFromID(id);
 			if (ps)
 			{
-				ui->combo->setEditText(QString::fromStdString(ps->name));
+				ui->combo->setEditText(QString::fromStdString(ps->GetName()));
 			}
 			else ui->combo->setEditText("");
 		}
@@ -190,7 +190,7 @@ void CEditVariableParam::onEditPressed()
 	int id = ui->m_param->GetScriptID();
 	QString scriptName;
 	FEBCodeScript* ps = ui->m_fem->GetScriptFromID(id);
-	if (ps) scriptName = QString::fromStdString(ps->name);
+	if (ps) scriptName = QString::fromStdString(ps->GetName());
 	else
 	{
 		static int n = 1;
@@ -200,7 +200,7 @@ void CEditVariableParam::onEditPressed()
 		n++;
 
 		ps = ui->m_fem->AddScript(scriptName.toStdString(), "return 0.0;");
-		ui->m_param->SetScriptID(ps->id);
+		ui->m_param->SetScriptID(ps->GetID());
 	}
 
 	ui->combo->setCurrentText(scriptName);

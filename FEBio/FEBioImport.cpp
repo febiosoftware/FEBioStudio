@@ -526,7 +526,7 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		for (auto& [param, scriptName] : m_febio->m_scriptParam)
 		{
 			FEBCodeScript* script = fem.GetScript(scriptName); assert(script);
-			if (script) param->SetScriptID(script->id);
+			if (script) param->SetScriptID(script->GetID());
 		}
 	}
 

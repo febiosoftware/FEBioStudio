@@ -423,7 +423,7 @@ public:
 					{
 						int id = p.GetScriptID();
 						FEBCodeScript* ps = GetFSModel()->GetScriptFromID(id);
-						QString v = QString("{ ") + (ps ? QString::fromStdString(ps->name) : "") + QString(" }");
+						QString v = QString("{ ") + (ps ? QString::fromStdString(ps->GetName()) : "") + QString(" }");
 						const char* szunit = p.GetUnit();
 						if (szunit)
 						{
@@ -534,7 +534,7 @@ public:
 					{
 						int id = p.GetScriptID();
 						FEBCodeScript* ps = GetFSModel()->GetScriptFromID(id);
-						return (ps ? QString::fromStdString(ps->name) : QString("(invalid)"));
+						return (ps ? QString::fromStdString(ps->GetName()) : QString("(invalid)"));
 						break;
 					}
 					case Param_STD_VECTOR_INT: return -1; break;
@@ -789,8 +789,8 @@ public:
 					{
 						int currentID = p.GetScriptID();
 
-						if (currentID != script->id) {
-							p.SetScriptID(script->id);
+						if (currentID != script->GetID()) {
+							p.SetScriptID(script->GetID());
 							p.SetModified(true);
 						}
 					}
