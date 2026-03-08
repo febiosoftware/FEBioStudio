@@ -7,10 +7,12 @@
 #include <QInputDialog>
 #include "FEBioStudio.h"
 #include "MainWindow.h"
+#include <FEMLib/FSModel.h>
 
 class UIEditVariableParam
 {
 public:
+	FSModel* m_fem = nullptr;
 	Param* m_param = nullptr;
 
 	QComboBox* combo;
@@ -46,8 +48,9 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-CEditVariableParam::CEditVariableParam(QWidget* parent) : QWidget(parent), ui(new UIEditVariableParam)
+CEditVariableParam::CEditVariableParam(FSModel* fem, QWidget* parent) : QWidget(parent), ui(new UIEditVariableParam)
 {
+	ui->m_fem = fem;
 	ui->setup(this);
 }
 
@@ -61,9 +64,9 @@ void CEditVariableParam::setParam(Param* p)
 	ui->m_param = p;
 	if (p == nullptr) return;
 
-	bool showEdit = false;
+	bool showEditButton = false;
 
-	blockSignals(true);
+	ui->combo->blockSignals(true);
 	if (p->GetParamType() == Param_Type::Param_FLOAT)
 	{
 		ui->combo->setCurrentIndex(0);
@@ -107,16 +110,28 @@ void CEditVariableParam::setParam(Param* p)
 	else if (p->GetParamType() == Param_Type::Param_CODE)
 	{
 		ui->combo->setCurrentIndex(3);
-		ui->combo->setEditText(QString::fromStdString(p->GetCodeString()));
-		showEdit = true;
+
+		int id = p->GetScriptID();
+		if (ui->m_fem)
+		{
+			FEBCodeScript* ps = ui->m_fem->GetScriptFromID(id);
+			if (ps)
+			{
+				ui->combo->setEditText(QString::fromStdString(ps->name));
+			}
+			else ui->combo->setEditText("");
+		}
+		else
+			ui->combo->setEditText("(invalid)");
+		showEditButton = true;
 	}
 	else
 	{
 		assert(false);
 	}
-	blockSignals(false);
+	ui->combo->blockSignals(false);
 
-	if (showEdit) ui->edit->show();
+	if (showEditButton) ui->edit->show();
 	else ui->edit->hide();
 }
 
@@ -170,20 +185,25 @@ void CEditVariableParam::onEditPressed()
 {
 	if (ui->m_param == nullptr) return;
 	if (ui->m_param->GetParamType() != Param_CODE) return;
+	if (ui->m_fem == nullptr) return;
 
-	QString scriptName = QString::fromStdString(ui->m_param->GetCodeString());
-	if (scriptName.isEmpty())
+	int id = ui->m_param->GetScriptID();
+	QString scriptName;
+	FEBCodeScript* ps = ui->m_fem->GetScriptFromID(id);
+	if (ps) scriptName = QString::fromStdString(ps->name);
+	else
 	{
 		static int n = 1;
 		scriptName = QString("Script%1").arg(n);
 		scriptName = QInputDialog::getText(this, "New Script", "Enter script name:", QLineEdit::Normal, scriptName);
 		if (scriptName.isEmpty()) return;
 		n++;
+
+		ps = ui->m_fem->AddScript(scriptName.toStdString(), "return 0.0;");
+		ui->m_param->SetScriptID(ps->id);
 	}
 
-	ui->m_param->SetCodeString(scriptName.toStdString());
 	ui->combo->setCurrentText(scriptName);
-
 	emit requestClose();
 
 	CMainWindow* wnd = FBS::getMainWindow();

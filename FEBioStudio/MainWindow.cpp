@@ -3664,7 +3664,7 @@ void CMainWindow::OpenCodeEditor(const QString& scriptName)
 	FSModel* fem = doc->GetFSModel();
 	if (fem == nullptr) return;
 
-	FEScript* script = fem->GetScript(scriptName.toStdString());
+	FEBCodeScript* script = fem->GetScript(scriptName.toStdString());
 	if (script == nullptr)
 	{
 		script = fem->AddScript(scriptName.toStdString(), "return 0.0;");
@@ -3679,5 +3679,5 @@ void CMainWindow::OpenCodeEditor(const QString& scriptName)
 	ui->codeEditor->show();
 	ui->codeEditor->raise();
 	ui->codeEditor->activateWindow();
-	ui->codeEditor->SetScript(script);
+	ui->codeEditor->SetScript(doc, script);
 }

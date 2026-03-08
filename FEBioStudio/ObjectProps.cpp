@@ -72,7 +72,6 @@ void CObjectProps::AddParameter(Param& p)
 	break;
 	case Param_URL   : prop = addProperty(paramName, CProperty::Resource); break;
 	case Param_MATH  : prop = addProperty(paramName, CProperty::MathString); break;
-	case Param_CODE  : prop = addProperty(paramName, CProperty::CodeString); break;
 	case Param_COLOR : prop = addProperty(paramName, CProperty::Color); break;
 	case Param_VEC2I : prop = addProperty(paramName, CProperty::Vec2i); break;
 	case Param_VEC2D : prop = addProperty(paramName, CProperty::Vec2d); break;
@@ -239,7 +238,6 @@ QVariant CObjectProps::GetPropertyValue(Param& p)
 	case Param_URL   : return QString::fromStdString(p.GetURLValue()); break;
 	case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
 	case Param_MATH  : return QString::fromStdString(p.GetMathString()); break;
-	case Param_CODE  : return QString::fromStdString(p.GetCodeString()); break;
 	case Param_BOOL:
 	{
 		if (p.GetEnumNames()) return (p.GetBoolValue() ? 1 : 0);
@@ -339,7 +337,6 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 	case Param_URL   : p.SetURLValue(v.toString().toStdString()); break;
 	case Param_STRING: p.SetStringValue(v.toString().toStdString()); break;
 	case Param_MATH  : p.SetMathString(v.toString().toStdString()); break;
-	case Param_CODE  : p.SetCodeString(v.toString().toStdString()); break;
 	case Param_BOOL:
 	{
 		if (p.GetEnumNames()) p.SetBoolValue(v.toInt() != 0);

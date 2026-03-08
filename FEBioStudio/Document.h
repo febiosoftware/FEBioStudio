@@ -38,7 +38,7 @@ class CDocument;
 class CDocObserver
 {
 public:
-	CDocObserver(CDocument* doc);
+	CDocObserver(CDocument* doc = nullptr);
 	virtual ~CDocObserver();
 
 	// bnewFlag is set when a new model was loaded
@@ -46,6 +46,9 @@ public:
 
 	// this function is called when the document is about to be deleted
 	virtual void DocumentDelete();
+
+	// Set the document
+	void SetDocument(CDocument* doc);
 
 	// get the document
 	CDocument* GetDocument() { return m_doc; }

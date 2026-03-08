@@ -4,13 +4,14 @@
 class Param;
 
 class UIEditVariableParam;
+class FSModel;
 
 class CEditVariableParam : public QWidget
 {
 	Q_OBJECT
 
 public:
-	CEditVariableParam(QWidget* parent = nullptr);
+	CEditVariableParam(FSModel* fem, QWidget* parent = nullptr);
 
 	void setParam(Param* p);
 

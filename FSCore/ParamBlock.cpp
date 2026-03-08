@@ -275,7 +275,7 @@ void Param::clear()
 		case Param_STRING: delete ((std::string*) m_pd); break;
 		case Param_URL   : delete ((std::string*) m_pd); break;
 		case Param_MATH  : delete ((std::string*) m_pd); break;
-		case Param_CODE  : delete ((std::string*) m_pd); break;
+		case Param_CODE  : delete ((int*) m_pd); break;
 		case Param_COLOR : delete ((GLColor*)m_pd); break;
 		case Param_STD_VECTOR_INT   : delete ((std::vector<int>*)m_pd); break;
 		case Param_STD_VECTOR_DOUBLE: delete ((std::vector<double>*)m_pd); break;
@@ -308,7 +308,7 @@ void Param::SetParamType(Param_Type t)
 	case Param_STRING: m_pd = new std::string; break;
 	case Param_URL   : m_pd = new std::string; break;
 	case Param_MATH  : m_pd = new std::string; break;
-	case Param_CODE  : m_pd = new std::string; break;
+	case Param_CODE  : m_pd = new int; val<int>() = -1; break;
 	case Param_COLOR : m_pd = new GLColor; break;
 	case Param_STD_VECTOR_INT   : m_pd = new std::vector<int>(); break;
 	case Param_STD_VECTOR_DOUBLE: m_pd = new std::vector<double>(); break;
@@ -421,7 +421,7 @@ Param::Param(const Param& p)
 	case Param_STRING: { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_URL   : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
-	case Param_CODE  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
+	case Param_CODE  : { int* ps = new int; m_pd = ps; *ps = *((int*)p.m_pd); } break;
 	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
 	case Param_STD_VECTOR_INT   : { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
 	case Param_STD_VECTOR_DOUBLE: { std::vector<double>* pv = new std::vector<double>(); m_pd = pv; *pv = *((std::vector<double>*)p.m_pd); } break;
@@ -469,7 +469,7 @@ Param& Param::operator = (const Param& p)
 	case Param_STRING: { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_URL   : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
-	case Param_CODE  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
+	case Param_CODE  : { int* ps = new int; m_pd = ps; *ps = *((int*)p.m_pd); } break;
 	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
 	case Param_STD_VECTOR_INT: { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
 	case Param_STD_VECTOR_DOUBLE: { std::vector<double>* pv = new std::vector<double>(); m_pd = pv; *pv = *((std::vector<double>*)p.m_pd); } break;
@@ -1069,7 +1069,7 @@ void Param::SetArrayIntValue(const std::vector<int>& v)
 	auto& d = val<std::vector<int> >();
 	if (d.empty()) { d = v; return; }
 	assert(d.size() == v.size());
-	int n = MIN(d.size(), v.size());
+	int n = (int)(MIN(d.size(), v.size()));
 	for (int i = 0; i < n; ++i) d[i] = v[i];
 }
 
@@ -1078,7 +1078,7 @@ void Param::SetArrayIntValue(int* pd, int nsize)
 	assert(m_ntype == Param_ARRAY_INT);
 	auto& d = val<std::vector<int> >();
 	assert(d.size() == nsize);
-	int n = MIN(d.size(), nsize);
+	int n = (int)(MIN(d.size(), nsize));
 	for (int i = 0; i < n; ++i) d[i] = pd[i];
 }
 
@@ -1086,9 +1086,9 @@ void Param::SetArrayDoubleValue(const std::vector<double>& v)
 {
 	assert(m_ntype == Param_ARRAY_DOUBLE);
 	auto& d = val<std::vector<double> >();
-	if (d.empty()) { d = v; m_nsize = v.size(); return; }
+	if (d.empty()) { d = v; m_nsize = (int)v.size(); return; }
 	assert(d.size() == v.size());
-	int n = MIN(d.size(), v.size());
+	int n = (int)(MIN(d.size(), v.size()));
 	for (int i = 0; i < n; ++i) d[i] = v[i];
 }
 
@@ -1195,7 +1195,7 @@ int ParamBlock::SetActiveGroup(const char* szgroup)
 		{
 			if (strcmp(m_pg[i], szgroup) == 0)
 			{
-				m_currentGroup = i;
+				m_currentGroup = (int)i;
 			}
 		}
 		if (m_currentGroup == -1)
@@ -1275,7 +1275,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	case Param_STRING: { std::string s = p.GetStringValue(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
 	case Param_URL   : { std::string s = p.GetURLValue(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
 	case Param_MATH  : { std::string s = p.GetMathString(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
-	case Param_CODE  : { std::string s = p.GetCodeString(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
+	case Param_CODE  : { int n = p.GetScriptID(); ar.WriteChunk(CID_PARAM_VALUE, n); } break;
 	case Param_COLOR : { GLColor c = p.GetColorValue(); ar.WriteChunk(CID_PARAM_VALUE, c); } break;
 	case Param_STD_VECTOR_INT: { std::vector<int> v = p.GetVectorIntValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_STD_VECTOR_DOUBLE: { std::vector<double> v = p.GetVectorDoubleValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
@@ -1364,7 +1364,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_STRING: { std::string s; ar.read(s); p.SetStringValue(s); } break;
 			case Param_URL   : { std::string s; ar.read(s); p.SetURLValue(s); } break;
 			case Param_MATH  : { std::string s; ar.read(s); p.SetMathString(s); } break;
-			case Param_CODE  : { std::string s; ar.read(s); p.SetCodeString(s); } break;
+			case Param_CODE  : { int n; ar.read(n); p.SetScriptID(n); } break;
 			case Param_COLOR : { GLColor c; ar.read(c); p.SetColorValue(c); break; }
 			case Param_STD_VECTOR_INT: { std::vector<int> v; ar.read(v); p.SetVectorIntValue(v); break; }
 			case Param_STD_VECTOR_DOUBLE: { std::vector<double> v; ar.read(v); p.SetVectorDoubleValue(v); break; }

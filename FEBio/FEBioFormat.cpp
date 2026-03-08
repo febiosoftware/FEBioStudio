@@ -395,7 +395,6 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		case Param_FLOAT: { double d; tag.value(d); pp->SetFloatValue(d); } break;
 		case Param_MATH: { string s; tag.value(s); pp->SetMathString(s); } break;
 		case Param_STRING: { string s; tag.value(s); pp->SetStringValue(s); } break;
-		case Param_CODE  : { string s; tag.value(s); pp->SetCodeString(s); } break;
 		case Param_STD_VECTOR_INT: 
 		{ 
 			if (pp->GetEnumNames())
@@ -473,7 +472,7 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		if (pp->IsVariable())
 		{
 			pp->SetParamType(Param_CODE);
-			pp->SetCodeString(tag.szvalue());
+			febio.m_scriptParam[pp] = tag.szvalue();
 		}
 		else FileReader()->AddLogEntry("Cannot assign code to non-variable parameter %s", pp->GetShortName());
 	}
@@ -2630,22 +2629,6 @@ void FEBioFormat::ParseMappedParameter(XMLTag& tag, Param* param)
 		param->SetParamType(Param_STRING);
 		param->SetStringValue(tag.szvalue());
 	}
-	else if (sztype && (strcmp(sztype, "code") == 0))
-	{
-		param->SetParamType(Param_CODE);
-		string scode;
-		if (tag.isleaf()) scode = tag.szvalue();
-		else
-		{
-			++tag;
-			do
-			{
-				if (tag == "code") scode = tag.szvalue();
-				++tag;
-			} while (!tag.isend());
-		}
-		param->SetCodeString(scode);
-	}
 	else if (sztype && (strcmp(sztype, "math") == 0))
 	{
 		param->SetParamType(Param_MATH);
@@ -2700,11 +2683,6 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 			case Param_STRING:
 			{
 				param->SetStringValue(att.cvalue());
-			}
-			break;
-			case Param_CODE:
-			{
-				param->SetCodeString(att.cvalue());
 			}
 			break;
 			default:
@@ -2802,13 +2780,6 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 				std::string s;
 				tag.value(s);
 				param->SetStringValue(s);
-			}
-			break;
-			case Param_CODE:
-			{
-				std::string s;
-				tag.value(s);
-				param->SetCodeString(s);
 			}
 			break;
 			default:

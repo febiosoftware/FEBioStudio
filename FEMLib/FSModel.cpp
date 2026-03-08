@@ -1575,9 +1575,10 @@ void FSModel::Save(OArchive& ar)
 		{
 			for (size_t i = 0; i < m_scripts.size(); ++i)
 			{
-				FEScript* ps = m_scripts[i].get();
+				FEBCodeScript* ps = m_scripts[i].get();
 				ar.BeginChunk(0);
 				{
+					ar.WriteChunk(CID_SCRIPT_ID  , ps->id  );
 					ar.WriteChunk(CID_SCRIPT_NAME, ps->name);
 					ar.WriteChunk(CID_SCRIPT_CODE, ps->code);
 				}
@@ -1749,15 +1750,22 @@ void FSModel::LoadScripts(IArchive& ar)
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		std::string name, code;
+		int id = -1;
 		while (IArchive::IO_OK == ar.OpenChunk())
 		{
 			int ntype = ar.GetChunkID();
-			if      (ntype == CID_SCRIPT_NAME) ar.read(name);
+			if      (ntype == CID_SCRIPT_ID  ) ar.read(id);
+			else if (ntype == CID_SCRIPT_NAME) ar.read(name);
 			else if (ntype == CID_SCRIPT_CODE) ar.read(code);
 			else throw ReadError("unknown CID in FSModel::LoadScripts");
 			ar.CloseChunk();
 		}
-		AddScript(name, code);
+		assert(id != -1);
+		std::unique_ptr<FEBCodeScript> ps(new FEBCodeScript(name, code));
+		ps->id = id;
+		m_nextScriptID = std::max(m_nextScriptID, id + 1);
+		m_scripts.push_back(std::move(ps));
+
 		ar.CloseChunk();
 	}
 }
@@ -2820,9 +2828,9 @@ int CountBCsByTypeString(const std::string& typeStr, FSModel& fem)
 	return nc;
 }
 
-FEScript* FSModel::AddScript(const std::string& name, const std::string& code)
+FEBCodeScript* FSModel::AddScript(const std::string& name, const std::string& code)
 {
-	auto it = std::find_if(m_scripts.begin(), m_scripts.end(), [&name](const std::unique_ptr<FEScript>& s) { return s->name == name; });
+	auto it = std::find_if(m_scripts.begin(), m_scripts.end(), [&name](const std::unique_ptr<FEBCodeScript>& s) { return s->name == name; });
 	if (it != m_scripts.end())
 	{
 		return nullptr;
@@ -2835,7 +2843,10 @@ FEScript* FSModel::AddScript(const std::string& name, const std::string& code)
 		if (c != '\r') cleanCode += c;
 	}
 
-	m_scripts.push_back(std::make_unique<FEScript>(name, cleanCode));
+	std::unique_ptr<FEBCodeScript> script = std::make_unique<FEBCodeScript>(name, cleanCode);
+	script->id = m_nextScriptID++;
+
+	m_scripts.push_back(std::move(script));
 	return m_scripts.back().get();
 }
 
@@ -2844,9 +2855,9 @@ size_t FSModel::Scripts() const
 	return m_scripts.size();
 }
 
-FEScript* FSModel::GetScript(const std::string& name)
+FEBCodeScript* FSModel::GetScript(const std::string& name)
 {
-	auto it = std::find_if(m_scripts.begin(), m_scripts.end(), [&name](const std::unique_ptr<FEScript>& s) { return s->name == name; });
+	auto it = std::find_if(m_scripts.begin(), m_scripts.end(), [&name](const std::unique_ptr<FEBCodeScript>& s) { return s->name == name; });
 	if (it != m_scripts.end())
 	{
 		return it->get();
@@ -2854,7 +2865,17 @@ FEScript* FSModel::GetScript(const std::string& name)
 	return nullptr;
 }
 
-FEScript* FSModel::GetScript(size_t n)
+FEBCodeScript* FSModel::GetScriptFromID(int id)
+{
+	auto it = std::find_if(m_scripts.begin(), m_scripts.end(), [id](const std::unique_ptr<FEBCodeScript>& s) { return s->id == id; });
+	if (it != m_scripts.end())
+	{
+		return it->get();
+	}
+	return nullptr;
+}
+
+FEBCodeScript* FSModel::GetScript(size_t n)
 {
 	if (n < m_scripts.size())
 	{

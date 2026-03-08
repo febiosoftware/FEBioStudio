@@ -2239,7 +2239,7 @@ void FEBioExport4::WriteGeometryDiscreteSets()
 					el.add_attribute("name", pds->GetName().c_str());
 					m_xml.add_branch(el);
 					{
-						int N = springNodes.size();
+						int N = (int)springNodes.size();
 						for (int n = 0; n < N; ++n)
 						{
 							int m[2] = { springNodes[n].first, springNodes[n].second };
@@ -3329,7 +3329,7 @@ void FEBioExport4::WriteScriptsSection()
 	FSModel& fem = *m_pfem;
 	for (int i = 0; i < fem.Scripts(); ++i)
 	{
-		FEScript* ps = fem.GetScript(i);
+		FEBCodeScript* ps = fem.GetScript(i);
 		XMLElement el;
 		el.name("script");
 		el.add_attribute("name", ps->name);

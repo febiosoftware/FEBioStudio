@@ -42,17 +42,10 @@ SOFTWARE.*/
 #include <FSCore/FSObjectList.h>
 #include <unordered_set>
 #include <memory>
+#include "FEBCodeScript.h"
 
 class GModel;
 class FSReactionMaterial;
-
-struct FEScript
-{
-	std::string name;
-	std::string code;
-
-	FEScript(const std::string& name, const std::string& code) : name(name), code(code) {}
-};
 
 //! The FE model stores all FE data.
 //
@@ -254,11 +247,13 @@ public:
 	const char* GetVariableName(const char* szvar, int n, bool longName = true);
 
 public:
-	FEScript* AddScript(const std::string& name, const std::string& code);
+	FEBCodeScript* AddScript(const std::string& name, const std::string& code);
 
-	FEScript* GetScript(const std::string& name);
+	FEBCodeScript* GetScript(const std::string& name);
 
-	FEScript* GetScript(size_t n);
+	FEBCodeScript* GetScriptFromID(int id);
+
+	FEBCodeScript* GetScript(size_t n);
 
 	size_t Scripts() const;
 
@@ -427,7 +422,8 @@ protected:
 	int m_MLT_offset;
 
 	// scripts
-	std::vector<std::unique_ptr<FEScript>> m_scripts;
+	std::vector<std::unique_ptr<FEBCodeScript>> m_scripts;
+	int m_nextScriptID = 1;
 
 	//! Skip geometry section when loading file
 	bool m_skipGeometry;

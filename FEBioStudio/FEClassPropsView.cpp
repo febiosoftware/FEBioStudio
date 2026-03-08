@@ -421,8 +421,9 @@ public:
 					break;
 					case Param_CODE:
 					{
-						string s = p.GetCodeString();
-						QString v = QString("{ ") + QString::fromStdString(s) + QString(" }");
+						int id = p.GetScriptID();
+						FEBCodeScript* ps = GetFSModel()->GetScriptFromID(id);
+						QString v = QString("{ ") + (ps ? QString::fromStdString(ps->name) : "") + QString(" }");
 						const char* szunit = p.GetUnit();
 						if (szunit)
 						{
@@ -529,7 +530,13 @@ public:
 					case Param_MAT3DS: return Mat3dsToString(p.val<mat3ds>()); break;
 					case Param_MATH: return QString::fromStdString(p.GetMathString()); break;
 					case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
-					case Param_CODE: return QString::fromStdString(p.GetCodeString()); break;
+					case Param_CODE:
+					{
+						int id = p.GetScriptID();
+						FEBCodeScript* ps = GetFSModel()->GetScriptFromID(id);
+						return (ps ? QString::fromStdString(ps->name) : QString("(invalid)"));
+						break;
+					}
 					case Param_STD_VECTOR_INT: return -1; break;
 					case Param_STD_VECTOR_DOUBLE:
 					{
@@ -777,9 +784,15 @@ public:
 					if ((s.empty() == false) && (s[0] == '{')) s.erase(s.begin());
 					if ((s.empty() == false) && (s[l-1] == '}')) s.erase(s.back());
 
-					if (p.GetCodeString() != s) {
-						p.SetCodeString(s);
-						p.SetModified(true);
+					auto script = GetFSModel()->GetScript(s);
+					if (script)
+					{
+						int currentID = p.GetScriptID();
+
+						if (currentID != script->id) {
+							p.SetScriptID(script->id);
+							p.SetModified(true);
+						}
 					}
 				}
 				break;
@@ -1322,7 +1335,7 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 			// check for variable parameters first
 			if (p->IsVariable())
 			{
-				CEditVariableParam* pw = new CEditVariableParam(parent);
+				CEditVariableParam* pw = new CEditVariableParam(item->GetFSModel(), parent);
 
 				// We got to use a const_cast here since closeEditor requires the non-const pointer to the delegate
 				// but we're inside a const member.

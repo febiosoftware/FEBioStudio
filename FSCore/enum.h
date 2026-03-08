@@ -600,8 +600,9 @@ SOFTWARE.*/
 
 // --- script section
 #define CID_SCRIPT_SECTION			0x00500000
-#define CID_SCRIPT_NAME 			0x00500001
-#define CID_SCRIPT_CODE				0x00500002
+#define CID_SCRIPT_ID	 			0x00500001
+#define CID_SCRIPT_NAME 			0x00500002
+#define CID_SCRIPT_CODE				0x00500003
 
 //--------------------------------------------------------
 // Mesh type

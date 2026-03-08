@@ -276,8 +276,10 @@ void FEBioExport::WriteParam(Param &p)
 		{
 			e.add_attribute("type", "code");
 		}
-		std::string s = p.GetCodeString();
-		e.value(s.c_str());
+		int id = p.GetScriptID();
+
+		FEBCodeScript* ps = fem.GetScriptFromID(id);
+		e.value(ps ? ps->name.c_str() : "(invalid)");
 	}
 	break;
 	case Param_STD_VECTOR_VEC2D:

@@ -39,7 +39,7 @@ class Ui::CCodeEditor
 {
 public:
 	CTextEditor* edit = nullptr;
-	FEScript* script = nullptr;
+	FEBCodeScript* script = nullptr;
 
 public:
 	void setup(QMainWindow* wnd, bool darkTheme)

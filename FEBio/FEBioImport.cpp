@@ -520,6 +520,16 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		fem.AddScript(name, code);
 	}
 
+	if (m_nversion >= 0x0400)
+	{
+		// resolve script parameters
+		for (auto& [param, scriptName] : m_febio->m_scriptParam)
+		{
+			FEBCodeScript* script = fem.GetScript(scriptName); assert(script);
+			if (script) param->SetScriptID(script->id);
+		}
+	}
+
 	if (m_nversion < 0x0400)
 	{
 		// older formats need to be converted

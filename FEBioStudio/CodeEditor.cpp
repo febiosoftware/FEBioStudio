@@ -38,11 +38,24 @@ CCodeEditor::CCodeEditor(CMainWindow* wnd) : QMainWindow(wnd), mainWnd(wnd), ui(
 
 void CCodeEditor::closeEvent(QCloseEvent* event)
 {
+	if (GetDocument()) SetDocument(nullptr);
 	ui->script = nullptr;
 }
 
-void CCodeEditor::SetScript(FEScript* script)
+void CCodeEditor::DocumentDelete()
 {
+	CDocObserver::DocumentDelete();
+	ui->script = nullptr;
+	close();
+}
+
+void CCodeEditor::SetScript(CDocument* doc, FEBCodeScript* script)
+{
+	if (GetDocument() != doc)
+	{
+		SetDocument(doc);
+	}
+
 	ui->edit->clear();
 	ui->script = script;
 	if (script)
