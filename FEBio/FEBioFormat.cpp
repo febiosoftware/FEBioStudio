@@ -2903,3 +2903,25 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 
 	pmc->UpdateData(true);
 }
+
+void FEBioFormat::ParseScriptsSection(XMLTag& tag)
+{
+	// make sure the section is not empty
+	if (tag.isleaf()) return;
+	++tag;
+	do
+	{
+		if (tag == "script")
+		{
+			const char* szname = tag.AttributeValue("name", true);
+			if (szname)
+			{
+				string code;
+				tag.value(code);
+				GetFEBioModel().AddScript(szname, code);
+			}
+		}
+		else ParseUnknownTag(tag);
+		++tag;
+	} while (!tag.isend());
+}

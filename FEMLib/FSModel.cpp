@@ -1567,6 +1567,25 @@ void FSModel::Save(OArchive& ar)
 		}
 		ar.EndChunk();
 	}
+
+	// save scripts
+	if (m_scripts.empty() == false)
+	{
+		ar.BeginChunk(CID_SCRIPT_SECTION);
+		{
+			for (size_t i = 0; i < m_scripts.size(); ++i)
+			{
+				FEScript* ps = m_scripts[i].get();
+				ar.BeginChunk(0);
+				{
+					ar.WriteChunk(CID_SCRIPT_NAME, ps->name);
+					ar.WriteChunk(CID_SCRIPT_CODE, ps->code);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
 }
 
 void FSModel::Load(IArchive& ar)
@@ -1592,6 +1611,7 @@ void FSModel::Load(IArchive& ar)
 		case CID_STEP_SECTION        : LoadSteps(ar); break;
 		case CID_LOAD_CONTROLLER_LIST: LoadLoadControllers(ar); break;
 		case CID_MESHDATA_LIST       : LoadMeshDataGenerators(ar); break;
+		case CID_SCRIPT_SECTION      : LoadScripts(ar); break;
 		}
 		ar.CloseChunk();
 	}
@@ -1719,6 +1739,25 @@ void FSModel::LoadSteps(IArchive& ar)
 		// add step to model
 		AddStep(ps);
 
+		ar.CloseChunk();
+	}
+}
+
+void FSModel::LoadScripts(IArchive& ar)
+{
+	m_scripts.clear();
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		std::string name, code;
+		while (IArchive::IO_OK == ar.OpenChunk())
+		{
+			int ntype = ar.GetChunkID();
+			if      (ntype == CID_SCRIPT_NAME) ar.read(name);
+			else if (ntype == CID_SCRIPT_CODE) ar.read(code);
+			else throw ReadError("unknown CID in FSModel::LoadScripts");
+			ar.CloseChunk();
+		}
+		AddScript(name, code);
 		ar.CloseChunk();
 	}
 }
@@ -2779,4 +2818,47 @@ int CountBCsByTypeString(const std::string& typeStr, FSModel& fem)
 		}
 	}
 	return nc;
+}
+
+FEScript* FSModel::AddScript(const std::string& name, const std::string& code)
+{
+	auto it = std::find_if(m_scripts.begin(), m_scripts.end(), [&name](const std::unique_ptr<FEScript>& s) { return s->name == name; });
+	if (it != m_scripts.end())
+	{
+		return nullptr;
+	}
+
+	// strip /r from the code (since some platforms add it to the end of lines)
+	std::string cleanCode;
+	for (char c : code)
+	{
+		if (c != '\r') cleanCode += c;
+	}
+
+	m_scripts.push_back(std::make_unique<FEScript>(name, cleanCode));
+	return m_scripts.back().get();
+}
+
+size_t FSModel::Scripts() const
+{
+	return m_scripts.size();
+}
+
+FEScript* FSModel::GetScript(const std::string& name)
+{
+	auto it = std::find_if(m_scripts.begin(), m_scripts.end(), [&name](const std::unique_ptr<FEScript>& s) { return s->name == name; });
+	if (it != m_scripts.end())
+	{
+		return it->get();
+	}
+	return nullptr;
+}
+
+FEScript* FSModel::GetScript(size_t n)
+{
+	if (n < m_scripts.size())
+	{
+		return m_scripts[n].get();
+	}
+	return nullptr;
 }

@@ -821,6 +821,15 @@ bool FEBioExport4::Write(const char* szfile)
 				m_xml.close_branch(); // LoadData
 			}
 
+			if (fem.Scripts() > 0)
+			{
+				m_xml.add_branch("Scripts");
+				{
+					WriteScriptsSection();
+				}
+				m_xml.close_branch(); // Scripts
+			}
+
 			// Output data
 			if (WriteSection(FEBIO_OUTPUT))
 			{
@@ -3315,7 +3324,23 @@ void FEBioExport4::WriteGlobalsSection()
 	}
 }
 
-//-----------------------------------------------------------------------------
+void FEBioExport4::WriteScriptsSection()
+{
+	FSModel& fem = *m_pfem;
+	for (int i = 0; i < fem.Scripts(); ++i)
+	{
+		FEScript* ps = fem.GetScript(i);
+		XMLElement el;
+		el.name("script");
+		el.add_attribute("name", ps->name);
+		string script = ps->code;
+
+		script = "<![CDATA[\n" + script + "\n]]>";
+
+		el.value(script);
+		m_xml.add_leaf(el);
+	}
+}
 
 void FEBioExport4::WriteLoadDataSection()
 {

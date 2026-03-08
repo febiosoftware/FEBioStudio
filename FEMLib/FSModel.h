@@ -46,6 +46,14 @@ SOFTWARE.*/
 class GModel;
 class FSReactionMaterial;
 
+struct FEScript
+{
+	std::string name;
+	std::string code;
+
+	FEScript(const std::string& name, const std::string& code) : name(name), code(code) {}
+};
+
 //! The FE model stores all FE data.
 //
 //! It stores the geometry, the material list, and the analysis data.
@@ -246,6 +254,15 @@ public:
 	const char* GetVariableName(const char* szvar, int n, bool longName = true);
 
 public:
+	FEScript* AddScript(const std::string& name, const std::string& code);
+
+	FEScript* GetScript(const std::string& name);
+
+	FEScript* GetScript(size_t n);
+
+	size_t Scripts() const;
+
+public:
 	// These functions deal with enums
 	// Enums are identified via:
 	// - Key  : The string name of an option (there is a long and short key)
@@ -373,6 +390,8 @@ protected:
 	void LoadLoadControllers   (IArchive& ar);
 	//! Load mesh data generators from archive
 	void LoadMeshDataGenerators(IArchive& ar);
+	//! Load the scripts
+	void LoadScripts(IArchive& ar);
 
 protected:
 	//! Build material lookup table
@@ -406,6 +425,9 @@ protected:
 	std::vector<GMaterial*>	m_MLT;
 	//! Material lookup table offset
 	int m_MLT_offset;
+
+	// scripts
+	std::vector<std::unique_ptr<FEScript>> m_scripts;
 
 	//! Skip geometry section when loading file
 	bool m_skipGeometry;

@@ -177,6 +177,7 @@ bool FEBioFormat4::ParseSection(XMLTag& tag)
 		else if (tag == "Globals"    ) ParseGlobalsSection   (tag);
 		else if (tag == "LoadData"   ) ParseLoadDataSection  (tag);
 		else if (tag == "Output"     ) ParseOutputSection    (tag);
+		else if (tag == "Scripts"    ) ParseScriptsSection   (tag);
 		else if (tag == "Step"       ) ParseStepSection      (tag);
 		else return false;
 	}

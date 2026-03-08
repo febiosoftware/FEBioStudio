@@ -400,6 +400,71 @@ public:
 	}
 };
 
+const char* szfebcodekeys[] = {
+	"void", "bool", "int", "double",
+	"struct", "function", "return",
+	"if", "else", "while",
+	"true", "false",
+	"vec3"
+};
+
+const char* szfebcodefncs[] = {
+	"abs"  ,
+	"acos" ,
+	"acosh",
+	"asin" ,
+	"asinh",
+	"atan" ,
+	"atanh",
+	"cos"  ,
+	"cosh" ,
+	"exp"  ,
+	"log"  ,
+	"log10",
+	"sin"  ,
+	"sinh" ,
+	"sqrt" ,
+	"tan"  ,
+	"tanh" ,
+	"normalize",
+	"PI"   ,
+	"_pos0", "_norm0"
+};
+
+class CFEBCodeHighlighter : public CSyntaxHighlighter
+{
+public:
+	CFEBCodeHighlighter(QTextDocument* doc, int theme) : CSyntaxHighlighter(doc)
+	{
+		QString keywords = toString(szfebcodekeys, sizeof(szfebcodekeys) / sizeof(const char*));
+		QString funcs = toString(szfebcodefncs, sizeof(szfebcodefncs) / sizeof(const char*));
+
+		QString lineComment("//.*");
+		QString stringLiterals("([\"'])(.*?)\\1");
+		QString numbers("(?<!\\w)[-+]?\\d*\\.?\\d+([eE][-+]?\\d+)?");
+		QString braces("[\\(\\[\\{\\)\\]\\}]");
+
+		if (theme == 0) // light theme
+		{
+			AddRule(keywords, Qt::darkMagenta);
+			AddRule(funcs, Qt::darkMagenta);
+			AddRule(numbers, Qt::darkCyan);
+			AddRule(braces, QColor("gold"));
+			AddRule(stringLiterals, QColor("orangered"));
+			AddRule(lineComment, Qt::darkGreen);
+		}
+		else // dark theme
+		{
+			AddRule(keywords, QColor("plum"));
+			AddRule(funcs, QColor("khaki"));
+			AddRule(numbers, Qt::cyan);
+			AddRule(braces, QColor("gold"));
+			AddRule(stringLiterals, QColor("orange"));
+			AddRule(lineComment, QColor("forestgreen"));
+		}
+	}
+};
+
 CTextEditor::CTextEditor(QWidget* parent) : QPlainTextEdit(parent)
 {
 	m_countCache.first = -1;
@@ -431,11 +496,12 @@ void CTextEditor::SetHighlighter(QTextDocument* doc, TextFormat fmt)
 	CSyntaxHighlighter* hl = nullptr;
 	switch (fmt)
 	{
-	case TextFormat::PLAIN : hl = new PlainTextHighlighter(doc); break;
-	case TextFormat::XML   : hl = new XMLHighlighter      (doc, (m_useDarkTheme ? 1 : 0)); break;
-	case TextFormat::CODE  : hl = new CppHighlighter      (doc, (m_useDarkTheme ? 1 : 0)); break;
-	case TextFormat::CMAKE : hl = new CMakeHighlighter    (doc, (m_useDarkTheme ? 1 : 0)); break;
-	case TextFormat::PYTHON: hl = new CPythonHighlighter  (doc, (m_useDarkTheme ? 1 : 0)); break;
+	case TextFormat::PLAIN  : hl = new PlainTextHighlighter(doc); break;
+	case TextFormat::XML    : hl = new XMLHighlighter      (doc, (m_useDarkTheme ? 1 : 0)); break;
+	case TextFormat::CODE   : hl = new CppHighlighter      (doc, (m_useDarkTheme ? 1 : 0)); break;
+	case TextFormat::CMAKE  : hl = new CMakeHighlighter    (doc, (m_useDarkTheme ? 1 : 0)); break;
+	case TextFormat::PYTHON : hl = new CPythonHighlighter  (doc, (m_useDarkTheme ? 1 : 0)); break;
+	case TextFormat::FEBCODE: hl = new CFEBCodeHighlighter (doc, (m_useDarkTheme ? 1 : 0)); break;
 	default:
 		assert(false);
 	}

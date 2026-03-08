@@ -1832,3 +1832,8 @@ FSItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 
 	return 0;
 }
+
+void FEBioInputModel::AddScript(const std::string& name, const std::string& script)
+{
+	m_scripts[name] = script;
+}

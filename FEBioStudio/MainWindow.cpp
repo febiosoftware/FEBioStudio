@@ -3658,5 +3658,26 @@ void CMainWindow::on_planecut_dataChanged()
 
 void CMainWindow::OpenCodeEditor(const QString& scriptName)
 {
-	QMessageBox::information(nullptr, "Code Editor", QString("This would open the code editor for script: %1").arg(scriptName));
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	FSModel* fem = doc->GetFSModel();
+	if (fem == nullptr) return;
+
+	FEScript* script = fem->GetScript(scriptName.toStdString());
+	if (script == nullptr)
+	{
+		script = fem->AddScript(scriptName.toStdString(), "return 0.0;");
+		if (script == nullptr)
+		{
+			QMessageBox::critical(this, "Code Editor", "Failed creating new script.");
+			return;
+		}
+	}
+
+	if (ui->codeEditor == nullptr) ui->codeEditor = new ::CCodeEditor(this);
+	ui->codeEditor->show();
+	ui->codeEditor->raise();
+	ui->codeEditor->activateWindow();
+	ui->codeEditor->SetScript(script);
 }

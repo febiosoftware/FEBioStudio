@@ -514,6 +514,12 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		}
 	}
 
+	// copy scripts
+	for (const auto& [name, code] : m_febio->m_scripts)
+	{
+		fem.AddScript(name, code);
+	}
+
 	if (m_nversion < 0x0400)
 	{
 		// older formats need to be converted

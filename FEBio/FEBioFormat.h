@@ -98,6 +98,8 @@ protected:
 
 	void ParseMappedParameter(XMLTag& tag, Param* param);
 
+	void ParseScriptsSection(XMLTag& tag);
+
 protected:
 	// NOTE: This is only used by FEBioFormat4 and FEBioFormat3.
 	//       Do not use in older file readers. 

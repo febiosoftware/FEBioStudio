@@ -583,6 +583,9 @@ public:
 	GPartList* FindNamedPartList(const std::string& name);
 
 public:
+	void AddScript(const std::string& name, const std::string& script);
+
+public:
 	bool		m_shellNodalNormals;
 	std::string	m_plotFormat;
 
@@ -595,6 +598,9 @@ private:
 	std::vector<LoadCurve>		m_LC;
 	std::vector<PlotVariable>	m_plot;
 	std::vector<LogVariable>	m_log;
+
+public:
+	std::unordered_map<std::string, std::string> m_scripts;
 };
 
 class FEBioFileImport;
