@@ -428,7 +428,7 @@ const char* szfebcodefncs[] = {
 	"tanh" ,
 	"normalize",
 	"PI"   ,
-	"_pos0", "_norm0"
+	"_pos0", "_norm0", "_time"
 };
 
 class CFEBCodeHighlighter : public CSyntaxHighlighter
