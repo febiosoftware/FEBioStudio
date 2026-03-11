@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 export FEBIO_REPO=$GITHUB_WORKSPACE/FEBio
 export FBS_REPO=$GITHUB_WORKSPACE/FEBioStudio

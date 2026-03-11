@@ -1,3 +1,6 @@
+$PSNativeCommandUseErrorActionPreference = $true
+$ErrorActionPreference = 'Stop'
+
 $FEBIO_REPO = $env:GITHUB_WORKSPACE + '\FEBio\'
 $FBS_REPO = $env:GITHUB_WORKSPACE + '\FEBioStudio\'
 
