@@ -1153,7 +1153,10 @@ void CCmdSelectPart::UnExecute()
 	for (int i = 0; i<n; ++i)
 	{
 		GPart* pg = m_model->Part(i);
-		if (m_bold[i]) pg->Select(); else pg->UnSelect();
+		if (pg) 
+		{
+			if (m_bold[i]) pg->Select(); else pg->UnSelect();
+		}
 	}
 }
 
