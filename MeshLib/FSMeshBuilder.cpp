@@ -817,6 +817,19 @@ void FSMeshBuilder::AttachAndWeld(FSMesh& mesh, double tol)
 			}
 		}
 
+	// if nodes that are tagged for removal are required, the RemoveIsolatedNodes()
+	// will not remove them. So, we remove the required flag. 
+	for (int i = 0; i<nodes; ++i)
+	{
+		FSNode& node = m_mesh.Node(i);
+		if ((order[i] != i) && (node.m_gid >= 0))
+		{
+			FSNode& newNode = m_mesh.Node(order[i]);
+			if (newNode.m_gid < 0) newNode.m_gid = node.m_gid;
+			node.m_gid = -1;
+		}
+	}
+
 	// update element numbers
 	for (int i = 0; i<elems; ++i)
 	{
