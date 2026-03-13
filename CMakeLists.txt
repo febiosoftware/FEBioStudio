@@ -443,7 +443,7 @@ foreach(name IN LISTS FEBIOSTUDIO_LIBS)
     target_link_libraries(${name} FEBio::FECore)
 endforeach()
 
-target_link_libraries(FEBioLink FEBio::FEBioLib FEBio::FEBioFluid FEBio::FEBioMech FEBio::FEBioMix)
+target_link_libraries(FEBioLink FEBio::FEBioLib FEBio::FEBioFluid FEBio::FEBioThermoFluid FEBio::FEBioMech FEBio::FEBioMix)
 target_link_libraries(ImageLib FEBio::FEBioOpt)
 
 # Link the Qt libraries

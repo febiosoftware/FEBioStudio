@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include <FEBioFluid/FEFluidFSIAnalysis.h>
 #include <FEBioFluid/FEMultiphasicFSIAnalysis.h>
 #include <FEBioFluid/FEPolarFluidAnalysis.h>
-#include <FEBioFluid/FEThermoFluidAnalysis.h>
+#include <FEBioThermoFluid/FEThermoFluidAnalysis.h>
 #include <FEBioMix/FEBiphasicAnalysis.h>
 #include <FEBioMix/FEBiphasicSoluteAnalysis.h>
 #include <FEBioMix/FEMultiphasicAnalysis.h>
