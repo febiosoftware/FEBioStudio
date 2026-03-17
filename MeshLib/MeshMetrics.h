@@ -44,6 +44,12 @@ double SolidJacobian(const FSMesh& mesh, const FSElement& el);
 // calculate jacobian of a shell
 double ShellJacobian(const FSMesh& mesh, const FSElement& el, int flag);
 
+// minimum scaled Jacobian
+double MinimumScaledJacobian(const FSMesh& mesh, const FSElement& el);
+
+// minimum Mean Ratio
+double MinimumMeanRatio(const FSMesh& mesh, const FSElement& el);
+
 // area of shell
 double ShellArea(const FSMesh& mesh, const FSElement& el);
 
