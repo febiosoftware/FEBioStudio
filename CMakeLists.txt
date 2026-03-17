@@ -432,7 +432,6 @@ if(${SET_DEVCOMMIT} AND EXISTS ${CMAKE_SOURCE_DIR}/.git)
     endif()
 endif()
 
-
 ##### Link Libraries #####
 
 # Link the FEBio libraries
@@ -469,7 +468,6 @@ if(WIN32)
 elseif(APPLE)
 else()
     target_link_libraries(FEBioStudio -static-libstdc++ -static-libgcc)
-    
 	target_link_libraries(FEBioStudio -Wl,--allow-shlib-undefined -Wl,--start-group)
 endif()
 
@@ -664,4 +662,58 @@ if(BUILD_UPDATER)
     target_compile_definitions(FEBioStudioUpdater PUBLIC "UPDATER")
 
     target_link_libraries(FEBioStudioUpdater Qt6::Widgets Qt6::Network ${LIBZIP_LIB})
+endif()
+
+##### Test Suite #####
+option(BUILD_TESTS "Build test suite" OFF)
+if(BUILD_TESTS)
+    find_package(GTest CONFIG REQUIRED)
+
+    enable_testing()
+
+    add_executable(fbs-test-suite
+        tests/fbs-test-suite.cpp
+        tests/primitive_tests.cpp
+        tests/multiblock_tests.cpp
+    )
+
+    if(NOT WIN32 AND NOT APPLE)
+        target_link_libraries(fbs-test-suite PRIVATE -static-libstdc++ -static-libgcc)
+        target_link_libraries(fbs-test-suite PRIVATE -Wl,--allow-shlib-undefined -Wl,--start-group)
+    endif()
+
+    target_link_libraries(fbs-test-suite
+        PRIVATE
+        GTest::gtest
+        FSCore FEMLib FEBioLink GeomLib GLLib MeshLib MeshTools
+        FEBio::FEBioXML FEBio::FEBioPlot FEBio::FEAMR
+    )
+
+    if(UNIX)
+        if(${USE_MKL_OMP})
+            target_link_libraries(fbs-test-suite PRIVATE ${MKL_OMP})
+        else()
+            target_link_libraries(fbs-test-suite PRIVATE ${OpenMP_C_LIBRARIES})
+        endif()
+    endif()
+
+    if(USE_MMG)
+        target_link_libraries(fbs-test-suite PRIVATE ${MMG_LIBS})
+    endif()
+
+    if(USE_TETGEN)
+        target_link_libraries(fbs-test-suite PRIVATE ${TETGEN_LIB})
+    endif()
+
+    if(CAD_FEATURES)
+        target_link_libraries(fbs-test-suite PRIVATE ${NETGEN_LIBS})
+        target_link_libraries(fbs-test-suite PRIVATE ${OCCT_LIBS})
+    endif()
+
+    if(NOT WIN32 AND NOT APPLE)
+        target_link_libraries(fbs-test-suite PRIVATE -Wl,--end-group)
+    endif()
+
+    include(GoogleTest)
+    gtest_discover_tests(fbs-test-suite)
 endif()
