@@ -344,7 +344,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib RTLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioMonitor VTKLib PyLib RHILib)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib RTLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioRun FEBioMonitor VTKLib PyLib RHILib)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
@@ -442,7 +442,8 @@ foreach(name IN LISTS FEBIOSTUDIO_LIBS)
     target_link_libraries(${name} FEBio::FECore)
 endforeach()
 
-target_link_libraries(FEBioLink FEBio::FEBioLib FEBio::FEBioFluid FEBio::FEBioMech FEBio::FEBioMix)
+target_link_libraries(FEBioLink FEBio::FEBioFluid FEBio::FEBioMech FEBio::FEBioMix)
+target_link_libraries(FEBioRun FEBio::FEBioLib FEBio::FEBioFluid FEBio::FEBioMech FEBio::FEBioMix)
 target_link_libraries(ImageLib FEBio::FEBioOpt)
 
 # Link the Qt libraries

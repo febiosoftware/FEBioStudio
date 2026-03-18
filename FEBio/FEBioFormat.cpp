@@ -30,8 +30,8 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEDiscreteMaterial.h>
 #include <FEMLib/FSProject.h>
-#include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioModule.h>
+#include <FEBioLink/FEBioClass.h>
 using namespace std;
 
 #ifndef WIN32

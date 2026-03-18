@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "FEMKernel.h"
 #include <FECore/fecore_enum.h>
 #include <FECore/units.h>
-#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
 #include <exception>
 #include <sstream>
 using namespace std;

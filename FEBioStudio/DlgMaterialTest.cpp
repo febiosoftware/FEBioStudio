@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/FSProject.h>
 #include "DlgMaterialTest.h"
-#include <FEBioLink/FEBioInterface.h>
+#include <FEBioRun/FEBioRun.h>
 #include <FSCore/FSCore.h>
 #include <CUILib/PlotWidget.h>
 #include "MainWindow.h"
@@ -173,7 +173,7 @@ void CDlgMaterialTest::onRun()
 		return;
 	}
 
-	MaterialTest mt;
+	FEBio::MaterialTest mt;
 	mt.mat = pm;
 	mt.testName = ui->m_test->currentText().toStdString();
 	mt.strain = ui->m_strain->text().toDouble();

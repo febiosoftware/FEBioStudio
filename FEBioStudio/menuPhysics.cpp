@@ -51,7 +51,6 @@ SOFTWARE.*/
 #include <FEMLib/FEMeshAdaptor.h>
 #include <FEMLib/FEMeshDataGenerator.h>
 #include "Commands.h"
-#include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
 #include <QMessageBox>
