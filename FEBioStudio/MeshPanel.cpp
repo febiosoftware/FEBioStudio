@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMultiBox.h>
 #include <GeomLib/GMultiPatch.h>
+#include <GeomLib/GOCCObject.h>
 #include "ui_meshpanel.h"
 #include "ObjectProps.h"
 #include "MainWindow.h"
@@ -651,6 +652,20 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 			pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, newObject));
 		}
 		else QMessageBox::information(this, "Convert", "Cannot convert this to a multi-patch object.");
+	}
+	else if (convertOption == CObjectPanel::CONVERT_TO_OCC)
+	{
+		GPrimitive* primitive = dynamic_cast<GPrimitive*>(po);
+		if (primitive == nullptr) QMessageBox::information(this, "Convert", "Cannot convert this object to a CAD object.");
+
+		GOCCObject* occ = ConvertToOCCObject(primitive);
+		if (occ == nullptr)
+		{
+			QMessageBox::critical(this, "Convert", "Unable to convert to CAD object.");
+			return;
+		}
+
+		pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, occ));
 	}
 	else
 	{

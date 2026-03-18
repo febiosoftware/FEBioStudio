@@ -138,6 +138,9 @@ void CObjectPanel::Update()
 		else if (dynamic_cast<GPrimitive*>(po))
 		{
 			ui->menu->addAction("Multiblock Mesh")->setData(CONVERT_TO_MULTIBLOCK);
+#ifdef HAS_OCC
+			ui->menu->addAction("CAD object")->setData(CONVERT_TO_OCC);
+#endif
 			ui->menu->setEnabled(true);
 
 		}

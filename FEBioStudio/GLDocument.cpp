@@ -192,7 +192,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<GMeshObject*>(po)) return "Editable mesh";
 	else if (dynamic_cast<GCurveMeshObject*>(po)) return "Editable curve";
 	else if (dynamic_cast<GSurfaceMeshObject*>(po)) return "Editable surface";
-	else if (dynamic_cast<GOCCObject*>(po)) return "OCC object";
+	else if (dynamic_cast<GOCCObject*>(po)) return "CAD object";
 	else if (dynamic_cast<GMaterial*>(po))
 	{
 		GMaterial* gmat = dynamic_cast<GMaterial*>(po);

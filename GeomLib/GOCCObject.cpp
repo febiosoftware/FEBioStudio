@@ -50,6 +50,17 @@ SOFTWARE.*/
 #include <TopExp_Explorer.hxx>
 #include <BRepTools.hxx>
 #include <BOPAlgo_MakerVolume.hxx>
+
+#include <BRepBuilderAPI_MakeVertex.hxx>
+#include <BRepBuilderAPI_MakeEdge.hxx>
+#include <BRepBuilderAPI_MakeWire.hxx>
+#include <BRepBuilderAPI_MakeFace.hxx>
+#include <BRepBuilderAPI_Sewing.hxx>
+#include <BRepBuilderAPI_MakeSolid.hxx>
+#include <BRepOffsetAPI_MakeFilling.hxx>
+#include <TopoDS_Solid.hxx>
+#include <TopoDS_Shell.hxx>
+#include <TopoDS_Face.hxx>
 #endif
 
 #ifdef HAS_OCC
@@ -522,6 +533,184 @@ GOCCObject* MergeOCCObjects(std::vector<GOCCObject*> occlist)
 	TopoDS_Shape solid = aBuilder.Shape();
 	GOCCObject* occ = new GOCCObject;
 	occ->SetShape(solid);
+	return occ;
+#else
+	return nullptr;
+#endif
+}
+
+GOCCObject* ConvertToOCCObject(GObject* po)
+{
+#ifdef HAS_OCC
+
+	BRep_Builder B;
+
+	// build the vertices
+	vector<TopoDS_Vertex> vertices;
+	for (int i = 0; i < po->Nodes(); ++i)
+	{
+		GNode* node = po->Node(i);
+		vec3d r = node->LocalPosition();
+
+		TopoDS_Vertex v;
+		B.MakeVertex(v, gp_Pnt(r.x, r.y, r.z), 1e-7);
+
+		vertices.push_back(v);
+	}
+
+	// build edges
+	vector<TopoDS_Edge> edges;
+	for (int i = 0; i < po->Edges(); ++i)
+	{
+		GEdge* edge = po->Edge(i);
+
+		if (edge->Type() == EDGE_LINE)
+		{
+			int n1 = edge->m_node[0];
+			int n2 = edge->m_node[1];
+			TopoDS_Edge occEdge = BRepBuilderAPI_MakeEdge(vertices[n1], vertices[n2]);
+			if (occEdge.IsNull())
+			{
+				return nullptr;
+			}
+			edges.push_back(occEdge);
+		}
+		else if (edge->Type() == EDGE_3P_CIRC_ARC)
+		{
+			int n1 = edge->m_node[0];
+			int n2 = edge->m_node[1];
+			int n3 = edge->m_cnode[0]; // center node
+			gp_Pnt p1 = BRep_Tool::Pnt(vertices[n1]);
+			gp_Pnt p2 = BRep_Tool::Pnt(vertices[n2]);
+			gp_Pnt center = BRep_Tool::Pnt(vertices[n3]);
+
+			// Define plane of the circle (normal required)
+			gp_Vec ex(1, 0, 0);
+			gp_Vec v1(center, p1);
+			gp_Vec v2(center, p2);
+			gp_Vec normal = v1.Crossed(v2);
+
+			gp_Ax2 axis(center, normal);
+			gp_Circ circ(axis, center.Distance(p1));
+
+			// compute angles
+			double angle1 = ex.Angle(v1);
+
+			if (ex.Crossed(v1).Dot(normal) < 0)
+				angle1 = 2 * M_PI - angle1;
+
+			double angle2 = angle1 + v1.Angle(v2);
+
+			TopoDS_Edge occEdge = BRepBuilderAPI_MakeEdge(circ, angle1, angle2);
+			if (occEdge.IsNull())
+			{
+				return nullptr;
+			}
+			edges.push_back(occEdge);
+		}
+		else
+		{
+			return nullptr; // unsupported edge type
+		}
+	}
+
+	// build faces
+	vector<TopoDS_Face> faces;
+	for (int i = 0; i < po->Faces(); ++i)
+	{
+		GFace* face = po->Face(i);
+
+		if ((face->m_ntype == FACE_POLYGON) || (face->m_ntype == FACE_QUAD))
+		{
+			BRepBuilderAPI_MakeWire makeWire;
+			for (int j = 0; j < face->Edges(); ++j)
+			{
+				int edgeID = face->m_edge[j].nid;
+				int nwn = face->m_edge[j].nwn;
+				if ((edgeID >= 0) && (edgeID < (int)edges.size()))
+				{
+					if (nwn > 0)
+						makeWire.Add(edges[edgeID]);
+					else
+						makeWire.Add(TopoDS::Edge(edges[edgeID].Reversed()));
+				}
+			}
+			if (!makeWire.IsDone())
+				return nullptr;
+
+			TopoDS_Face occFace = BRepBuilderAPI_MakeFace(makeWire.Wire(), Standard_True);
+			if (occFace.IsNull())
+			{
+				return nullptr;
+			}
+			faces.push_back(occFace);
+		}
+		else
+		{
+			BRepBuilderAPI_MakeWire makeWire;
+			for (int j = 0; j < face->Edges(); ++j)
+			{
+				int edgeID = face->m_edge[j].nid;
+				int nwn = face->m_edge[j].nwn;
+				if ((edgeID >= 0) && (edgeID < (int)edges.size()))
+				{
+					if (nwn > 0)
+						makeWire.Add(edges[edgeID]);
+					else
+						makeWire.Add(TopoDS::Edge(edges[edgeID].Reversed()));
+				}
+
+			}
+			if (!makeWire.IsDone())
+			{
+				BRepBuilderAPI_WireError err = makeWire.Error();
+				return nullptr;
+			}
+
+			BRepOffsetAPI_MakeFilling filling;
+
+			for (TopExp_Explorer exp(makeWire.Wire(), TopAbs_EDGE); exp.More(); exp.Next())
+			{
+				filling.Add(TopoDS::Edge(exp.Current()), GeomAbs_C0);
+			}
+
+			filling.Build();
+			if (!filling.IsDone())
+			{
+				return nullptr;
+			}
+
+			TopoDS_Face topoFace = TopoDS::Face(filling.Shape());
+			if (topoFace.IsNull())
+			{
+				return nullptr;
+			}
+
+			faces.push_back(topoFace);
+		}
+	}
+
+	TopoDS_Shell shell;
+	B.MakeShell(shell);
+	for (const TopoDS_Face& face : faces)
+	{
+		B.Add(shell, face);
+	}
+
+	TopoDS_Shape topo = BRepBuilderAPI_MakeSolid(shell);
+	if (topo.IsNull())
+	{
+		return nullptr;
+	}
+
+	// create a new OCC object
+	GOCCObject* occ = new GOCCObject;
+	occ->SetShape(topo);
+
+	// copy some other stuff
+	occ->SetName(po->GetName());
+	occ->GetTransform() = po->GetTransform();
+
 	return occ;
 #else
 	return nullptr;

@@ -95,3 +95,6 @@ private:
 
 // merge a list of occ objects into a single object
 GOCCObject* MergeOCCObjects(std::vector<GOCCObject*> occlist);
+
+// convert a primitive to an OCC object
+GOCCObject* ConvertToOCCObject(GObject* po);

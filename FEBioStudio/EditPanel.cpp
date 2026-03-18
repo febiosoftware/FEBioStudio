@@ -351,6 +351,20 @@ void CEditPanel::on_menu_triggered(QAction* pa)
 		GMultiPatch* newObject = new GMultiPatch(primitive);
 		pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, newObject));
 	}
+	else if (convertOption == CObjectPanel::CONVERT_TO_OCC)
+	{
+		GPrimitive* primitive = dynamic_cast<GPrimitive*>(po);
+		if (primitive == nullptr) QMessageBox::information(this, "Convert", "Cannot convert this object to a CAD object.");
+
+		GOCCObject* occ = ConvertToOCCObject(primitive);
+		if (occ == nullptr)
+		{
+			QMessageBox::critical(this, "Convert", "Unable to convert to CAD object.");
+			return;
+		}
+
+		pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, occ));
+	}
 	else
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Don't know how to convert object.");
