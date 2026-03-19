@@ -51,7 +51,7 @@ SOFTWARE.*/
 #include <ImageLib/TiffReader.h>
 #include "DocManager.h"
 #include "DlgAddPhysicsItem.h"
-#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
 #include <ImageLib/FiberODFAnalysis.h>
 #include <QPlainTextEdit>
 #include <QDialogButtonBox>

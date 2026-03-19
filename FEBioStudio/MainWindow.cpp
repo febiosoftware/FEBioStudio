@@ -98,7 +98,7 @@ SOFTWARE.*/
 #include <GLWLib/GLSafeFrame.h>
 #include <GLWLib/GLLegendBar.h>
 #include <FEBioLink/FEBioClass.h>
-#include <FEBioLink/FEBioInit.h>
+#include <FEBioRun/FEBioInit.h>
 #include <qmenu.h>
 #include <GLLib/GLViewSettings.h>
 #include "GLModelScene.h"

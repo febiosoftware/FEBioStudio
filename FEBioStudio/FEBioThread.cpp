@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "FEBioThread.h"
 #include "FEBioJob.h"
 #include "MainWindow.h"
-#include <FEBioLink/FEBioClass.h>
+#include <FEBioRun/FEBioRun.h>
 #include <string>
 #include <QFileInfo>
 using namespace std;

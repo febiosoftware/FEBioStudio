@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <FECore/FECoreBase.h>
 #include <FECore/FEModelParam.h>
 #include <FECore/FEModule.h>
+#include <FECore/FEModel.h>
 #include <FECore/FETimeStepController.h>
 #include <FECore/FENewtonStrategy.h>
 #include <FECore/FENewtonSolver.h>
@@ -47,8 +48,6 @@ SOFTWARE.*/
 #include <FEBioMech/FESlidingElasticInterface.h>
 #include <FEBioMech/FEFacet2FacetSliding.h>
 #include <FEBioMech/FESolidAnalysis.h>
-#include <FEBioLib/FEBioModel.h>
-#include <FEBioLib/febio.h>
 #include <FEMLib/FSModel.h>
 #include <FEMLib/FEStepComponent.h>
 #include <FEMLib/FEBoundaryCondition.h>
@@ -65,7 +64,6 @@ SOFTWARE.*/
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEMeshDataGenerator.h>
 #include <FEMLib/FSProject.h>
-#include "../FEBioStudio/FEBioJob.h"
 #include <sstream>
 using namespace FEBio;
 using namespace std;
@@ -289,9 +287,6 @@ void applyCreateHandlers(FECoreBase* pc)
 			h->handle(pc);
 	}
 }
-
-// dummy model used for allocating temporary FEBio classes.
-static FEBioModel* febioModel = nullptr;
 
 static std::map<std::string, int> classIndex;
 
@@ -526,6 +521,9 @@ int FEBio::GetClassId(int superClassId, const std::string& typeStr)
 	return fecore.GetFactoryIndex(superClassId, typeStr.c_str());
 }
 
+// dummy model used for allocating temporary FEBio classes.
+static FEModel* dummyModel = nullptr;
+
 // TODO: I don't think the allocated class is ever deallocated! MEMORY LEAK!!
 FECoreBase* CreateFECoreClass(int classId)
 {
@@ -537,8 +535,8 @@ FECoreBase* CreateFECoreClass(int classId)
 	if (fac == nullptr) return nullptr;
 
 	// try to create the FEBio object
-	assert(febioModel);
-	FECoreBase* pc = fecore.CreateInstance(fac, febioModel); assert(pc);
+	assert(dummyModel);
+	FECoreBase* pc = fecore.CreateInstance(fac, dummyModel); assert(pc);
 
 	// apply create handlers
 	if (pc && !blockCreateEvents)
@@ -1025,7 +1023,7 @@ int FEBio::GetModuleAllocatorID(int moduleId)
 void FEBio::SetActiveModule(int moduleID)
 {
 	// create a new model
-	delete febioModel; febioModel = nullptr;
+	delete dummyModel; dummyModel = nullptr;
 	if (moduleID < 0) return;
 
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
@@ -1034,8 +1032,8 @@ void FEBio::SetActiveModule(int moduleID)
 	FEModule* activeMod = fecore.GetActiveModule();
 	if (activeMod)
 	{
-		febioModel = new FEBioModel;
-		activeMod->InitModel(febioModel);
+		dummyModel = new FEModel;
+		activeMod->InitModel(dummyModel);
 	}
 }
 
@@ -1062,13 +1060,13 @@ int FEBio::SetActiveModule(const char* szmoduleName)
 void FEBio::InitFSModel(FSModel& fem)
 {
 	// make sure we have a FEBioModel
-	if (febioModel == nullptr) { assert(false); return; }
+	if (dummyModel == nullptr) { assert(false); return; }
 
 	// clear the current list of variables
 	fem.ClearVariables();
 
 	// copy all variables
-	DOFS& dofs = febioModel->GetDOFS();
+	DOFS& dofs = dummyModel->GetDOFS();
 	for (int i = 0; i < dofs.Variables(); ++i)
 	{
 		std::string varName = dofs.GetVariableName(i);
@@ -1089,128 +1087,6 @@ void FEBio::InitFSModel(FSModel& fem)
 			}
 		}
 	}
-}
-
-class FBSLogStream : public LogStream
-{
-public:
-	FBSLogStream(FEBioOutputHandler* outputHandler) : m_outputHandler(outputHandler) {}
-
-	void print(const char* sz) override
-	{
-		if (m_outputHandler) m_outputHandler->write(sz);
-	}
-
-private:
-	FEBioOutputHandler* m_outputHandler;
-};
-
-static bool terminateRun = false;
-
-bool interrup_cb(FEModel* fem, unsigned int nwhen, void* pd)
-{
-	if (terminateRun)
-	{
-		terminateRun = false;
-        throw std::exception();
-	}
-	return true;
-}
-
-bool progress_cb(FEModel* pfem, unsigned int nwhen, void* pd)
-{
-	FEBioModel& fem = static_cast<FEBioModel&>(*pfem);
-
-	FEBioProgressTracker* progressTracker = (FEBioProgressTracker*)pd;
-	if (pd == nullptr) return true;
-
-	// get the number of steps
-	int nsteps = fem.Steps();
-
-	// calculate progress
-	double starttime = fem.GetStartTime();
-	double endtime = fem.GetEndTime();
-	double f = 0.0;
-	if (nwhen != CB_INIT)
-	{
-		double ftime = fem.GetCurrentTime();
-		if (endtime != starttime) f = (ftime - starttime) / (endtime - starttime);
-		else
-		{
-			// this only happens (I think) when the model is solved
-			f = 1.0;
-		}
-	}
-
-	double pct = 0.0;
-	if (nsteps > 1)
-	{
-		int N = nsteps;
-		int n = fem.GetCurrentStepIndex();
-		pct = 100.0 * ((double)n  + f) / (double)N;
-	}
-	else
-	{
-		pct = 100.0 * f;
-	}
-
-	progressTracker->SetProgress(pct);
-
-	return true;
-}
-
-void FEBio::TerminateRun()
-{
-	terminateRun = true;
-}
-
-int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler, FEBioProgressTracker* progressTracker, CFEBioJob* job)
-{
-	terminateRun = false;
-
-	FEBioModel fem;
-	fem.CreateReport(true);
-
-	// attach the output handler
-	if (outputHandler)
-	{
-		fem.GetLogFile().SetLogStream(new FBSLogStream(outputHandler));
-	}
-
-	// attach a callback to interrupt and measure progress
-	fem.AddCallback(interrup_cb, CB_ALWAYS, nullptr);
-
-	if (progressTracker)
-		fem.AddCallback(progress_cb, CB_MAJOR_ITERS, progressTracker);
-
-	try {
-		febio::CMDOPTIONS ops;
-		if (febio::ProcessOptionsString(cmd, ops) == false)
-		{
-			if (outputHandler)
-			{
-				outputHandler->write("Failed processing command line.");
-			}
-			return false;
-		}
-
-		int returnCode = febio::RunModel(fem, &ops);
-		if (job)
-		{
-			job->m_jobReport = fem.GetReport();
-			job->m_timingInfo = fem.GetTimingInfo();
-			job->m_modelStats = fem.GetModelStats();
-			job->m_stepStats = fem.GetStepStats();
-			job->m_timestepStats = fem.GetTimeStepStats();
-		}
-		return returnCode;
-	}
-	catch (...)
-	{
-
-	}
-
-	return 1;
 }
 
 const char* FEBio::GetSuperClassString(int superClassID)

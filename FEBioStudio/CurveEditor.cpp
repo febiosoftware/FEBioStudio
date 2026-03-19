@@ -45,7 +45,7 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include "DlgAddPhysicsItem.h"
 #include <FEMLib/FEMKernel.h>
-#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
 
 
 //=============================================================================

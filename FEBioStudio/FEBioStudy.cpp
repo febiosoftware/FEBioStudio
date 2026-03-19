@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include <QFileInfo>
 #include <QDir>
-#include <FEBioLink/FEBioClass.h>
+#include <FEBioRun/FEBioRun.h>
 #include <FEBio/FEBioExport4.h>
 
 CFEBioStudy::CFEBioStudy(CModelDocument* doc) : m_doc(doc)

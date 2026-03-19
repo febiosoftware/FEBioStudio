@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include "FESurfaceLoad.h"
 #include "FEMKernel.h"
 #include "FEInterface.h"
-#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
 #include "FEModelConstraint.h"
 #include <FSCore/FSObjectList.h>
 using namespace std;

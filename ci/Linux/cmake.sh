@@ -13,6 +13,7 @@ run_cmake() {
 		-DUSE_ITK=ON \
         -DUSE_PYTHON=ON \
 		-DBUILD_UPDATER=ON \
+		-DBUILD_TESTS=ON \
         -DFFMPEG_INC=/usr/local/include \
         -DFFMPEG_LIB_DIR=/usr/local/lib \
         -DPython3_ROOT_DIR=/home/ubuntu/.pyenv/versions/3.13.1 \

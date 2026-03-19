@@ -279,6 +279,9 @@ elseif(APPLE)
     endif()
     add_compile_options(-w)
 
+    # Ensures that macOS properly executes the fbs-test-suite binary
+    set(CMAKE_CROSSCOMPILING_EMULATOR arch -x86_64)
+
 else()
 	add_definitions(-DLINUX)
     add_compile_options(-w -Wall)
@@ -344,7 +347,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib RTLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioMonitor VTKLib PyLib RHILib)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib RTLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioRun FEBioMonitor VTKLib PyLib RHILib)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
@@ -442,7 +445,8 @@ foreach(name IN LISTS FEBIOSTUDIO_LIBS)
     target_link_libraries(${name} FEBio::FECore)
 endforeach()
 
-target_link_libraries(FEBioLink FEBio::FEBioLib FEBio::FEBioFluid FEBio::FEBioMech FEBio::FEBioMix)
+target_link_libraries(FEBioLink FEBio::FEBioFluid FEBio::FEBioMech FEBio::FEBioMix)
+target_link_libraries(FEBioRun FEBio::FEBioLib FEBio::FEBioFluid FEBio::FEBioMech FEBio::FEBioMix)
 target_link_libraries(ImageLib FEBio::FEBioOpt)
 
 # Link the Qt libraries
@@ -669,8 +673,6 @@ option(BUILD_TESTS "Build test suite" OFF)
 if(BUILD_TESTS)
     find_package(GTest CONFIG REQUIRED)
 
-    enable_testing()
-
     add_executable(fbs-test-suite
         tests/fbs-test-suite.cpp
         tests/primitive_tests.cpp
@@ -713,7 +715,4 @@ if(BUILD_TESTS)
     if(NOT WIN32 AND NOT APPLE)
         target_link_libraries(fbs-test-suite PRIVATE -Wl,--end-group)
     endif()
-
-    include(GoogleTest)
-    gtest_discover_tests(fbs-test-suite)
 endif()
