@@ -6,4 +6,4 @@ if [ $# == 1 ] && [ "$1" != "develop" ]; then
 fi
 
 chmod +x cmbuild/bin/*
-scp cmbuild/bin/* repo:~/$REMOTE_PATH/bin
+scp cmbuild/bin/FEBioStudio repo:~/$REMOTE_PATH/bin

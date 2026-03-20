@@ -279,6 +279,9 @@ elseif(APPLE)
     endif()
     add_compile_options(-w)
 
+    # Ensures that macOS properly executes the fbs-test-suite binary
+    set(CMAKE_CROSSCOMPILING_EMULATOR arch -x86_64)
+
 else()
 	add_definitions(-DLINUX)
     add_compile_options(-w -Wall)
@@ -670,8 +673,6 @@ option(BUILD_TESTS "Build test suite" OFF)
 if(BUILD_TESTS)
     find_package(GTest CONFIG REQUIRED)
 
-    enable_testing()
-
     add_executable(fbs-test-suite
         tests/fbs-test-suite.cpp
         tests/primitive_tests.cpp
@@ -714,7 +715,4 @@ if(BUILD_TESTS)
     if(NOT WIN32 AND NOT APPLE)
         target_link_libraries(fbs-test-suite PRIVATE -Wl,--end-group)
     endif()
-
-    include(GoogleTest)
-    gtest_discover_tests(fbs-test-suite)
 endif()
