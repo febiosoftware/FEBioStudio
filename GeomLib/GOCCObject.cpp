@@ -513,12 +513,26 @@ GOCCObject* MergeOCCObjects(std::vector<GOCCObject*> occlist)
 	BOPAlgo_MakerVolume aBuilder;
 	for (GOCCObject* po : occlist)
 	{
+		Transform T = po->GetTransform();
+
 		TopoDS_Shape& shape = po->GetShape();
 		TopExp_Explorer ex;
 		for (ex.Init(shape, TopAbs_SOLID); ex.More(); ex.Next())
 		{
 			const TopoDS_Solid& solid = TopoDS::Solid(ex.Current());
-			aBuilder.AddArgument(solid);
+
+			// apply the transform
+			gp_Trsf aTrsf;
+
+			vec3d trans = T.GetPosition();
+
+			gp_Vec t(trans.x, trans.y, trans.z);
+			aTrsf.SetTranslation(t);
+
+			BRepBuilderAPI_Transform aBRepTrsf(solid, aTrsf);
+			TopoDS_Shape transformedSolid = aBRepTrsf.Shape();
+
+			aBuilder.AddArgument(transformedSolid);
 		}
 	}
 
