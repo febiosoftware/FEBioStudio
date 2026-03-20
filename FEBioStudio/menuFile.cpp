@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include <Nike3D/NIKE3DExport.h>
 #include <MeshIO/BYUExport.h>
 #include <MeshIO/FluentExport.h>
+#include <MeshIO/STEPExport.h>
 #include <MeshIO/HypersurfaceExport.h>
 #include <LSDyna/LSDYNAexport.h>
 #include <MeshIO/MeshExport.h>
@@ -750,6 +751,7 @@ void CMainWindow::ExportGeometry()
 	filters << "VTK files (*.vtk)";
 	filters << "GLMesh files (*.msh)";
     filters << "Fluent files (*.msh)";
+    filters << "STEP files (*.step)";
 
 	// default extensions
 	const char* szext[] = {
@@ -763,7 +765,9 @@ void CMainWindow::ExportGeometry()
 		".mesh",
 		".ele",
 		".vtk",
-		".msh"
+		".msh",
+		".msh",
+		".step"
 	};
 
 	// file name
@@ -905,6 +909,13 @@ void CMainWindow::ExportGeometry()
                 QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to Fluent file."));
             }
         break;
+		case 12:
+		{
+			STEPExport writer(fem);
+			if (!writer.Write(szfile))
+				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to STEP file."));
+		}
+		break;
 		default:
 			QMessageBox::critical(this, "FEBio Studio", "Don't know how to save this file.");
 		}
