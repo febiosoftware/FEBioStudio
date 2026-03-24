@@ -34,7 +34,7 @@ namespace VTK {
 	// Base class for reading XML formatted VTK files
 	class VTKFileReader : public FileReader
 	{
-	protected:
+	public:
 		enum vtkByteOrder {
 			LittleEndian,
 			BigEndian

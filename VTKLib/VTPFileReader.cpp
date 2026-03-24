@@ -24,6 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "VTPFileReader.h"
+#include <memory>
 #include <FEBioXML/XMLReader.h>
 using namespace VTK;
 
@@ -48,7 +49,7 @@ bool VTPFileReader::Load(const char* szfile)
 	// this file is for PolyData only
 	if (m_type != PolyData) return false;
 
-	vtkAppendedData data;
+	std::unique_ptr<vtkAppendedData> data;
 
 	vtkDataSet dataSet;
 
@@ -63,7 +64,8 @@ bool VTPFileReader::Load(const char* szfile)
 			}
 			else if (tag == "AppendedData")
 			{
-				if (ParseAppendedData(tag, data) == false) return false;
+				data = std::make_unique<vtkAppendedData>();
+				if (ParseAppendedData(tag, *data) == false) return false;
 			}
 			else return false;
 			++tag;
@@ -77,7 +79,10 @@ bool VTPFileReader::Load(const char* szfile)
 	xml.Close();
 
 	// process the appended arrays
-	if (ProcessDataArrays(dataSet, data) == false) return false;
+	if (data)
+	{
+		if (ProcessDataArrays(dataSet, *data) == false) return false;
+	}
 
 	m_vtk.AddDataSet(dataSet);
 

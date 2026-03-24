@@ -184,6 +184,8 @@ namespace VTK {
 			return m_data.data() + offset;
 		}
 
+		size_t Size() const { return m_data.size(); }
+
 	private:
 		std::string	m_data;
 	};
