@@ -82,6 +82,7 @@ SOFTWARE.*/
 #include "DlgImportData.h"
 #include <FEMLib/FSProject.h>
 #include <GLLib/GLScene.h>
+#include <list>
 
 //-----------------------------------------------------------------------------
 class CModelProps : public CPropertyList
@@ -1290,8 +1291,10 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 			Post::GLCurveProbe* pc = dynamic_cast<Post::GLCurveProbe*>(po);
 			menu.addSeparator();
 			menu.addAction("Import points ...", this, SLOT(OnImportCurveProbePoints()));
+			menu.addAction("From selection...", this, SLOT(OnCreateCurveFromSelection()));
 			if (pc->Points() > 0)
 			{
+				menu.addAction("Invert curve", this, SLOT(OnInvertCurveProbe()));
 				menu.addAction("Plot data ...", this, SLOT(OnCurveProbePlotData()));
 				menu.addAction("Plot time averaged data ...", this, SLOT(OnCurveProbePlotTimeAveragedData()));
 			}
@@ -1811,6 +1814,112 @@ void CPostModelPanel::OnImportCurveProbePoints()
 		selectObject(po);
 		GetMainWindow()->RedrawGL();
 	}
+}
+
+void CPostModelPanel::OnCreateCurveFromSelection()
+{
+	CPostDocument* pdoc = dynamic_cast<CPostDocument*>(GetActiveDocument());
+	if (pdoc == nullptr) return;
+	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
+	if (po == nullptr) return;
+	FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
+	if (mesh == nullptr) return;
+	std::list<FSEdge> edges;
+	for (int i = 0; i < mesh->Edges(); ++i)
+	{
+		FSEdge& edge = mesh->Edge(i);
+		if (edge.IsSelected())
+		{
+			edges.push_back(edge);
+		}
+	}
+	if (edges.empty())
+	{
+		QMessageBox::information(this, "Create curve", "No edges selected.");
+		return;
+	}
+
+	std::vector<int> tag(mesh->Nodes(), 0);
+	for (FSEdge& edge : edges)
+	{
+		tag[edge.n[0]] += 1;
+		tag[edge.n[1]] += 1;
+	}
+
+	// make sure that the selected edges form a curve (i.e. each node is connected to at most two edges)
+	int numEndPoints = 0;
+	for (int i = 0; i < tag.size(); ++i)
+	{
+		if (tag[i] > 2)
+		{
+			QMessageBox::information(this, "Create curve", "Selected edges do not form a simple curve.");
+			return;
+		}
+		if (tag[i] == 1) numEndPoints++;
+	}
+
+	if (numEndPoints != 2)
+	{
+		QMessageBox::information(this, "Create curve", "Selected edges do not form a simple curve.");
+		return;
+	}
+
+	// find the two end-points
+	int nstart = -1, nend = -1;
+	for (int i = 0; i < tag.size(); ++i)
+	{
+		if (tag[i] == 1)
+		{
+			if (nstart == -1) nstart = i;
+			else if (nend == -1) nend = i;
+			else
+			{
+				QMessageBox::information(this, "Create curve", "Selected edges do not form a simple curve.");
+				return;
+			}
+		}
+	}
+
+	std::vector<vec3d> points;
+	while (true)
+	{
+		// find the edge that has nstart as one of its nodes
+		bool found = false;
+		for (auto it = edges.begin(); it != edges.end(); ++it)
+		{
+			FSEdge& edge = *it;
+			if (edge.n[0] == nstart || edge.n[1] == nstart)
+			{
+				points.push_back(mesh->Node(nstart).r);
+				nstart = (edge.n[0] == nstart) ? edge.n[1] : edge.n[0];
+				found = true;
+				edges.erase(it);
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			// add the last point
+			points.push_back(mesh->Node(nstart).r);
+			break;
+		}
+	}
+
+	po->SetPoints(points);
+	Update(true);
+	selectObject(po);
+	GetMainWindow()->RedrawGL();
+}
+
+void CPostModelPanel::OnInvertCurveProbe()
+{
+	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
+	if (po == nullptr) return;
+	po->Invert();
+	Update(true);
+	selectObject(po);
+	GetMainWindow()->RedrawGL();
 }
 
 void CPostModelPanel::OnExportMusclePathData()

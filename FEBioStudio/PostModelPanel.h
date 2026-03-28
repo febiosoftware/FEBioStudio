@@ -81,6 +81,8 @@ private slots:
 	void OnLoadTransform();
 	void OnExportProbeData();
 	void OnImportCurveProbePoints();
+	void OnCreateCurveFromSelection();
+	void OnInvertCurveProbe();
 	void OnCurveProbePlotData();
 	void OnCurveProbePlotTimeAveragedData();
 	void OnExportMusclePathData();
