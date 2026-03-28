@@ -2011,6 +2011,36 @@ void CPostModelPanel::OnSwapMusclePathEndPoints()
 	GetMainWindow()->RedrawGL();
 }
 
+class CCurveProbeData : public CPlotDataSource
+{
+public:
+	CCurveProbeData(Post::GLCurveProbe* po) : m_probe(po) {}
+
+	void UpdatePlot(CPlotData& data) override
+	{
+		int N = (int)m_probe->Points();
+		vector<double> xpoints = m_probe->SectionLenghts(false);
+		vector<double> ypoints(N, 0.0);
+		for (int i = 0; i < N; ++i)
+		{
+			ypoints[i] = m_probe->GetPointValue(i);
+		}
+
+		data.clear();
+		for (int i = 0; i < m_probe->Points(); ++i)
+		{
+			data.addPoint(xpoints[i], ypoints[i]);
+		}
+
+		data.setLabel(QString::fromStdString(m_probe->GetName()));
+		data.setLineColor(toQColor(m_probe->GetColor()));
+		data.setFillColor(toQColor(m_probe->GetColor()));
+	}
+
+private:
+	Post::GLCurveProbe* m_probe;
+};
+
 void CPostModelPanel::OnCurveProbePlotData()
 {
 	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetDocument());
@@ -2019,29 +2049,8 @@ void CPostModelPanel::OnCurveProbePlotData()
 	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
 	if (po)
 	{
-		int N = (int)po->Points();
-		vector<double> xpoints = po->SectionLenghts(false);
-		vector<double> ypoints(N, 0.0);
-#pragma omp parallel for
-		for (int i = 0; i < N; ++i)
-		{
-			ypoints[i] = po->GetPointValue(i);
-		}
-
-		CPlotData* data = new CPlotData;
-		for (int i = 0; i < po->Points(); ++i)
-		{
-			data->addPoint(xpoints[i], ypoints[i]);
-		}
-		data->setLabel(QString::fromStdString(po->GetName()));
-		data->setLineColor(toQColor(po->GetColor()));
-		data->setFillColor(toQColor(po->GetColor()));
-
-		CGraphData* graph = new CGraphData;
-		graph->m_data.push_back(data);
-
-		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), doc);
-		w->SetData(graph);
+		CDynamicDataGraphWindow* w = new CDynamicDataGraphWindow(GetMainWindow(), doc);
+		w->SetDataSource(new CCurveProbeData(po));
 		GetMainWindow()->AddGraph(w);
 		w->setWindowTitle(QString::fromStdString(po->GetName()));
 		w->show();

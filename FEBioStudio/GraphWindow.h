@@ -457,3 +457,32 @@ private: // temporary variables used during update
 	int	m_pltCounter;
 };
 
+//=================================================================================================
+// This graph window is used by plot objects for displaying their data.
+// It is not associated with a specific data field, but instead the data is passed to it directly
+
+class CPlotDataSource
+{
+public:
+	CPlotDataSource() {}
+	virtual ~CPlotDataSource() {}
+
+	virtual void UpdatePlot(CPlotData& data) = 0;
+};
+
+class CDynamicDataGraphWindow : public CGraphWindow
+{
+public:
+	CDynamicDataGraphWindow(CMainWindow* wnd, CPostDocument* doc);
+
+	void SetDataSource(CPlotDataSource* src) { m_src.reset(src); }
+
+	void Update(bool breset = true, bool bfit = false);
+
+	void showEvent(QShowEvent* ev);
+
+	void closeEvent(QCloseEvent* ev);
+
+private:
+	std::unique_ptr<CPlotDataSource> m_src;
+};
