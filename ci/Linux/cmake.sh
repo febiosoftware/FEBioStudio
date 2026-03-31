@@ -10,7 +10,7 @@ run_cmake() {
 		-DUSE_SSL=ON \
 		-DCAD_FEATURES=ON \
 		-DUSE_NETGEN=ON \
-		-DUSE_ITK=OFF \
+		-DUSE_ITK=ON \
         -DUSE_PYTHON=ON \
 		-DBUILD_UPDATER=ON \
 		-DBUILD_TESTS=ON \
