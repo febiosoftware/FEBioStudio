@@ -2997,16 +2997,37 @@ void CMainWindow::onImportMaterials()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Import Materials", "", "FEBio files (*.feb)");
+	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Import Materials", "", "Supported Files (*.feb *.pvm);;FEBio Files (*.feb);;FEBio Studio Material Files (*.pvm)");
 	if (fileNames.isEmpty() == false)
 	{
 		for (int i=0; i<fileNames.size(); ++i)
 		{
 			QString file = fileNames.at(i);
-			if (doc->ImportFEBioMaterials(file.toStdString()) == false)
+			// get the filename extensions to determine the type of file we are importing
+			QFileInfo fi(file);
+			QString ext = fi.suffix().toLower();
+
+			if (ext == "pvm")
 			{
-				QString msg = QString("Failed importing materials from\n%1").arg(file);
+				if (doc->ImportMaterials(file.toStdString()) == false)
+				{
+					QString msg = QString("Failed importing materials from\n%1").arg(file);
+					QMessageBox::critical(this, "Import Materials", msg);
+				}
+			}
+			else if (ext == "feb")
+			{
+				if (doc->ImportFEBioMaterials(file.toStdString()) == false)
+				{
+					QString msg = QString("Failed importing materials from\n%1").arg(file);
+					QMessageBox::critical(this, "Import Materials", msg);
+				}
+			}
+			else
+			{
+				QString msg = QString("Unsupported file type:\n%1").arg(file);
 				QMessageBox::critical(this, "Import Materials", msg);
+				break;
 			}
 		}
 
