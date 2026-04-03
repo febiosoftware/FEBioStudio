@@ -44,6 +44,8 @@ public:
 
 	bool SetPoints(const std::vector<vec3d>& points);
 
+	void Invert();
+
 	size_t Points() const { return m_path.size(); }
 
 	double GetPointValue(int i);

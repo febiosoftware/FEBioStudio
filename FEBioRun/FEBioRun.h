@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2026 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,27 +24,53 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <vector>
 #include <string>
-#include "FEBioClass.h"
+#include <vector>
 
-struct MaterialTest
-{
-	double		strain = 0.1;	// strain level
-	FSMaterial* mat = nullptr;	// material to test
-
-	std::string	testName;	// name of test
-	std::string	xvalName;	// name of output value for x axis
-	std::string	yvalName;	// name of output value for y axis
-
-	// control parameters
-	double	time = 1.0;
-	int	steps = 20;
-};
+class CFEBioJob;
+class FSMaterial;
 
 namespace FEBio {
+
+	class FEBioOutputHandler
+	{
+	public:
+		FEBioOutputHandler() {}
+		virtual ~FEBioOutputHandler() {}
+		virtual void write(const char* sztxt) = 0;
+	};
+
+	class FEBioProgressTracker
+	{
+	public:
+		FEBioProgressTracker() {}
+		virtual ~FEBioProgressTracker() {};
+		virtual void SetProgress(double pct) = 0;
+	};
+
+	int runModel(const std::string& cmd,
+		FEBioOutputHandler* outputHandler,
+		FEBioProgressTracker* progressTracker,
+		CFEBioJob* job);
+
+	void TerminateRun();
+
+	struct MaterialTest
+	{
+		double		strain = 0.1;	// strain level
+		FSMaterial* mat = nullptr;	// material to test
+
+		std::string	testName;	// name of test
+		std::string	xvalName;	// name of output value for x axis
+		std::string	yvalName;	// name of output value for y axis
+
+		// control parameters
+		double	time = 1.0;
+		int	steps = 20;
+	};
 
 	// run a material test in FEBio. 
 	// returns stress-strain data in out
 	bool RunMaterialTest(MaterialTest test, std::vector<std::pair<double, double> >& out);
-}
+
+} // namespace FEBio

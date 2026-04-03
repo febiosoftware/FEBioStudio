@@ -65,7 +65,6 @@ class FSMeshAdaptor;
 class FSVec3dValuator;
 class FSMat3dValuator;
 class FSProject;
-class CFEBioJob;
 
 // forward declarations of FECore classes
 class FEModel;
@@ -197,29 +196,6 @@ namespace FEBio {
 	void UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm);
 
 	bool BuildModelComponent(FSModelComponent* po, unsigned int flags);
-
-	class FEBioOutputHandler
-	{
-	public:
-		FEBioOutputHandler() {}
-		virtual ~FEBioOutputHandler() {}
-		virtual void write(const char* sztxt) = 0;
-	};
-
-	class FEBioProgressTracker
-	{
-	public:
-		FEBioProgressTracker() {}
-		virtual ~FEBioProgressTracker() {};
-		virtual void SetProgress(double pct) = 0;
-	};
-
-	int runModel(const std::string& cmd, 
-		FEBioOutputHandler* outputHandler,
-		FEBioProgressTracker* progressTracker,
-		CFEBioJob* job);
-
-	void TerminateRun();
 
 	const char* GetSuperClassString(int superClassID);
 

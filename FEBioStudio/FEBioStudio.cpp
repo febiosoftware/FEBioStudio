@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <QSplashScreen>
 #include <QDebug>
 #include <QPainter>
-#include <FEBioLink/FEBioInit.h>
+#include <FEBioRun/FEBioInit.h>
 #include "FBSApplication.h"
 #include <rhi/qrhi.h>
 

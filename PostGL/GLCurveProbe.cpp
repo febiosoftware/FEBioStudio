@@ -118,6 +118,11 @@ bool GLCurveProbe::SetPoints(const std::vector<vec3d>& points)
 	return (m_path.size() > 1);
 }
 
+void GLCurveProbe::Invert()
+{
+	std::reverse(m_path.begin(), m_path.end());
+}
+
 vector<double> GLCurveProbe::SectionLenghts(bool normalized)
 {
 	vector<double> curve(m_path.size(), 0.0);

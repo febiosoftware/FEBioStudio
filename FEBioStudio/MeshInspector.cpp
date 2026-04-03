@@ -209,7 +209,7 @@ void CMeshInspector::UpdateFEMeshData(FSMesh* pm, int ndata)
 		data.UpdateValueRange();
 		data.GetValueRange(vmin, vmax);
 	}
-	int NC = v.size();
+	int NC = (int)v.size();
 	if (NC > 0) vavg /= (double)NC; else { vmin = vmax = vavg = 0.0; }
 	ui->stats->setRange(vmin, vmax, vavg);
 
@@ -314,7 +314,7 @@ void CMeshInspector::UpdateSurfaceMeshData(FSSurfaceMesh* pm, int ndata)
 		data.UpdateValueRange();
 		data.GetValueRange(vmin, vmax);
 	}
-	int NC = v.size();
+	int NC = (int)v.size();
 	if (NC > 0) vavg /= (double)NC; else { vmin = vmax = vavg = 0.0; }
 	ui->stats->setRange(vmin, vmax, vavg);
 

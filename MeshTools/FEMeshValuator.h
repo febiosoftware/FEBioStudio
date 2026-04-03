@@ -47,6 +47,8 @@ public:
 		MAX_EDGE_LENGTH,
 		PRINC_CURVE_1,
 		PRINC_CURVE_2,
+		MINIMAL_SCALED_JACOBIAN,
+		MINIMAL_MEAN_RATIO,
 		// This last value is equal to the number of fields above.
 		// This must remain the last value in this enum!
 		MAX_DEFAULT_FIELDS

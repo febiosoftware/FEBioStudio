@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 export FEBIO_REPO=$GITHUB_WORKSPACE/FEBio
 export FBS_REPO=$GITHUB_WORKSPACE/FEBioStudio
@@ -125,8 +126,9 @@ rm -r /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/*
 
 # Notarize installer
 cd $UPLOAD_DIR/installer
+codesign --force --deep --timestamp --options runtime --entitlements $FBS_REPO/ci/macOS/entitlements.plist --sign $MACOS_SIGN $INSTALLER_NAME
 zip -r $INSTALLER_NAME.zip $INSTALLER_NAME
-xcrun notarytool submit --apple-id $MACOS_SIGN_ID --team-id $MACOS_SIGN_TEAM --password $MACOS_SIGN_PWD $INSTALLER_NAME.zip --wait
+xcrun notarytool submit $INSTALLER_NAME.zip --keychain-profile test-profile --wait
 xcrun stapler staple $INSTALLER_NAME
 rm $INSTALLER_NAME.zip
 zip -r $INSTALLER_NAME.zip $INSTALLER_NAME

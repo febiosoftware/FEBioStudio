@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <GeomLib/GGroup.h>
 #include <GeomLib/FSGroup.h>
-#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FSCore/Palette.h>
 #include <assert.h>
@@ -721,12 +721,36 @@ void FEBioFormat4::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 		FSElement& el = mesh.Element(i);
 		el.SetType(elemType);
 		el.m_gid = pid;
+		int ne = el.Nodes();
 		dom->AddElement(i);
+		int n[FSElement::MAX_NODES] = { 0 };
 		if ((tag == "e") || (tag == "elem"))
 		{
 			int id = tag.AttributeValue<int>("id", -1);
 			el.m_nid = id;
-			tag.value(el.m_node, el.Nodes());
+			tag.value(n, ne);
+
+			// check for degenerate elements
+			if (elemType == FE_HEX8)
+			{
+				if ((n[2] == n[3]) && (n[6] == n[7]))
+				{
+					el.SetType(FE_PENTA6);
+					ne = 6;
+					n[3] = n[4];
+					n[4] = n[5];
+					n[5] = n[6];
+				}
+				else if ((n[2] == n[3]) && (n[4] == n[5]) && (n[4] == n[6]) && (n[4] == n[7]))
+				{
+					el.SetType(FE_TET4);
+					ne = 4;
+					n[3] = n[4];
+				}
+			}
+
+			for (int j = 0; j < ne; ++j) el.m_node[j] = n[j];
+
 			elemSet.push_back(id);
 		}
 		else throw XMLReader::InvalidTag(tag);

@@ -29,7 +29,8 @@ SOFTWARE.*/
 #include "FSProject.h"
 #include <FSCore/ParamBlock.h>
 #include <FECore/units.h>
-#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
+
 
 //===================================================================
 FSDiscreteMaterial::FSDiscreteMaterial(int ntype, FSModel* fem) : FSMaterial(ntype, fem)

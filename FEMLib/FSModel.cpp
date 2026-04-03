@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <FECore/units.h>
 #include <FSCore/ParamBlock.h>
-#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
 #include "FEMKernel.h"
 #include <GeomLib/GGroup.h>
