@@ -1427,7 +1427,7 @@ void CPostModelPanel::OnSelectElements()
 	}
 
 	GetMainWindow()->UpdateGLControlBar();
-	GetMainWindow()->RedrawGL();
+	GetMainWindow()->Update(nullptr, false);
 }
 
 void CPostModelPanel::OnHideElements()
