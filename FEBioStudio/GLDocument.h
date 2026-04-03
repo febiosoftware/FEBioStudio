@@ -162,7 +162,10 @@ public:
 
 public:
 	bool ShowTitle() const { return m_showTitle; }
+	void ShowTitle(bool b) { m_showTitle = b; }
+
 	bool ShowSubtitle() const { return m_showSubtitle; }
+	void ShowSubtitle(bool b) { m_showSubtitle = b; }
 
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }

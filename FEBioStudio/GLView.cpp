@@ -1407,11 +1407,11 @@ bool CGLView::isTitleVisible() const
 
 void CGLView::showTitle(bool b)
 {
-	if (m_ptitle)
-	{
-		if (b) m_ptitle->show(); else m_ptitle->hide();
-		repaint();
-	}
+	CGLDocument* doc = m_pWnd->GetGLDocument();
+	if (doc == nullptr) return;
+
+	doc->ShowTitle(b);
+	repaint();
 }
 
 bool CGLView::isSubtitleVisible() const
@@ -1421,11 +1421,10 @@ bool CGLView::isSubtitleVisible() const
 
 void CGLView::showSubtitle(bool b)
 {
-	if (m_psubtitle)
-	{
-		if (b) m_psubtitle->show(); else m_psubtitle->hide();
-		repaint();
-	}
+	CGLDocument* doc = m_pWnd->GetGLDocument();
+	if (doc == nullptr) return;
+	doc->ShowSubtitle(b);
+	repaint();
 }
 
 QImage correct_premultiplied_image(const QImage& image)
