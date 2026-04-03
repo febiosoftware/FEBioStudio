@@ -1588,7 +1588,7 @@ LegendData CGLPostScene::GetLegendData(int n)
 		if (n == 0)
 		{
 			Post::CGLColorMap* pcm = glm->GetColorMap();
-			if (pcm && pcm->IsActive())
+			if (pcm && pcm->IsActive() && pcm->ShowLegend())
 			{
 				float rng[2];
 				pcm->GetRange(rng);
