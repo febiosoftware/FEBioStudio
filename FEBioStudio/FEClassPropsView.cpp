@@ -43,7 +43,6 @@ SOFTWARE.*/
 #include <FEMLib/FSModel.h>
 #include <FEMLib/FEBase.h>
 #include <FEBioLink/FEBioClass.h>
-#include <FEBioLink/FEBioInterface.h>
 #include <QStandardItemModel>
 #include <QSpinBox>
 #include <QMessageBox>

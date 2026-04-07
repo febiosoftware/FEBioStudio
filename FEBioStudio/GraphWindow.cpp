@@ -2948,3 +2948,33 @@ void CModelGraphWindow::TrackElementHistory(int nelem, float* pval, int nfield, 
 		pval[n] = val;
 	}
 }
+
+//=====================================================================================
+CDynamicDataGraphWindow::CDynamicDataGraphWindow(CMainWindow* wnd, CPostDocument* doc) : CGraphWindow(wnd, doc)
+{
+	m_src = nullptr;
+	AddPlotData(new CPlotData());
+}
+
+void CDynamicDataGraphWindow::Update(bool breset, bool bfit)
+{
+	if (m_src)
+	{
+		CPlotData* plot = dynamic_cast<CPlotData*>(GetPlotData(0));
+		if (plot)
+		{
+			m_src->UpdatePlot(*plot);
+		}
+	}
+	RedrawPlot();
+}
+
+void CDynamicDataGraphWindow::showEvent(QShowEvent* ev)
+{
+	Update(true, true);
+}
+
+void CDynamicDataGraphWindow::closeEvent(QCloseEvent* ev)
+{
+	CGraphWindow::closeEvent(ev);
+}

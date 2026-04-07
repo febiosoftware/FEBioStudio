@@ -30,51 +30,65 @@ using namespace VTK;
 #ifdef HAVE_ZLIB
 #include <zlib.h>
 
-bool decompress(unsigned char* szin, uInt bufSize, unsigned char* szout, uInt maxOutSize, uInt& outSize)
+bool decompress(unsigned char* szin, uInt bufSize,
+	unsigned char* szout, uInt maxOutSize,
+	uInt& outSize)
 {
-	z_stream zstrm;
+	z_stream zstrm{};
 
-	// initialize decompression stream
-	zstrm.zalloc = Z_NULL;
-	zstrm.zfree = Z_NULL;
-	zstrm.opaque = Z_NULL;
-	zstrm.avail_in = 0;
-	zstrm.next_in = Z_NULL;
-	zstrm.avail_out = 0;
+	zstrm.next_in = szin;
+	zstrm.avail_in = bufSize;
 
-	// allocate inflate state
+	zstrm.next_out = szout;
+	zstrm.avail_out = maxOutSize;
+
 	int ret = inflateInit(&zstrm);
 	if (ret != Z_OK) return false;
 
-	// set the buffer to decompress
-	zstrm.avail_in = bufSize;
-	zstrm.next_in = szin;
+	ret = inflate(&zstrm, Z_FINISH);
 
-	// run inflate() on input until output buffer not full
-	do {
-		zstrm.avail_out = maxOutSize;
-		zstrm.next_out = szout;
-		ret = inflate(&zstrm, Z_NO_FLUSH);
-		assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
-		switch (ret) {
-		case Z_NEED_DICT:
-			ret = Z_DATA_ERROR;     /* and fall through */
-		case Z_DATA_ERROR:
-		case Z_MEM_ERROR:
-			(void)inflateEnd(&zstrm);
-			return false;
-		}
-		outSize = zstrm.total_out;
+	if (ret != Z_STREAM_END) {
+		inflateEnd(&zstrm);
+		return false;
+	}
 
-		//		buf.append(out, have);
+	outSize = zstrm.total_out;
 
-	} while (zstrm.avail_out == 0);
-
-	// Finish
-	(void)inflateEnd(&zstrm);
-
+	inflateEnd(&zstrm);
 	return true;
 }
+
+struct DecompInfo
+{
+	unsigned int blocks;
+	unsigned int blockSize;
+	unsigned int lastBlockSize;
+	std::vector<unsigned int> compressedSizes;
+};
+
+std::vector<uint8_t> decompressBlocks(uint8_t* data, DecompInfo di)
+{
+	std::vector<uint8_t> decompressedData;
+	decompressedData.reserve(di.blocks * di.blockSize);
+
+	std::vector<uint8_t> block(di.blockSize);
+	for (int i = 0; i < di.blocks; ++i)
+	{
+		// Decompress each block
+		uInt outSize;
+		if (!decompress((unsigned char*)data, di.compressedSizes[i], block.data(), di.blockSize, outSize))
+		{
+			// Handle decompression error
+			return {};
+		}
+		decompressedData.insert(decompressedData.end(), block.begin(), block.end());
+
+		data += di.compressedSizes[i];
+	}
+	
+	return decompressedData;
+}
+
 #endif
 
 unsigned char base64_decode_char(unsigned char c)
@@ -115,11 +129,23 @@ size_t base64_decode(unsigned char* in, size_t l, unsigned char* o, size_t ol)
 		unsigned char o0, o1, o2;
 		size_t n = base64_decode_triplet(in[0], in[1], in[2], in[3], o0, o1, o2);
 		in += 4;
-		if (n > 0) *o++ = o0;
-		if (n > 1) *o++ = o1;
-		if (n > 2) *o++ = o2;
-		c += n;
-		if (c >= ol) break;
+		if (n > 0) {
+			*o++ = o0; 
+			c++; 
+			if (c >= ol) break;
+		}
+		if (n > 1)
+		{
+			*o++ = o1;
+			c++;
+			if (c >= ol) break;
+		}
+		if (n > 2)
+		{
+			*o++ = o2;
+			c++;
+			if (c >= ol) break;
+		}
 	}
 	return c;
 }
@@ -127,39 +153,151 @@ size_t base64_decode(unsigned char* in, size_t l, unsigned char* o, size_t ol)
 class base64_stream
 {
 public:
-	base64_stream(const char* szbuf, size_t headerSize) : m_data(szbuf), m_headerSize(headerSize) {}
+	base64_stream(const char* szbuf, size_t headerSize, VTKFileReader::vtkCompressor compressor) : m_data(szbuf), m_headerSize(headerSize), m_compressor(compressor) {}
 
 	bool init()
 	{
 		m_bytes.clear();
-		unsigned char b[9] = { 0 };
-		if (m_headerSize == 32)
-		{
-			base64_decode((unsigned char*)m_data, 6, b, 9);
-			m_bufSize = *((unsigned int*)b);
-			m_bytes.assign(m_bufSize + 4, 0);
-		}
-		else if (m_headerSize == 64)
-		{
-			base64_decode((unsigned char*)m_data, 12, b, 9);
-			m_bufSize = *((unsigned long int*)b);
-			m_bytes.assign(m_bufSize + 8, 0);
-		}
-		else return false;
 
-		// we're not sure how many bytes to read so we just make a guess
-		size_t dataSize = (m_bytes.size() * 3) / 2;
-		size_t nread = base64_decode((unsigned char*)m_data, dataSize, m_bytes.data(), m_bytes.size());
+		if (m_compressor == VTKFileReader::NoCompression)
+		{
+			unsigned char* data = (unsigned char*) m_data;
+			unsigned char b[8] = { 0 };
+			std::vector<uint8_t> decodedBytes;
+			if (m_headerSize == 32)
+			{
+				size_t nread = base64_decode(data, 8, b, 4);
+				m_bufSize = *((uint32_t*)b);
+				decodedBytes.assign(m_bufSize + 4, 0);
+				m_bytes.assign(m_bufSize, 0);
+			}
+			else if (m_headerSize == 64)
+			{
+				size_t nread = base64_decode(data, 12, b, 8);
+				m_bufSize = *((uint64_t*)b);
+				decodedBytes.assign(m_bufSize + 8, 0);
+				m_bytes.assign(m_bufSize, 0);
+			}
+			else return false;
 
-		return true;
+			size_t b64Size = 4*((decodedBytes.size() + 2) / 3);
+			size_t nread = base64_decode(data, b64Size, decodedBytes.data(), decodedBytes.size());
+
+			memcpy(m_bytes.data(), decodedBytes.data() + m_headerSize / 8, m_bufSize);
+		}
+		else if (m_compressor == VTKFileReader::ZLibCompression)
+		{
+			if (m_headerSize == 32)
+			{
+				unsigned char* data = (unsigned char*)m_data;
+
+				// read the number of blocks
+				uint32_t blocks = 0;
+				base64_decode(data, 8, (unsigned char*)&blocks, 4);
+
+				// allocate header
+				size_t headerSize = sizeof(uint32_t)*(1 + 1 + 1 + blocks*1);
+				std::vector<uint8_t> bytes(headerSize);
+
+				// number of encoded bytes we need
+				unsigned int headerBytes = 4 * ((headerSize + 2) / 3);
+				size_t nread = base64_decode(data, headerBytes, bytes.data(), bytes.size());
+				data += headerBytes;
+
+				uint32_t* d = (uint32_t*)bytes.data();
+
+				DecompInfo di;
+				di.blocks = d[0];
+				di.blockSize = d[1];
+				di.lastBlockSize = d[2];
+				for (int i = 0; i < di.blocks; ++i)
+					di.compressedSizes.push_back(d[3 + i]);
+
+				// calculate total size
+				size_t totalSize = 0;
+				for (int i = 0; i < di.blocks; ++i) totalSize += di.compressedSizes[i];
+				std::vector<uint8_t> block(totalSize);
+
+				// decode the base64 data
+				nread = base64_decode(data, 4 * ((totalSize + 2) / 3), block.data(), block.size());
+
+				// decompress the data
+				data = block.data();
+				for (int i = 0; i < di.blocks; ++i)
+				{
+					int decompBytes = (i == di.blocks - 1) ? di.lastBlockSize : di.blockSize;
+					std::vector<uint8_t> block_i(decompBytes);
+					uInt outSize;
+					if (!decompress(data, di.compressedSizes[i], block_i.data(), block_i.size(), outSize))
+					{
+						return false;
+					}
+					data += di.compressedSizes[i];
+
+					m_bytes.insert(m_bytes.end(), block_i.begin(), block_i.end());
+				}
+			}
+			else if (m_headerSize == 64)
+			{
+				unsigned char* data = (unsigned char*)m_data;
+
+				// read the number of blocks
+				uint64_t blocks = 0;
+				base64_decode(data, 12, (unsigned char*)&blocks, 8);
+
+				// allocate header
+				size_t headerSize = sizeof(uint64_t) * (1 + 1 + 1 + blocks * 1);
+				std::vector<uint8_t> bytes(headerSize);
+
+				// number of encoded bytes we need
+				unsigned int headerBytes = 4 * ((headerSize + 2) / 3);
+				size_t nread = base64_decode(data, headerBytes, bytes.data(), bytes.size());
+				data += headerBytes;
+
+				uint64_t* d = (uint64_t*)bytes.data();
+
+				DecompInfo di;
+				di.blocks = d[0];
+				di.blockSize = d[1];
+				di.lastBlockSize = d[2];
+				for (int i = 0; i < di.blocks; ++i)
+					di.compressedSizes.push_back(d[3 + i]);
+
+				// calculate total size
+				size_t totalSize = 0;
+				for (int i = 0; i < di.blocks; ++i) totalSize += di.compressedSizes[i];
+				std::vector<uint8_t> block(totalSize);
+
+				// decode the base64 data
+				nread = base64_decode(data, 4 * ((totalSize + 2) / 3), block.data(), block.size());
+
+				// decompress the data
+				data = block.data();
+				for (int i = 0; i < di.blocks; ++i)
+				{
+					int decompBytes = (i == di.blocks - 1) ? di.lastBlockSize : di.blockSize;
+					std::vector<uint8_t> block_i(decompBytes);
+					uInt outSize;
+					if (!decompress(data, di.compressedSizes[i], block_i.data(), block_i.size(), outSize))
+					{
+						return false;
+					}
+					data += di.compressedSizes[i];
+
+					m_bytes.insert(m_bytes.end(), block_i.begin(), block_i.end());
+				}
+			}
+			m_bufSize = m_bytes.size();
+
+			return true;
+		}
+		else 
+			return false;
 	}
 
 	void read_floats(std::vector<double>& d)
 	{
 		unsigned char* b = m_bytes.data();
-		if (m_headerSize == 32) b += 4;
-		if (m_headerSize == 64) b += 8;
-
 		size_t m = m_bufSize / 4; assert((m_bufSize % 4) == 0);
 		d.resize(m, 0.f);
 		for (size_t i = 0; i < m; ++i)
@@ -172,9 +310,6 @@ public:
 	void read_int32(std::vector<int>& d)
 	{
 		unsigned char* b = m_bytes.data();
-		if (m_headerSize == 32) b += 4;
-		if (m_headerSize == 64) b += 8;
-
 		size_t m = m_bufSize / 4; assert((m_bufSize % 4) == 0);
 		d.resize(m, 0);
 		for (size_t i = 0; i < m; ++i)
@@ -187,9 +322,6 @@ public:
 	void read_int64(std::vector<int>& d)
 	{
 		unsigned char* b = m_bytes.data();
-		if (m_headerSize == 32) b += 4;
-		if (m_headerSize == 64) b += 8;
-
 		size_t m = m_bufSize / 8; assert((m_bufSize % 8) == 0);
 		d.resize(m, 0);
 		for (size_t i = 0; i < m; ++i)
@@ -203,6 +335,7 @@ private:
 	const char* m_data = nullptr;
 	size_t m_headerSize = 32;
 	size_t m_bufSize = 0;
+	VTKFileReader::vtkCompressor m_compressor = VTKFileReader::NoCompression;
 	std::vector<unsigned char>	m_bytes;
 };
 
@@ -225,7 +358,7 @@ bool VTKFileReader::ProcessAppendedDataArray(vtkDataArray& ar, vtkAppendedData& 
 
 	// convert from base64 to binary
 	size_t headerSize = (m_headerType == UInt64 ? 64 : 32);
-	base64_stream b64(buf, headerSize);
+	base64_stream b64(buf, headerSize, m_compressor);
 	if (b64.init() == false) return false;
 
 	if (ar.m_type == vtkDataArray::FLOAT32)
@@ -459,6 +592,7 @@ bool VTKFileReader::ParsePolys(XMLTag& tag, vtkPiece& piece)
 
 bool VTKFileReader::ParsePointData(XMLTag& tag, VTK::vtkPiece& piece)
 {
+	if (tag.isleaf()) return true;
 	++tag;
 	do {
 		if (tag == "DataArray")
@@ -476,6 +610,7 @@ bool VTKFileReader::ParsePointData(XMLTag& tag, VTK::vtkPiece& piece)
 
 bool VTKFileReader::ParseCellData(XMLTag& tag, VTK::vtkPiece& piece)
 {
+	if (tag.isleaf()) return true;
 	++tag;
 	do {
 		if (tag == "DataArray")

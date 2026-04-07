@@ -186,6 +186,14 @@ double GTRI6[6][6][2] = {
 
 namespace FEMeshMetrics {
 
+	void ElementNodePositions(const FSMesh& mesh, const FSElement_& e, vec3d* r)
+	{
+		for (int i = 0; i < e.Nodes(); ++i)
+		{
+			r[i] = mesh.NodePosition(e.m_node[i]);
+		}
+	}
+
 //-----------------------------------------------------------------------------
 // Calculate the shortest edge or diagonal for all the elements of the mesh.
 double ShortestEdge(const FSMesh& mesh)
@@ -328,6 +336,132 @@ double ShellJacobian(const FSMesh& mesh, const FSElement& el, int flag)
 	return dmin;
 }
 
+// Edge list for different element types
+static const int hexCornerEdges[8][3][2] =
+{
+	{ {0,1}, { 0, 3}, {0,4} }, // corner 0
+	{ {1,2}, { 1,0 }, {1,5}  }, // corner 1
+	{ {2,3}, { 2,1 }, {2,6}  }, // corner 2
+	{ {3,0}, { 3,2 }, {3,7}  }, // corner 3
+	{ {4,0}, { 4,7 }, {4,5}  }, // corner 4
+	{ {5,1}, { 5,4 }, {5,6}  }, // corner 5
+	{ {6,2}, { 6,5 }, {6,7}  }, // corner 6
+	{ {7,3}, { 7,6 }, {7,4} }   // corner 7
+};
+
+static const int wedgeCornerEdges[6][3][2] =
+{
+	{ {0,1}, {0,2}, {0,3} },
+	{ {1,2}, {1,0}, {1,4} },
+	{ {2,0}, {2,1}, {2,5} },
+	{ {3,4}, {3,0}, {3,5} },
+	{ {4,5}, {4,1}, {4,3} },
+	{ {5,3}, {5,2}, {5,4} }
+};
+
+static const int tetCornerEdges[4][3][2] =
+{
+	{ {0,1}, {0,2}, {0,3} },
+	{ {1,2}, {1,0}, {1,3} },
+	{ {2,0}, {2,1}, {2,3} },
+	{ {3,0}, {3,2}, {3,1} }
+};
+
+double MinimumScaledJacobian(const FSMesh& mesh, const FSElement& el)
+{
+	if (!el.IsSolid()) return 0.0;
+
+	// nodal coordinates
+	vec3d r[FSElement::MAX_NODES];
+	ElementNodePositions(mesh, el, r);
+
+	// for each node, find 3 edges that meet at the node
+	int n = el.Nodes();
+	const int(*edgeData)[3][2] = nullptr;
+	switch (el.Type())
+	{
+	case FE_HEX8  : edgeData = hexCornerEdges; break;
+	case FE_PENTA6: edgeData = wedgeCornerEdges; break;
+	case FE_TET4  : edgeData = tetCornerEdges; break;
+	default: return 0.0;
+	}
+
+	// calculate scaled jacobian at each node and store minimum value
+	double minSJ = 1e99;
+	vec3d e[3];
+	double L[3];
+	for (int i = 0; i < n; ++i)
+	{
+		// get the 3 edges that meet at this node
+		for (int k = 0; k < 3; ++k)
+		{
+			int a = edgeData[i][k][0];
+			int b = edgeData[i][k][1];
+			vec3d va = mesh.NodePosition(el.m_node[a]);
+			vec3d vb = mesh.NodePosition(el.m_node[b]);
+			e[k] = vb - va;
+			L[k] = e[k].Length();
+		}
+		
+		// get the jacobian determinant at this node
+		double detJ = e[0]*(e[1]^e[2]);
+
+		// calculate the scaled jacobian
+		double SJ = detJ / (L[0] * L[1] * L[2]);
+		if (SJ < minSJ) minSJ = SJ;
+	}
+
+	return minSJ;
+}
+
+double MinimumMeanRatio(const FSMesh& mesh, const FSElement& el)
+{
+	if (!el.IsSolid()) return 0.0;
+
+	// nodal coordinates
+	vec3d r[FSElement::MAX_NODES];
+	ElementNodePositions(mesh, el, r);
+
+	// for each node, find 3 edges that meet at the node
+	int n = el.Nodes();
+	const int(*edgeData)[3][2] = nullptr;
+	switch (el.Type())
+	{
+	case FE_HEX8  : edgeData = hexCornerEdges; break;
+	case FE_PENTA6: edgeData = wedgeCornerEdges; break;
+	case FE_TET4  : edgeData = tetCornerEdges; break;
+	default: return 0.0;
+	}
+
+	// calculate mean ratio at each node and store minimum value
+	double minMR = 1e99;
+	vec3d e[3];
+	double L[3];
+	for (int i = 0; i < n; ++i)
+	{
+		// get the 3 edges that meet at this node
+		for (int k = 0; k < 3; ++k)
+		{
+			int a = edgeData[i][k][0];
+			int b = edgeData[i][k][1];
+			vec3d va = mesh.NodePosition(el.m_node[a]);
+			vec3d vb = mesh.NodePosition(el.m_node[b]);
+			e[k] = vb - va;
+			L[k] = e[k].Length();
+		}
+
+		// get the jacobian determinant at this node
+		double detJ = e[0] * (e[1] ^ e[2]);
+		double JF2 = e[0].SqrLength() + e[1].SqrLength() + e[2].SqrLength();
+
+		// calculate the mean ratio
+		double MR = 3.0 * pow(detJ, 2.0 / 3.0) / JF2;
+		if (MR < minMR) minMR = MR;
+	}
+
+	return minMR;
+}
+
 //-----------------------------------------------------------------------------
 double ShellArea(const FSMesh& mesh, const FSElement& el)
 {
@@ -377,14 +511,6 @@ double ShellArea(const FSMesh& mesh, const FSElement& el)
 	}
 
 	return val;
-}
-
-void ElementNodePositions(const FSMesh& mesh, const FSElement_& e, vec3d* r)
-{
-	for (int i = 0; i < e.Nodes(); ++i)
-	{
-		r[i] = mesh.NodePosition(e.m_node[i]);
-	}
 }
 
 //-----------------------------------------------------------------------------

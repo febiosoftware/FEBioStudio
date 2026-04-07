@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <GeomLib/GGroup.h>
 #include <GeomLib/FSGroup.h>
-#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FSCore/Palette.h>
 #include <assert.h>

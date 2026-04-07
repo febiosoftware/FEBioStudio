@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioInit.h"
 #include <FEBioLib/febio.h>
-#include "FEBioModule.h"
+#include <FEBioLink/FEBioModule.h>
 
 namespace febio {
 	extern void initCreateHandlers(); // in FEBioClass.cpp
