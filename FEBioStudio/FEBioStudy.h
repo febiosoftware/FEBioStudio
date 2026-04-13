@@ -28,12 +28,18 @@ SOFTWARE.*/
 #include "FEBioOpt.h"
 #include <QString>
 
+enum StudyType
+{
+	STUDY_INVALID,
+	STUDY_OPTIMIZATION
+};
+
 class CModelDocument;
 
 class CFEBioStudy : public FSThreadedTask
 {
 public:
-	CFEBioStudy(CModelDocument* doc);
+	CFEBioStudy(CModelDocument* doc, StudyType type);
 
 	CModelDocument* GetDocument() { return m_doc; }
 
@@ -41,12 +47,36 @@ public:
 
 	virtual QString GetOutputFileName() const { return QString(); }
 
+	StudyType GetType() const { return m_type; }
+
 private:
 	CModelDocument* m_doc;
+	StudyType m_type;
 };
 
 class COptimizationStudy : public CFEBioStudy
 {
+	// Don't change the order of these fields as they are used for serialization!
+	enum DataField {
+		StudyName,
+		StudyInfo,
+		LogFileName,
+		OptMethod,
+		ObjTol,
+		FDiffScale,
+		OutputLevel,
+		PrintLevel,
+		Objective,
+		Param,
+		ObjParam,
+		ObjData,
+		TrgVar,
+		EDVar,
+		EDData,
+		NDVar,
+		NDData
+	};
+
 public:
 	COptimizationStudy(CModelDocument* doc);
 
@@ -56,6 +86,10 @@ public:
 	bool Run() override;
 
 	QString GetOutputFileName() const override { return m_logFileName; }
+
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 private:
 	FEBioOpt m_ops;
