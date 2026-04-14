@@ -593,7 +593,8 @@ void CMainWindow::RunOptimizationStudy(COptimizationStudy* study)
 	CDlgStartThread dlg(this, new RunStudyThread(study));
 	if (dlg.exec())
 	{
-		QMessageBox::warning(this, "FEBio Studio", "The study completed successfully.");
+		QString msg = QString("The study \"%1\" completed successfully.").arg(name);
+		QMessageBox::information(this, "FEBio Studio", msg);
 
 		QString outfile = study->GetOutputFileName();
 		if (!outfile.isEmpty())

@@ -524,7 +524,23 @@ void CModelDocument::Save(OArchive& ar)
 			job->Save(ar);
 		}
 		ar.EndChunk();
-	}	
+	}
+
+	// save the study lists
+	for (int i = 0; i < FEBioStudies(); ++i)
+	{
+		CFEBioStudy* study = GetFEBioStudy(i);
+		ar.BeginChunk(CID_FEBIOSTUDY);
+		{
+			ar.WriteChunk(CID_FEBIOSTUDY_TYPE, (int)study->GetType());
+			ar.BeginChunk(CID_FEBIOSTUDY_DATA);
+			{
+				study->Save(ar);
+			}
+			ar.EndChunk();
+		}
+		ar.EndChunk();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -704,6 +720,40 @@ void CModelDocument::Load(IArchive& ar)
 			CFEBioJob* job = new CFEBioJob(this);
 			m_JobList.Add(job);
 			job->Load(ar);
+		}
+		else if (nid == CID_FEBIOSTUDY)
+		{
+			CFEBioStudy* study = nullptr;
+			while (ar.OpenChunk() == IArchive::IO_OK)
+			{
+				int nid = ar.GetChunkID();
+				if (nid == CID_FEBIOSTUDY_TYPE)
+				{
+					int ntype = 0;
+					ar.read(ntype);
+
+					switch (ntype)
+					{
+					case StudyType::STUDY_OPTIMIZATION:
+						study = new COptimizationStudy(this);
+						break;
+					default:
+						assert(false);
+						ar.log("Unsupported study type found in file. Study will be ignored.");
+						break;
+					}
+				}
+				else if (nid == CID_FEBIOSTUDY_DATA)
+				{
+					if (study)
+					{
+						m_StudyList.Add(study);
+						study->Load(ar);
+					}
+					study = nullptr;
+				}
+				ar.CloseChunk();
+			}
 		}
 		ar.CloseChunk();
 	}
