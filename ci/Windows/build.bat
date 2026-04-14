@@ -2,19 +2,10 @@ call "%VS2022INSTALLDIR%\VC\Auxiliary\Build\vcvars64.bat"
 
 SET "FBS_DIR=%CD%"
 
-git clone https://github.com/google/googletest.git %USERPROFILE%\googletest
-cd %USERPROFILE%\googletest
-cmake -S . -B build -DCMAKE_INSTALL_PREFIX=C:\usr\local
-cd build
-msbuild /v:m /P:Configuration=Release  /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS% INSTALL.vcxproj
-if errorlevel 1 exit /b %errorlevel%
-
-cd %FBS_DIR%
-
 set Qt_Root="c:/usr/local/Qt/6.9.3/msvc2022_64"
 cmake -L . -B cmbuild ^
   -DQt_Root=%Qt_Root% ^
-  -DCMAKE_PREFIX_PATH=febio4-sdk ^
+  -DCMAKE_PREFIX_PATH="febio4-sdk" ^
   -DWINDEPLOYQT_EXECUTABLE="%Qt_Root%\bin\windeployqt.exe" ^
   -DUSE_FFMPEG=ON ^
   -DUSE_TETGEN=ON ^
