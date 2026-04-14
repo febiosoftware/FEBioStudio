@@ -2840,6 +2840,11 @@ size_t FSModel::Scripts() const
 	return m_scripts.size();
 }
 
+int FSModel::GetNextScriptID() const
+{
+	return m_nextScriptID;
+}
+
 FEBCodeScript* FSModel::GetScript(const std::string& name)
 {
 	auto it = std::find_if(m_scripts.begin(), m_scripts.end(), [&name](const std::unique_ptr<FEBCodeScript>& s) { return s->GetName() == name; });

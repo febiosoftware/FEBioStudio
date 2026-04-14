@@ -247,7 +247,7 @@ public:
 	const char* GetVariableName(const char* szvar, int n, bool longName = true);
 
 public:
-	FEBCodeScript* AddScript(const std::string& name, const std::string& code);
+	FEBCodeScript* AddScript(const std::string& name, const std::string& code = "return 0.0;");
 
 	FEBCodeScript* GetScript(const std::string& name);
 
@@ -256,6 +256,8 @@ public:
 	FEBCodeScript* GetScript(size_t n);
 
 	size_t Scripts() const;
+
+	int GetNextScriptID() const;
 
 public:
 	// These functions deal with enums
