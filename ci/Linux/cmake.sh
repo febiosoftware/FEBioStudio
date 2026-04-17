@@ -16,6 +16,7 @@ run_cmake() {
 		-DBUILD_TESTS=ON \
         -DFFMPEG_INC=/usr/local/include \
         -DFFMPEG_LIB_DIR=/usr/local/lib \
+		-DPYBIND11_INC
         -DPython3_ROOT_DIR=/home/mherron/.pyenv/versions/3.13.1 \
         -DPython3_EXECUTABLE=/home/mherron/.pyenv/versions/3.13.1/bin/python3 \
         -DPython3_INCLUDE_DIR=/home/mherron/.pyenv/versions/3.13.1/include/python3.13 \
