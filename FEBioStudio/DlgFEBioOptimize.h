@@ -52,6 +52,7 @@ public:
 
 protected slots:
 	void on_addParameter_clicked();
+	void on_removeParameter_clicked();
 	void on_addData_clicked();
 	void on_addElemData_clicked();
 	void on_addNodeData_clicked();

@@ -359,7 +359,9 @@ void CPostObject::BuildFERenderMesh()
 		}
 	}
 
-	gm.AutoEdgePartition();
+	// number of materials in model
+	int nmat = m_glm->GetFSModel()->Materials();
+	gm.AutoEdgePartition(nmat);
 	gm.Update();
 	SetFERenderMesh(&gm);
 }
