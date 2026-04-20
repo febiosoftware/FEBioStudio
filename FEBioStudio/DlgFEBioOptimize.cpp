@@ -445,6 +445,14 @@ public:
 		maxVal->clear();
 	}
 
+	void removeParameter()
+	{
+		QList<QTableWidgetItem*> sel = paramTable->selectedItems();
+		if (sel.empty()) return;
+		int row = paramTable->row(sel[0]);
+		paramTable->removeRow(row);
+	}
+
 	void addTargetVariable(QString name, double val)
 	{
 		int rows = trgVar->rowCount();
@@ -544,8 +552,12 @@ public:
 		QPushButton* add = new QPushButton("Add");
 		add->setObjectName("addParameter");
 
+		QPushButton* remove = new QPushButton("Remove");
+		remove->setObjectName("removeParameter");
+
 		QHBoxLayout* h = new QHBoxLayout;
 		h->addWidget(add);
+		h->addWidget(remove);
 		h->addStretch();
 
 		paramTable = new QTableWidget(0, 4);
@@ -745,6 +757,11 @@ FEBioOpt CDlgFEBioOptimize::GetFEBioOpt()
 void CDlgFEBioOptimize::on_addParameter_clicked()
 {
 	ui->addParameter();
+}
+
+void CDlgFEBioOptimize::on_removeParameter_clicked()
+{
+	ui->removeParameter();
 }
 
 void CDlgFEBioOptimize::on_addData_clicked()
