@@ -467,15 +467,6 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		}
 		else FileReader()->AddLogEntry("Cannot assign map to non-variable parameter %s", pp->GetShortName());
 	}
-	else if (*atype == "code")
-	{
-		if (pp->IsVariable())
-		{
-			pp->SetParamType(Param_CODE);
-			febio.m_scriptParam[pp] = tag.szvalue();
-		}
-		else FileReader()->AddLogEntry("Cannot assign code to non-variable parameter %s", pp->GetShortName());
-	}
 	// NOTE: Is this still used? I think this was an initial attempt
 	//       for creating watched variables.
 	// if parameter is checkable, mark it as checked

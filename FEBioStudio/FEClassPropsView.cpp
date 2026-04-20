@@ -418,21 +418,6 @@ public:
 						return v;
 					}
 					break;
-					case Param_CODE:
-					{
-						int id = p.GetScriptID();
-						FEBCodeScript* ps = GetFSModel()->GetScriptFromID(id);
-						QString v = QString("{ ") + (ps ? QString::fromStdString(ps->GetName()) : "") + QString(" }");
-						const char* szunit = p.GetUnit();
-						if (szunit)
-						{
-							QString unitString = Units::GetUnitString(szunit);
-							if (unitString.isEmpty() == false)
-								v += QString(" %1").arg(unitString);
-						}
-						return v;
-					}
-					break;
 					case Param_STD_VECTOR_INT:
 					{
 						std::vector<int> v = p.val<std::vector<int> >();
@@ -529,13 +514,6 @@ public:
 					case Param_MAT3DS: return Mat3dsToString(p.val<mat3ds>()); break;
 					case Param_MATH: return QString::fromStdString(p.GetMathString()); break;
 					case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
-					case Param_CODE:
-					{
-						int id = p.GetScriptID();
-						FEBCodeScript* ps = GetFSModel()->GetScriptFromID(id);
-						return (ps ? QString::fromStdString(ps->GetName()) : QString("(invalid)"));
-						break;
-					}
 					case Param_STD_VECTOR_INT: return -1; break;
 					case Param_STD_VECTOR_DOUBLE:
 					{
@@ -773,25 +751,6 @@ public:
 					if (p.GetStringValue() != s) {
 						p.SetStringValue(s);
 						p.SetModified(true);
-					}
-				}
-				break;
-				case Param_CODE:
-				{
-					string s = value.toString().toStdString();
-					int l = (int)s.length();
-					if ((s.empty() == false) && (s[0] == '{')) s.erase(s.begin());
-					if ((s.empty() == false) && (s[l-1] == '}')) s.erase(s.back());
-
-					auto script = GetFSModel()->GetScript(s);
-					if (script)
-					{
-						int currentID = p.GetScriptID();
-
-						if (currentID != script->GetID()) {
-							p.SetScriptID(script->GetID());
-							p.SetModified(true);
-						}
 					}
 				}
 				break;
@@ -1257,7 +1216,7 @@ public:
 	QVariant headerData(int section, Qt::Orientation orientation, int role) const override
 	{
 		if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-			return (section == 0? "Property" : "Value");
+			return (section == 0? "Parameter" : "Value");
 		return QAbstractItemModel::headerData(section, orientation, role);
 	}
 
@@ -1334,7 +1293,7 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 			// check for variable parameters first
 			if (p->IsVariable())
 			{
-				CEditVariableParam* pw = new CEditVariableParam(item->GetFSModel(), parent);
+				CEditVariableParam* pw = new CEditVariableParam(parent);
 
 				// We got to use a const_cast here since closeEditor requires the non-const pointer to the delegate
 				// but we're inside a const member.

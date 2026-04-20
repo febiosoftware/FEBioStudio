@@ -601,8 +601,6 @@ private:
 
 public:
 	std::unordered_map<std::string, std::string> m_scripts;
-
-	std::unordered_map<Param*, std::string>	m_scriptParam;	// map of parameters that need script IDs
 };
 
 class FEBioFileImport;

@@ -504,7 +504,7 @@ public:
 		tool->addTool("Info", data);
 		tool->addTool("Mesh Info", mesh);
 		tool->addTool("Mesh Info", part);
-		tool->addTool("Properties", propStack);
+		tool->addTool("Parameters", propStack);
 		tool->addTool("Selection", sel1);
 		tool->addTool("Selection", sel2);
 		tool->addTool("3D Image", imageTab);

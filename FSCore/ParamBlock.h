@@ -54,7 +54,6 @@ enum Param_Type {
 	Param_VEC2D,
 	Param_CHOICE = 0x0020,		// like INT but imported/exported as one-based numbers
 	Param_URL,
-	Param_CODE
 };
 
 // parameter states
@@ -170,7 +169,6 @@ public:
 	void SetStringValue(const std::string& v) {assert(m_ntype == Param_STRING); val<std::string>() = v; }
 	void SetURLValue(const std::string& v) {assert(m_ntype == Param_URL); val<std::string>() = v; }
 	void SetMathString (const std::string& v) { assert(m_ntype == Param_MATH); val<std::string>() = v; }
-	void SetScriptID   (int v) { assert(m_ntype == Param_CODE); val<int>() = v; }
 	void SetColorValue(const GLColor& c) { assert(m_ntype == Param_COLOR); val<GLColor>() = c; }
 	void SetVectorIntValue(const std::vector<int>& v) { assert(m_ntype == Param_STD_VECTOR_INT); val<std::vector<int> >() = v; }
 	void SetVectorDoubleValue(const std::vector<double>& v) { assert(m_ntype == Param_STD_VECTOR_DOUBLE); val<std::vector<double> >() = v; }
@@ -191,7 +189,6 @@ public:
 	std::string GetStringValue() const { assert(m_ntype == Param_STRING); return val<std::string>(); }
 	std::string GetURLValue() const { assert(m_ntype == Param_URL); return val<std::string>(); }
 	std::string GetMathString() const { assert(m_ntype == Param_MATH); return val<std::string>(); }
-	int GetScriptID() const { assert(m_ntype == Param_CODE); return val<int>(); }
 	GLColor GetColorValue() const { assert(m_ntype == Param_COLOR); return val<GLColor>(); }
 	std::vector<int> GetVectorIntValue() const { assert(m_ntype == Param_STD_VECTOR_INT); return val<std::vector<int> >(); }
 	std::vector<double> GetVectorDoubleValue() const { assert(m_ntype == Param_STD_VECTOR_DOUBLE); return val<std::vector<double> >(); }
