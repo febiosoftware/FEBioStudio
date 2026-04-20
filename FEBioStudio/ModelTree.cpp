@@ -52,7 +52,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "IconProvider.h"
 #include "LaunchConfig.h"
-#include <FECore/FECodeValuator.h>
+#include <FECore/FEScriptedBehavior.h>
 
 // list of warnings generated
 #define WARNING_NONE				0
@@ -413,8 +413,14 @@ public:
 		FEBCodeScript* script = m_po;
 		if (script == nullptr) return false;
 
+		ScriptContext ctx;
+		ctx.returnType = FEValueType::Double;
+		ctx.addVariable("pos"   , FEValueType::Vec3d);
+		ctx.addVariable("normal", FEValueType::Vec3d);
+		ctx.addVariable("time"  , FEValueType::Double);
+
 		err.clear();
-		isValid = ValidateScript(script->GetCode(), err);
+		isValid = ValidateScript(script->GetCode(), ctx, err);
 		return isValid;
 	}
 

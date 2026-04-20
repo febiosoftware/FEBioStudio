@@ -396,7 +396,7 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 	bool includeModuleDependencies = (flags & ClassSearchFlags::IncludeModuleDependencies);
 	bool includeFECoreClasses = includeModuleDependencies;// (flags & ClassSearchFlags::IncludeFECoreClasses);
 
-#ifdef FEBIO_EXPERIMENTAL
+#if defined(FEBIO_EXPERIMENTAL) || !defined(NDEBUG)
 	bool includeExperimentals = true;
 #else
 	bool includeExperimentals = false;
@@ -980,7 +980,7 @@ vector<FEBio::FEBioModule>	FEBio::GetAllModules()
 	vector<FEBio::FEBioModule> mods;
 	for (int i = 0; i < fecore.Modules(); ++i)
 	{
-#ifndef FEBIO_EXPERIMENTAL
+#if defined(FEBIO_EXPERIMENTAL) || !defined(NDEBUG)
 		if (fecore.GetModuleStatus(i) > 0)
 #endif
 		{

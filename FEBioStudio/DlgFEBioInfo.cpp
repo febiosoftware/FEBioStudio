@@ -152,7 +152,7 @@ void CDlgFEBioInfo::onExport()
 		moduleArray.append(modObj);
 	}
 
-#ifdef FEBIO_EXPERIMENTAL
+#if defined(FEBIO_EXPERIMENTAL) || !defined(NDEBUG)
 	bool includeExperimentals = true;
 #else
 	bool includeExperimentals = false;
@@ -344,7 +344,7 @@ void CDlgFEBioInfo::onTreeChanged()
 	int index = it->data(0, Qt::UserRole).toInt();
 	if ((index < 0) || (index >= febio.FactoryClasses())) return;
 
-#ifdef FEBIO_EXPERIMENTAL
+#if defined(FEBIO_EXPERIMENTAL) || !defined(NDEBUG)
 	bool includeExperimentals = true;
 #else
 	bool includeExperimentals = false;
@@ -488,7 +488,7 @@ void CDlgFEBioInfo::Update()
 
 	bool addModuleDependencies = false;
 
-#ifdef FEBIO_EXPERIMENTAL
+#if defined(FEBIO_EXPERIMENTAL) || !defined(NDEBUG)
 	bool includeExperimentals = true;
 #else
 	bool includeExperimentals = false;

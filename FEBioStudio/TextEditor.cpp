@@ -401,14 +401,15 @@ public:
 };
 
 const char* szfebcodekeys[] = {
-	"void", "bool", "int", "double",
-	"struct", "function", "return",
-	"if", "else", "while",
+	"void", "bool", "int", "double", 
+	"vec2", "vec3", "mat2", "mat3",
+	"in", "struct", "function", "return",
+	"if", "else", "while", "for",
 	"true", "false",
-	"vec3"
 };
 
 const char* szfebcodefncs[] = {
+	// math functions
 	"abs"  ,
 	"acos" ,
 	"acosh",
@@ -426,9 +427,16 @@ const char* szfebcodefncs[] = {
 	"sqrt" ,
 	"tan"  ,
 	"tanh" ,
+	// vector and matrix functions
+	"dot",
+	"length",
+	"cross",
 	"normalize",
+	"transpose",
+	"inverse",
+	"outer",
+	// math constants
 	"PI"   ,
-	"_pos0", "_norm0", "_time"
 };
 
 class CFEBCodeHighlighter : public CSyntaxHighlighter
@@ -443,6 +451,7 @@ public:
 		QString stringLiterals("([\"'])(.*?)\\1");
 		QString numbers("(?<!\\w)[-+]?\\d*\\.?\\d+([eE][-+]?\\d+)?");
 		QString braces("[\\(\\[\\{\\)\\]\\}]");
+		QString injects("^_[A-Za-z][A-Za-z0-9_]*$");
 
 		if (theme == 0) // light theme
 		{
@@ -452,6 +461,7 @@ public:
 			AddRule(braces, QColor("gold"));
 			AddRule(stringLiterals, QColor("orangered"));
 			AddRule(lineComment, Qt::darkGreen);
+			AddRule(injects, QColor("orange"));
 		}
 		else // dark theme
 		{
@@ -461,6 +471,7 @@ public:
 			AddRule(braces, QColor("gold"));
 			AddRule(stringLiterals, QColor("orange"));
 			AddRule(lineComment, QColor("forestgreen"));
+			AddRule(injects, QColor("coral"));
 		}
 	}
 };
