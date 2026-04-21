@@ -40,8 +40,6 @@ SOFTWARE.*/
 using namespace std;
 using namespace Post;
 
-extern int ET_HEX[12][2];
-
 FEPostModel* FEPostModel::m_activeModel = nullptr;
 
 FEPostModel::PlotObject::PlotObject() 

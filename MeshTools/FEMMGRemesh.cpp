@@ -35,8 +35,8 @@ SOFTWARE.*/
 #include <MeshLib/FSMeshBuilder.h>
 using namespace std;
 
-extern int ET_TET[6][2]; // in lut.cpp
-extern int ET_TRI[3][2]; // in lut.cpp
+extern int EL_TET[6][2]; // in lut.cpp
+extern int EL_TRI[3][2]; // in FSElement.cpp
 
 //=========================================================================================
 MMGRemesh::MMGRemesh() : FEModifier("MMG Remesh")
@@ -241,8 +241,8 @@ FSMesh* MMGRemesh::RemeshTET4(FSMesh* pm)
 			FSElement& el = pm->Element(i);
 			for (int j = 0; j < 6; ++j)
 			{
-				int a = el.m_node[ET_TET[j][0]];
-				int b = el.m_node[ET_TET[j][1]];
+				int a = el.m_node[EL_TET[j][0]];
+				int b = el.m_node[EL_TET[j][1]];
 
 				vec3d ra = pm->Node(a).pos();
 				vec3d rb = pm->Node(b).pos();
@@ -474,8 +474,8 @@ FSMesh* MMGRemesh::RemeshTRI3(FSMesh* pm)
 			FSElement& el = pm->Element(i);
 			for (int j = 0; j < 3; ++j)
 			{
-				int a = el.m_node[ET_TRI[j][0]];
-				int b = el.m_node[ET_TRI[j][1]];
+				int a = el.m_node[EL_TRI[j][0]];
+				int b = el.m_node[EL_TRI[j][1]];
 
 				vec3d ra = pm->Node(a).pos();
 				vec3d rb = pm->Node(b).pos();
@@ -716,8 +716,8 @@ FSSurfaceMesh* MMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 			FSFace& face = pm->Face(i);
 			for (int j = 0; j < 3; ++j)
 			{
-				int a = face.n[ET_TRI[j][0]];
-				int b = face.n[ET_TRI[j][1]];
+				int a = face.n[EL_TRI[j][0]];
+				int b = face.n[EL_TRI[j][1]];
 
 				vec3d ra = pm->Node(a).pos();
 				vec3d rb = pm->Node(b).pos();
@@ -963,8 +963,8 @@ FSSurfaceMesh* MMG2DRemesh::Apply(FSSurfaceMesh* pm)
 			FSFace& face = pm->Face(i);
 			for (int j = 0; j < 3; ++j)
 			{
-				int a = face.n[ET_TRI[j][0]];
-				int b = face.n[ET_TRI[j][1]];
+				int a = face.n[EL_TRI[j][0]];
+				int b = face.n[EL_TRI[j][1]];
 
 				vec3d ra = pm->Node(a).pos();
 				vec3d rb = pm->Node(b).pos();

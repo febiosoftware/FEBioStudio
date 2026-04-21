@@ -36,7 +36,7 @@ SOFTWARE.*/
 using namespace Post;
 
 extern int LUT[256][15];
-extern int ET_HEX[12][2];
+extern int EL_HEX[12][2];
 
 REGISTER_CLASS(GLVolumeFlowPlot, CLASS_PLOT, "volume-flow", 0);
 
@@ -395,8 +395,8 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
 					double v[3];
 					for (int k = 0; k < 3; k++)
 					{
-						int n1 = ET_HEX[pf[k]][0];
-						int n2 = ET_HEX[pf[k]][1];
+						int n1 = EL_HEX[pf[k]][0];
+						int n2 = EL_HEX[pf[k]][1];
 
 						double w = 0.5;
 						if (ex[n2] != ex[n1])

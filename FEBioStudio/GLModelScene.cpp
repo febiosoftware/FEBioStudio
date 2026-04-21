@@ -45,9 +45,9 @@ const int PYR_NT[8] = { 0, 1, 2, 3, 4, 4, 4, 4 };
 
 // in MeshTools\lut.cpp
 extern int LUT[256][15];
-extern int ET_HEX[12][2];
-extern int ET_TET[6][2];
-extern int ET_PYR[8][2];
+extern int EL_HEX[12][2];
+extern int EL_TET[6][2];
+extern int EL_PYR[8][2];
 
 const int MAX_FIBER_COLORS = 16;
 static GLColor fiberColorPalette[MAX_FIBER_COLORS] = {
@@ -938,8 +938,8 @@ void GLPlaneCutItem::RenderBoxCut(GLRenderEngine& re, const BOX& box)
 			float w1, w2, w;
 			for (int k = 0; k < 3; k++)
 			{
-				int n1 = ET_HEX[pf[k]][0];
-				int n2 = ET_HEX[pf[k]][1];
+				int n1 = EL_HEX[pf[k]][0];
+				int n2 = EL_HEX[pf[k]][1];
 
 				w1 = norm * ex[n1];
 				w2 = norm * ex[n2];

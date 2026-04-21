@@ -114,7 +114,7 @@ void CVolumeRenderer::ReloadTexture()
 }
 
 extern int LUT[256][15];
-extern int ET_HEX[12][2];
+extern int EL_HEX[12][2];
 
 GLColor HSL2RGB(double H, double S, double L)
 {
@@ -390,8 +390,8 @@ void CVolumeRenderer::RenderSlices(GLRenderEngine& re, const vec3d& view)
 			// calculate nodal positions
 			for (int k = 0; k < 3; k++)
 			{
-				int n1 = ET_HEX[pf[k]][0];
-				int n2 = ET_HEX[pf[k]][1];
+				int n1 = EL_HEX[pf[k]][0];
+				int n2 = EL_HEX[pf[k]][1];
 
 				double w = (float)((t - nv[n1]) / (nv[n2] - nv[n1]));
 
