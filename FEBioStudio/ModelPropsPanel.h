@@ -37,6 +37,7 @@ class GMaterial;
 class CPropertyList;
 class QLineEdit;
 class QLabel;
+class QPushButton;
 class CColorButton;
 class CMatEditButton;
 class QComboBox;
@@ -118,21 +119,28 @@ public:
 
 	void setActiveState(bool b);
 
+	void showScript(bool b, const QString& script = QString());
+
 protected slots:
 	void on_name_textEdited(const QString&);
 	void on_list_currentIndexChanged(int n);
 	void on_state_toggled(bool b);
+	void on_editScript_clicked();
 
 signals:
 	void nameChanged(const QString& newName);
 	void stepChanged(int n);
 	void stateChanged(bool isActive);
+	void editScriptClicked(QString scriptName);
 
 private:
 	QLineEdit*		m_name;
 	QLabel*			m_type;
 	QComboBox*		m_list;
 	QCheckBox*		m_state;
+	QLabel* m_scriptLabel;
+	QLabel* m_script;
+	QPushButton* m_scriptEdit;
 };
 
 class CGItemInfoPanel : public QWidget
@@ -239,6 +247,7 @@ private slots:
 	void on_form_dataChanged(bool itemModified);
 	void on_bcobject_stepChanged(int n);
 	void on_bcobject_stateChanged(bool isActive);
+	void on_bcobject_editScriptClicked(QString scriptName);
 	void on_object_statusChanged(bool b);
 	void on_math_mathChanged(QString m);
 	void on_math2_mathChanged(QString m);

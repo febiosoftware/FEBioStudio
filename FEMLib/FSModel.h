@@ -267,6 +267,8 @@ public:
 
 	void UpdateScriptDependency(FSModelComponent* component, FEBCodeScript* script);
 
+	std::vector<FEBCodeScript*> GetMatchingScripts(const ScriptContext& ctx);
+
 public:
 	// These functions deal with enums
 	// Enums are identified via:

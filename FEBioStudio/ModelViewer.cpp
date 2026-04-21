@@ -2181,7 +2181,6 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	break;
 	case MT_SCRIPT_LIST:
 	{
-		menu.addAction("Add Script ...", this, SLOT(on_actionAddScript_triggered()));
 	}
 	break;
 	case MT_STUDY:
@@ -2780,32 +2779,4 @@ QString CModelViewer::HelpURLFromObject(FSObject* po)
 	}
     
     return ClassIDToURL(classID);
-}
-
-void CModelViewer::on_actionAddScript_triggered()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	FSModel* fem = doc->GetFSModel();
-	if (fem == nullptr) return;
-
-	int n = fem->GetNextScriptID();
-	QString scriptName = QString("Script%1").arg(n);
-	scriptName = QInputDialog::getText(this, "New Script", "Enter script name:", QLineEdit::Normal, scriptName);
-	if (scriptName.isEmpty()) return;
-
-	FEBCodeScript* ps = fem->CreateScript(scriptName.toStdString());
-	if (ps == nullptr)
-	{
-		QMessageBox::critical(this, "FEBio Studio", "Failed to create script.");
-		return;
-	}
-	doc->DoCommand(new CCmdAddScript(fem, ps));
-
-	Update();
-	Select(ps);
-
-	CMainWindow* wnd = FBS::getMainWindow();
-	wnd->OpenCodeEditor(scriptName);
 }

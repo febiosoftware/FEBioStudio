@@ -3710,5 +3710,5 @@ void CMainWindow::onClosingCodeEditor(FEBCodeScript* script)
 	// update all script dependencies
 	fem->UpdateScriptDependencies(script);
 
-	Update();
+	UpdateModel();
 }

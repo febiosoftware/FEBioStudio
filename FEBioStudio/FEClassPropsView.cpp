@@ -242,6 +242,8 @@ public:
 		{
 			if (m_paramId >= 0)
 			{
+				if ((m_paramId < 0) || (m_paramId >= m_pc->Parameters())) return QVariant();
+
 				Param& p = m_pc->GetParam(m_paramId);
 				if (column == 0)
 				{

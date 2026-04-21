@@ -1097,7 +1097,7 @@ void FSGlobalsProps::SetFSObject(FSObject* po)
 void CScriptSettings::BuildProperties()
 {
 	Clear();
-	addProperty("code:", CProperty::Action, "Edit ...")->setFlags(CProperty::Editable | CProperty::Visible);
+	addProperty("script:", CProperty::Action, "Edit ...")->setFlags(CProperty::Editable | CProperty::Visible);
 }
 
 QVariant CScriptSettings::GetPropertyValue(int i)

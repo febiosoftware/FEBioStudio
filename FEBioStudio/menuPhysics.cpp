@@ -298,11 +298,53 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 			// see if this component needs a script
 			if (psl->HasScriptInfo())
 			{
-				// By default, the script will have the same name as the component.
-				FEBCodeScript* script = fem.CreateScript(name);
-				script->SetScriptContext(psl->GetScriptInfo()->context);
-				cmd->AddCommand(new CCmdAddScript(&fem, script));
-				cmd->AddCommand(new CCmdAttachScriptToComponent(psl, script));
+				// get all valid scripts that can be assigned to this load
+				std::vector<FEBCodeScript*> scripts = fem.GetMatchingScripts(psl->GetScriptInfo()->context);
+
+				if (scripts.empty())
+				{
+					// By default, the script will have the same name as the component.
+					FEBCodeScript* script = fem.CreateScript(name);
+					script->SetScriptContext(psl->GetScriptInfo()->context);
+					cmd->AddCommand(new CCmdAddScript(&fem, script));
+					cmd->AddCommand(new CCmdAttachScriptToComponent(psl, script));
+				}
+				else
+				{
+					QStringList scriptList;
+					scriptList.append("<new script>");
+					for (auto s : scripts) scriptList.append(QString::fromStdString(s->GetName()));
+					bool ok = true;
+					QString sel = QInputDialog::getItem(this, "Select Script", "select an option from the list below:", scriptList, 0, false, &ok);
+					if (ok)
+					{
+						int index = scriptList.indexOf(sel);
+						if (index == 0)
+						{
+							FEBCodeScript* script = fem.CreateScript(name);
+							script->SetScriptContext(psl->GetScriptInfo()->context);
+							cmd->AddCommand(new CCmdAddScript(&fem, script));
+							cmd->AddCommand(new CCmdAttachScriptToComponent(psl, script));
+						}
+						else
+						{
+							FEBCodeScript* ps = fem.GetScript(scriptList[index].toStdString());
+							if (ps)
+							{
+								cmd->AddCommand(new CCmdAttachScriptToComponent(psl, ps));
+								psl->GetScriptInfo()->scriptID = ps->GetID();
+								fem.UpdateScriptDependency(psl, ps);
+							}
+						}
+					}
+					else
+					{
+						// user cancelled. Let's cancel everything otherwise we'd end up with a scripted component that doesn't have a script attached.
+						delete cmd;
+						delete psl;
+						return;
+					}
+				}
 			}
 
 			FSStep* step = fem.GetStep(dlg.GetStep());

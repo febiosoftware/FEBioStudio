@@ -113,8 +113,12 @@ void CCodeEditor::updateWindowTitle()
 	}
 	else
 	{
+		QString title = "FEBCode Editor [";
+		QString docName = (GetDocument() ? QString::fromStdString(GetDocument()->GetDocTitle()) : QString());
+		if (!docName.isEmpty()) title += docName + ":";
 		QString name = QString::fromStdString(ui->script->GetName());
-		setWindowTitle("FEBCode Editor [" + name + "]");
+		title += name + "]";
+		setWindowTitle(title);
 	}
 }
 

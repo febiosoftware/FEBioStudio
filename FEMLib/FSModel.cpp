@@ -2991,3 +2991,18 @@ void FSModel::UpdateScriptDependency(FSModelComponent* component, FEBCodeScript*
 			i++;
 	}
 }
+
+std::vector<FEBCodeScript*> FSModel::GetMatchingScripts(const ScriptContext& ctx)
+{
+	std::vector<FEBCodeScript*> matches;
+	for (size_t i = 0; i < m_scripts.size(); ++i)
+	{
+		FEBCodeScript* ps = m_scripts[i].get();
+		const ScriptContext& sc = ps->GetScriptContext();
+		if (sc == ctx)
+		{
+			matches.push_back(ps);
+		}
+	}
+	return matches;
+}
