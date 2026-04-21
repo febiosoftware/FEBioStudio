@@ -2795,12 +2795,13 @@ void CModelViewer::on_actionAddScript_triggered()
 	scriptName = QInputDialog::getText(this, "New Script", "Enter script name:", QLineEdit::Normal, scriptName);
 	if (scriptName.isEmpty()) return;
 
-	FEBCodeScript* ps = fem->AddScript(scriptName.toStdString());
+	FEBCodeScript* ps = fem->CreateScript(scriptName.toStdString());
 	if (ps == nullptr)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Failed to create script.");
 		return;
 	}
+	doc->DoCommand(new CCmdAddScript(fem, ps));
 
 	Update();
 	Select(ps);

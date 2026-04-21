@@ -381,6 +381,7 @@ SOFTWARE.*/
 #define CID_PARAM_NAME				0x000C0005
 #define CID_PARAM_LC				0x000C0006	// new in FBS 2.0
 #define CID_PARAM_STATE				0x000C0007	// new in FBS 3.0
+#define CID_PARAM_FLAGS				0x000C0008	// new in FBS 3.2
 
 // --- properties ---
 // (only used by febio classes)
@@ -390,6 +391,7 @@ SOFTWARE.*/
 #define CID_PROPERTY_ITEM				0x000C1003
 #define CID_PROPERTY_TYPE				0x000C1004
 #define CID_PROPERTY_DATA				0x000C1005
+#define CID_SCRIPT_INFO					0x000C1006
 
 // model components
 #define CID_COMPONENT_ACTIVE			0x000C2001
@@ -608,6 +610,12 @@ SOFTWARE.*/
 #define CID_SCRIPT_ID	 			0x00500001
 #define CID_SCRIPT_NAME 			0x00500002
 #define CID_SCRIPT_CODE				0x00500003
+#define CID_SCRIPT_CONTEXT			0x00500004
+#define CID_SCRIPT_RETURN_TYPE		0x00500400
+#define CID_SCRIPT_VARIABLE			0x00500410
+#define CID_SCRIPT_VAR_NAME			0x00500411
+#define CID_SCRIPT_VAR_TYPE			0x00500412
+#define CID_SCRIPT_VAR_DIFF			0x00500413
 
 //--------------------------------------------------------
 // Mesh type

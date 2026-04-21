@@ -64,6 +64,7 @@ SOFTWARE.*/
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEMeshDataGenerator.h>
 #include <FEMLib/FSProject.h>
+#include <FECore/FEScriptedBehavior.h>
 #include <sstream>
 using namespace FEBio;
 using namespace std;
@@ -952,6 +953,15 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 		{
 			pbc->SetMeshItemType(FE_FACE_FLAG);
 		}
+	}
+
+	// see if this component requires a script
+	if (dynamic_cast<FEScriptedBehavior*>(feb))
+	{
+		FEScriptedBehavior* psb = dynamic_cast<FEScriptedBehavior*>(feb);
+		ScriptInfo* si = new ScriptInfo;
+		si->context = psb->GetScriptContext();
+		po->SetScriptInfo(si);
 	}
 
 	return true;

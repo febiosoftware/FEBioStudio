@@ -26,11 +26,15 @@ SOFTWARE.*/
 #pragma once
 #include <string>
 #include <FSCore/FSObject.h>
+#include <FECore/FEScriptedBehavior.h>
 
 class FEBCodeScript : public FSObject
 {
 public:
 	FEBCodeScript(const std::string& name, const std::string& code);
+
+	void SetScriptContext(const ScriptContext& c) { context = c; }
+	ScriptContext GetScriptContext() const { return context; }
 
 	void SetID(int n) { id = n; }
 	int GetID() const { return id; }
@@ -41,7 +45,10 @@ public:
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
 
+	bool Validate(std::string& err);
+
 private:
 	int id; // unique ID for the script, assigned by the model when the script is added to the model
 	std::string code;
+	ScriptContext context;
 };

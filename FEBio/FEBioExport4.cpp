@@ -1083,6 +1083,15 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 		}
 	}
 
+	// see if this component uses a script
+	if (pm->HasScriptInfo())
+	{
+		ScriptInfo si = *pm->GetScriptInfo();
+		FEBCodeScript* script = fem.GetScriptFromID(si.scriptID);
+		if (script == nullptr) throw FEBioExportError();
+		el.add_attribute("script", script->GetName());
+	}
+
 	m_xml.add_branch(el);
 	{
 		// write the parameters (if any)

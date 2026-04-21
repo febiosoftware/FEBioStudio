@@ -169,9 +169,30 @@ void FEBioExport::WriteParam(Param &p)
 
 	FSModel& fem = m_prj.GetFSModel();
 
-	// setup the xml-element
 	XMLElement e;
-	e.name(szname);
+
+	if (p.GetFlags() & FS_PARAM_USER)
+	{
+		e.name("add_param");
+		e.add_attribute("name", szname);
+
+		switch (p.GetParamType())
+		{
+		case Param_BOOL : e.add_attribute("data_type", "bool"  ); break;
+		case Param_INT  : e.add_attribute("data_type", "int"   ); break;
+		case Param_FLOAT: e.add_attribute("data_type", "double"); break;
+		case Param_VEC3D: e.add_attribute("data_type", "vec3"  ); break;
+		case Param_MAT3D: e.add_attribute("data_type", "mat3"  ); break;
+		default:
+			assert(false);
+		}
+	}
+	else
+	{
+		e.name(szname);
+	}
+
+	// setup the xml-element
 	if (szindex) e.add_attribute(szindex, nindex);
 	int lc = GetLC(&p);
 	if (lc > 0) e.add_attribute("lc", lc);

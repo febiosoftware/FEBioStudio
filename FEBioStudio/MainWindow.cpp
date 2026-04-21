@@ -3688,12 +3688,8 @@ void CMainWindow::OpenCodeEditor(const QString& scriptName)
 	FEBCodeScript* script = fem->GetScript(scriptName.toStdString());
 	if (script == nullptr)
 	{
-		script = fem->AddScript(scriptName.toStdString(), "return 0.0;");
-		if (script == nullptr)
-		{
-			QMessageBox::critical(this, "Code Editor", "Failed creating new script.");
-			return;
-		}
+		QMessageBox::critical(this, "Code Editor", "Failed to open script " + scriptName + ".");
+		return;
 	}
 
 	if (ui->codeEditor == nullptr) ui->codeEditor = new ::CCodeEditor(this);
@@ -3701,4 +3697,18 @@ void CMainWindow::OpenCodeEditor(const QString& scriptName)
 	ui->codeEditor->raise();
 	ui->codeEditor->activateWindow();
 	ui->codeEditor->SetScript(doc, script);
+}
+
+void CMainWindow::onClosingCodeEditor(FEBCodeScript* script)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	FSModel* fem = doc->GetFSModel();
+	if (fem == nullptr) return;
+
+	// update all script dependencies
+	fem->UpdateScriptDependencies(script);
+
+	Update();
 }

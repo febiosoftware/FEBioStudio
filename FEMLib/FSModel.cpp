@@ -2813,7 +2813,7 @@ int CountBCsByTypeString(const std::string& typeStr, FSModel& fem)
 	return nc;
 }
 
-FEBCodeScript* FSModel::AddScript(const std::string& name, const std::string& code)
+FEBCodeScript* FSModel::CreateScript(const std::string& name, const std::string& code)
 {
 	auto it = std::find_if(m_scripts.begin(), m_scripts.end(), [&name](const std::unique_ptr<FEBCodeScript>& s) { return s->GetName() == name; });
 	if (it != m_scripts.end())
@@ -2828,11 +2828,37 @@ FEBCodeScript* FSModel::AddScript(const std::string& name, const std::string& co
 		if (c != '\r') cleanCode += c;
 	}
 
-	std::unique_ptr<FEBCodeScript> script = std::make_unique<FEBCodeScript>(name, cleanCode);
+	FEBCodeScript* script = new FEBCodeScript(name, cleanCode);
 	script->SetID(m_nextScriptID++);
+	return script;
+}
 
-	m_scripts.push_back(std::move(script));
-	return m_scripts.back().get();
+FEBCodeScript* FSModel::AddNewScript(const std::string& name, const std::string& code)
+{
+	FEBCodeScript* script = CreateScript(name, code);
+	if (script)
+	{
+		AddScript(script);
+		return script;
+	}
+	return nullptr;
+}
+
+void FSModel::AddScript(FEBCodeScript* ps)
+{
+	m_scripts.push_back(std::unique_ptr<FEBCodeScript>(ps));
+}
+
+void FSModel::RemoveScript(FEBCodeScript* ps)
+{
+	auto it = std::find_if(m_scripts.begin(), m_scripts.end(), [ps](const std::unique_ptr<FEBCodeScript>& s) { return s.get() == ps; });
+	if (it != m_scripts.end())
+	{
+		// we need to release the pointer before erasing, otherwise the pointer will be deleted and we don't want that. 
+		// (the pointer will be deleted by the command that added the script. See CCmdAddScript)
+		it->release();
+		m_scripts.erase(it);
+	}
 }
 
 size_t FSModel::Scripts() const
@@ -2872,4 +2898,96 @@ FEBCodeScript* FSModel::GetScript(size_t n)
 		return m_scripts[n].get();
 	}
 	return nullptr;
+}
+
+void FSModel::UpdateScriptDependencies(FEBCodeScript* script)
+{
+	// loop over all steps
+	for (int i = 0; i < Steps(); ++i)
+	{
+		FSStep* ps = GetStep(i);
+		// loop over all BCs
+		for (int j = 0; j < ps->BCs(); ++j)
+		{
+			FSBoundaryCondition* pbc = ps->BC(j);
+			UpdateScriptDependency(pbc, script);
+		}
+		// loop over all Loads
+		for (int j = 0; j < ps->Loads(); ++j)
+		{
+			FSLoad* pl = ps->Load(j);
+			UpdateScriptDependency(pl, script);
+		}
+		// loop over all ICs
+		for (int j = 0; j < ps->ICs(); ++j)
+		{
+			FSInitialCondition* pic = ps->IC(j);
+			UpdateScriptDependency(pic, script);
+		}
+	}
+}
+
+void FSModel::UpdateScriptDependency(FSModelComponent* component, FEBCodeScript* script)
+{
+	// validate arguments
+	if (script == nullptr) return;
+	if (component == nullptr) return;
+	if (!component->HasScriptInfo()) return;
+	const ScriptInfo& info = *component->GetScriptInfo();
+	if (info.scriptID != script->GetID()) return;
+
+	// now, we need to get a list of all input variables defined in the script.
+	std::vector<ScriptInputVariable> inputs = GetScriptInputVariables(script->GetCode(), script->GetScriptContext());
+
+	// add all inputs as parameters to the component
+	for (int i = 0; i < inputs.size(); ++i)
+	{
+		const ScriptInputVariable& var = inputs[i];
+		Param* p = component->GetParam(var.name.c_str());
+		if (p == nullptr)
+		{
+			switch (var.type)
+			{
+			case FEValueType::Bool  : p = component->AddBoolParam  (false, var.name.c_str()); break;
+			case FEValueType::Int   : p = component->AddIntParam   (0, var.name.c_str()); break;
+			case FEValueType::Double: p = component->AddDoubleParam(0.0, var.name.c_str()); break;
+			case FEValueType::Vec3d : p = component->AddVecParam   (vec3d(0,0,0), var.name.c_str()); break;
+			case FEValueType::Mat3d : p = component->AddMat3dParam (mat3d(0.0), var.name.c_str()); break;
+			default:
+				assert(false);
+				break;
+			}
+			if (p)
+				p->SetFlags(p->GetFlags() | FS_PARAM_USER);
+		}
+		else if (p)
+		{
+			// make sure the type hasn't changed
+			Param_Type pType = p->GetParamType();
+
+			if      (pType == Param_BOOL  && var.type != FEValueType::Bool  ) p->SetParamType(Param_BOOL );
+			else if (pType == Param_INT   && var.type != FEValueType::Int   ) p->SetParamType(Param_INT  );
+			else if (pType == Param_FLOAT && var.type != FEValueType::Double) p->SetParamType(Param_FLOAT);
+			else if (pType == Param_VEC3D && var.type != FEValueType::Vec3d ) p->SetParamType(Param_VEC3D);
+			else if (pType == Param_MAT3D && var.type != FEValueType::Mat3d ) p->SetParamType(Param_MAT3D);
+		}
+	}
+
+	// now, remove any component parameters that are no longer referenced by the script. 
+	for (int i = 0; i < component->Parameters();)
+	{
+		Param& p = component->GetParam(i);
+		if (p.GetFlags() & FS_PARAM_USER)
+		{
+			auto it = std::find_if(inputs.begin(), inputs.end(), [&p](const ScriptInputVariable& var) { return var.name == p.GetShortName(); });
+			if (it == inputs.end())
+			{
+				component->RemoveParameter(&p);
+			}
+			else
+				i++;
+		}
+		else
+			i++;
+	}
 }

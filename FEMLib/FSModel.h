@@ -247,7 +247,11 @@ public:
 	const char* GetVariableName(const char* szvar, int n, bool longName = true);
 
 public:
-	FEBCodeScript* AddScript(const std::string& name, const std::string& code = "return 0.0;");
+	FEBCodeScript* CreateScript(const std::string& name, const std::string& code = "return 0.0;");
+
+	FEBCodeScript* AddNewScript(const std::string& name, const std::string& code = "return 0.0;");
+	void AddScript(FEBCodeScript* ps);
+	void RemoveScript(FEBCodeScript* ps);
 
 	FEBCodeScript* GetScript(const std::string& name);
 
@@ -258,6 +262,10 @@ public:
 	size_t Scripts() const;
 
 	int GetNextScriptID() const;
+
+	void UpdateScriptDependencies(FEBCodeScript* script);
+
+	void UpdateScriptDependency(FSModelComponent* component, FEBCodeScript* script);
 
 public:
 	// These functions deal with enums

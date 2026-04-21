@@ -38,6 +38,23 @@ void FEBCodeScript::Save(OArchive& ar)
 	ar.WriteChunk(CID_SCRIPT_ID  , id);
 	ar.WriteChunk(CID_SCRIPT_NAME, name);
 	ar.WriteChunk(CID_SCRIPT_CODE, code);
+	ar.BeginChunk(CID_SCRIPT_CONTEXT);
+	{
+		ScriptContext& sc = context;
+		ar.WriteChunk(CID_SCRIPT_RETURN_TYPE, (int)sc.returnType);
+		for (int i=0; i<sc.variables.size(); ++i)
+		{
+			const ScriptContext::Variable& var = sc.variables[i];
+			ar.BeginChunk(CID_SCRIPT_VARIABLE);
+			{
+				ar.WriteChunk(CID_SCRIPT_VAR_NAME, var.name);
+				ar.WriteChunk(CID_SCRIPT_VAR_TYPE, (int)var.type);
+				ar.WriteChunk(CID_SCRIPT_VAR_DIFF, var.differentiable);
+			}
+			ar.EndChunk();
+		}
+	}
+	ar.EndChunk();
 }
 
 void FEBCodeScript::Load(IArchive& ar)
@@ -49,9 +66,38 @@ void FEBCodeScript::Load(IArchive& ar)
 		if      (ntype == CID_SCRIPT_ID  ) ar.read(id);
 		else if (ntype == CID_SCRIPT_NAME) ar.read(name);
 		else if (ntype == CID_SCRIPT_CODE) ar.read(code);
+		else if (ntype == CID_SCRIPT_CONTEXT)
+		{
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				int ntype2 = ar.GetChunkID();
+				if      (ntype2 == CID_SCRIPT_RETURN_TYPE) { int rt; ar.read(rt); context.returnType = (FEValueType)rt; }
+				else if (ntype2 == CID_SCRIPT_VARIABLE)
+				{
+					ScriptContext::Variable var;
+					while (IArchive::IO_OK == ar.OpenChunk())
+					{
+						int ntype3 = ar.GetChunkID();
+						if      (ntype3 == CID_SCRIPT_VAR_NAME) ar.read(var.name);
+						else if (ntype3 == CID_SCRIPT_VAR_TYPE) { int vt; ar.read(vt); var.type = (FEValueType)vt; }
+						else if (ntype3 == CID_SCRIPT_VAR_DIFF) ar.read(var.differentiable);
+						else throw ReadError("unknown CID in FEBCodeScript::Load - variable");
+						ar.CloseChunk();
+					}
+					context.variables.push_back(var);
+				}
+				else throw ReadError("unknown CID in FEBCodeScript::Load - context");
+				ar.CloseChunk();
+			}
+		}
 		else throw ReadError("unknown CID in FEBCodeScript::Load");
 		ar.CloseChunk();
 	}
 	assert(id != -1);
 	SetName(name);
+}
+
+bool FEBCodeScript::Validate(std::string& err)
+{
+	return ValidateScript(code, context, err);
 }

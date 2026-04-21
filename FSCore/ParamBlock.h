@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "color.h"
 #include <FSCore/math3d.h>
 #include <vector>
+#include <string>
 #include <string.h>
 
 // parameter types
@@ -142,8 +143,8 @@ public:
 	bool IsFixedSize() const;
 	void SetFixedSize(bool b);
 
-	const char* GetShortName() const { return m_szbrev; }
-	const char* GetLongName () const { return m_szname; }
+	const char* GetShortName() const { return m_brev.c_str(); }
+	const char* GetLongName () const { return m_name.c_str(); }
 	const char* GetEnumNames() const { return m_szenum; }
 	const char* GetIndexName() const { return m_szindx; }
 
@@ -287,8 +288,8 @@ protected:
 	double		m_fmin, m_fmax, m_fstep;
 	int			m_rngType;
 
-	const char*	m_szbrev;	// short name of parameter
-	const char*	m_szname;	// long name of parameter
+	std::string m_name;	// long name of parameter
+	std::string m_brev;	// short name of parameter
 	char*		m_szenum;	// enum values for Choice params (zero escaped)
     
     const char* m_szindx;   // name of index
@@ -602,6 +603,8 @@ public:
 
 	void Copy(const ParamBlock& pb);
 
+	bool RemoveParameter(Param* p);
+
 public:
 	int SetActiveGroup(const char* szgroup);
 	bool SetActiveGroup(int n);
@@ -669,6 +672,8 @@ public:
 
 	Param* AddArrayIntParam   (const int*    v, int nsize, const char* szb = 0, const char* szn = 0) { return m_Param.AddArrayIntParam   (v, nsize, szb, szn); }
 	Param* AddArrayDoubleParam(const double* v, int nsize, const char* szb = 0, const char* szn = 0) { return m_Param.AddArrayDoubleParam(v, nsize, szb, szn); }
+
+	bool RemoveParameter(Param* p) { return m_Param.RemoveParameter(p); }
 
 	// get a parameter from its name
 	Param* GetParam(const char* sz) { return m_Param.Find(sz); }

@@ -66,6 +66,7 @@ class CPluginManager;
 struct ProgressTracker; // in FEBio/FEBioExport4
 class COptimizationStudy;
 class CAbstractTool;
+class FEBCodeScript;
 
 enum class GraphicsAPI {
 	API_NULL,
@@ -763,6 +764,8 @@ public slots:
 	void on_planecut_dataChanged();
 
 	void onCaptureFrameFinished(QImage img);
+
+	void onClosingCodeEditor(FEBCodeScript* script);
 
 private:
 	Ui::CMainWindow*	ui;

@@ -57,6 +57,16 @@ void FSDomainComponent::Save(OArchive& ar)
 		}
 		ar.EndChunk();
 	}
+
+	// save script info if it exists
+	if (m_script)
+	{
+		ar.BeginChunk(CID_SCRIPT_INFO);
+		{
+			SaveScriptInfo(this, ar);
+		}
+		ar.EndChunk();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -84,6 +94,7 @@ void FSDomainComponent::Load(IArchive& ar)
 		case CID_PROPERTY_LIST:
 			LoadProperties(ar);
 			break;
+		case CID_SCRIPT_INFO: LoadScriptInfo(this, ar); break;
 		case LIST_ID:
 		{
 			int nid = 0;

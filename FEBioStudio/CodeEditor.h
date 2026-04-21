@@ -50,6 +50,9 @@ public:
 public:
 	void DocumentDelete() override;
 
+signals:
+	void ClosingEditor(FEBCodeScript* script);
+
 private slots:
 	void on_actionOpen_triggered();
 	void on_actionSave_triggered();

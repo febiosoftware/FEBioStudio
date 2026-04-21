@@ -34,11 +34,16 @@ CCodeEditor::CCodeEditor(CMainWindow* wnd) : QMainWindow(wnd), mainWnd(wnd), ui(
 	setMinimumSize(800, 600);
 	ui->setup(this, wnd->usingDarkTheme());
 	ui->edit->appendPlainText("return 0.0;");
+
+	connect(this, &CCodeEditor::ClosingEditor, mainWnd, &CMainWindow::onClosingCodeEditor);
 }
 
 void CCodeEditor::closeEvent(QCloseEvent* event)
 {
 	if (GetDocument()) SetDocument(nullptr);
+
+	emit ClosingEditor(ui->script);
+
 	ui->script = nullptr;
 }
 
