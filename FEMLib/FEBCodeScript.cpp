@@ -30,6 +30,7 @@ FEBCodeScript::FEBCodeScript(const std::string& name, const std::string& code) :
 	id = -1;
 	SetName(name);
 	SetTypeString("febcode");
+	context.returnType = FEValueType::Invalid;
 }
 
 void FEBCodeScript::Save(OArchive& ar)

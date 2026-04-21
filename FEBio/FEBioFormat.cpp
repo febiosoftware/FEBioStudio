@@ -2788,7 +2788,24 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 	++tag;
 	do
 	{
-		if (ReadParam(*pmc, tag) == false)
+		if ((tag == "add_param") && (pmc->HasScriptInfo()))
+		{
+			const char* szname = tag.AttributeValue("name", true);
+			const char* sztype = tag.AttributeValue("data_type", true);
+
+			if (szname && sztype)
+			{
+				string type = sztype;
+				if      (type == "bool"  ) { bool   b; tag.value(b); Param* p = pmc->AddBoolParam  (b, szname); p->SetFlags(p->GetFlags() | FS_PARAM_USER); }
+				else if (type == "int"   ) { int    n; tag.value(n); Param* p = pmc->AddIntParam   (n, szname); p->SetFlags(p->GetFlags() | FS_PARAM_USER); }
+				else if (type == "double") { double d; tag.value(d); Param* p = pmc->AddDoubleParam(d, szname); p->SetFlags(p->GetFlags() | FS_PARAM_USER); }
+				else if (type == "vec3"  ) { vec3d  v; tag.value(v); Param* p = pmc->AddVecParam   (v, szname); p->SetFlags(p->GetFlags() | FS_PARAM_USER); }
+				else if (type == "mat3"  ) { mat3d  m; tag.value(m); Param* p = pmc->AddMat3dParam (m, szname); p->SetFlags(p->GetFlags() | FS_PARAM_USER); }
+				else ParseUnknownAttribute(tag, sztype);
+			}
+			else ParseUnknownTag(tag);
+		}
+		else if (ReadParam(*pmc, tag) == false)
 		{
 			if (pmc->Properties() > 0)
 			{
