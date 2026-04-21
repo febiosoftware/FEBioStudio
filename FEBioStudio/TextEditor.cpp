@@ -401,11 +401,14 @@ public:
 };
 
 const char* szfebcodekeys[] = {
-	"void", "bool", "int", "double", 
-	"vec2", "vec3", "mat2", "mat3",
 	"in", "struct", "function", "return",
 	"if", "else", "while", "for",
 	"true", "false",
+};
+
+const char* szfebcodetypes[] = {
+	"void", "bool", "int", "double",
+	"vec2", "vec3", "mat2", "mat3",
 };
 
 const char* szfebcodefncs[] = {
@@ -445,17 +448,19 @@ public:
 	CFEBCodeHighlighter(QTextDocument* doc, int theme) : CSyntaxHighlighter(doc)
 	{
 		QString keywords = toString(szfebcodekeys, sizeof(szfebcodekeys) / sizeof(const char*));
+		QString types = toString(szfebcodetypes, sizeof(szfebcodetypes) / sizeof(const char*));
 		QString funcs = toString(szfebcodefncs, sizeof(szfebcodefncs) / sizeof(const char*));
 
 		QString lineComment("//.*");
 		QString stringLiterals("([\"'])(.*?)\\1");
 		QString numbers("(?<!\\w)[-+]?\\d*\\.?\\d+([eE][-+]?\\d+)?");
 		QString braces("[\\(\\[\\{\\)\\]\\}]");
-		QString injects("^_[A-Za-z][A-Za-z0-9_]*$");
+		QString injects("_[A-Za-z][A-Za-z0-9_]*");
 
 		if (theme == 0) // light theme
 		{
 			AddRule(keywords, Qt::darkMagenta);
+			AddRule(types, Qt::darkMagenta);
 			AddRule(funcs, Qt::darkMagenta);
 			AddRule(numbers, Qt::darkCyan);
 			AddRule(braces, QColor("gold"));
@@ -466,6 +471,7 @@ public:
 		else // dark theme
 		{
 			AddRule(keywords, QColor("plum"));
+			AddRule(types, QColor("cornflowerblue"));
 			AddRule(funcs, QColor("khaki"));
 			AddRule(numbers, Qt::cyan);
 			AddRule(braces, QColor("gold"));
@@ -498,7 +504,7 @@ void CTextEditor::useDarkTheme(bool b)
 	m_useDarkTheme = b;
 
 	QPalette p = palette();
-	p.setColor(QPalette::Text, (b ? Qt::lightGray : Qt::black));// QColor::fromRgb(51, 153, 255)));
+	p.setColor(QPalette::Text, (b ? QColor::fromRgb(196, 201, 218) : Qt::black));
 	setPalette(p);
 }
 
