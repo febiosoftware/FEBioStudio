@@ -56,6 +56,7 @@ signals:
 private slots:
 	void on_actionOpen_triggered();
 	void on_actionSave_triggered();
+	void on_actionCheck_triggered();
 	void on_edit_textChanged();
 
 private:

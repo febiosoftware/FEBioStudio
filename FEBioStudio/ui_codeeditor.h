@@ -28,11 +28,13 @@ SOFTWARE.*/
 #include "TextEditor.h"
 #include <QToolBar>
 #include <QMessageBox>
+#include <QBoxLayout>
 #include <QFileDialog>
 #include "IconProvider.h"
 #include <QMenuBar>
 #include <QMenu>
 #include <QLineEdit>
+#include <QLabel>
 #include <FEMLib/FSModel.h>
 
 class Ui::CCodeEditor
@@ -40,13 +42,25 @@ class Ui::CCodeEditor
 public:
 	CTextEditor* edit = nullptr;
 	FEBCodeScript* script = nullptr;
+	QLabel* statusLabel = nullptr;
 
 public:
 	void setup(QMainWindow* wnd, bool darkTheme)
 	{
+		QWidget* centralWidget = new QWidget(wnd);
+		QVBoxLayout* layout = new QVBoxLayout(centralWidget);
+		layout->setContentsMargins(0, 0, 0, 0);
+
+		statusLabel = new QLabel("status");
+		layout->addWidget(statusLabel);
+		statusLabel->hide();
+
 		edit = new CTextEditor(wnd);
 		edit->setObjectName("edit");
 		edit->useDarkTheme(darkTheme);
+		layout->addWidget(edit);
+
+		centralWidget->setLayout(layout);
 
 		QTextDocument* doc = new QTextDocument;
 		doc->setDocumentLayout(new QPlainTextDocumentLayout(doc));
@@ -64,16 +78,39 @@ public:
 		doc->setDefaultTextOption(ops);
 
 		edit->SetDocument(doc, CTextEditor::FEBCODE);
-		wnd->setCentralWidget(edit);
+		wnd->setCentralWidget(centralWidget);
 
 		QAction* actionOpen   = new QAction("Open ...", wnd); actionOpen->setObjectName("actionOpen"); actionOpen->setIcon(CIconProvider::GetIcon("open"));
-		QAction* actionSave   = new QAction("Save ...", wnd); actionSave->setObjectName("actionSave"); actionSave->setIcon(CIconProvider::GetIcon("save")); actionSave->setShortcut(Qt::Key_S | Qt::ControlModifier);
+		QAction* actionSave   = new QAction("Save ...", wnd); actionSave->setObjectName("actionSave"); actionSave->setIcon(CIconProvider::GetIcon("save"));
+		QAction* actionCheck  = new QAction("Check", wnd); actionCheck->setObjectName("actionCheck"); actionCheck->setIcon(CIconProvider::GetIcon("check"));
 
 		QToolBar* mainToolBar = wnd->addToolBar("mainToolBar");
 		mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
 		mainToolBar->addAction(actionOpen);
 		mainToolBar->addAction(actionSave);
+		mainToolBar->addAction(actionCheck);
 
 		QMetaObject::connectSlotsByName(wnd);
+	}
+
+	void setStatus(bool b, QString msg)
+	{
+		if (b)
+		{
+			statusLabel->setText(msg);
+			statusLabel->setStyleSheet("QLabel { color: green; padding-left: 6px; }");
+		}
+		else
+		{
+			statusLabel->setText(msg);
+			statusLabel->setStyleSheet("QLabel { color: red; padding-left: 6px; }");
+		}
+		statusLabel->show();
+	}
+
+	void hideStatus()
+	{
+		if (statusLabel->isVisible())
+			statusLabel->hide();
 	}
 };

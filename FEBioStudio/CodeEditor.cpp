@@ -63,6 +63,7 @@ void CCodeEditor::SetScript(CDocument* doc, FEBCodeScript* script)
 	ui->script = nullptr;
 	ui->edit->clear();
 	ui->script = script;
+	ui->hideStatus();
 	if (script)
 	{
 		ui->edit->blockSignals(true);
@@ -139,10 +140,29 @@ void CCodeEditor::on_actionSave_triggered()
 	}
 }
 
+void CCodeEditor::on_actionCheck_triggered()
+{
+	if (ui->script)
+	{
+		std::string err;
+		ValidateScript(ui->script->GetCode(), ui->script->GetScriptContext(), err);
+
+		if (err.empty())
+		{
+			ui->setStatus(true, "The script is valid.");
+		}
+		else
+		{
+			ui->setStatus(false, QString::fromStdString("Error: " + err));
+		}
+	}
+}
+
 void CCodeEditor::on_edit_textChanged()
 {
 	if (ui->script)
 	{
 		ui->script->SetCode(ui->edit->toPlainText().toStdString());
+		ui->hideStatus();
 	}
 }

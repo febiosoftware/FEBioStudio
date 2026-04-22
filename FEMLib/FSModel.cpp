@@ -2937,7 +2937,9 @@ void FSModel::UpdateScriptDependency(FSModelComponent* component, FEBCodeScript*
 	if (info.scriptID != script->GetID()) return;
 
 	// now, we need to get a list of all input variables defined in the script.
-	std::vector<ScriptInputVariable> inputs = GetScriptInputVariables(script->GetCode(), script->GetScriptContext());
+	bool ok = true;
+	std::vector<ScriptInputVariable> inputs = GetScriptInputVariables(script->GetCode(), script->GetScriptContext(), ok);
+	if (!ok) return;
 
 	// add all inputs as parameters to the component
 	for (int i = 0; i < inputs.size(); ++i)
