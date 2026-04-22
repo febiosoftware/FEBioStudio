@@ -648,6 +648,7 @@ public:
 		return 0;
 	}
 
+	virtual bool AllowUserParams() const { return false; }
 
 	// add a parameter to the parameter list
 	Param* AddIntParam   (int    n, const char* szb = 0, const char* szn = 0) { return m_Param.AddIntParam   (n, szb, szn); }

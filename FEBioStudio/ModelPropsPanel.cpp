@@ -189,18 +189,6 @@ CBCObjectPropsPanel::CBCObjectPropsPanel(QWidget* parent) : QWidget(parent)
 	l->addWidget(m_state = new QCheckBox, 3, 1);
 	m_state->setObjectName("state");
 
-	QWidget* editScriptWidget = new QWidget;
-	QHBoxLayout* hl = new QHBoxLayout;
-	hl->setContentsMargins(0, 0, 0, 0);
-	hl->addWidget(m_script = new QLabel);
-	hl->addStretch();
-	hl->addWidget(m_scriptEdit = new QPushButton("Edit..."));
-	editScriptWidget->setLayout(hl);
-
-	l->addWidget(m_scriptLabel = new QLabel("Script:"), 4, 0, Qt::AlignRight);
-	l->addWidget(editScriptWidget, 4, 1);
-	m_scriptEdit->setObjectName("editScript");
-
 	setLayout(l);
 
 	QMetaObject::connectSlotsByName(this);
@@ -260,14 +248,6 @@ void CBCObjectPropsPanel::setActiveState(bool b)
 void CBCObjectPropsPanel::on_state_toggled(bool b)
 {
 	emit stateChanged(b);
-}
-
-void CBCObjectPropsPanel::showScript(bool b, const QString& script)
-{
-	m_script->setVisible(b);
-	m_scriptLabel->setVisible(b);
-	m_scriptEdit->setVisible(b);
-	if (b) m_script->setText(script);
 }
 
 void CBCObjectPropsPanel::on_editScript_clicked()
@@ -574,12 +554,11 @@ public:
 		obj->setNameReadOnly(!editName);
 	}
 
-	void showBCObjectInfo(bool b, bool showActiveState = false, bool isActive = false, QString script = "")
+	void showBCObjectInfo(bool b, bool showActiveState = false, bool isActive = false)
 	{
 		tool->getToolItem(BCOBJECT_PANEL)->setVisible(b);
 		if (showActiveState)
 			bcobj->setActiveState(isActive);
-		bcobj->showScript(!script.isEmpty(), script);
 	}
 
 	void showGItemInfo(bool b, const QString& name = "", const QString& type = "", int nid = -1)
@@ -948,21 +927,10 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 				FSStepComponent* pc = dynamic_cast<FSStepComponent*>(po);
 				ui->showObjectInfo(false, false, false, nameEditable, GLMaterial(), false, false);
 
-				bool hasScript = pc->HasScriptInfo();
-				QString scriptName;
-				FSModel* fem = pc->GetFSModel();
-				if (hasScript)
-				{
-					FEBCodeScript* script = (fem ? fem->GetScriptFromID(pc->GetScriptInfo()->scriptID) : nullptr);
-					if (script) scriptName = QString::fromStdString(script->GetName());
-					else
-						scriptName = "<error>";
-				}
-
 				ui->setBCName(name);
 				ui->setBCType(type);
 				ui->setCurrentStepID(pc->GetStep());
-				ui->showBCObjectInfo(true, true, pc->IsActive(), scriptName);
+				ui->showBCObjectInfo(true, true, pc->IsActive());
 			}
 			else if (dynamic_cast<Post::CGLObject*>(po))
 			{

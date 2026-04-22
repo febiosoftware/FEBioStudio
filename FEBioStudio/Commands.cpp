@@ -4085,31 +4085,32 @@ void CCmdAddScript::UnExecute()
 	m_del = true;
 }
 
-CCmdAttachScriptToComponent::CCmdAttachScriptToComponent(FSModelComponent* component, FEBCodeScript* script) : CCommand("Attach script")
+CCmdAttachScriptToComponent::CCmdAttachScriptToComponent(FSScriptedComponent* component, FEBCodeScript* script) : CCommand("Attach script")
 {
 	assert(script);
 	assert(component);
-	assert(component->HasScriptInfo());
 
-	m_component = component;
+	m_comp = component;
 	m_script = script;
 }
 
 void CCmdAttachScriptToComponent::Execute()
 {
-	if (m_component->HasScriptInfo())
+	m_oldID = m_comp->scriptID;
+	m_oldContext = m_comp->context;
+	if (m_script)
 	{
-		ScriptInfo& info = *m_component->GetScriptInfo();
-		m_oldInfo = info;
-		if (m_script) info.scriptID = m_script->GetID();
+		m_comp->scriptID = m_script->GetID();
+		m_comp->context = m_script->GetScriptContext();
+	}
+	else
+	{
+		m_comp->scriptID = - 1;
 	}
 }
 
 void CCmdAttachScriptToComponent::UnExecute()
 {
-	if (m_component->HasScriptInfo())
-	{
-		ScriptInfo& info = *m_component->GetScriptInfo();
-		info = m_oldInfo;
-	}
+	m_comp->scriptID = m_oldID;
+	m_comp->context = m_oldContext;
 }

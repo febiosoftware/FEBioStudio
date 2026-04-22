@@ -7,12 +7,6 @@ class FSModel;
 class FSLoadController;
 class FEElementRef;
 
-struct ScriptInfo
-{
-	unsigned int scriptID = -1;
-	ScriptContext context;
-};
-
 //-----------------------------------------------------------------------------
 // Base class for components of an FSModel
 class FSModelComponent : public FSCoreBase
@@ -41,11 +35,6 @@ public:
 	void AssignLoadCurve(Param& p, LoadCurve& lc) override;
 
 public:
-	void SetScriptInfo(ScriptInfo* s);
-	bool HasScriptInfo() const { return (m_script != nullptr); }
-	ScriptInfo* GetScriptInfo() { return m_script; }
-
-public:
 	void SetFEBioClass(void* pc);
 	void* GetFEBioClass();
 	bool UpdateData(bool bsave) override;
@@ -58,8 +47,6 @@ protected:
 	FSModel*	m_fem;
 	int			m_superClassID;		// super class ID (defined in FECore\fecore_enum.h)
 	void*		m_febClass;			// The FEBio class
-
-	ScriptInfo* m_script = nullptr; // script attached to this component
 };
 
 
@@ -68,9 +55,6 @@ void LoadClassMetaData(FSModelComponent* pc, IArchive& ar);
 
 void SaveFEBioProperties(FSModelComponent* pc, OArchive& ar);
 void LoadFEBioProperties(FSModelComponent* pc, IArchive& ar);
-
-void SaveScriptInfo(FSModelComponent* pc, OArchive& ar);
-void LoadScriptInfo(FSModelComponent* pc, IArchive& ar);
 
 class FSGenericClass : public FSModelComponent
 {
@@ -109,4 +93,25 @@ public:
 private:
 	int		m_naopt;
 	int		m_n[3];
+};
+
+class FEBCodeScript;
+
+class FSScriptedComponent : public FSModelComponent
+{
+public:
+	FSScriptedComponent(FSModel* fem);
+	~FSScriptedComponent();
+
+	bool AllowUserParams() const override { return true; }
+
+	void AssignScript(FEBCodeScript* script);
+
+public:
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
+public:
+	int scriptID = -1;
+	ScriptContext context;
 };

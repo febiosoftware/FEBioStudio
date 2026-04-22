@@ -249,7 +249,8 @@ public:
 public:
 	FEBCodeScript* CreateScript(const std::string& name, const std::string& code = "return 0.0;");
 
-	FEBCodeScript* AddNewScript(const std::string& name, const std::string& code = "return 0.0;");
+	FEBCodeScript* AddNewScript(const std::string& name, ScriptContext context);
+	FEBCodeScript* AddNewScript(const std::string& name, const std::string& code);
 	void AddScript(FEBCodeScript* ps);
 	void RemoveScript(FEBCodeScript* ps);
 
@@ -265,9 +266,12 @@ public:
 
 	void UpdateScriptDependencies(FEBCodeScript* script);
 
-	void UpdateScriptDependency(FSModelComponent* component, FEBCodeScript* script);
+	void UpdateScriptDependency(FSScriptedComponent* component, FEBCodeScript* script);
 
 	std::vector<FEBCodeScript*> GetMatchingScripts(const ScriptContext& ctx);
+
+private:
+	void UpdateScriptDependency(FSModelComponent* component, FEBCodeScript* script);
 
 public:
 	// These functions deal with enums

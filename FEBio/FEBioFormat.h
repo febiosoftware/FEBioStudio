@@ -55,7 +55,7 @@ protected:
 	void ParseUnknownTag(XMLTag& tag);
 	void ParseUnknownAttribute(XMLTag& tag, const char* szatt);
 
-	bool ReadParam(ParamContainer& PC, XMLTag& tag);
+	bool ReadParam(ParamContainer& PC, XMLTag& tag, const char* szparamName = nullptr);
 	bool ReadChoiceParam(Param& p, const char* szval);
 	void ReadParameters(ParamContainer& PC, XMLTag& tag);
 

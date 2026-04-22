@@ -584,7 +584,7 @@ public:
 
 public:
 	void AddScript(const std::string& name, const std::string& script);
-	void AttachScript(FSModelComponent* pc, const std::string& scriptName);
+	void AttachScript(FSScriptedComponent* pc, const std::string& scriptName);
 
 public:
 	bool		m_shellNodalNormals;
@@ -602,7 +602,7 @@ private:
 
 public:
 	std::unordered_map<std::string, std::string> m_scripts;
-	std::unordered_map<std::string, std::vector<FSModelComponent*>> m_scriptedComponents;
+	std::unordered_map<std::string, std::vector<FSScriptedComponent*>> m_scriptedComponents;
 };
 
 class FEBioFileImport;

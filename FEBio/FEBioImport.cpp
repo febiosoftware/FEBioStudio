@@ -529,27 +529,21 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		{
 			for (const auto& component : componentList)
 			{
-				ScriptInfo* si = component->GetScriptInfo();
-				if (si)
+				// initially, the script's context will be empty. 
+				// We currently check this by seeing of the return type is valid.
+				if (expectedContext.returnType == FEValueType::Invalid)
 				{
-					// initially, the script's context will be empty. 
-					// We currently check this by seeing of the return type is valid.
-					if (expectedContext.returnType == FEValueType::Invalid)
-					{
-						// ok, assign the component's context
-						expectedContext = si->context;
-						script->SetScriptContext(si->context);
-					}
-					else if (si->context != expectedContext)
-					{
-						AddLogEntry("Failed to assign script %s to component %s. Script context does not match component context.", name.c_str(), component->GetName().c_str());
-						continue;
-					}
-
-					si->scriptID = script->GetID();
+					// ok, assign the component's context
+					expectedContext = component->context;
+					script->SetScriptContext(component->context);
 				}
-				else
-					AddLogEntry("Failed to assign script %s to component. No script info found for component.", component->GetName().c_str());
+				else if (component->context != expectedContext)
+				{
+					AddLogEntry("Failed to assign script %s to component %s. Script context does not match component context.", name.c_str(), component->GetName().c_str());
+					continue;
+				}
+
+				component->scriptID = script->GetID();
 			}
 		}
 		else

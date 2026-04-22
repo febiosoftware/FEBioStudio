@@ -119,8 +119,6 @@ public:
 
 	void setActiveState(bool b);
 
-	void showScript(bool b, const QString& script = QString());
-
 protected slots:
 	void on_name_textEdited(const QString&);
 	void on_list_currentIndexChanged(int n);

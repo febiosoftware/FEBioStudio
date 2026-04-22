@@ -42,8 +42,6 @@ FSModelComponent::FSModelComponent(FSModel* fem) : m_fem(fem)
 FSModelComponent::~FSModelComponent()
 {
 	if (m_febClass) FEBio::DeleteClass(m_febClass);
-
-	if (m_script) delete m_script;
 }
 
 FSModel* FSModelComponent::GetFSModel()
@@ -200,16 +198,6 @@ void FSModelComponent::Save(OArchive& ar)
 		ParamContainer::Save(ar);
 	}
 	ar.EndChunk();
-
-	// save script info if it exists
-	if (m_script)
-	{
-		ar.BeginChunk(CID_SCRIPT_INFO);
-		{
-			SaveScriptInfo(this, ar);
-		}
-		ar.EndChunk();
-	}
 }
 
 void FSModelComponent::Load(IArchive& ar)
@@ -224,86 +212,6 @@ void FSModelComponent::Load(IArchive& ar)
 		case CID_FEOBJ_NAME: { ar.read(tmp); SetName(tmp); break; }
 		case CID_FEOBJ_INFO: { ar.read(tmp); SetInfo(tmp); break; }
 		case CID_FEOBJ_PARAMS: ParamContainer::Load(ar); break;
-		case CID_SCRIPT_INFO: LoadScriptInfo(this, ar); break;
-		}
-		ar.CloseChunk();
-	}
-}
-
-void SaveScriptInfo(FSModelComponent* pc, OArchive& ar)
-{
-	ScriptInfo& si = *pc->GetScriptInfo();
-	ar.WriteChunk(CID_SCRIPT_ID, si.scriptID);
-	ar.BeginChunk(CID_SCRIPT_CONTEXT);
-	{
-		ar.WriteChunk(CID_SCRIPT_RETURN_TYPE, (int)si.context.returnType);
-		for (const auto& var : si.context.variables)
-		{
-			ar.BeginChunk(CID_SCRIPT_VARIABLE);
-			{
-				ar.WriteChunk(CID_SCRIPT_VAR_NAME, var.name);
-				ar.WriteChunk(CID_SCRIPT_VAR_TYPE, (int)var.type);
-				ar.WriteChunk(CID_SCRIPT_VAR_DIFF, var.differentiable);
-			}
-			ar.EndChunk();
-		}
-	}
-	ar.EndChunk();
-}
-
-void LoadScriptInfo(FSModelComponent* pc, IArchive& ar)
-{
-	ScriptInfo& si = *pc->GetScriptInfo();
-	while (IArchive::IO_OK == ar.OpenChunk())
-	{
-		int nid = ar.GetChunkID();
-		switch (nid)
-		{
-		case CID_SCRIPT_ID: ar.read(si.scriptID); break;
-		case CID_SCRIPT_CONTEXT:
-		{
-			while (IArchive::IO_OK == ar.OpenChunk())
-			{
-				int nid = ar.GetChunkID();
-				switch (nid)
-				{
-				case CID_SCRIPT_RETURN_TYPE:
-				{
-					int retType;
-					ar.read(retType);
-					si.context.returnType = (FEValueType)retType;
-				}
-				break;
-				case CID_SCRIPT_VARIABLE:
-				{
-					string varName;
-					int varType = 0;
-					bool varDiff = false;
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						int nid = ar.GetChunkID();
-						switch (nid)
-						{
-						case CID_SCRIPT_VAR_NAME: ar.read(varName); break;
-						case CID_SCRIPT_VAR_TYPE: ar.read(varType); break;
-						case CID_SCRIPT_VAR_DIFF: ar.read(varDiff); break;
-						default:
-							assert(false);
-						}
-						ar.CloseChunk();
-					}
-					si.context.addVariable(varName, (FEValueType)varType, varDiff);
-				}
-				break;
-				default:
-					assert(false);
-				}
-				ar.CloseChunk();
-			}
-		}
-		break;
-		default:
-			assert(false);
 		}
 		ar.CloseChunk();
 	}
@@ -655,8 +563,155 @@ mat3d FSMat3dValuator::GetMatAxis(const FEElementRef& el) const
 	return FEBio::GetMaterialAxis(This->GetFEBioClass(), el.center());
 }
 
-void FSModelComponent::SetScriptInfo(ScriptInfo* s)
+//=================================================================================================
+
+void SaveScriptInfo(FSScriptedComponent* pc, OArchive& ar)
 {
-	if (m_script) delete m_script;
-	m_script = s;
+	ar.WriteChunk(CID_SCRIPT_ID, pc->scriptID);
+	ar.BeginChunk(CID_SCRIPT_CONTEXT);
+	{
+		ar.WriteChunk(CID_SCRIPT_RETURN_TYPE, (int)pc->context.returnType);
+		for (const auto& var : pc->context.variables)
+		{
+			ar.BeginChunk(CID_SCRIPT_VARIABLE);
+			{
+				ar.WriteChunk(CID_SCRIPT_VAR_NAME, var.name);
+				ar.WriteChunk(CID_SCRIPT_VAR_TYPE, (int)var.type);
+				ar.WriteChunk(CID_SCRIPT_VAR_DIFF, var.differentiable);
+			}
+			ar.EndChunk();
+		}
+	}
+	ar.EndChunk();
+}
+
+void LoadScriptInfo(FSScriptedComponent* pc, IArchive& ar)
+{
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_SCRIPT_ID: ar.read(pc->scriptID); break;
+		case CID_SCRIPT_CONTEXT:
+		{
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				int nid = ar.GetChunkID();
+				switch (nid)
+				{
+				case CID_SCRIPT_RETURN_TYPE:
+				{
+					int retType;
+					ar.read(retType);
+					pc->context.returnType = (FEValueType)retType;
+				}
+				break;
+				case CID_SCRIPT_VARIABLE:
+				{
+					string varName;
+					int varType = 0;
+					bool varDiff = false;
+					while (IArchive::IO_OK == ar.OpenChunk())
+					{
+						int nid = ar.GetChunkID();
+						switch (nid)
+						{
+						case CID_SCRIPT_VAR_NAME: ar.read(varName); break;
+						case CID_SCRIPT_VAR_TYPE: ar.read(varType); break;
+						case CID_SCRIPT_VAR_DIFF: ar.read(varDiff); break;
+						default:
+							assert(false);
+						}
+						ar.CloseChunk();
+					}
+					pc->context.addVariable(varName, (FEValueType)varType, varDiff);
+				}
+				break;
+				default:
+					assert(false);
+				}
+				ar.CloseChunk();
+			}
+		}
+		break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}
+
+FSScriptedComponent::FSScriptedComponent(FSModel* fem) : FSModelComponent(fem) 
+{
+	SetTypeString("script");
+}
+
+FSScriptedComponent::~FSScriptedComponent() {}
+
+void FSScriptedComponent::AssignScript(FEBCodeScript* script)
+{
+	if (script)
+	{
+		scriptID = script->GetID();
+		SetName(script->GetName());
+	}
+	else
+	{
+		scriptID = -1;
+		SetName("");
+	}
+	GetFSModel()->UpdateScriptDependency(this, script);
+}
+
+void FSScriptedComponent::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FSModelComponent::Save(ar);
+	}
+	ar.EndChunk();
+
+	if (Properties() > 0)
+	{
+		ar.BeginChunk(CID_PROPERTY_LIST);
+		{
+			SaveFEBioProperties(this, ar);
+		}
+		ar.EndChunk();
+	}
+
+	ar.BeginChunk(CID_SCRIPT_INFO);
+	{
+		SaveScriptInfo(this, ar);
+	}
+	ar.EndChunk();
+}
+
+void FSScriptedComponent::Load(IArchive& ar)
+{
+	TRACE("FSScriptedComponent::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FSModelComponent::Load(ar); break;
+		case CID_PROPERTY_LIST  : LoadFEBioProperties(this, ar); break;
+		case CID_SCRIPT_INFO    : LoadScriptInfo(this, ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+
+	// mape parameters to FEBio class
+	UpdateData(true);
 }

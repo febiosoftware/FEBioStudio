@@ -1481,22 +1481,22 @@ void ParamContainer::LoadParam(IArchive& ar)
 				}
 			}
 		}
-		else if (flags & FS_PARAM_USER)
+		else if ((flags & FS_PARAM_USER) && AllowUserParams())
 		{
 			// This is a user parameter (probably from a script), so let's add it to the container.
 			switch (p.GetParamType())
 			{
-			case Param_BOOL : param = AddBoolParam  (p.GetBoolValue (), paramName.c_str()); break;
-			case Param_INT  : param = AddIntParam   (p.GetIntValue  (), paramName.c_str()); break;
-			case Param_FLOAT: param = AddDoubleParam(p.GetFloatValue(), paramName.c_str()); break;
-			case Param_VEC3D: param = AddVecParam   (p.GetVec3dValue(), paramName.c_str()); break;
-			case Param_MAT3D: param = AddMat3dParam (p.GetMat3dValue(), paramName.c_str()); break;
+			case Param_BOOL : param = AddBoolParam  (p.GetBoolValue (), paramName.c_str()); param->SetFlags(param->GetFlags() | FS_PARAM_USER); break;
+			case Param_INT  : param = AddIntParam   (p.GetIntValue  (), paramName.c_str()); param->SetFlags(param->GetFlags() | FS_PARAM_USER); break;
+			case Param_FLOAT: param = AddDoubleParam(p.GetFloatValue(), paramName.c_str()); param->SetFlags(param->GetFlags() | FS_PARAM_USER | FS_PARAM_VOLATILE); break;
+			case Param_VEC3D: param = AddVecParam   (p.GetVec3dValue(), paramName.c_str()); param->SetFlags(param->GetFlags() | FS_PARAM_USER | FS_PARAM_VOLATILE); break;
+			case Param_MAT3D: param = AddMat3dParam (p.GetMat3dValue(), paramName.c_str()); param->SetFlags(param->GetFlags() | FS_PARAM_USER | FS_PARAM_VOLATILE); break;
 			default:
 				assert(false);
 				break;
 			}
-			if (param)
-				param->SetFlags(param->GetFlags() | FS_PARAM_USER);
+
+			if (param && lcid >= 0 && param->IsVolatile()) param->SetLoadCurveID(lcid);
 		}
 		else
 		{

@@ -84,6 +84,11 @@ bool FSProperty::IsTopLevel() const
 	return ((GetFlags() & FSProperty::TOPLEVEL) != 0);
 }
 
+bool FSProperty::IsFixed() const
+{
+	return ((GetFlags() & FSProperty::FIXED) != 0);
+}
+
 //-----------------------------------------------------------------------------
 void FSProperty::AddComponent(FSCoreBase* pm)
 {

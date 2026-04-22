@@ -1678,12 +1678,14 @@ private:
 class CCmdAttachScriptToComponent : public CCommand
 {
 public:
-	CCmdAttachScriptToComponent(FSModelComponent* component, FEBCodeScript* script);
+	CCmdAttachScriptToComponent(FSScriptedComponent* component, FEBCodeScript* script);
 	void Execute();
 	void UnExecute();
 
 private:
-	FSModelComponent* m_component;
+	FSScriptedComponent* m_comp;
 	FEBCodeScript* m_script;
-	ScriptInfo m_oldInfo;
+	
+	unsigned int m_oldID;
+	ScriptContext m_oldContext;
 };

@@ -2833,6 +2833,25 @@ FEBCodeScript* FSModel::CreateScript(const std::string& name, const std::string&
 	return script;
 }
 
+FEBCodeScript* FSModel::AddNewScript(const std::string& name, ScriptContext context)
+{
+	string code;
+	switch (context.returnType)
+	{
+	case FEValueType::Bool: code = "return true;"; break;
+	case FEValueType::Int: code = "return 0;"; break;
+	case FEValueType::Double: code = "return 0.0;"; break;
+	case FEValueType::Vec2d: code = "return vec2(0);"; break;
+	case FEValueType::Vec3d: code = "return vec3(0);"; break;
+	case FEValueType::Mat2d: code = "return mat2(0);"; break;
+	case FEValueType::Mat3d: code = "return mat3(0);"; break;
+	};
+
+	FEBCodeScript* script = AddNewScript(name, code);
+	if (script) script->SetScriptContext(context);
+	return script;
+}
+
 FEBCodeScript* FSModel::AddNewScript(const std::string& name, const std::string& code)
 {
 	FEBCodeScript* script = CreateScript(name, code);
@@ -2929,12 +2948,39 @@ void FSModel::UpdateScriptDependencies(FEBCodeScript* script)
 
 void FSModel::UpdateScriptDependency(FSModelComponent* component, FEBCodeScript* script)
 {
+	if (auto scriptedComponent = dynamic_cast<FSScriptedComponent*>(component))
+	{
+		UpdateScriptDependency(scriptedComponent, script);
+	}
+
+	for (int i = 0; i < component->Properties(); ++i)
+	{
+		FSProperty& prop = component->GetProperty(i);
+		for (int j = 0; j < prop.Size(); ++j)
+		{
+			FSModelComponent* subComponent = dynamic_cast<FSModelComponent*>(prop.GetComponent(j));
+			if (subComponent)
+			{
+				auto scriptedComponent = dynamic_cast<FSScriptedComponent*>(subComponent);
+				if (scriptedComponent)
+				{
+					UpdateScriptDependency(scriptedComponent, script);
+				}
+				else
+				{
+					UpdateScriptDependency(subComponent, script);
+				}
+			}
+		}
+	}
+}
+
+void FSModel::UpdateScriptDependency(FSScriptedComponent* component, FEBCodeScript* script)
+{
 	// validate arguments
 	if (script == nullptr) return;
 	if (component == nullptr) return;
-	if (!component->HasScriptInfo()) return;
-	const ScriptInfo& info = *component->GetScriptInfo();
-	if (info.scriptID != script->GetID()) return;
+	if (component->scriptID != script->GetID()) return;
 
 	// now, we need to get a list of all input variables defined in the script.
 	bool ok = true;

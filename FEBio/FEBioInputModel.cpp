@@ -1838,7 +1838,7 @@ void FEBioInputModel::AddScript(const std::string& name, const std::string& scri
 	m_scripts[name] = script;
 }
 
-void FEBioInputModel::AttachScript(FSModelComponent* pc, const std::string& scriptName)
+void FEBioInputModel::AttachScript(FSScriptedComponent* pc, const std::string& scriptName)
 {
 	m_scriptedComponents[scriptName].push_back(pc);
 }

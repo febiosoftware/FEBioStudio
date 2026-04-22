@@ -1911,17 +1911,6 @@ void FEBioFormat4::ParseSurfaceLoad(FSStep* pstep, XMLTag& tag)
 		return;
 	}
 
-	// see if this load defines a script
-	const char* szscript = tag.AttributeValue("script", true);
-	if (szscript)
-	{
-		ScriptInfo* si = psl->GetScriptInfo();
-		if (si == nullptr)
-			AddLogEntry("The surface load %s does not support scripting. (line %d)", name.c_str(), tag.m_nstart_line);
-
-		GetFEBioModel().AttachScript(psl, szscript);
-	}
-
 	// process the load
 	psl->SetName(name);
 	psl->SetItemList(psurf);

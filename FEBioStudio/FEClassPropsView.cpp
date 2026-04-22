@@ -34,6 +34,8 @@ SOFTWARE.*/
 #include <QApplication>
 #include <QLabel>
 #include <QToolButton>
+#include <QInputDialog>
+#include <QPointer>
 #include "EditVariableParam.h"
 #include "units.h"
 #include "PropertyList.h"
@@ -54,6 +56,7 @@ SOFTWARE.*/
 #include "SelectionBox.h"
 #include "DlgAddPhysicsItem.h"
 #include "MainWindow.h"
+#include "FEBioStudio.h"
 using namespace std;
 
 QStringList GetEnumValues(FSModel* fem, const char* ch)
@@ -189,6 +192,26 @@ void CMeshItemPropertySelector::onSelectionChanged(int n)
 	FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(m_pp->GetComponent()); assert(pms);
 	if (pms) pms->SetItemList(n >= 0 ? m_itemList[n] : nullptr);
 	emit currentDataChanged(n);
+}
+
+//=================================================================================
+CScriptPropertySelector::CScriptPropertySelector(FSModel* fem, FSScriptedComponent* ps, QWidget* parent) : QComboBox(parent)
+{
+	m_fem = fem;
+	m_ps = ps;
+
+	int index = -1;
+	std::vector<FEBCodeScript*> scripts = m_fem->GetMatchingScripts(m_ps->context);
+
+	int n = 0;
+	for (auto s : scripts)
+	{
+		addItem(QString::fromStdString(s->GetName()), s->GetID());
+		if (s->GetID() == m_ps->scriptID) index = n;
+		n++;
+	}
+	addItem("<new...>", -1);
+	setCurrentIndex(index);
 }
 
 //=================================================================================
@@ -610,6 +633,20 @@ public:
 							else return QString::fromStdString(s);
 						}
 					}
+					else if (prop.GetSuperClassID() == FESCRIPT_ID)
+					{
+						FSScriptedComponent* script = dynamic_cast<FSScriptedComponent*>(prop.GetComponent()); assert(script);
+						if (script)
+						{
+							FEBCodeScript* code = GetFSModel()->GetScriptFromID(script->scriptID);
+							if (code)
+							{
+								return QString::fromStdString(code->GetName());
+							}
+							else
+								return QString("(none)");
+						}
+					}
 					else
 					{
 						if (m_index < 0)
@@ -817,9 +854,15 @@ public:
 			}
 			else if (isProperty())
 			{
+				FSProperty& prop = m_pc->GetProperty(m_propId);
+
+				if (prop.GetSuperClassID() == FESCRIPT_ID)
+				{
+					return false;
+				}
+				
 				int classId = value.toInt();
 
-				FSProperty& prop = m_pc->GetProperty(m_propId);
 
 				if (classId == -2)
 				{
@@ -1541,6 +1584,20 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 					QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
 					return pc;
 				}
+				else if (nclass == FESCRIPT_ID)
+				{
+					FSModel* fem = item->GetFSModel();
+					FSScriptedComponent* ps = dynamic_cast<FSScriptedComponent*>(pcbi);
+					CScriptPropertySelector* pc = new CScriptPropertySelector(fem, ps, parent);
+
+					FEClassPropsDelegate* that = const_cast<FEClassPropsDelegate*>(this);
+					connect(pc, &QComboBox::activated,
+						that, [that, pc](int index) {
+							emit that->commitData(pc);
+							emit that->closeEditor(pc);
+						});
+					return pc;
+				}
 				else
 				{
 					CPropertySelector* pc = new CPropertySelector(&prop, pcbi, item->m_index, item->GetFSModel(), parent);
@@ -1589,6 +1646,69 @@ void FEClassPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* mod
 			model->setData(index, n);
 			return;
 		}
+	}
+	else if (dynamic_cast<CScriptPropertySelector*>(editor))
+	{
+		CScriptPropertySelector* ps = dynamic_cast<CScriptPropertySelector*>(editor);
+
+		int newIndex = ps->currentIndex();
+		int lastIndex = ps->count() - 1;
+
+		// Current value stored in the model
+		QString currentValue = index.data(Qt::EditRole).toString();
+
+		FSModel* fem = ps->m_fem;
+		FSScriptedComponent* sc = ps->m_ps;
+
+		FEClassPropsModel* classModel = dynamic_cast<FEClassPropsModel*>(model);
+
+		if (newIndex == lastIndex) // "<new script...>"
+		{
+			// Revert selection immediately (do NOT commit "<new script...>")
+			int prevIndex = ps->findText(currentValue);
+			if (prevIndex >= 0)
+				ps->setCurrentIndex(prevIndex);
+
+			// Defer dialog
+			QMetaObject::invokeMethod(model, [=]() {
+				if (!model) return;
+
+				QString newScriptName = "Script" + QString::number(fem->GetNextScriptID());
+
+				bool ok = false;
+				QString name = QInputDialog::getText(nullptr,
+					"New Script",
+					"Script name:",
+					QLineEdit::Normal,
+					newScriptName,
+					&ok);
+
+				if (!ok || name.isEmpty()) return;
+
+				FEBCodeScript* script = fem->AddNewScript(name.toStdString(), sc->context);
+				if (script == nullptr)
+				{
+					QMessageBox::critical(nullptr, "Error", "Failed to create script. A script with the same name may already exist.");
+					return;
+				}
+				sc->AssignScript(script);
+
+				classModel->SetClass(dynamic_cast<FSCoreBase*>(sc->GetParent()), fem);
+
+				// we need to update the model tree since a new script was added.
+				// Should probably look for a better way to do this.
+				FBS::getMainWindow()->UpdateModel();
+				
+				}, Qt::QueuedConnection);
+		}
+		else
+		{
+			int scriptID = ps->currentData().toInt();
+			FEBCodeScript* script = fem->GetScriptFromID(scriptID);
+			sc->AssignScript(script);
+			classModel->SetClass(dynamic_cast<FSCoreBase*>(sc->GetParent()), fem);
+		}
+		return;
 	}
 	else if (dynamic_cast<QComboBox*>(editor))
 	{
