@@ -29,11 +29,11 @@ class FindIntersections::BTree
 {
 	struct Node
 	{
-		std::vector<int> elements; // indices of elements in this node
+		std::vector<int> faces; // indices of faces in this node
 	};
 
 public:
-	BTree(const FSMesh& mesh) : mesh(mesh) {}
+	BTree(const FSMeshBase& mesh) : mesh(mesh) {}
 
 	void build(int levels)
 	{
@@ -46,23 +46,23 @@ public:
 		// inflate a little to ensure that all nodes are strictly inside the box
 		bbox.Inflate(1e-6);
 
-		// get a list of all element indices
-		std::vector<int> allElements(mesh.Elements());
-		for (int i = 0; i < mesh.Elements(); ++i)
+		// get a list of all face indices
+		std::vector<int> allFaces(mesh.Faces());
+		for (int i = 0; i < mesh.Faces(); ++i)
 		{
-			allElements[i] = i;
+			allFaces[i] = i;
 		}
 
 		// build the tree recursively
-		buildNode(bbox, allElements, levels);
+		buildNode(bbox, allFaces, levels);
 	}
 
-	void buildNode(const BOX& box, std::vector<int>& elements, int levels)
+	void buildNode(const BOX& box, std::vector<int>& faces, int levels)
 	{
-		if ((levels == 0) || (elements.size() <= 10)) // base case: create a leaf node
+		if ((levels == 0) || (faces.size() <= 10)) // base case: create a leaf node
 		{
 			Node node;
-			node.elements = elements;
+			node.faces = faces;
 			leaves.push_back(node);
 			return;
 		}
@@ -86,26 +86,26 @@ public:
 		case 2: leftBox.z1 = mid + eps; rightBox.z0 = mid - eps; break;
 		}
 
-		std::vector<int> leftElements, rightElements;
-		leftElements = getElementsInBox(leftBox, elements);
-		rightElements = getElementsInBox(rightBox, elements);
+		std::vector<int> leftFaces, rightFaces;
+		leftFaces = getElementsInBox(leftBox, faces);
+		rightFaces = getElementsInBox(rightBox, faces);
 
-		if (!leftElements.empty ()) buildNode(leftBox, leftElements, levels - 1);
-		if (!rightElements.empty()) buildNode(rightBox, rightElements, levels - 1);
+		if (!leftFaces.empty ()) buildNode(leftBox, leftFaces, levels - 1);
+		if (!rightFaces.empty()) buildNode(rightBox, rightFaces, levels - 1);
 	}
 
-	std::vector<int> getElementsInBox(const BOX& box, const std::vector<int>& elements)
+	std::vector<int> getElementsInBox(const BOX& box, const std::vector<int>& faces)
 	{
 		std::vector<int> result;
-		for (int elemIndex : elements)
+		for (int faceIndex : faces)
 		{
-			const FSElement& elem = mesh.Element(elemIndex);
-			for (int i=0; i<elem.Nodes(); ++i)
+			const FSFace& face = mesh.Face(faceIndex);
+			for (int i=0; i<face.Nodes(); ++i)
 			{
-				vec3d nodePos = mesh.Node(elem.m_node[i]).pos();
+				vec3d nodePos = mesh.Node(face.n[i]).pos();
 				if (box.IsInside(nodePos))
 				{
-					result.push_back(elemIndex);
+					result.push_back(faceIndex);
 					break; // no need to check other nodes of this element
 				}
 			}
@@ -114,21 +114,21 @@ public:
 	}
 
 public:
-	const FSMesh& mesh;
+	const FSMeshBase& mesh;
 	std::vector<Node> leaves;
 };
 
-FindIntersections::FindIntersections(FSMesh& mesh) : m_mesh(mesh)
+FindIntersections::FindIntersections(FSMeshBase& mesh) : m_mesh(mesh)
 {
 }
 
-bool shareNodes(const FSElement& elem1, const FSElement& elem2)
+bool shareNodes(const FSFace& face1, const FSFace& face2)
 {
-	for (int i = 0; i < elem1.Nodes(); ++i)
+	for (int i = 0; i < face1.Nodes(); ++i)
 	{
-		for (int j = 0; j < elem2.Nodes(); ++j)
+		for (int j = 0; j < face2.Nodes(); ++j)
 		{
-			if (elem1.m_node[i] == elem2.m_node[j])
+			if (face1.n[i] == face2.n[j])
 			{
 				return true; // Found a shared node
 			}
@@ -137,19 +137,20 @@ bool shareNodes(const FSElement& elem1, const FSElement& elem2)
 	return false; // No shared nodes found
 }
 
-std::vector<int> FindIntersections::FindIntersectingElements()
+std::vector<int> FindIntersections::FindIntersectingFaces()
 {
-	std::vector<int> intersectingElements;
+	std::vector<int> intersectingFaces;
 
 	// This only works for triangular meshes for now.
-	if (!m_mesh.IsType(FE_TRI3))
+	for (int i=0; i<m_mesh.Faces(); ++i)
 	{
-		return intersectingElements; // Return empty list if not a triangular mesh
+		if (m_mesh.Face(i).Nodes() != 3)
+			return intersectingFaces; // Return empty list if not a triangular mesh
 	}
 
-	// determine the number of levels for the BTree based on the number of elements
-	int numElements = m_mesh.Elements();
-	int levels = (int)log2(numElements / 10);
+	// determine the number of levels for the BTree based on the number of faces
+	int numFaces = m_mesh.Faces();
+	int levels = (int)log2(numFaces / 10);
 	if (levels <= 0) levels = 0;
 	if (levels > 20) levels = 20; // limit the number of levels to prevent excessive memory usage
 
@@ -162,25 +163,25 @@ std::vector<int> FindIntersections::FindIntersectingElements()
 	// loop over all the leaves of the BTree and check for intersections between elements in the same leaf
 	for (int n = 0; n < btree.leaves.size(); ++n)
 	{
-		std::vector<int>& leafElements = btree.leaves[n].elements;
+		std::vector<int>& leafFaces = btree.leaves[n].faces;
 
-		// Loop over all elements in the leaf and check for intersections
-		for (int i = 0; i < leafElements.size(); ++i)
+		// Loop over all faces in the leaf and check for intersections
+		for (int i = 0; i < leafFaces.size(); ++i)
 		{
-			FSElement& elem = m_mesh.Element(leafElements[i]);
-			// Check if the element intersects with any other element
-			for (int j = 0; j < leafElements.size(); ++j)
+			FSFace& face = m_mesh.Face(leafFaces[i]);
+			// Check if the face intersects with any other face
+			for (int j = 0; j < leafFaces.size(); ++j)
 			{
-				FSElement& otherElem = m_mesh.Element(leafElements[j]);
+				FSFace& otherFace = m_mesh.Face(leafFaces[j]);
 
-				// skip if elements share a node (they are connected and cannot intersect)
-				if (shareNodes(elem, otherElem))
+				// skip if faces share a node (they are connected and cannot intersect)
+				if (shareNodes(face, otherFace))
 					continue;
 
-				// Check for intersection between elem and otherElem
-				if (Intersects(elem, otherElem))
+				// Check for intersection between face and otherFace
+				if (Intersects(face, otherFace))
 				{
-					intersectingSet.insert(leafElements[i]);
+					intersectingSet.insert(leafFaces[i]);
 					break;
 				}
 			}
@@ -188,11 +189,11 @@ std::vector<int> FindIntersections::FindIntersectingElements()
 	}
 
 	// convert the set to a vector
-	for (int elemIndex : intersectingSet)
+	for (int faceIndex : intersectingSet)
 	{
-		intersectingElements.push_back(elemIndex);
+		intersectingFaces.push_back(faceIndex);
 	}
-	return intersectingElements;
+	return intersectingFaces;
 }
 
 bool edgeTriangleIntersect(const vec3d& p0, const vec3d& p1, const vec3d v[3])
@@ -226,17 +227,17 @@ bool edgeTriangleIntersect(const vec3d& p0, const vec3d& p1, const vec3d v[3])
 	return false;
 }
 
-bool FindIntersections::Intersects(const FSElement& elem1, const FSElement& elem2)
+bool FindIntersections::Intersects(const FSFace& face1, const FSFace& face2)
 {
-	// get the vertex positions of the two elements (assumes triangular elements)
+	// get the vertex positions of the two faces (assumes triangular faces)
 	vec3d v1[3], v2[3];
 	for (int i = 0; i < 3; ++i)
 	{
-		v1[i] = m_mesh.Node(elem1.m_node[i]).pos();
-		v2[i] = m_mesh.Node(elem2.m_node[i]).pos();
+		v1[i] = m_mesh.Node(face1.n[i]).pos();
+		v2[i] = m_mesh.Node(face2.n[i]).pos();
 	}
 
-	// see if any edge of elem1 intersects with elem2
+	// see if any edge of face1 intersects with face2
 	for (int i = 0; i < 3; ++i)
 	{
 		vec3d p0 = v1[i];

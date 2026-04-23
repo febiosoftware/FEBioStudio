@@ -40,26 +40,35 @@ bool CFindIntersectionsTool::OnApply()
 		SetErrorString("No object selected.");
 		return false;
 	}
-	FSMesh* pm = po->GetFEMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
 	if (pm == nullptr)
 	{
 		SetErrorString("The selected object does not have a mesh.");
 		return false;
 	}
 
-	if (!pm->IsType(FE_TRI3))
+	// make sure all faces are triangles
+	for (int i=0; i<pm->Faces(); ++i)
 	{
-		SetErrorString("The mesh must be a triangular mesh.");
-		return false;
+		const FSFace& f = pm->Face(i);
+		if (f.Nodes() != 3)
+		{
+			SetErrorString("The mesh must be a triangular mesh.");
+			return false;
+		}
 	}
 
 	FindIntersections finder(*pm);
-	std::vector<int> intersectingElements = finder.FindIntersectingElements();
+	std::vector<int> intersectingFaces = finder.FindIntersectingFaces();
 
-	FSLogger::Write("Found %d intersecting elements.\n", (int)intersectingElements.size());
+	FSLogger::Write("Found %d intersecting faces.\n", (int)intersectingFaces.size());
 
-	// select all the intersecting elements in the mesh
-	pm->SelectElements(intersectingElements);
+	// select all the intersecting faces in the mesh
+	pm->ClearFaceSelection();
+	for (int i=0; i<(int)intersectingFaces.size(); ++i)
+	{
+		pm->Face(intersectingFaces[i]).Select();
+	}
 
 	return true;
 }

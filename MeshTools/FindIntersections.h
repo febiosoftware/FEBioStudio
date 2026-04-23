@@ -24,21 +24,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSMeshBase.h>
 
 class FindIntersections
 {
 	class BTree;
 
 public:
-	FindIntersections(FSMesh& mesh);
+	FindIntersections(FSMeshBase& mesh);
 
-	std::vector<int> FindIntersectingElements();
-
-private:
-	bool Intersects(const FSElement& elem1, const FSElement& elem2);
+	std::vector<int> FindIntersectingFaces();
 
 private:
-	FSMesh& m_mesh;
+	bool Intersects(const FSFace& face1, const FSFace& face2);
+
+private:
+	FSMeshBase& m_mesh;
 };
 
