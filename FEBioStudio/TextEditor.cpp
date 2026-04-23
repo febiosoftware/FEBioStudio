@@ -455,7 +455,7 @@ public:
 		QString stringLiterals("([\"'])(.*?)\\1");
 		QString numbers("(?<!\\w)[-+]?\\d*\\.?\\d+([eE][-+]?\\d+)?");
 		QString braces("[\\(\\[\\{\\)\\]\\}]");
-		QString injects("_[A-Za-z][A-Za-z0-9_]*");
+		QString injects("\\b_[A-Za-z][A-Za-z0-9_]*");
 
 		if (theme == 0) // light theme
 		{
@@ -504,6 +504,7 @@ void CTextEditor::useDarkTheme(bool b)
 	m_useDarkTheme = b;
 
 	QPalette p = palette();
+	if (b) p.setColor(QPalette::Base, QColor(30, 30, 30));  // darker background
 	p.setColor(QPalette::Text, (b ? QColor::fromRgb(196, 201, 218) : Qt::black));
 	setPalette(p);
 }
