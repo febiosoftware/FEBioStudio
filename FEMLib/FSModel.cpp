@@ -2996,17 +2996,24 @@ void FSModel::UpdateScriptDependency(FSScriptedComponent* component, FEBCodeScri
 		{
 			switch (var.type)
 			{
-			case FEValueType::Bool  : p = component->AddBoolParam  (false, var.name.c_str()); break;
-			case FEValueType::Int   : p = component->AddIntParam   (0, var.name.c_str()); break;
-			case FEValueType::Double: p = component->AddDoubleParam(0.0, var.name.c_str()); break;
+			case FEValueType::Bool  : p = component->AddBoolParam  (false       , var.name.c_str()); break;
+			case FEValueType::Int   : p = component->AddIntParam   (0           , var.name.c_str()); break;
+			case FEValueType::Double: p = component->AddDoubleParam(0.0         , var.name.c_str()); break;
+			case FEValueType::Vec2d : p = component->AddVec2dParam (vec2d(0,0)  , var.name.c_str()); break;
 			case FEValueType::Vec3d : p = component->AddVecParam   (vec3d(0,0,0), var.name.c_str()); break;
+//			case FEValueType::Mat2d : p = component->AddMat2dParam (mat2d(0.0), var.name.c_str()); break; TODO: need to implement AddMat2dParam!
 			case FEValueType::Mat3d : p = component->AddMat3dParam (mat3d(0.0), var.name.c_str()); break;
 			default:
 				assert(false);
 				break;
 			}
 			if (p)
-				p->SetFlags(p->GetFlags() | FS_PARAM_USER);
+			{
+				unsigned int flags = p->GetFlags();
+				flags |= FS_PARAM_USER;
+				if ((var.type != FEValueType::Bool) && (var.type != FEValueType::Int)) flags |= FS_PARAM_VOLATILE;
+				p->SetFlags(flags);
+			}
 		}
 		else if (p)
 		{
@@ -3016,7 +3023,9 @@ void FSModel::UpdateScriptDependency(FSScriptedComponent* component, FEBCodeScri
 			if      (pType == Param_BOOL  && var.type != FEValueType::Bool  ) p->SetParamType(Param_BOOL );
 			else if (pType == Param_INT   && var.type != FEValueType::Int   ) p->SetParamType(Param_INT  );
 			else if (pType == Param_FLOAT && var.type != FEValueType::Double) p->SetParamType(Param_FLOAT);
+			else if (pType == Param_VEC2D && var.type != FEValueType::Vec2d ) p->SetParamType(Param_VEC2D);
 			else if (pType == Param_VEC3D && var.type != FEValueType::Vec3d ) p->SetParamType(Param_VEC3D);
+//			else if (pType == Param_MAT2D && var.type != FEValueType::Mat2d ) p->SetParamType(Param_MAT2D);
 			else if (pType == Param_MAT3D && var.type != FEValueType::Mat3d ) p->SetParamType(Param_MAT3D);
 		}
 	}
