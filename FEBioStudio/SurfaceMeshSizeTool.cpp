@@ -27,54 +27,18 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "SurfaceMeshSizeTool.h"
 #include "ModelDocument.h"
-#include <MeshTools/LaplaceSolver.h>
 #include <GeomLib/GObject.h>
-#include <GeomLib/GGroup.h>
 #include <GeomLib/GOCCObject.h>
-#include <MeshLib/FSNodeData.h>
-#include <MeshLib/FSElementData.h>
 #include <QLineEdit>
 #include <QBoxLayout>
-#include <QFormLayout>
 #include <QTableWidget>
 #include <QPushButton>
 #include <QValidator>
-#include <QMessageBox>
 #include <QLabel>
 #include <QHeaderView>
-#include <QComboBox>
 #include "MainWindow.h"
 #include <FSCore/FSLogger.h>
 #include <MeshTools/NetGenOCCMesher.h>
-
-// NOTE: Can't build with Netgen in debug config, so just turning it off for now. 
-#if defined(WIN32) && defined(_DEBUG)
-#undef HAS_NETGEN
-#endif
-
-#ifdef HAS_NETGEN
-
-#include <TopTools_IndexedMapOfShape.hxx>
-#include <TopoDS.hxx>
-#include <TopoDS_Edge.hxx>
-#include <TopoDS_Face.hxx>
-#include <TopoDS_Shape.hxx>
-#include <GProp_GProps.hxx>
-#include <BRepGProp.hxx>
-
-#define OCCGEOMETRY
-
-//using namespace std;
-
-namespace nglib {
-#include <nglib.h>
-#include <nglib_occ.h>
-}
-
-#define NO_PARALLEL_THREADS
-#include <occgeom.hpp>
-
-#endif
 
 class UISurfaceMeshSizeTool : public QWidget
 {
@@ -213,25 +177,11 @@ void CSurfaceMeshSizeTool::SetObject(GOCCObject* po)
 	if (po && (po != m_po))
 	{
 		// print some stats
-#ifdef HAS_NETGEN
 		double mnedg = 0.0;
 		double mxedg = 0.0;
-		TopoDS_Shape& occ = po->GetShape();
-		TopExp_Explorer anExp(occ, TopAbs_EDGE);
-		for (; anExp.More(); anExp.Next()) {
-			const TopoDS_Edge& anEdge = TopoDS::Edge(anExp.Current());
-			GProp_GProps props;
-			BRepGProp::LinearProperties(anEdge, props);
-			double length = props.Mass();
-			if (mnedg == 0) mnedg = length;
-			else {
-				mnedg = fmin(mnedg, length);
-				mxedg = fmax(mxedg, length);
-			}
-		}
+		MinMaxEdgeLength(po, mnedg, mxedg);
 		FSLogger::Write("Minimum edge length in this object is %g.\n", mnedg);
 		FSLogger::Write("Maximum edge length in this object is %g.\n", mxedg);
-#endif
 	}
 
 	m_po = nullptr;
