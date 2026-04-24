@@ -3063,3 +3063,45 @@ std::vector<FEBCodeScript*> FSModel::GetMatchingScripts(const ScriptContext& ctx
 	}
 	return matches;
 }
+
+bool FSModel::ValidateScript(const std::string& code, const ScriptContext& context, std::string& err)
+{
+	ScriptContext actualContext;
+	actualContext.returnType = context.returnType;
+	for (int i=0; i<context.variables.size(); ++i)
+	{
+		const ScriptContext::Variable& var = context.variables[i];
+
+		// if the variable contains "$(species)" then we need to replace it with the names of the solutes and sbms.
+		if (var.name.find("$(species)") != std::string::npos)
+		{
+			size_t pos = var.name.find("$(species)");
+
+			// this is a special variable that is only used for validating species scripts. 
+			// We need to replace it with the names of the solutes and sbms.
+			for (int j = 0; j < Solutes(); ++j)
+			{
+				ScriptContext::Variable v;
+				std::string varName = var.name;
+				varName.replace(pos, std::string("$(species)").length(), GetSoluteData(j).GetName());
+				v.name = varName;
+				v.type = var.type;
+				v.differentiable = var.differentiable;
+				actualContext.variables.push_back(v);
+			}
+			for (int j = 0; j < SBMs(); ++j)
+			{
+				ScriptContext::Variable v;
+				std::string varName = var.name;
+				varName.replace(pos, std::string("$(species)").length(), GetSBMData(j).GetName());
+				v.name = varName;
+				v.type = var.type;
+				v.differentiable = var.differentiable;
+				actualContext.variables.push_back(v);
+			}
+		}
+		else
+			actualContext.variables.push_back(var);
+	}
+	return ::ValidateScript(code, actualContext, err);
+}

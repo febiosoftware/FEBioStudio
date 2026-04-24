@@ -97,8 +97,3 @@ void FEBCodeScript::Load(IArchive& ar)
 	assert(id != -1);
 	SetName(name);
 }
-
-bool FEBCodeScript::Validate(std::string& err)
-{
-	return ValidateScript(code, context, err);
-}

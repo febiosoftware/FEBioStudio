@@ -270,6 +270,8 @@ public:
 
 	std::vector<FEBCodeScript*> GetMatchingScripts(const ScriptContext& ctx);
 
+	bool ValidateScript(const std::string& code, const ScriptContext& context, std::string& err);
+
 private:
 	void UpdateScriptDependency(FSModelComponent* component, FEBCodeScript* script);
 

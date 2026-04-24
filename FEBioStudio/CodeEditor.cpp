@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "LogPanel.h"
 #include "ui_codeeditor.h"
+#include "ModelDocument.h"
 
 CCodeEditor::CCodeEditor(CMainWindow* wnd) : QMainWindow(wnd), mainWnd(wnd), ui(new Ui::CCodeEditor)
 {
@@ -144,8 +145,22 @@ void CCodeEditor::on_actionCheck_triggered()
 {
 	if (ui->script)
 	{
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+		if (doc == nullptr)
+		{
+			ui->setStatus(false, "Error: No model document found.");
+			return;
+		}
+
+		FSModel* fem = doc->GetFSModel();
+		if (fem == nullptr)
+		{
+			ui->setStatus(false, "Error: No FE model found.");
+			return;
+		}
+
 		std::string err;
-		ValidateScript(ui->script->GetCode(), ui->script->GetScriptContext(), err);
+		fem->ValidateScript(ui->script->GetCode(), ui->script->GetScriptContext(), err);
 
 		if (err.empty())
 		{

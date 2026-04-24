@@ -45,8 +45,6 @@ public:
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
 
-	bool Validate(std::string& err);
-
 private:
 	int id; // unique ID for the script, assigned by the model when the script is added to the model
 	std::string code;

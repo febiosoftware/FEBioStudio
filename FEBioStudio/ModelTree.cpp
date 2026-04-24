@@ -396,7 +396,7 @@ public:
 class CScriptValidator : public CObjectValidator_T<FEBCodeScript>
 {
 public:
-	CScriptValidator() {}
+	CScriptValidator(FSModel* fem) : m_fem(fem) {}
 
 	QString GetErrorString() const override
 	{
@@ -413,11 +413,18 @@ public:
 		if (script == nullptr) return false;
 
 		err.clear();
-		isValid = script->Validate(err);
+		if (m_fem)
+			isValid = m_fem->ValidateScript(script->GetCode(), script->GetScriptContext(), err);
+		else
+		{
+			isValid = false;
+			err = "No model available for script validation.";
+		}
 		return isValid;
 	}
 
 private:
+	FSModel* m_fem;
 	bool isValid = true;
 	std::string err;
 };
@@ -1192,7 +1199,7 @@ void CModelTree::BuildPropertyLists(CModelDocument* doc)
 	m_props[MT_IC                 ] = { new CFSObjectProps(&fem), new CBCValidator()};
 	m_props[MT_BC                 ] = { new CFSObjectProps(&fem), new CBCValidator()};
 	m_props[MT_STEP               ] = { new CStepSettings(prj), nullptr };
-	m_props[MT_SCRIPT             ] = { new CScriptSettings(&fem), new CScriptValidator()};
+	m_props[MT_SCRIPT             ] = { new CScriptSettings(&fem), new CScriptValidator(&fem)};
 }
 
 void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CModelDocument* doc)
