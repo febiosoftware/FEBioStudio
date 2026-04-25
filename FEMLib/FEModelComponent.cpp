@@ -712,6 +712,6 @@ void FSScriptedComponent::Load(IArchive& ar)
 		ar.CloseChunk();
 	}
 
-	// mape parameters to FEBio class
+	// map parameters to FEBio class
 	UpdateData(true);
 }

@@ -2987,6 +2987,8 @@ void FSModel::UpdateScriptDependency(FSScriptedComponent* component, FEBCodeScri
 	std::vector<ScriptInputVariable> inputs = GetScriptInputVariables(script->GetCode(), script->GetScriptContext(), ok);
 	if (!ok) return;
 
+	ScriptContext ctx = script->GetScriptContext();
+
 	// add all inputs as parameters to the component
 	for (int i = 0; i < inputs.size(); ++i)
 	{
@@ -3011,7 +3013,15 @@ void FSModel::UpdateScriptDependency(FSScriptedComponent* component, FEBCodeScri
 			{
 				unsigned int flags = p->GetFlags();
 				flags |= FS_PARAM_USER;
-				if ((var.type != FEValueType::Bool) && (var.type != FEValueType::Int)) flags |= FS_PARAM_VOLATILE;
+				if (ctx.allowVolatileInputs)
+				{
+					if ((var.type != FEValueType::Bool) && (var.type != FEValueType::Int)) flags |= FS_PARAM_VOLATILE;
+				}
+				if (ctx.allowMappedInputs)
+				{
+					if ((var.type != FEValueType::Bool) && (var.type != FEValueType::Int))
+						p->MakeVariable(true);
+				}
 				p->SetFlags(flags);
 			}
 		}

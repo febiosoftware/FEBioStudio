@@ -253,6 +253,7 @@ public:
 	void SetFlags(unsigned int flags) { m_flags = flags; }
 
 	bool IsVolatile() const { return (m_flags & FS_PARAM_VOLATILE); }
+	void MakeVolatile(bool b) { if (b) m_flags |= FS_PARAM_VOLATILE; else m_flags &= ~FS_PARAM_VOLATILE; }
 
 	size_t size() const;
 
