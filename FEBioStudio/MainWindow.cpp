@@ -3692,6 +3692,33 @@ void CMainWindow::OpenCodeEditor(const QString& scriptName)
 		return;
 	}
 
+	OpenCodeEditor(script);
+}
+
+void CMainWindow::OpenCodeEditor(int scriptID)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	FSModel* fem = doc->GetFSModel();
+	if (fem == nullptr) return;
+
+	FEBCodeScript* script = fem->GetScriptFromID(scriptID);
+	if (script == nullptr)
+	{
+		QMessageBox::critical(this, "Code Editor", "Failed to open script with ID " + QString::number(scriptID) + ".");
+		return;
+	}
+
+	OpenCodeEditor(script);
+}
+
+void CMainWindow::OpenCodeEditor(FEBCodeScript* script)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	if (script == nullptr) return;
 	if (ui->codeEditor == nullptr) ui->codeEditor = new ::CCodeEditor(this);
 	ui->codeEditor->show();
 	ui->codeEditor->raise();

@@ -2183,6 +2183,12 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	{
 	}
 	break;
+	case MT_SCRIPT:
+	{
+		menu.addAction("Edit ...", this, SLOT(OnEditScript()));
+		del = true;
+		break;
+	}
 	case MT_STUDY:
 		menu.addAction("Configure ...", this, SLOT(OnConfigureStudy()));
 		menu.addAction("Run ...", this, SLOT(OnRunStudy()));
@@ -2779,4 +2785,13 @@ QString CModelViewer::HelpURLFromObject(FSObject* po)
 	}
     
     return ClassIDToURL(classID);
+}
+
+void CModelViewer::OnEditScript()
+{
+	FEBCodeScript* script = dynamic_cast<FEBCodeScript*>(m_currentObject);
+	if (script == nullptr) return;
+
+	CMainWindow* wnd = GetMainWindow();
+	wnd->OpenCodeEditor(script);
 }

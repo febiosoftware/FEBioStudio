@@ -1811,7 +1811,7 @@ void CModelTree::UpdateScripts(QTreeWidgetItem* t1, FSModel& fem)
 	{
 		FEBCodeScript* ps = fem.GetScript(i);
 		string name = ps->GetName();
-		AddTreeItem(t1, QString::fromStdString(name), MT_SCRIPT, 0, ps, 1);
+		AddTreeItem(t1, QString::fromStdString(name), MT_SCRIPT, ps->GetRefCount(), ps, 1);
 	}
 
 	int n = t1->childCount();

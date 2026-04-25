@@ -144,6 +144,10 @@ public:
 
 	void OpenCodeEditor(const QString& scriptName);
 
+	void OpenCodeEditor(int scriptID);
+
+	void OpenCodeEditor(FEBCodeScript* script);
+
 	CGLView* GetGLView();
 
 	CImageSliceView* GetImageSliceView();

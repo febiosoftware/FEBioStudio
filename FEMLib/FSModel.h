@@ -247,6 +247,10 @@ public:
 	const char* GetVariableName(const char* szvar, int n, bool longName = true);
 
 public:
+	void ForAllComponents(std::function<void(FSModelComponent*)> func);
+	void ForAllProperties(FSModelComponent* pc, std::function<void(FSModelComponent*)> func);
+
+public:
 	FEBCodeScript* CreateScript(const std::string& name, const std::string& code = "return 0.0;");
 
 	FEBCodeScript* AddNewScript(const std::string& name, ScriptContext context);
@@ -274,6 +278,8 @@ public:
 
 private:
 	void UpdateScriptDependency(FSModelComponent* component, FEBCodeScript* script);
+
+	void UpdateScriptReferenceCounts();
 
 public:
 	// These functions deal with enums
@@ -440,7 +446,7 @@ protected:
 	int m_MLT_offset;
 
 	// scripts
-	std::vector<std::unique_ptr<FEBCodeScript>> m_scripts;
+	FSObjectList<FEBCodeScript> m_scripts;
 	int m_nextScriptID = 1;
 
 	//! Skip geometry section when loading file

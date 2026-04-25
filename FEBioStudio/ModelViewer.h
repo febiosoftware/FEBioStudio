@@ -201,6 +201,7 @@ public slots:
     void OnExportRawImage();
     void OnExportTIFF();
     void OnExportNRRD();
+	void OnEditScript();
 
     void OnAddFiberODFAnalysis();
 

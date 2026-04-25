@@ -1569,13 +1569,13 @@ void FSModel::Save(OArchive& ar)
 	}
 
 	// save scripts
-	if (m_scripts.empty() == false)
+	if (m_scripts.IsEmpty() == false)
 	{
 		ar.BeginChunk(CID_SCRIPT_SECTION);
 		{
-			for (size_t i = 0; i < m_scripts.size(); ++i)
+			for (size_t i = 0; i < m_scripts.Size(); ++i)
 			{
-				FEBCodeScript* ps = m_scripts[i].get();
+				FEBCodeScript* ps = m_scripts[i];
 				ar.BeginChunk(0);
 				{
 					ps->Save(ar);
@@ -1615,6 +1615,8 @@ void FSModel::Load(IArchive& ar)
 		ar.CloseChunk();
 	}
 	UpdateMaterialPositions();
+
+	UpdateScriptReferenceCounts();
 }
 
 // reads the model data
@@ -1744,13 +1746,13 @@ void FSModel::LoadSteps(IArchive& ar)
 
 void FSModel::LoadScripts(IArchive& ar)
 {
-	m_scripts.clear();
+	m_scripts.Clear();
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
-		std::unique_ptr<FEBCodeScript> ps(new FEBCodeScript("", ""));
+		FEBCodeScript* ps = new FEBCodeScript("", "");
 		ps->Load(ar);
 		m_nextScriptID = std::max(m_nextScriptID, ps->GetID() + 1);
-		m_scripts.push_back(std::move(ps));
+		m_scripts.Add(ps);
 		ar.CloseChunk();
 	}
 }
@@ -2815,8 +2817,8 @@ int CountBCsByTypeString(const std::string& typeStr, FSModel& fem)
 
 FEBCodeScript* FSModel::CreateScript(const std::string& name, const std::string& code)
 {
-	auto it = std::find_if(m_scripts.begin(), m_scripts.end(), [&name](const std::unique_ptr<FEBCodeScript>& s) { return s->GetName() == name; });
-	if (it != m_scripts.end())
+	FEBCodeScript* script = m_scripts.FindByName(name);
+	if (script != nullptr)
 	{
 		return nullptr;
 	}
@@ -2828,7 +2830,7 @@ FEBCodeScript* FSModel::CreateScript(const std::string& name, const std::string&
 		if (c != '\r') cleanCode += c;
 	}
 
-	FEBCodeScript* script = new FEBCodeScript(name, cleanCode);
+	script = new FEBCodeScript(name, cleanCode);
 	script->SetID(m_nextScriptID++);
 	return script;
 }
@@ -2865,24 +2867,17 @@ FEBCodeScript* FSModel::AddNewScript(const std::string& name, const std::string&
 
 void FSModel::AddScript(FEBCodeScript* ps)
 {
-	m_scripts.push_back(std::unique_ptr<FEBCodeScript>(ps));
+	m_scripts.Add(ps);
 }
 
 void FSModel::RemoveScript(FEBCodeScript* ps)
 {
-	auto it = std::find_if(m_scripts.begin(), m_scripts.end(), [ps](const std::unique_ptr<FEBCodeScript>& s) { return s.get() == ps; });
-	if (it != m_scripts.end())
-	{
-		// we need to release the pointer before erasing, otherwise the pointer will be deleted and we don't want that. 
-		// (the pointer will be deleted by the command that added the script. See CCmdAddScript)
-		it->release();
-		m_scripts.erase(it);
-	}
+	m_scripts.Remove(ps);
 }
 
 size_t FSModel::Scripts() const
 {
-	return m_scripts.size();
+	return m_scripts.Size();
 }
 
 int FSModel::GetNextScriptID() const
@@ -2892,58 +2887,97 @@ int FSModel::GetNextScriptID() const
 
 FEBCodeScript* FSModel::GetScript(const std::string& name)
 {
-	auto it = std::find_if(m_scripts.begin(), m_scripts.end(), [&name](const std::unique_ptr<FEBCodeScript>& s) { return s->GetName() == name; });
-	if (it != m_scripts.end())
-	{
-		return it->get();
-	}
-	return nullptr;
+	FEBCodeScript* script = m_scripts.FindByName(name);
+	return script;
 }
 
 FEBCodeScript* FSModel::GetScriptFromID(int id)
 {
-	auto it = std::find_if(m_scripts.begin(), m_scripts.end(), [id](const std::unique_ptr<FEBCodeScript>& s) { return s->GetID() == id; });
-	if (it != m_scripts.end())
+	for (int i = 0; i < m_scripts.Size(); ++i)
 	{
-		return it->get();
+		FEBCodeScript* script = m_scripts[i];
+		if (script->GetID() == id)
+		{
+			return script;
+		}
 	}
 	return nullptr;
 }
 
 FEBCodeScript* FSModel::GetScript(size_t n)
 {
-	if (n < m_scripts.size())
+	if (n < m_scripts.Size())
 	{
-		return m_scripts[n].get();
+		return m_scripts.At(n);
 	}
 	return nullptr;
 }
 
-void FSModel::UpdateScriptDependencies(FEBCodeScript* script)
+void FSModel::ForAllComponents(std::function<void(FSModelComponent*)> func)
 {
-	// loop over all steps
 	for (int i = 0; i < Steps(); ++i)
 	{
 		FSStep* ps = GetStep(i);
+
 		// loop over all BCs
 		for (int j = 0; j < ps->BCs(); ++j)
 		{
 			FSBoundaryCondition* pbc = ps->BC(j);
-			UpdateScriptDependency(pbc, script);
+			func(pbc);
+			ForAllProperties(pbc, func);
 		}
 		// loop over all Loads
 		for (int j = 0; j < ps->Loads(); ++j)
 		{
 			FSLoad* pl = ps->Load(j);
-			UpdateScriptDependency(pl, script);
+			func(pl);
+			ForAllProperties(pl, func);
 		}
 		// loop over all ICs
 		for (int j = 0; j < ps->ICs(); ++j)
 		{
 			FSInitialCondition* pic = ps->IC(j);
-			UpdateScriptDependency(pic, script);
+			func(pic);
+			ForAllProperties(pic, func);
 		}
 	}
+
+	// loop over load controllers
+	for (int j = 0; j < LoadControllers(); ++j)
+	{
+		FSLoadController* plc = GetLoadController(j);
+		func(plc);
+		ForAllProperties(plc, func);
+	}
+}
+
+void FSModel::ForAllProperties(FSModelComponent* pc, std::function<void(FSModelComponent*)> func)
+{
+	for (int i = 0; i < pc->Properties(); ++i)
+	{
+		FSProperty& prop = pc->GetProperty(i);
+		for (int j = 0; j < prop.Size(); ++j)
+		{
+			FSModelComponent* subComponent = dynamic_cast<FSModelComponent*>(prop.GetComponent(j));
+			if (subComponent)
+			{
+				func(subComponent);
+				ForAllProperties(subComponent, func);
+			}
+		}
+	}
+}
+
+void FSModel::UpdateScriptDependencies(FEBCodeScript* script)
+{
+	if (script == nullptr) return;
+
+	ForAllComponents([=](FSModelComponent* pc) {
+		if (auto scripted = dynamic_cast<FSScriptedComponent*>(pc))
+		{
+			UpdateScriptDependency(scripted, script);
+		}
+	});
 }
 
 void FSModel::UpdateScriptDependency(FSModelComponent* component, FEBCodeScript* script)
@@ -2953,26 +2987,12 @@ void FSModel::UpdateScriptDependency(FSModelComponent* component, FEBCodeScript*
 		UpdateScriptDependency(scriptedComponent, script);
 	}
 
-	for (int i = 0; i < component->Properties(); ++i)
-	{
-		FSProperty& prop = component->GetProperty(i);
-		for (int j = 0; j < prop.Size(); ++j)
+	ForAllProperties(component, [=](FSModelComponent* pc) {
+		if (auto scripted = dynamic_cast<FSScriptedComponent*>(pc))
 		{
-			FSModelComponent* subComponent = dynamic_cast<FSModelComponent*>(prop.GetComponent(j));
-			if (subComponent)
-			{
-				auto scriptedComponent = dynamic_cast<FSScriptedComponent*>(subComponent);
-				if (scriptedComponent)
-				{
-					UpdateScriptDependency(scriptedComponent, script);
-				}
-				else
-				{
-					UpdateScriptDependency(subComponent, script);
-				}
-			}
+			UpdateScriptDependency(scripted, script);
 		}
-	}
+	});
 }
 
 void FSModel::UpdateScriptDependency(FSScriptedComponent* component, FEBCodeScript* script)
@@ -3062,9 +3082,9 @@ void FSModel::UpdateScriptDependency(FSScriptedComponent* component, FEBCodeScri
 std::vector<FEBCodeScript*> FSModel::GetMatchingScripts(const ScriptContext& ctx)
 {
 	std::vector<FEBCodeScript*> matches;
-	for (size_t i = 0; i < m_scripts.size(); ++i)
+	for (size_t i = 0; i < m_scripts.Size(); ++i)
 	{
-		FEBCodeScript* ps = m_scripts[i].get();
+		FEBCodeScript* ps = m_scripts[i];
 		const ScriptContext& sc = ps->GetScriptContext();
 		if (sc == ctx)
 		{
@@ -3114,4 +3134,22 @@ bool FSModel::ValidateScript(const std::string& code, const ScriptContext& conte
 			actualContext.variables.push_back(var);
 	}
 	return ::ValidateScript(code, actualContext, err);
+}
+
+void FSModel::UpdateScriptReferenceCounts()
+{
+	// update script reference counts
+	for (size_t i = 0; i < m_scripts.Size(); ++i)
+	{
+		FEBCodeScript* ps = m_scripts[i];
+		ps->ResetRefCount();
+
+		ForAllComponents([=](FSModelComponent* pc) {
+			if (auto scripted = dynamic_cast<FSScriptedComponent*>(pc))
+			{
+				if (scripted->scriptID == ps->GetID())
+					ps->IncRef();
+			}
+			});
+	}
 }

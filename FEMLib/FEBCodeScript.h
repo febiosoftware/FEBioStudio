@@ -45,8 +45,17 @@ public:
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
 
+public:
+	// reference counting for keeping track of how many components are using this script
+	void ResetRefCount() { m_refs = 0; }
+	void IncRef() { m_refs++; }
+	void DecRef() { if (m_refs > 0) m_refs--; }
+	int GetRefCount() const { return m_refs; }
+
 private:
 	int id; // unique ID for the script, assigned by the model when the script is added to the model
 	std::string code;
 	ScriptContext context;
+
+	int m_refs = 0;
 };
