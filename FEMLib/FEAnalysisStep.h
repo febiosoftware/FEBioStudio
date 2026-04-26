@@ -165,6 +165,7 @@ public:
 	int RemoveMeshAdaptor(FSMeshAdaptor* pi);
 	void RemoveAllMeshAdaptors();
 
+public:
 	// convenience functions for working with components
 	void AddComponent(FSStepComponent* pc);
 	void RemoveComponent(FSStepComponent* pc);

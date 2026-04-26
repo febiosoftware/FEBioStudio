@@ -1798,7 +1798,7 @@ void CModelTree::UpdateLoadControllers(QTreeWidgetItem* t1, FSModel& fem)
 	{
 		FSLoadController* plc = fem.GetLoadController(i);
 		string name = plc->GetName();
-		AddTreeItem(t1, QString::fromStdString(name), MT_LOAD_CONTROLLER, 0, plc);
+		AddTreeItem(t1, QString::fromStdString(name), MT_LOAD_CONTROLLER, plc->GetReferenceCount(), plc);
 	}
 
 	int n = t1->childCount();

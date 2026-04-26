@@ -2517,30 +2517,6 @@ FSLoadController* FSModel::AddLoadCurve(LoadCurve& lc)
 	return plc;
 }
 
-void UpdateLCRefsCount(FSModelComponent* pmc, std::map<int, int>& LCT)
-{
-	if (pmc == nullptr) return;
-
-	for (int n = 0; n < pmc->Parameters(); ++n)
-	{
-		Param& p = pmc->GetParam(n);
-		if (p.GetLoadCurveID() > 0)
-		{
-			LCT[p.GetLoadCurveID()]++;
-		}
-	}
-
-	for (int m = 0; m < pmc->Properties(); ++m)
-	{
-		FSProperty& prop = pmc->GetProperty(m);
-		for (int k = 0; k < prop.Size(); ++k)
-		{
-			FSModelComponent* pmk = dynamic_cast<FSModelComponent*>(prop.GetComponent(k));
-			if (pmk) UpdateLCRefsCount(pmk, LCT);
-		}
-	}
-}
-
 void FSModel::UpdateLoadControllerReferenceCounts()
 {
 	// clear all reference counters
@@ -2553,91 +2529,20 @@ void FSModel::UpdateLoadControllerReferenceCounts()
 		LCT[plc->GetID()] = 0;
 	}
 
-	// process materials
-	for (int i = 0; i < Materials(); ++i)
-	{
-		GMaterial* mat = GetMaterial(i);
-		FSMaterial* pm = mat->GetMaterialProperties();
-		if (pm) UpdateLCRefsCount(pm, LCT);
-	}
-
-	// process discrete
-	GModel& gm = GetModel();
-	for (int i=0; i<gm.DiscreteObjects(); ++i)
-	{ 
-		GDiscreteSpringSet* po = dynamic_cast<GDiscreteSpringSet*>(gm.DiscreteObject(i));
-		if (po && po->GetMaterial()) UpdateLCRefsCount(po->GetMaterial(), LCT);
-	}
-
-	// process Steps
-	for (int n = 0; n < Steps(); ++n)
-	{
-		FSStep* step = GetStep(n);
-		UpdateLCRefsCount(step, LCT);
-
-		// process BCs
-		for (int i = 0; i < step->BCs(); ++i)
+	// loop over all components and count the load curve references
+	ForAllComponents([&](FSModelComponent* pc){
+		if (pc)
 		{
-			FSBoundaryCondition* pbc = step->BC(i);
-			UpdateLCRefsCount(pbc, LCT);
+			for (int n = 0; n < pc->Parameters(); ++n)
+			{
+				Param& p = pc->GetParam(n);
+				if (p.GetLoadCurveID() > 0)
+				{
+					LCT[p.GetLoadCurveID()]++;
+				}
+			}
 		}
-
-		// process Loads
-		for (int i = 0; i < step->Loads(); ++i)
-		{
-			FSLoad* pload = step->Load(i);
-			UpdateLCRefsCount(pload, LCT);
-		}
-
-		// process contact
-		for (int i = 0; i < step->Interfaces(); ++i)
-		{
-			FSInterface* pi = step->Interface(i);
-			UpdateLCRefsCount(pi, LCT);
-		}
-
-		// nonlinear constraints
-		for (int i = 0; i < step->Constraints(); ++i)
-		{
-			FSModelConstraint* pi = step->Constraint(i);
-			UpdateLCRefsCount(pi, LCT);
-		}
-
-		// rigid BC
-		for (int i = 0; i < step->RigidBCs(); ++i)
-		{
-			FSRigidBC* pi = step->RigidBC(i);
-			UpdateLCRefsCount(pi, LCT);
-		}
-
-		// rigid load
-		for (int i = 0; i < step->RigidLoads(); ++i)
-		{
-			FSRigidLoad* pi = step->RigidLoad(i);
-			UpdateLCRefsCount(pi, LCT);
-		}
-
-		// rigid constraints
-		for (int i = 0; i < step->RigidConstraints(); ++i)
-		{
-			FSRigidConstraint* pi = step->RigidConstraint(i);
-			UpdateLCRefsCount(pi, LCT);
-		}
-
-		// rigid connector
-		for (int i = 0; i < step->RigidConnectors(); ++i)
-		{
-			FSRigidConnector* pi = step->RigidConnector(i);
-			UpdateLCRefsCount(pi, LCT);
-		}
-
-		// mesh adaptor
-		for (int i = 0; i < step->MeshAdaptors(); ++i)
-		{
-			FSMeshAdaptor* pi = step->MeshAdaptor(i);
-			UpdateLCRefsCount(pi, LCT);
-		}
-	}
+	});
 
 	// update reference counts
 	for (int i = 0; i < NLC; ++i)
@@ -2646,7 +2551,6 @@ void FSModel::UpdateLoadControllerReferenceCounts()
 		plc->SetReferenceCount(LCT[plc->GetID()]);
 	}
 }
-
 
 int FSModel::MeshDataGenerators() const
 {
@@ -2918,6 +2822,7 @@ void FSModel::ForAllComponents(std::function<void(FSModelComponent*)> func)
 	for (int i = 0; i < Steps(); ++i)
 	{
 		FSStep* ps = GetStep(i);
+		func(ps);
 
 		// loop over all BCs
 		for (int j = 0; j < ps->BCs(); ++j)
@@ -2940,6 +2845,90 @@ void FSModel::ForAllComponents(std::function<void(FSModelComponent*)> func)
 			func(pic);
 			ForAllProperties(pic, func);
 		}
+
+		// loop over all contact interfaces
+		for (int j = 0; j < ps->Interfaces(); ++j)
+		{
+			FSInterface* pi = ps->Interface(j);
+			func(pi);
+			ForAllProperties(pi, func);
+		}
+
+		// loop over all nonlinear constraints
+		for (int j = 0; j < ps->Constraints(); ++j)
+		{
+			FSModelConstraint* pmc = ps->Constraint(j);
+			func(pmc);
+			ForAllProperties(pmc, func);
+		}
+
+		// loop over all rigid constraints
+		for (int j = 0; j < ps->RigidConstraints(); ++j)
+		{
+			FSRigidConstraint* prc = ps->RigidConstraint(j);
+			func(prc);
+			ForAllProperties(prc, func);
+		}
+
+		// loop over all rigid loads
+		for (int j = 0; j < ps->RigidLoads(); ++j)
+		{
+			FSRigidLoad* prl = ps->RigidLoad(j);
+			func(prl);
+			ForAllProperties(prl, func);
+		}
+
+		// loop over all rigid BCs
+		for (int j = 0; j < ps->RigidBCs(); ++j)
+		{
+			FSRigidBC* prb = ps->RigidBC(j);
+			func(prb);
+			ForAllProperties(prb, func);
+		}
+
+		// loop over all rigid ICs
+		for (int j = 0; j < ps->RigidICs(); ++j)
+		{
+			FSRigidIC* pic = ps->RigidIC(j);
+			func(pic);
+			ForAllProperties(pic, func);
+		}
+
+		// loop over all rigid connectors
+		for (int j = 0; j < ps->RigidConnectors(); ++j)
+		{
+			FSRigidConnector* prc = ps->RigidConnector(j);
+			func(prc);
+			ForAllProperties(prc, func);
+		}
+
+		// loop over all mesh adaptors
+		for (int j = 0; j < ps->MeshAdaptors(); ++j)
+		{
+			FSMeshAdaptor* pma = ps->MeshAdaptor(j);
+			func(pma);
+			ForAllProperties(pma, func);
+		}
+	}
+
+	// loop over all materials
+	for (int i = 0; i < Materials(); ++i)
+	{
+		GMaterial* mat = GetMaterial(i);
+		FSMaterial* pm = mat->GetMaterialProperties();
+		if (pm)
+		{
+			func(pm);
+			ForAllProperties(pm, func);
+		}
+	}
+
+	// loop over all mesh-data generators
+	for (int i = 0; i < MeshDataGenerators(); ++i)
+	{
+		FSMeshDataGenerator* pmd = GetMeshDataGenerator(i);
+		func(pmd);
+		ForAllProperties(pmd, func);
 	}
 
 	// loop over load controllers
@@ -2948,6 +2937,14 @@ void FSModel::ForAllComponents(std::function<void(FSModelComponent*)> func)
 		FSLoadController* plc = GetLoadController(j);
 		func(plc);
 		ForAllProperties(plc, func);
+	}
+
+	// process discrete
+	GModel& gm = GetModel();
+	for (int i = 0; i < gm.DiscreteObjects(); ++i)
+	{
+		GDiscreteSpringSet* po = dynamic_cast<GDiscreteSpringSet*>(gm.DiscreteObject(i));
+		if (po && po->GetMaterial()) ForAllProperties(po->GetMaterial(), func);
 	}
 }
 
@@ -2973,21 +2970,6 @@ void FSModel::UpdateScriptDependencies(FEBCodeScript* script)
 	if (script == nullptr) return;
 
 	ForAllComponents([=](FSModelComponent* pc) {
-		if (auto scripted = dynamic_cast<FSScriptedComponent*>(pc))
-		{
-			UpdateScriptDependency(scripted, script);
-		}
-	});
-}
-
-void FSModel::UpdateScriptDependency(FSModelComponent* component, FEBCodeScript* script)
-{
-	if (auto scriptedComponent = dynamic_cast<FSScriptedComponent*>(component))
-	{
-		UpdateScriptDependency(scriptedComponent, script);
-	}
-
-	ForAllProperties(component, [=](FSModelComponent* pc) {
 		if (auto scripted = dynamic_cast<FSScriptedComponent*>(pc))
 		{
 			UpdateScriptDependency(scripted, script);
@@ -3023,7 +3005,7 @@ void FSModel::UpdateScriptDependency(FSScriptedComponent* component, FEBCodeScri
 			case FEValueType::Double: p = component->AddDoubleParam(0.0         , var.name.c_str()); break;
 			case FEValueType::Vec2d : p = component->AddVec2dParam (vec2d(0,0)  , var.name.c_str()); break;
 			case FEValueType::Vec3d : p = component->AddVecParam   (vec3d(0,0,0), var.name.c_str()); break;
-//			case FEValueType::Mat2d : p = component->AddMat2dParam (mat2d(0.0), var.name.c_str()); break; TODO: need to implement AddMat2dParam!
+			case FEValueType::Mat2d : p = component->AddMat2dParam (mat2d(0.0), var.name.c_str()); break;
 			case FEValueType::Mat3d : p = component->AddMat3dParam (mat3d(0.0), var.name.c_str()); break;
 			default:
 				assert(false);
@@ -3055,7 +3037,7 @@ void FSModel::UpdateScriptDependency(FSScriptedComponent* component, FEBCodeScri
 			else if (pType == Param_FLOAT && var.type != FEValueType::Double) p->SetParamType(Param_FLOAT);
 			else if (pType == Param_VEC2D && var.type != FEValueType::Vec2d ) p->SetParamType(Param_VEC2D);
 			else if (pType == Param_VEC3D && var.type != FEValueType::Vec3d ) p->SetParamType(Param_VEC3D);
-//			else if (pType == Param_MAT2D && var.type != FEValueType::Mat2d ) p->SetParamType(Param_MAT2D);
+			else if (pType == Param_MAT2D && var.type != FEValueType::Mat2d ) p->SetParamType(Param_MAT2D);
 			else if (pType == Param_MAT3D && var.type != FEValueType::Mat3d ) p->SetParamType(Param_MAT3D);
 		}
 	}

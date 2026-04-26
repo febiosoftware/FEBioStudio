@@ -50,6 +50,7 @@ public:
 		MathString,
 		ColorMap,
 		Vec3,
+		Mat2,
 		Mat3,
 		Mat3s,
 		Vec2i,
@@ -177,6 +178,7 @@ public:
 	CProperty* addExternalLinkProperty (QStringList* pd, const QString& name);
 	CProperty* addVec3Property     (vec3d* pd, const QString& name);
 	CProperty* addVec2iProperty    (vec2i* pd, const QString& name);
+	CProperty* addMat2Property     (mat2d* pd, const QString& name);
 	CProperty* addMat3Property     (mat3d* pd, const QString& name);
 
 	QVariant GetPropertyValue(int i);
@@ -203,6 +205,7 @@ public:
 	CProperty* addExternalLinkProperty(QStringList pd, const QString& name);
 	CProperty* addVec3Property(vec3d pd, const QString& name);
 	CProperty* addVec2iProperty(vec2i pd, const QString& name);
+	CProperty* addMat2Property(mat2d pd, const QString& name);
 	CProperty* addMat3Property(mat3d pd, const QString& name);
 
 	QVariant GetPropertyValue(int i);
@@ -223,7 +226,9 @@ vec3d StringToVec3d(const QString& s);
 vec3f StringToVec3f(const QString& s);
 mat3d StringToMat3d(const QString& s);
 mat3ds StringToMat3ds(const QString& s);
+mat2d StringToMat2d(const QString& s);
 QString Mat3dToString(const mat3d& a);
+QString Mat2dToString(const mat2d& a);
 QString Mat3dsToString(const mat3ds& a);
 QString Vec2iToString(const vec2i& r);
 vec2i StringToVec2i(const QString& s);

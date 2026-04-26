@@ -109,6 +109,28 @@ mat3ds StringToMat3ds(const QString& s)
 	return mat3ds(a[0], a[1], a[2], a[3], a[4], a[5]);
 }
 
+mat2d StringToMat2d(const QString& s)
+{
+	string st = s.toStdString();
+	const char* sz = st.c_str();
+	double a[4] = { 0 };
+	int n = 0;
+	if (sz[0] == '{')
+	{
+		n = sscanf(sz, "{{%lg,%lg},{%lg,%lg}}", a, a + 1, a + 2, a + 3);
+	}
+	else
+	{
+		n = sscanf(sz, "%lg,%lg,%lg,%lg", a, a + 1, a + 2, a + 3);
+	}
+
+	mat2d m;
+	if      (n == 1) m = mat2d(a[0]);
+	else if (n == 4) m = mat2d(a[0], a[1], a[2], a[3]);
+	else assert(false);
+	return m;
+}
+
 vec2i StringToVec2i(const QString& s)
 {
 	std::string str = s.toStdString();
@@ -188,6 +210,25 @@ QString Vec3fToString(const vec3f& r)
 QString Vec2iToString(const vec2i& r)
 {
 	return QString("%1,%2").arg(r.x).arg(r.y);
+}
+
+QString Mat2dToString(const mat2d& a)
+{
+	QString s;
+	s += "{";
+	for (int i = 0; i < 2; ++i)
+	{
+		s += "{";
+		for (int j = 0; j < 2; ++j)
+		{
+			s += QString("%1").arg(a(i, j));
+			if (j != 1) s += ",";
+		}
+		s += "}";
+		if (i != 1) s += ",";
+	}
+	s += "}";
+	return s;
 }
 
 QString Mat3dToString(const mat3d& a)
@@ -316,6 +357,11 @@ CProperty* CDataPropertyList::addMat3Property(mat3d* pd, const QString& name)
 	return addProperty(name, CProperty::Mat3)->setData(pd);
 }
 
+CProperty* CDataPropertyList::addMat2Property(mat2d* pd, const QString& name)
+{
+	return addProperty(name, CProperty::Mat2)->setData(pd);
+}
+
 CProperty* CDataPropertyList::addColorProperty(QColor* pd, const QString& name)
 {
 	return addProperty(name, CProperty::Color)->setData(pd);
@@ -367,6 +413,7 @@ QVariant CDataPropertyList::GetPropertyValue(int i)
 	case CProperty::Resource: { QString v = *((QString*)(p.pdata)); return v; } break;
 	case CProperty::Vec3: { vec3d v = *((vec3d*)(p.pdata)); return Vec3dToString(v); } break;
 	case CProperty::Vec2i: { vec2i v = *((vec2i*)(p.pdata)); return Vec2iToString(v); } break;
+	case CProperty::Mat2: { mat2d v = *((mat2d*)(p.pdata)); return Mat2dToString(v); } break;
 	case CProperty::Mat3: { mat3d v = *((mat3d*)(p.pdata)); return Mat3dToString(v); } break;
 	case CProperty::Std_Vector_Int: { std::vector<int> v = *((std::vector<int>*)(p.pdata)); return VectorIntToString(v); } break;
 	case CProperty::Std_Vector_Double: { std::vector<double> v = *((std::vector<double>*)(p.pdata)); return VectorDoubleToString(v); } break;
@@ -391,6 +438,7 @@ void CDataPropertyList::SetPropertyValue(int i, const QVariant& v)
 	case CProperty::Resource: { QString& d = *((QString*)p.pdata); d = v.value<QString>(); } break;
 	case CProperty::Vec3: { vec3d& d = *((vec3d*)p.pdata); d = StringToVec3d(v.value<QString>()); } break;
 	case CProperty::Vec2i: { vec2i& d = *((vec2i*)p.pdata); d = StringToVec2i(v.value<QString>()); } break;
+	case CProperty::Mat2: { mat2d& d = *((mat2d*)p.pdata); d = StringToMat2d(v.value<QString>()); } break;
 	case CProperty::Mat3: { mat3d& d = *((mat3d*)p.pdata); d = StringToMat3d(v.value<QString>()); } break;
 	case CProperty::Std_Vector_Int: { std::vector<int>& d = *((std::vector<int>*)p.pdata); d = StringToVectorInt(v.value<QString>()); } break;
 	case CProperty::Std_Vector_Double: { std::vector<double>& d = *((std::vector<double>*)p.pdata); d = StringToVectorDouble(v.value<QString>()); } break;
@@ -422,6 +470,7 @@ CCachedPropertyList::~CCachedPropertyList()
 		case CProperty::ExternalLink: delete (QStringList*)d; break;
 		case CProperty::Vec3        : delete (vec3d*)d; break;
 		case CProperty::Vec2i       : delete (vec2i*)d; break;
+		case CProperty::Mat2        : delete (mat2d*)d; break;
 		case CProperty::Mat3        : delete (mat3d*)d; break;
 		default:
 			assert(false);
@@ -507,6 +556,12 @@ CProperty* CCachedPropertyList::addVec2iProperty(vec2i p, const QString& name)
 	return addProperty(name, CProperty::Vec2i)->setData(v);
 }
 
+CProperty* CCachedPropertyList::addMat2Property(mat2d m, const QString& name)
+{
+	mat2d* v = new mat2d(m);
+	return addProperty(name, CProperty::Mat2)->setData(v);
+}
+
 CProperty* CCachedPropertyList::addMat3Property(mat3d m, const QString& name)
 {
 	mat3d* v = new mat3d(m);
@@ -529,6 +584,7 @@ QVariant CCachedPropertyList::GetPropertyValue(int i)
 		case CProperty::ExternalLink: return value<QStringList>(i); break;
 		case CProperty::Vec3        : return Vec3dToString(value<vec3d>(i)); break;
 		case CProperty::Vec2i       : return Vec2iToString(value<vec2i>(i)); break;
+		case CProperty::Mat2        : return Mat2dToString(value<mat2d>(i)); break;
 		case CProperty::Mat3        : return Mat3dToString(value<mat3d>(i)); break;
 		default:
 			assert(false);
@@ -559,6 +615,7 @@ void CCachedPropertyList::SetPropertyValue(int i, const QVariant& v)
 	case CProperty::ExternalLink: value<QStringList>(i) = v.toStringList(); break;
 	case CProperty::Vec3        : value<vec3d>(i) = StringToVec3d(v.toString()); break;
 	case CProperty::Vec2i       : value<vec2i>(i) = StringToVec2i(v.toString()); break;
+	case CProperty::Mat2        : value<mat2d>(i) = StringToMat2d(v.toString()); break;
 	case CProperty::Mat3        : value<mat3d>(i) = StringToMat3d(v.toString()); break;
 	default:
 		assert(false);

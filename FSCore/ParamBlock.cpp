@@ -714,7 +714,33 @@ Param::Param(vec2d v, const char* szb, const char* szn)
 	m_watch = nullptr;
 }
 
-//-----------------------------------------------------------------------------
+Param::Param(mat2d v, const char* szb, const char* szn)
+{
+	mat2d* pv = new mat2d(v);
+	m_pd = pv;
+	m_ntype = Param_MAT2D;
+	m_nsize = 0;
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
+	m_szenum = 0;
+	m_szunit = 0;
+	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
+	m_szindx = 0;
+	m_nindx = -1;
+	m_lc = -1;
+	m_bcopy = false;
+	m_offset = 0;
+	m_varType = Param_UNDEF;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
+	m_checkable = false;
+	m_checked = false;
+	m_paramGroup = -1;
+	m_watch = nullptr;
+}
+
 Param::Param(mat3d v, const char* szb, const char* szn)
 {
 	mat3d* pv = new mat3d;

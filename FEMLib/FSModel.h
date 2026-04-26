@@ -276,9 +276,6 @@ public:
 
 	bool ValidateScript(const std::string& code, const ScriptContext& context, std::string& err);
 
-private:
-	void UpdateScriptDependency(FSModelComponent* component, FEBCodeScript* script);
-
 	void UpdateScriptReferenceCounts();
 
 public:

@@ -139,6 +139,7 @@ void CModelViewer::Update(bool breset)
 	// update the model
 	FSModel* fem = doc->GetFSModel();
 	fem->UpdateLoadControllerReferenceCounts();
+	fem->UpdateScriptReferenceCounts();
 
 	// rebuild the model tree
 	ui->setWarningCount(0);
@@ -673,6 +674,7 @@ void CModelViewer::on_props_paramChanged(FSCoreBase* pc, Param* p)
 	case Param_STRING: sv = QString("\"%1\"").arg(QString::fromStdString(p->GetStringValue())); break;
 	case Param_MATH  : sv = QString("\"%1\"").arg(QString::fromStdString(p->GetMathString())); break;
 	case Param_COLOR : break;
+	case Param_MAT2D : sv = Mat2dToString(p->GetMat2dValue()); break;
 	case Param_MAT3D : sv = Mat3dToString(p->GetMat3dValue()); break;
 	case Param_MAT3DS: sv = Mat3dsToString(p->GetMat3dsValue()); break;
 	case Param_VEC2I : sv = Vec2iToString(p->GetVec2iValue()); break;

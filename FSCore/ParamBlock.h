@@ -55,6 +55,7 @@ enum Param_Type {
 	Param_VEC2D,
 	Param_CHOICE = 0x0020,		// like INT but imported/exported as one-based numbers
 	Param_URL,
+	Param_MAT2D,
 };
 
 // parameter states
@@ -115,6 +116,7 @@ public:
 	explicit Param(vec2i v, const char* szb, const char* szn = 0);
 	explicit Param(vec2d v, const char* szb, const char* szn = 0);
 	explicit Param(vec3d v, const char* szb, const char* szn = 0);
+	explicit Param(mat2d v, const char* szb, const char* szn = 0);
 	explicit Param(mat3d v, const char* szb, const char* szn = 0);
 	explicit Param(mat3ds v, const char* szb, const char* szn = 0);
 	explicit Param(int n, const char* szi, int idx, const char* szb, const char* szn = 0);
@@ -165,6 +167,7 @@ public:
 	void SetVec3dValue (const vec3d& v) {assert(m_ntype == Param_VEC3D ); val<vec3d>() = v; }
 	void SetVec2iValue (const vec2i& v) { assert(m_ntype == Param_VEC2I); val<vec2i>() = v; }
 	void SetVec2dValue (const vec2d& v) { assert(m_ntype == Param_VEC2D); val<vec2d>() = v; }
+	void SetMat2dValue (const mat2d& v) { assert(m_ntype == Param_MAT2D); val<mat2d>() = v; }
 	void SetMat3dValue (const mat3d& v) { assert(m_ntype == Param_MAT3D); val<mat3d>() = v; }
 	void SetMat3dsValue(const mat3ds& v){ assert(m_ntype == Param_MAT3DS); val<mat3ds>() = v; }
 	void SetStringValue(const std::string& v) {assert(m_ntype == Param_STRING); val<std::string>() = v; }
@@ -185,6 +188,7 @@ public:
 	vec3d  GetVec3dValue () const {assert(m_ntype == Param_VEC3D ); return val<vec3d>(); }
 	vec2i  GetVec2iValue () const { assert(m_ntype == Param_VEC2I); return val<vec2i>(); }
 	vec2d  GetVec2dValue () const { assert(m_ntype == Param_VEC2D); return val<vec2d>(); }
+	mat2d  GetMat2dValue () const {assert(m_ntype == Param_MAT2D); return val<mat2d>(); }
 	mat3d  GetMat3dValue () const {assert(m_ntype == Param_MAT3D); return val<mat3d>(); }
 	mat3ds GetMat3dsValue () const {assert(m_ntype == Param_MAT3DS); return val<mat3ds>(); }
 	std::string GetStringValue() const { assert(m_ntype == Param_STRING); return val<std::string>(); }
@@ -390,6 +394,16 @@ public:
 	}
 
 	Param* AddVec2dParam(vec2d v, const char* szb, const char* szn = 0)
+	{
+		int ns = (int)m_Param.size();
+		Param* p = new Param(v, szb, szn);
+		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
+		m_Param.push_back(p);
+		return p;
+	}
+
+	Param* AddMat2dParam(mat2d v, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
 		Param* p = new Param(v, szb, szn);
@@ -665,6 +679,7 @@ public:
 	Param* AddStringParam(const std::string& s, const char* szb = 0, const char* szn = 0) { return m_Param.AddStringParam(s, szb, szn); }
 	Param* AddURLParam(const std::string& s, const char* szb = 0, const char* szn = 0) { return m_Param.AddURLParam(s, szb, szn); }
 	Param* AddColorParam(GLColor c, const char* szb = 0, const char* szn = 0) { return m_Param.AddColorParam(c, szb, szn); }
+	Param* AddMat2dParam(mat2d v, const char* szb = 0, const char* szn = 0) { return m_Param.AddMat2dParam(v, szb, szn); }
 	Param* AddMat3dParam(mat3d v, const char* szb = 0, const char* szn = 0) { return m_Param.AddMat3dParam(v, szb, szn); }
 	Param* AddMat3dsParam(mat3ds v, const char* szb = 0, const char* szn = 0) { return m_Param.AddMat3dsParam(v, szb, szn); }
 	Param* AddMathParam(const std::string& s, const char* szb = 0, const char* szn = 0) { return m_Param.AddMathParam(s, szb, szn); }

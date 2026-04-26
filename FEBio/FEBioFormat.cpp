@@ -392,6 +392,7 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag, const char* szparam
 		case Param_VEC3D: { vec3d v; tag.value(v); pp->SetVec3dValue(v); } break;
 		case Param_VEC2I: { vec2i v; tag.value(v); pp->SetVec2iValue(v); } break;
 		case Param_VEC2D: { vec2d v; tag.value(v); pp->SetVec2dValue(v); } break;
+		case Param_MAT2D: { mat2d v; tag.value(v); pp->SetMat2dValue(v); } break;
 		case Param_MAT3D: { mat3d v; tag.value(v); pp->SetMat3dValue(v); } break;
 		case Param_MAT3DS: { mat3ds v; tag.value(v); pp->SetMat3dsValue(v); } break;
 		case Param_FLOAT: { double d; tag.value(d); pp->SetFloatValue(d); } break;
@@ -2759,6 +2760,13 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 				mat3d v;
 				tag.value(v);
 				param->SetMat3dValue(v);
+			}
+			break;
+			case Param_MAT2D:
+			{
+				mat2d v;
+				tag.value(v);
+				param->SetMat2dValue(v);
 			}
 			break;
 			case Param_ARRAY_INT:

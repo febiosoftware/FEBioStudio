@@ -92,6 +92,14 @@ template <> std::string type_to_string<mat3d>(const mat3d& v)
 	return ss.str();
 }
 
+template <> std::string type_to_string<mat2d>(const mat2d& v)
+{
+	std::stringstream ss;
+	ss << v[0][0] << "," << v[0][1] << ",";
+	ss << v[1][0] << "," << v[1][1];
+	return ss.str();
+}
+
 //=============================================================================
 FEBioExport::FEBioExport(FSProject& prj) : FSFileExport(prj)
 {
@@ -181,7 +189,9 @@ void FEBioExport::WriteParam(Param &p)
 		case Param_BOOL : e.add_attribute("data_type", "bool"  ); break;
 		case Param_INT  : e.add_attribute("data_type", "int"   ); break;
 		case Param_FLOAT: e.add_attribute("data_type", "double"); break;
+		case Param_VEC2D: e.add_attribute("data_type", "vec2"  ); break;
 		case Param_VEC3D: e.add_attribute("data_type", "vec3"  ); break;
+		case Param_MAT2D: e.add_attribute("data_type", "mat2"  ); break;
 		case Param_MAT3D: e.add_attribute("data_type", "mat3"  ); break;
 		default:
 			assert(false);
@@ -231,6 +241,7 @@ void FEBioExport::WriteParam(Param &p)
 	case Param_VEC3D : e.value(p.GetVec3dValue()); break;
 	case Param_VEC2I : e.value(p.GetVec2iValue()); break;
 	case Param_VEC2D : e.value(p.GetVec2dValue()); break;
+	case Param_MAT2D : e.value(p.GetMat2dValue()); break;
 	case Param_MAT3D : e.value(p.GetMat3dValue()); break;
 	case Param_MAT3DS : e.value(p.GetMat3dsValue()); break;
 	case Param_STD_VECTOR_INT:
