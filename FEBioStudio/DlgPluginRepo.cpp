@@ -593,6 +593,7 @@ public:
             downloadsLabel->setText(QString("<b>Downloads:</b> ") + QString::number(plugin->downloads));
             descriptionLabel->setText(plugin->description.c_str());
 
+			installedVersionLabel->hide();
 			if (plugin->localCopy)
 			{
 				installedVersionLabel->setText(QString("<b>Installed Version:</b> ") + plugin->localVersion.c_str());
