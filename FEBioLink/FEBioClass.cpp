@@ -400,7 +400,9 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 #if defined(FEBIO_EXPERIMENTAL) || !defined(NDEBUG)
 	bool includeExperimentals = true;
 #else
-	bool includeExperimentals = false;
+	// TODO: for now, will include experimental features, 
+	// but need to turn this back off before merging with develop!!
+	bool includeExperimentals = true; 
 #endif
 
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
