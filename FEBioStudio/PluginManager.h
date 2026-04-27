@@ -57,6 +57,7 @@ struct Plugin
     
     bool localCopy = false;
     bool loaded = false;
+	std::string latestVersion; // latest version available in the remote repo
     std::string localVersion;
     std::string localFebioVersion;
     uint64_t localTimeStamp;

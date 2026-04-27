@@ -588,6 +588,16 @@ void CPluginManager::SetPluginStatus(Plugin& plugin)
         return;
     }
 
+	// get the latest version number of the plugin from the database
+	plugin.latestVersion = dbVersions[0].first;
+	for (auto& version : dbVersions)
+	{
+		if (IsVersion2Newer(plugin.latestVersion, version.first))
+		{
+			plugin.latestVersion = version.first;
+		}
+	}
+
     if(!plugin.localCopy)
     {
         plugin.status = PLUGIN_NOT_INSTALLED;
