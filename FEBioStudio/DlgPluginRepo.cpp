@@ -285,15 +285,16 @@ public:
     CFrameButton* retryButton;
     QLabel* imageLabel;
     QLabel* statusLabel;
-    QLabel* downloadLabel;
-    QLabel* downloadNumberLabel;
     QLabel* errorLabel;
     QLabel* nameLabel;
     // QLabel* byLabel;
     QLabel* descriptionLabel;
     QLabel* ownerLabel;
+    QLabel* installedVersionLabel;
+    QLabel* latestVersionLabel;
+	QLabel* downloadsLabel;
     QLabel* tagLabel;
-    CFrameButton* downloadButton;
+	CFrameButton* downloadButton;
     CFrameButton* downloadingButton;
     CFrameButton* loadButton;
     CFrameButton* unloadButton;
@@ -396,14 +397,6 @@ public:
         statusLayout->addStretch();
         pluginLeftLayout->addLayout(statusLayout);
 
-        QHBoxLayout* downloadsLayout = new QHBoxLayout;
-        downloadsLayout->setContentsMargins(0, 0, 0, 0);
-        downloadsLayout->addStretch();
-        downloadsLayout->addWidget(downloadLabel = new QLabel("Downloads:"));
-        downloadsLayout->addWidget(downloadNumberLabel = new QLabel);
-        downloadsLayout->addStretch();
-        pluginLeftLayout->addLayout(downloadsLayout);
-
         downloadButton = new CFrameButton("Download Plugin");
         downloadButton->hide();
         pluginLeftLayout->addWidget(downloadButton, 0, Qt::AlignHCenter);
@@ -458,16 +451,25 @@ public:
         QVBoxLayout* scrollLayout = new QVBoxLayout(scrollContent);
         scrollLayout->setContentsMargins(0, 0, 0, 0);
 
+		scrollLayout->addWidget(ownerLabel = new QLabel);
+		ownerLabel->setWordWrap(true);
+
+		scrollLayout->addWidget(installedVersionLabel = new QLabel);
+		installedVersionLabel->setWordWrap(true);
+
+		scrollLayout->addWidget(latestVersionLabel = new QLabel);
+		latestVersionLabel->setWordWrap(true);
+
+		scrollLayout->addWidget(tagLabel = new QLabel);
+		tagLabel->setWordWrap(true);
+
+		scrollLayout->addWidget(downloadsLabel = new QLabel);
+		downloadsLabel->setWordWrap(true);
+
         scrollLayout->addWidget(descriptionLabel = new QLabel);
         descriptionLabel->setWordWrap(true);
 
         scrollLayout->addWidget(publicationWidget = new ::CPublicationWidgetView(::CPublicationWidgetView::LIST, false));
-
-        scrollLayout->addWidget(ownerLabel = new QLabel);
-        ownerLabel->setWordWrap(true);
-
-        scrollLayout->addWidget(tagLabel = new QLabel);
-        tagLabel->setWordWrap(true);
 
         advancedHeader = new CCollapsibleHeader("<b>Details</b>");
 
@@ -585,12 +587,24 @@ public:
         if(id > 0)
         {
             nameLabel->setText(plugin->name.c_str());
-            ownerLabel->setText(QString("Author: ") + plugin->owner.c_str());
+            ownerLabel->setText(QString("<b>Author:</b> ") + plugin->owner.c_str());
             ownerLabel->show();
-            downloadLabel->show();
-            downloadNumberLabel->setText(QString::number(plugin->downloads));
-            downloadNumberLabel->show();
+            downloadsLabel->show();
+            downloadsLabel->setText(QString("<b>Downloads:</b> ") + QString::number(plugin->downloads));
             descriptionLabel->setText(plugin->description.c_str());
+
+			if (plugin->localCopy)
+			{
+				installedVersionLabel->setText(QString("<b>Installed Version:</b> ") + plugin->localVersion.c_str());
+				installedVersionLabel->show();
+			}
+
+			latestVersionLabel->hide();
+			if (!plugin->localCopy || plugin->status == PLUGIN_OUT_OF_DATE)
+			{
+				latestVersionLabel->setText(QString("<b>Latest Version:</b> ") + plugin->latestVersion.c_str());
+				latestVersionLabel->show();
+			}
 
             QByteArray image(plugin->imageData);
             if (image.size() > 0)
@@ -610,8 +624,10 @@ public:
         {
             nameLabel->setText(plugin->name.c_str());
             ownerLabel->hide();
-            downloadLabel->hide();
-            downloadNumberLabel->hide();
+            downloadsLabel->hide();
+            installedVersionLabel->hide();
+            latestVersionLabel->hide();
+            tagLabel->hide();
             descriptionLabel->setText(QString::fromStdString( plugin->description + "\n\nPath: " + plugin->files[0]));
 
             QPixmap pixmap(":/icons/febio_large.png");
@@ -636,7 +652,7 @@ public:
 
         if(plugin->tags.size() > 0)
         {
-            QString tagText("Tags: ");
+            QString tagText("<b>Tags:</b> ");
             tagText += plugin->tags[0].c_str();
 
             for(size_t i = 1; i < plugin->tags.size(); ++i)
