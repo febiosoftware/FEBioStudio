@@ -1,5 +1,5 @@
 #include "FEBioStudyReportDoc.h"
-#include <FEBioOpt/FEBioReport.h>
+#include <FECore/FEBioReport.h>
 #include "HTMLComposer.h"
 #include "ChartBuilder.h"
 #include <QFileInfo>

@@ -650,7 +650,7 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 	break;
 	case FETASK_ID:
 	{
-		if (baseClassId == FEBio::GetBaseClassIndex("FEBioStudy")) pc = new FSCoreStudy(fem);
+		if (baseClassId == FEBio::GetBaseClassIndex("FECoreStudy")) pc = new FSCoreStudy(fem);
 		else assert(false);
 	}
 	break;

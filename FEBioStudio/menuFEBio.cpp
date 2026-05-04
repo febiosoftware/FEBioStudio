@@ -755,7 +755,7 @@ void CMainWindow::on_actionFEBioStudy_triggered()
 	FSModel* fem = doc->GetFSModel();
 	if (fem == nullptr) return;
 
-	CDlgAddPhysicsItem dlg("Select Study", FETASK_ID, FEBio::GetBaseClassIndex("FEBioStudy"), fem, true, false, this);
+	CDlgAddPhysicsItem dlg("Select Study", FETASK_ID, FEBio::GetBaseClassIndex("FECoreStudy"), fem, true, false, this);
 	if (dlg.exec())
 	{
 		int id = dlg.GetClassID();
