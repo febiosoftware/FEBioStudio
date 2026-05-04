@@ -64,6 +64,7 @@ SOFTWARE.*/
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEMeshDataGenerator.h>
 #include <FEMLib/FSProject.h>
+#include <FEMLib/FSCoreStudy.h>
 #include <sstream>
 using namespace FEBio;
 using namespace std;
@@ -645,6 +646,12 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 		pms->SetMeshItemType(FE_EDGE_FLAG);
 		pms->SetSuperClassID(FEEDGE_ID);
 		pc = pms;
+	}
+	break;
+	case FETASK_ID:
+	{
+		if (baseClassId == FEBio::GetBaseClassIndex("FEBioStudy")) pc = new FSCoreStudy(fem);
+		else assert(false);
 	}
 	break;
 	default:

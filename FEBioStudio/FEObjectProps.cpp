@@ -938,7 +938,7 @@ void CImageModelProperties::SetPropertyValue(int i, const QVariant& v)
     }
 }
 
-CFEBioJobProps::CFEBioJobProps(CMainWindow* wnd, CModelViewer* tree) : m_wnd(wnd), m_tree(tree)
+CFEBioJobProps::CFEBioJobProps(CMainWindow* wnd) : m_wnd(wnd)
 {
 }
 
@@ -1005,6 +1005,60 @@ void CFEBioJobProps::SetPropertyValue(int i, const QVariant& v)
 		job->SetLogFileName(newPath.toStdString());
 		break;
 	}
+}
+
+CStudyProps::CStudyProps(CMainWindow* wnd) : m_wnd(wnd)
+{
+}
+
+void CStudyProps::BuildProperties()
+{
+	CStudy* study = m_pobj;
+	if (study == nullptr) return;
+
+	addProperty("FEBio File:"  , CProperty::ExternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
+	addProperty("Options File:", CProperty::ExternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
+	addProperty("Summary File:", CProperty::ExternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
+}
+
+QVariant CStudyProps::GetPropertyValue(int i)
+{
+	CStudy* study = m_pobj;
+	if (study == nullptr) return QVariant();
+
+	switch (i)
+	{
+	case 0:
+	{
+		QString febFile = QString::fromStdString(study->GetFEBioFileName());
+
+		QStringList fileNames;
+		fileNames.append(febFile);
+		fileNames.append(febFile);
+		return fileNames;
+	}
+	case 1:
+	{
+		QString optFile = QString::fromStdString(study->GetOptionsFileName());
+		QStringList fileNames;
+		fileNames.append(optFile);
+		fileNames.append(optFile);
+		return fileNames;
+	}
+	case 2:
+	{
+		QString summaryFile = QString::fromStdString(study->GetOutputFileName());
+		QStringList fileNames;
+		fileNames.append(summaryFile);
+		fileNames.append(summaryFile);
+		return fileNames;
+	}
+	}
+	return QVariant();
+}
+
+void CStudyProps::SetPropertyValue(int i, const QVariant& v)
+{
 }
 
 void CDiscreteObjectProps::BuildProperties()

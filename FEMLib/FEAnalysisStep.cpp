@@ -1301,7 +1301,8 @@ void FSStep::Load(IArchive &ar)
 				ar.CloseChunk();
 			}
 		}
-		break;		case CID_MESH_ADAPTOR_SECTION:
+		break;
+		case CID_MESH_ADAPTOR_SECTION:
 		{
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{

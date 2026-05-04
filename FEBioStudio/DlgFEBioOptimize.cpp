@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <QTableWidget>
 #include <QHeaderView>
 #include <QPushButton>
+#include <QCheckBox>
 #include <QStackedWidget>
 #include "MainWindow.h"
 #include <QDialogButtonBox>
@@ -268,6 +269,7 @@ public:
 	QLineEdit*	fDiffScale;
 	QComboBox*	out;
 	QComboBox*	print;
+	QCheckBox*	report;
 
 	// page 3 (Parameters)
 	CSelectParam* paramName;
@@ -305,6 +307,7 @@ public:
 		method->setCurrentIndex(opt.m_method);
 		objTol->setText(QString::number(opt.m_obj_tol));
 		fDiffScale->setText(QString::number(opt.m_f_diff_scale));
+		report->setChecked(opt.m_report);
 	}
 
 	void SetOptions(FEBioOpt ops)
@@ -317,6 +320,7 @@ public:
 		fDiffScale->setText(QString::number(opt.m_f_diff_scale));
 		out->setCurrentIndex(opt.m_outLevel);
 		print->setCurrentIndex(opt.m_printLevel);
+		report->setChecked(opt.m_report);
 
 		// set parameters
 		paramTable->clear();
@@ -367,6 +371,7 @@ public:
 		opt.m_f_diff_scale = fDiffScale->text().toDouble();
 		opt.m_outLevel = out->currentIndex();
 		opt.m_printLevel = print->currentIndex();
+		opt.m_report = report->isChecked();
 
 		// get parameters
 		opt.m_params.clear();
@@ -515,6 +520,7 @@ public:
 		opsPage->setSubTitle("Set the optimization control options.");
 
 		QFormLayout* l = new QFormLayout;
+		l->setLabelAlignment(Qt::AlignRight);
 
 		l->addRow("Optimization method:", method = new QComboBox);
 		method->addItem("Levenberg-Marquardt");
@@ -526,8 +532,9 @@ public:
 		l->addRow("Forward difference scale:", fDiffScale = new QLineEdit);
 		fDiffScale->setValidator(new QDoubleValidator);
 
-		l->addRow("Output", out = new QComboBox);
-		l->addRow("Print level", print = new QComboBox);
+		l->addRow("Output:", out = new QComboBox);
+		l->addRow("Print level:", print = new QComboBox);
+		l->addRow("Write report:", report = new QCheckBox);
 
 		out->addItems(QStringList() << "LOG_DEFAULT" << "LOG_NEVER" << "LOG_FILE_ONLY" << "LOG_SCREEN_ONLY" << "LOG_FILE_AND_SCREEN");
 		print->addItems(QStringList() << "PRINT_ITERATIONS" << "PRINT_VERBOSE");

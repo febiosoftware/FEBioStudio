@@ -27,6 +27,93 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GraphData.h"
 
+CPlotData::CPlotData()
+{
+	m_lineWidth = 2;
+	m_markerSize = 5;
+	m_markerType = 1;
+}
+
+CPlotData::~CPlotData()
+{
+}
+
+CPlotData::CPlotData(const CPlotData& d)
+{
+	m_data = d.m_data;
+	m_label = d.m_label;
+	m_lineColor = d.m_lineColor;
+	m_fillColor = d.m_fillColor;
+	m_lineWidth = d.m_lineWidth;
+	m_markerSize = d.m_markerSize;
+	m_markerType = d.m_markerType;
+}
+
+CPlotData& CPlotData::operator = (const CPlotData& d)
+{
+	m_data = d.m_data;
+	m_label = d.m_label;
+	m_lineColor = d.m_lineColor;
+	m_fillColor = d.m_fillColor;
+	m_lineWidth = d.m_lineWidth;
+	m_markerSize = d.m_markerSize;
+	m_markerType = d.m_markerType;
+	return *this;
+}
+
+void CPlotData::clear()
+{
+	m_data.clear();
+}
+
+QRectF CPlotData::boundRect() const
+{
+	if (m_data.empty()) return QRectF(0., 0., 0., 0.);
+
+	QRectF r(m_data[0].pos.x(), m_data[0].pos.y(), 0.0, 0.0);
+	for (int i = 1; i < (int)m_data.size(); ++i)
+	{
+		const QPointF& p = m_data[i].pos;
+		if (p.x() < r.left()) r.setLeft(p.x());
+		if (p.x() > r.right()) r.setRight(p.x());
+		if (p.y() > r.bottom()) r.setBottom(p.y());
+		if (p.y() < r.top()) r.setTop(p.y());
+	}
+	return r;
+}
+
+int compare(const void* p1, const void* p2)
+{
+	const QPointF& r1 = *((const QPointF*)(p1));
+	const QPointF& r2 = *((const QPointF*)(p2));
+
+	if (r1.x() < r2.x()) return -1;
+	else if (r1.x() > r2.x()) return 1;
+	else return 0;
+}
+
+void CPlotData::sort()
+{
+	if (m_data.size() > 0)
+		qsort(&m_data[0], m_data.size(), sizeof(QPointF), compare);
+}
+
+void CPlotData::addPoint(double x, double y)
+{
+	DataPoint p;
+	p.pos = QPointF(x, y);
+	m_data.push_back(p);
+}
+
+void CPlotData::addPoint(const QPointF& pos, const QColor& col, const QString& label)
+{
+	DataPoint p;
+	p.pos = pos;
+	p.color = col;
+	p.label = label;
+	m_data.push_back(p);
+}
+
 CGraphData::CGraphData()
 {
 	m_bshowLegend = true;

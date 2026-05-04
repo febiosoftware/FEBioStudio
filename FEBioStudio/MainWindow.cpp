@@ -558,6 +558,10 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	{
 		OpenTextFile(fileName);
 	}
+	else if (ext == "febr")
+	{
+		OpenFEBioReportFile(fileName);
+	}
 	else if (ext == "remote")
 	{
 		OpenRemoteFile(fileName);
@@ -3675,4 +3679,75 @@ void CMainWindow::on_planecut_dataChanged()
 		if (v) glview = v->GetGLView();
 	}
 	if (glview) glview->UpdateScene();
+}
+
+
+void CMainWindow::on_htmlview_anchorClicked(QUrl link)
+{
+	QObject* po = sender();
+	QString ref = link.toString();
+	if      (ref == "#new"        ) on_actionNewModel_triggered();
+	else if (ref == "#newproject" ) on_actionNewProject_triggered();
+	else if (ref == "#open"       ) on_actionOpen_triggered();
+	else if (ref == "#openproject") on_actionOpenProject_triggered();
+	else if (ref == "#febio"      ) on_actionFEBioURL_triggered();
+	else if (ref == "#help"       ) on_actionFEBioResources_triggered();
+	else if (ref == "#forum"      ) on_actionFEBioForum_triggered();
+	else if (ref == "#update"     ) on_actionUpdate_triggered();
+	else if (ref.contains("#http"))
+	{
+		QString temp = link.toString().replace("#http", "https://");
+		QDesktopServices::openUrl(QUrl(temp));
+	}
+	else if (ref == "#bugreport") on_actionBugReport_triggered();
+	else
+	{
+		std::string s = ref.toStdString();
+		const char* sz = s.c_str();
+
+		QString fileName;
+		if (strncmp(sz, "#recent_", 8) == 0)
+		{
+			int n = atoi(sz + 8);
+
+			QStringList recentFiles = GetRecentFileList();
+			fileName = recentFiles.at(n);
+		}
+		else if (strncmp(sz, "#recentproject_", 15) == 0)
+		{
+			int n = atoi(sz + 15);
+
+			QStringList recentProjects = GetRecentProjectsList();
+			fileName = recentProjects.at(n);
+		}
+		else
+		{
+			fileName = ref;
+		}
+
+		if (!fileName.isEmpty())
+		{
+			QFileInfo fi(fileName);
+			if (fi.isAbsolute() == false)
+			{
+				// If this is not an absolute path, let's assume it's a relative path to the currently active document's file path
+				QString docPath;
+				CDocument* doc = GetDocument();
+				if (doc)
+				{
+					QString docFile = QString::fromStdString(doc->GetDocFilePath());
+					if (!docFile.isEmpty())
+					{
+						QFileInfo docFi(docFile);
+						docPath = docFi.absolutePath();
+						fileName = QDir(docPath).filePath(fileName);
+						fi.setFile(fileName);
+					}
+				}
+			}
+
+			// out an abundance of safety, we will open the file in a queued connection
+			QMetaObject::invokeMethod(this, [this, fileName]() { OpenFile(fileName, false, false); }, Qt::QueuedConnection);
+		}
+	}
 }

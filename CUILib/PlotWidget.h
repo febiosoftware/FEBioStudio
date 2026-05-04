@@ -38,14 +38,6 @@ class QImage;
 class LoadCurve;
 
 //-----------------------------------------------------------------------------
-enum ChartStyle
-{
-	LINECHART_PLOT,
-	BARCHART_PLOT,
-	DENSITY_PLOT
-};
-
-//-----------------------------------------------------------------------------
 //! This class implements a plotting widget. 
 class CPlotWidget : public QWidget
 {
@@ -141,7 +133,7 @@ public:
 
 	void setBoxColor(const QColor& c) { m_data.m_boxColor = c; }
 
-	void scaleAxisLabels(bool b) { m_bscaleAxisLabels = b; }
+	void scaleAxisLabels(bool b) { m_data.m_bscaleAxisLabels = b; }
 
 	bool autoRangeUpdate() const { return m_bautoRngUpdate; }
 	void setAutoRangeUpdate(bool b) { m_bautoRngUpdate = b; }
@@ -150,7 +142,7 @@ public:
 
 	QPointF dataPoint(int ndata, int npoint);
 
-	void setFullScreenMode(bool b) { m_bfullScreenMode = b; }
+	void setFullScreenMode(bool b) { m_data.m_bfullScreenMode = b; }
 
 	void setXAxisLabelAlignment(AxisLabelAlignment a);
 	void setYAxisLabelAlignment(AxisLabelAlignment a);
@@ -181,8 +173,8 @@ public:
 	int axesFontSize() const { return m_data.m_axesFontSize; }
 	void setAxesFontSize(int fontSize) { m_data.m_axesFontSize = fontSize; }
 
-	void setCustomXAxisLabel(QString s) { m_customXAxisLabel = s; }
-	void setCustomYAxisLabel(QString s) { m_customYAxisLabel = s; }
+	void setCustomXAxisLabel(QString s) { m_data.m_customXAxisLabel = s; }
+	void setCustomYAxisLabel(QString s) { m_data.m_customYAxisLabel = s; }
 
 	void selectPoint(int ndata, int npoint);
 
@@ -263,7 +255,6 @@ public slots:
 private: // drawing helper functions
 	void drawAxes(QPainter& p);
 	void drawAllData(QPainter& p);
-	void drawData(QPainter& p, CPlotData& data);
 	void drawGrid(QPainter& p);
 	void drawAxesTicks(QPainter& p);
 	void drawAxesLabels(QPainter& p);
@@ -273,8 +264,6 @@ private: // drawing helper functions
 
 private:
 	CGraphData		m_data;
-
-	int		m_chartStyle;
 
 	double	m_hlrng[2];	// range that will be highlighted on background
 
@@ -288,15 +277,10 @@ public:
 	bool		m_bviewLocked;
 	bool		m_bshowPopup;
 	bool		m_bshowToolTip;
-	bool		m_bscaleAxisLabels;
-	bool		m_bfullScreenMode;
 	bool		m_bautoRngUpdate;
 	bool		m_newSelect;
 	bool		m_bdragging;
 	bool		m_showHighlightInterval = true;
-
-	QString		m_customXAxisLabel;
-	QString		m_customYAxisLabel;
 
 	bool		m_bregionSelect;
 

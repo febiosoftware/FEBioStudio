@@ -195,7 +195,6 @@ public slots:
 	void OnDeleteAllJobs();
 	void OnDeleteAllStudies();
 	void OnRunStudy();
-	void OnConfigureStudy();
 	void OnEditMeshData();
     void OnFindImage();
     void OnExportRawImage();

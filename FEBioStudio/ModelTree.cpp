@@ -1074,9 +1074,9 @@ void CModelTree::Build(CModelDocument* doc)
 	// add the studies
 	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_STUDIES))
 	{
-		if ((m_nfilter == ModelTreeFilter::FILTER_NONE) && (doc->FEBioStudies() > 0))
+		if ((m_nfilter == ModelTreeFilter::FILTER_NONE) && (doc->Studies() > 0))
 		{
-			t1 = AddTreeItem(nullptr, "Studies", MT_STUDYLIST, doc->FEBioStudies(), nullptr, OBJECT_NOT_EDITABLE);
+			t1 = AddTreeItem(nullptr, "Studies", MT_STUDYLIST, doc->Studies(), nullptr, OBJECT_NOT_EDITABLE);
 			t1->setExpanded(true);
 			QFont f = t1->font(0);
 			f.setBold(true);
@@ -1120,7 +1120,7 @@ void CModelTree::BuildPropertyLists(CModelDocument* doc)
 	FSModel& fem = *doc->GetFSModel();
 	GModel& mdl = fem.GetModel();
 
-	m_props[MT_JOB                ] = { new CFEBioJobProps(m_view->GetMainWindow(), m_view), new CJobValidator()};
+	m_props[MT_JOB                ] = { new CFEBioJobProps(m_view->GetMainWindow()), new CJobValidator()};
 	m_props[MT_3DIMAGE            ] = { new CImageModelProperties(), new CImageModelValidator()};
 	m_props[MT_IMGANALYSIS        ] = { new CFSObjectProps(), nullptr };
 	m_props[MT_SOLUTE             ] = { new CFSObjectProps(), nullptr };
@@ -1155,6 +1155,7 @@ void CModelTree::BuildPropertyLists(CModelDocument* doc)
 	m_props[MT_IC                 ] = { new CFSObjectProps(&fem), new CBCValidator()};
 	m_props[MT_BC                 ] = { new CFSObjectProps(&fem), new CBCValidator()};
 	m_props[MT_STEP               ] = { new CStepSettings(prj), nullptr };
+	m_props[MT_STUDY              ] = { new CStudyProps(m_view->GetMainWindow()), nullptr };
 }
 
 void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CModelDocument* doc)
@@ -1768,11 +1769,17 @@ void CModelTree::UpdateOutput(QTreeWidgetItem* t1, FSProject& prj)
 
 void CModelTree::UpdateStudies(QTreeWidgetItem* t1, CModelDocument* doc)
 {
-	int nStudies = doc->FEBioStudies();
+	int nStudies = doc->Studies();
 	for (int i = 0; i < nStudies; ++i)
 	{
-		CFEBioStudy* study = doc->GetFEBioStudy(i);
+		CStudy* study = doc->GetStudy(i);
 		QString name = QString::fromStdString(study->GetName());
-		AddTreeItem(t1, name, MT_STUDY, 0, study, SHOW_PROPERTY_FORM);
+		QTreeWidgetItem* t2 = AddTreeItem(t1, name, MT_STUDY, 0, study, SHOW_PROPERTY_FORM);
+
+		FSObject* studyData = study->GetStudyData();
+		if (studyData)
+		{
+			AddTreeItem(t2,  "options", MT_STUDY_DATA, 0, studyData);
+		}
 	}
 }

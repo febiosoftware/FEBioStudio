@@ -421,20 +421,30 @@ void CModelDocument::DeleteAllJobs()
 	SetModifiedFlag();
 }
 
-int CModelDocument::FEBioStudies() const
+int CModelDocument::Studies() const
 {
 	return (int)m_StudyList.Size();
 }
 
-void CModelDocument::AddFEBioStudy(CFEBioStudy* study)
+void CModelDocument::AddStudy(CStudy* study)
 {
 	m_StudyList.Add(study);
 	SetModifiedFlag();
 }
 
-CFEBioStudy* CModelDocument::GetFEBioStudy(int i)
+CStudy* CModelDocument::GetStudy(int i)
 {
 	return m_StudyList[i];
+}
+
+CStudy* CModelDocument::FindStudyFromName(const std::string& name)
+{
+	for (int i = 0; i < Studies(); ++i)
+	{
+		CStudy* study = m_StudyList[i];
+		if (study->GetName() == name) return study;
+	}
+	return nullptr;
 }
 
 void CModelDocument::DeleteAllStudies()
@@ -527,9 +537,9 @@ void CModelDocument::Save(OArchive& ar)
 	}
 
 	// save the study lists
-	for (int i = 0; i < FEBioStudies(); ++i)
+	for (int i = 0; i < Studies(); ++i)
 	{
-		CFEBioStudy* study = GetFEBioStudy(i);
+		CStudy* study = GetStudy(i);
 		ar.BeginChunk(CID_FEBIOSTUDY);
 		{
 			ar.WriteChunk(CID_FEBIOSTUDY_TYPE, (int)study->GetType());
@@ -723,7 +733,7 @@ void CModelDocument::Load(IArchive& ar)
 		}
 		else if (nid == CID_FEBIOSTUDY)
 		{
-			CFEBioStudy* study = nullptr;
+			CStudy* study = nullptr;
 			while (ar.OpenChunk() == IArchive::IO_OK)
 			{
 				int nid = ar.GetChunkID();
@@ -734,8 +744,11 @@ void CModelDocument::Load(IArchive& ar)
 
 					switch (ntype)
 					{
-					case StudyType::STUDY_OPTIMIZATION:
+					case StudyType::OPTIMIZATION_STUDY:
 						study = new COptimizationStudy(this);
+						break;
+					case StudyType::FEBIO_STUDY:
+						study = new CFEBioStudy(this);
 						break;
 					default:
 						assert(false);

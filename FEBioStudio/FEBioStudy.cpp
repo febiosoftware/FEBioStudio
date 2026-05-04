@@ -30,14 +30,15 @@ SOFTWARE.*/
 #include <QDir>
 #include <FEBioRun/FEBioRun.h>
 #include <FEBio/FEBioExport4.h>
+#include <FEBioLink/FEBioClass.h>
 
-CFEBioStudy::CFEBioStudy(CModelDocument* doc, StudyType type) : m_doc(doc), m_type(type)
+CStudy::CStudy(CModelDocument* doc, StudyType type) : m_doc(doc), m_type(type)
 {
 
 }
 
 COptimizationStudy::COptimizationStudy(CModelDocument* doc)
-	: CFEBioStudy(doc, STUDY_OPTIMIZATION)
+	: CStudy(doc, OPTIMIZATION_STUDY)
 {
 	SetTypeString("Parameter optimization");
 }
@@ -55,17 +56,19 @@ bool COptimizationStudy::Run()
 	QString name = QString::fromStdString(GetName());
 	QString studyPath = name + ".opt";
 	QString febPath = name + ".feb";
-	string febfile = febPath.toStdString();
-	string optfile = studyPath.toStdString();
+	m_febioFileName = febPath.toStdString();
+	m_optionsFileName = studyPath.toStdString();
 
-	m_logFileName = dir + "/" + name + ".log";
+	QString logFileName = dir + "/" + name + ".log";
+
+	m_logFileName = logFileName.toStdString();
 
 	try {
 		setCurrentTask("Saving FEBio input file ...");
 		FEBioExport4* febExport = new FEBioExport4(doc->GetProject());
 		febExport->SetMixedMeshFlag(false);
 //		febExport->SetProgressTracker(prg);
-		bool ret = febExport->Write(febfile.c_str());
+		bool ret = febExport->Write(m_febioFileName.c_str());
 		if (ret == false)
 		{
 			setErrorString(febExport->GetErrorMessage());
@@ -73,13 +76,13 @@ bool COptimizationStudy::Run()
 		}
 
 		setCurrentTask("Saving optimization input file ...");
-		if (GenerateFEBioOptimizationFile(optfile, Options()) == false)
+		if (GenerateFEBioOptimizationFile(m_optionsFileName, Options()) == false)
 		{
 			return errf("Failed creating the optimization input file.");
 		}
 
 		setCurrentTask("Running optimization ...");
-		string cmd = "-i " + febfile + " -s " + optfile;
+		string cmd = "-i " + m_febioFileName + " -s " + m_optionsFileName;
 		int returnCode = FEBio::runModel(cmd, nullptr, nullptr, nullptr);
 		if (returnCode != 0) return errf("Study failed! FEBio error terminated.");
 	}
@@ -94,13 +97,14 @@ void COptimizationStudy::Save(OArchive& ar)
 {
 	ar.WriteChunk(DataField::StudyName   , GetName());
 	ar.WriteChunk(DataField::StudyInfo   , GetInfo());
-	ar.WriteChunk(DataField::LogFileName , m_logFileName.toStdString());
+	ar.WriteChunk(DataField::LogFileName , m_logFileName);
 	ar.WriteChunk(DataField::OptMethod   , m_ops.m_method);
 	ar.WriteChunk(DataField::ObjTol      , m_ops.m_obj_tol);
 	ar.WriteChunk(DataField::FDiffScale  , m_ops.m_f_diff_scale);
 	ar.WriteChunk(DataField::OutputLevel , m_ops.m_outLevel);
 	ar.WriteChunk(DataField::PrintLevel  , m_ops.m_printLevel);
 	ar.WriteChunk(DataField::Objective   , m_ops.m_objective);
+	ar.WriteChunk(DataField::ReportFlag  , m_ops.m_report);
 
 	// parameters
 	for (size_t i = 0; i < m_ops.m_params.size(); ++i)
@@ -163,13 +167,14 @@ void COptimizationStudy::Load(IArchive& ar)
 		{
 		case DataField::StudyName: ar.read(s); SetName(s); break;
 		case DataField::StudyInfo: ar.read(s); SetInfo(s); break;
-		case DataField::LogFileName: { ar.read(s); m_logFileName = QString::fromStdString(s); break; }
+		case DataField::LogFileName: ar.read(m_logFileName); break;
 		case DataField::OptMethod: ar.read(m_ops.m_method); break;
 		case DataField::ObjTol: ar.read(m_ops.m_obj_tol); break;
 		case DataField::FDiffScale: ar.read(m_ops.m_f_diff_scale); break;
 		case DataField::OutputLevel: ar.read(m_ops.m_outLevel); break;
 		case DataField::PrintLevel: ar.read(m_ops.m_printLevel); break;
 		case DataField::Objective: ar.read(m_ops.m_objective); break;
+		case DataField::ReportFlag: ar.read(m_ops.m_report); break;
 		// parameters
 		case DataField::Param:
 		{
@@ -258,6 +263,171 @@ void COptimizationStudy::Load(IArchive& ar)
 				ar.CloseChunk();
 			}
 			m_ops.m_ndData.push_back(v);
+			break;
+		}
+		}
+		ar.CloseChunk();
+	}
+}
+
+//=================================================================================================
+CFEBioStudy::CFEBioStudy(CModelDocument* doc, FSCoreStudy* study) : CStudy(doc, FEBIO_STUDY)
+{
+	SetStudy(study);
+}
+
+void CFEBioStudy::SetStudy(FSCoreStudy* study)
+{
+	if (m_study) delete m_study;
+	m_study = study;
+	if (m_study) SetTypeString(m_study->GetTypeString());
+}
+
+void WriteParam(XMLWriter& xml, Param& p)
+{
+	switch (p.GetParamType())
+	{
+	case Param_BOOL  : xml.add_leaf(p.GetShortName(), p.GetBoolValue  ()); break;
+	case Param_INT   : xml.add_leaf(p.GetShortName(), p.GetIntValue   ()); break;
+	case Param_FLOAT : xml.add_leaf(p.GetShortName(), p.GetFloatValue ()); break;
+	case Param_STRING: xml.add_leaf(p.GetShortName(), p.GetStringValue()); break;
+	case Param_ARRAY_DOUBLE:
+	{
+		std::vector<double> v = p.GetArrayDoubleValue();
+		xml.add_leaf(p.GetShortName(), v.data(), v.size());
+		break;
+	}
+	default:
+		assert(false);
+	}
+}
+
+void WriteModelComponent(XMLWriter& xml, FSModelComponent* pc)
+{
+	for (int i = 0; i < pc->Parameters(); ++i)
+	{
+		Param& p = pc->GetParam(i);
+		WriteParam(xml, p);
+	}
+
+	for (int i = 0; i < pc->Properties(); ++i)
+	{
+		FSProperty& prop = pc->GetProperty(i);
+		if (prop.Size() == 0) continue;
+
+		std::string name = prop.GetName();
+
+		for (size_t j = 0; j < prop.Size(); ++j)
+		{
+			FSModelComponent* pc = dynamic_cast<FSModelComponent*>(prop.GetComponent(j));
+			if (pc == nullptr) continue;
+
+			XMLElement el(name.c_str());
+			el.add_attribute("type", pc->GetTypeString());
+			xml.add_branch(el);
+			WriteModelComponent(xml, pc);
+			xml.close_branch();
+		}
+	}
+}
+
+bool WriteTaskControlFile(const std::string& filename, const std::string& taskName, FSCoreStudy* study)
+{
+	try {
+		XMLWriter xml;
+		xml.open(filename.c_str());
+		xml.add_branch(taskName.c_str());
+		WriteModelComponent(xml, study);
+		xml.close_branch();
+		xml.close();
+	}
+	catch (...)
+	{
+		return false;
+	}
+	return true;
+}
+
+bool CFEBioStudy::Run()
+{
+	if (m_study == nullptr) return errf("No study data found!");
+
+	CModelDocument* doc = GetDocument();
+	std::string filepath = doc->GetDocFilePath();
+	QFileInfo fi(QString::fromStdString(filepath));
+	QString dir = fi.absolutePath();
+
+	// set the working directory to this folder
+	QDir::setCurrent(dir);
+
+	QString name = QString::fromStdString(GetName());
+	QString studyPath = name + ".opt";
+	QString febPath = name + ".feb";
+	QString reportPath = name + ".febr";
+	m_febioFileName = febPath.toStdString();
+	m_optionsFileName = studyPath.toStdString();
+	m_reportFile = reportPath.toStdString();
+
+	try {
+		setCurrentTask("Saving FEBio input file ...");
+		FEBioExport4* febExport = new FEBioExport4(doc->GetProject());
+		febExport->SetMixedMeshFlag(false);
+		//		febExport->SetProgressTracker(prg);
+		bool ret = febExport->Write(m_febioFileName.c_str());
+		if (ret == false)
+		{
+			setErrorString(febExport->GetErrorMessage());
+			return false;
+		}
+
+		std::string taskName = m_study->GetTypeString();
+
+		setCurrentTask("Saving study control file ...");
+		if (WriteTaskControlFile(m_optionsFileName, taskName, m_study) == false)
+		{
+			return errf("Failed creating the study control file.");
+		}
+
+		setCurrentTask("Running study ...");
+		string cmd = "-i " + m_febioFileName + " -task=\"" + taskName + "\" " + m_optionsFileName;
+		int returnCode = FEBio::runModel(cmd, nullptr, nullptr, nullptr);
+		if (returnCode != 0) return errf("Study failed! FEBio error terminated.");
+	}
+	catch (...)
+	{
+		return errf("Something went terribly wrong!");
+	}
+	return true;
+}
+
+void CFEBioStudy::Save(OArchive& ar)
+{
+	ar.WriteChunk(StudyName, GetName());
+	ar.WriteChunk(StudyInfo, GetInfo());
+
+	if (m_study)
+	{
+		ar.BeginChunk(StudyData);
+		m_study->Save(ar);
+		ar.EndChunk();
+	}
+}
+
+void CFEBioStudy::Load(IArchive& ar)
+{
+	std::string s;
+	while (ar.OpenChunk() == IArchive::IO_OK)
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case StudyName: ar.read(s); SetName(s); break;
+		case StudyInfo: ar.read(s); SetInfo(s); break;
+		case StudyData:
+		{
+			FSCoreStudy* study = new FSCoreStudy(GetDocument()->GetFSModel());
+			study->Load(ar);
+			SetStudy(study);
 			break;
 		}
 		}
