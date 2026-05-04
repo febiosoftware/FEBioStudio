@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FSProject.h>
 #include <MeshIO/FSFileImport.h>
-#include <FEBioXML/XMLReader.h>
+#include <FECore/XMLReader.h>
 #include "FEBioFormat.h"
 
 // Implements a class to import FEBio files

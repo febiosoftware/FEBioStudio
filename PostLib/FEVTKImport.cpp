@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <VTKLib/PVTUFileReader.h>
 #include <VTKLib/PVDFileReader.h>
 #include <VTKLib/VTKTools.h>
-#include <FEBioXML/XMLReader.h>
+#include <FECore/XMLReader.h>
 
 using namespace Post;
 using namespace std;
