@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "Palette.h"
-#include <FEBioXML/XMLWriter.h>
-#include <FEBioXML/XMLReader.h>
+#include <FECore/XMLWriter.h>
+#include <FECore/XMLReader.h>
 
 using std::string;
 

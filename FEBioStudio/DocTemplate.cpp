@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "DocTemplate.h"
 #include "ModelDocument.h"
 #include <QtCore/QDir>
-#include <FEBioXML/XMLReader.h>
+#include <FECore/XMLReader.h>
 #include <FEMLib/FSProject.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>

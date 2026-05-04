@@ -31,8 +31,8 @@ SOFTWARE.*/
     #include <XMLReader.h>
     #include <XMLWriter.h>
 #else
-    #include <FEBioXML/XMLReader.h>
-    #include <FEBioXML/XMLWriter.h>
+    #include <FECore/XMLReader.h>
+    #include <FECore/XMLWriter.h>
 #endif
 
 CPluginXML::CPluginXML(CPluginManager* manager) 
