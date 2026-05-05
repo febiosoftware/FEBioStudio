@@ -50,8 +50,8 @@ public:
 	void heading2(const QString& s) { append(wrap("h2", s)); }
 	void heading3(const QString& s) { append(wrap("h3", s)); }
 	void paragraph(const QString& s) { append(wrap("p", s)); }
-	void pre(const QString& s) { append(wrap("pre", s)); }
 
+	QString pre(const QString& s) { return wrap("pre", s); }
 	QString italic(const QString& s) { return wrap("i", s); }
 	QString bold(const QString& s) { return wrap("b", s); }
 

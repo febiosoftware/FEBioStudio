@@ -48,6 +48,7 @@ bool CFEBioStudyReportDoc::OpenReportFile(const QString& fileName)
 	size_t nsections = report.Sections();
 	if (nsections > 0)
 	{
+		bool tableOpen = false;
 		for (size_t i = 0; i < nsections; ++i)
 		{
 			const FEReportSection& sec = report.GetSection(i);
@@ -57,6 +58,26 @@ bool CFEBioStudyReportDoc::OpenReportFile(const QString& fileName)
 			for (size_t j = 0; j < items; ++j)
 			{
 				const FEReportItem& item = sec.GetItem(j);
+
+				// process value items first. These will be displayed in a table format.
+				if (const auto* valItem = dynamic_cast<const FEReportValue*>(&item))
+				{
+					if (!tableOpen) { html.table_start(); tableOpen = true; }
+					QStringList row;
+					QString name = QString::fromStdString(valItem->name);
+					QString value = QString::fromStdString(valItem->value);
+					if (!valItem->units.empty())
+					{
+						value += " " + QString::fromStdString(valItem->units);
+					}
+					row << html.bold(name) << value;
+					html.table_row(row);
+				}
+				else if (tableOpen)
+				{
+					html.table_end();
+					tableOpen = false;
+				}
 
 				if (const auto* txtItem = dynamic_cast<const FEReportText*>(&item))
 				{
@@ -70,10 +91,6 @@ bool CFEBioStudyReportDoc::OpenReportFile(const QString& fileName)
 						html.paragraph(html.link(fileName));
 					else
 						html.paragraph(description + ": " + html.link(fileName));
-				}
-				else if (const auto* valItem = dynamic_cast<const FEReportValue*>(&item))
-				{
-					html.paragraph(html.bold(QString::fromStdString(valItem->name) + ": ") + QString::fromStdString(valItem->value) + " " + QString::fromStdString(valItem->units));
 				}
 				else if (const auto* tableItem = dynamic_cast<const FEReportTable*>(&item))
 				{
@@ -272,10 +289,21 @@ bool CFEBioStudyReportDoc::OpenReportFile(const QString& fileName)
 						html.break_line();
 					}
 				}
+				else if (const auto* valItem = dynamic_cast<const FEReportValue*>(&item))
+				{
+					// already processed above to display in table format
+				}
 				else
 				{
 					html.paragraph(html.italic("Unknown item type: ") + QString::fromStdString(item.Type()));
 				}
+			}
+
+			// make sure to close any open table at the end of the file
+			if (tableOpen)
+			{
+				html.table_end();
+				tableOpen = false;
 			}
 		}
 	}

@@ -336,7 +336,10 @@ bool WriteTaskControlFile(const std::string& filename, const std::string& taskNa
 	try {
 		XMLWriter xml;
 		xml.open(filename.c_str());
-		xml.add_branch(taskName.c_str());
+
+		XMLElement el("febio_study");
+		el.add_attribute("type", taskName.c_str());
+		xml.add_branch(el);
 		WriteModelComponent(xml, study);
 		xml.close_branch();
 		xml.close();
