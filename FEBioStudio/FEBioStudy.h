@@ -49,6 +49,9 @@ public:
 	std::string GetFEBioFileName() const { return m_febioFileName; }
 	std::string GetOptionsFileName() const { return m_optionsFileName; }
 
+	void SetFEBioFileName(const std::string& fileName) { m_febioFileName = fileName; }
+	void SetOptionsFileName(const std::string& fileName) { m_optionsFileName = fileName; }
+
 	virtual std::string GetOutputFileName() const { return std::string(); }
 
 	StudyType GetType() const { return m_type; }

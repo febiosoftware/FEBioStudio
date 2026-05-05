@@ -566,6 +566,10 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	{
 		OpenRemoteFile(fileName);
 	}
+	else if (ext == "opt")
+	{
+		OpenFEBioStudyFile(fileName);
+	}
 	else if (openExternal)
 	{
 		// Open any other files (e.g. log files) with the system's associated program

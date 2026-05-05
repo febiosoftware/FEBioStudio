@@ -548,6 +548,29 @@ bool CMainWindow::OpenFEBioReportFile(const QString& fileName)
 	return true;
 }
 
+bool CMainWindow::OpenFEBioStudyFile(const QString& fileName)
+{
+	// make sure we have an active model document
+	CModelDocument* modelDoc = GetModelDocument();
+	if (modelDoc == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "No active model document.");
+		return false;
+	}
+
+	// add the study file to the model document
+	CFEBioStudy* study = modelDoc->OpenStudyFile(fileName.toStdString());
+	if (study == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Failed to open study file:\n" + fileName);
+		return false;
+	}
+
+	UpdateModel(study);
+
+	return true;
+}
+
 QString CMainWindow::GetExportGeometryFilename(QString& formatOption)
 {
 	QStringList filters;

@@ -47,6 +47,9 @@ SOFTWARE.*/
 #include "DocManager.h"
 #include <ImageLib/ImageModel.h>
 #include "PluginManager.h"
+#include <FECore/XMLReader.h>
+#include <FEBio/FEBioFormat4.h>
+#include <QFileInfo>
 
 class CModelContext
 {
@@ -1415,4 +1418,47 @@ void CModelDocument::AssignColor(GPart* pg, GLColor c)
 		GMaterial* mat = GetFSModel()->GetMaterialFromID(matID);
 		if (mat) mat->SetColor(c);
 	}
+}
+
+CFEBioStudy* CModelDocument::OpenStudyFile(const std::string& fileName)
+{
+	CFEBioStudy* febStudy = nullptr;
+
+	// open the file
+	try {
+		XMLReader xml;
+		if (xml.Open(fileName.c_str()) == false) return nullptr;
+
+		// find the febio_study node
+		XMLTag tag;
+		if (xml.FindTag("febio_study", tag) == false) return nullptr;
+		// get the type attribute
+		const char* sztype = tag.AttributeValue("type");
+		if (sztype == nullptr) return nullptr;
+
+		// try to allocate the correct type of study
+		FSModel& fem = *GetFSModel();
+		std::unique_ptr<FSCoreStudy> study(FEBio::CreateStudy(sztype, &fem));
+		if (study == nullptr) return nullptr;
+
+		FEBioInputModel dummy(fem);
+		FEBioFormat4 fmt(nullptr, dummy);
+		fmt.ParseModelComponent(study.get(), tag);
+
+		febStudy = new CFEBioStudy(this, study.release());
+		febStudy->SetOptionsFileName(fileName);
+
+		QFileInfo fi(QString::fromStdString(fileName));
+		febStudy->SetName(fi.baseName().toStdString());
+
+		AddStudy(febStudy);
+
+		xml.Close();
+	}
+	catch (...)
+	{
+		return nullptr;
+	}
+
+	return febStudy;
 }

@@ -361,6 +361,7 @@ private:
 	void OpenTextFile(const QString& fileName);
 	bool OpenFEBioLogFile(const QString& fileName);
 	bool OpenFEBioReportFile(const QString& fileName);
+	bool OpenFEBioStudyFile(const QString& fileName);
 
 	bool SaveDocument(CDocument* doc, const QString& fileName);
 

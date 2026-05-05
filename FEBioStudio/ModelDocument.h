@@ -139,6 +139,9 @@ public:
 	// import geometry (geometry is added to current project)
 	bool ImportGeometry(FSFileImport* preader, const char* szfile);
 
+	// open a study file
+	CFEBioStudy* OpenStudyFile(const std::string& fileName);
+
 public:
 	bool ExportMaterials(const std::string& fileName, const std::vector<GMaterial*>& matList);
 	bool ImportMaterials(const std::string& fileName);

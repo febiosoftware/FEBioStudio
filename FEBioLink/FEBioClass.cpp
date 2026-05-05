@@ -1440,6 +1440,16 @@ FSGenericClass* FEBio::CreateLinearSolver(const std::string& typeStr, FSModel* f
 	else return CreateModelComponent<FSGenericClass>(FELINEARSOLVER_ID, typeStr, fem);
 }
 
+FSCoreStudy* FEBio::CreateStudy(const std::string& typeStr, FSModel* fem)
+{
+	if (typeStr.empty())
+	{
+		FSCoreStudy* pc = new FSCoreStudy(fem);
+		return pc;
+	}
+	else return CreateModelComponent<FSCoreStudy>(FETASK_ID, typeStr, fem);
+}
+
 FEShellFormulation* FEBio::CreateShellFormulation(const std::string& typeStr, FSModel* fem)
 {
 	return CreateModelComponent<FEShellFormulation>(FESHELLDOMAIN_ID, typeStr, fem);
