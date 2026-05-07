@@ -128,7 +128,13 @@ bool CFEBioStudyReportDoc::OpenReportFile(const QString& fileName)
 								}
 								else if (std::holds_alternative<std::string>(entry))
 								{
-									row << QString::fromStdString(std::get<std::string>(entry));
+									QString val = QString::fromStdString(std::get<std::string>(entry));
+									if (val.compare("success", Qt::CaseInsensitive) == 0)
+										row << html.bg_color(val, "green");
+									else if (val.compare("failed", Qt::CaseInsensitive) == 0)
+										row << html.bg_color(val, "red");
+									else
+										row << val;
 								}
 								else row << "";
 							}

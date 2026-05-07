@@ -1531,9 +1531,19 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 				}
 				else
 				{
-					CPropertySelector* pc = new CPropertySelector(&prop, pcbi, item->m_index, item->GetFSModel(), parent);
-					QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
-					return pc;
+					if (!prop.IsFixed())
+					{
+						CPropertySelector* pc = new CPropertySelector(&prop, pcbi, item->m_index, item->GetFSModel(), parent);
+						QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
+						return pc;
+					}
+					else
+					{
+						QLineEdit* pw = new QLineEdit(parent);
+						pw->setReadOnly(true);
+						if (pcbi) pw->setText(QString::fromStdString(pcbi->GetTypeString()));
+						return pw;
+					}
 				}
 			}
 		}

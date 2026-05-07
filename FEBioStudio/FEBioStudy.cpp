@@ -323,7 +323,9 @@ void WriteModelComponent(XMLWriter& xml, FSModelComponent* pc)
 			if (pc == nullptr) continue;
 
 			XMLElement el(name.c_str());
-			el.add_attribute("type", pc->GetTypeString());
+			if (!prop.IsFixed())
+				el.add_attribute("type", pc->GetTypeString());
+
 			xml.add_branch(el);
 			WriteModelComponent(xml, pc);
 			xml.close_branch();

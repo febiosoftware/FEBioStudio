@@ -156,12 +156,18 @@ void FEBioFormat::SetSkipGeometryFlag(bool b)
 
 void FEBioFormat::ParseUnknownTag(XMLTag& tag)
 {
-	m_fileReader->ParseUnknownTag(tag);
+	if (m_fileReader)
+		m_fileReader->ParseUnknownTag(tag);
+	else
+		tag.m_preader->SkipTag(tag);
 }
 
 void FEBioFormat::ParseUnknownAttribute(XMLTag& tag, const char* szatt)
 {
-	m_fileReader->ParseUnknownAttribute(tag, szatt);
+	if (m_fileReader)
+		m_fileReader->ParseUnknownAttribute(tag, szatt);
+	else
+		tag.m_preader->SkipTag(tag);
 }
 
 //-----------------------------------------------------------------------------
