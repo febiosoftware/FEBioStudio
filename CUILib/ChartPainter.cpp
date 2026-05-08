@@ -532,13 +532,25 @@ void ChartPainter::DrawLegend(const CGraphData& data)
 	int Y0 = YC - N / 2 * (fh + 2);
 	int Y1 = Y0 + N * (fh + 2);
 
-	// draw the lines
+	// draw the lines and markers
 	for (int i = 0; i < N; ++i)
 	{
 		CPlotData& plot = *data.m_data[i];
 		m.painter.setPen(QPen(plot.lineColor(), 2));
 		int Y = Y0 + i * (Y1 - Y0) / N;
 		m.painter.drawLine(X0, Y, X0 + LW, Y);
+
+		if (plot.markerType() > 0)
+		{
+			QPen oldPen = m.painter.pen();
+			m.painter.setBrush(plot.fillColor());
+
+			// don't use pen for markers
+			m.painter.setPen(Qt::NoPen);
+			
+			drawMarker(m.painter, QPointF(X0 + LW / 2, Y), plot.markerSize(), plot.markerType());
+			m.painter.setPen(oldPen);
+		}
 	}
 
 	// draw the text
@@ -593,12 +605,16 @@ void ChartPainter::DrawLineChart(CPlotData& data)
 	// draw the marks
 	if (data.markerType() > 0)
 	{
+		QPen oldPen = m.painter.pen();
 		m.painter.setBrush(data.fillColor());
+		m.painter.setPen(Qt::NoPen);
 		for (int i = 0; i < N; ++i)
 		{
 			p1 = m.ViewToPlot(data.Point(i));
 			drawMarker(m.painter, p1, data.markerSize(), data.markerType());
 		}
+
+		m.painter.setPen(oldPen);
 	}
 }
 

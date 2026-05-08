@@ -121,6 +121,7 @@ void LineChartBuilder::AddLine(const std::vector<QPointF>& points, const QString
 	plot->setLabel(label);
 	plot->setLineColor(pen.color());
 	plot->setLineWidth(pen.width());
+	plot->setFillColor(pen.color());
 	data.AddPlotData(plot);
 }
 
