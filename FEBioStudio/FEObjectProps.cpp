@@ -1018,7 +1018,7 @@ void CStudyProps::BuildProperties()
 
 	addProperty("FEBio File:"  , CProperty::ExternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
 	addProperty("Options File:", CProperty::ExternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
-	addProperty("Summary File:", CProperty::ExternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
+	addProperty("Output File:" , CProperty::InternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
 }
 
 QVariant CStudyProps::GetPropertyValue(int i)
@@ -1026,31 +1026,41 @@ QVariant CStudyProps::GetPropertyValue(int i)
 	CStudy* study = m_pobj;
 	if (study == nullptr) return QVariant();
 
+	CDocument* doc = study->GetDocument();
+
 	switch (i)
 	{
 	case 0:
 	{
 		QString febFile = QString::fromStdString(study->GetFEBioFileName());
+		QString febPath = febFile;
+		if (doc) febPath = doc->ToAbsolutePath(febFile);
 
 		QStringList fileNames;
-		fileNames.append(febFile);
+		fileNames.append(febPath);
 		fileNames.append(febFile);
 		return fileNames;
 	}
 	case 1:
 	{
 		QString optFile = QString::fromStdString(study->GetOptionsFileName());
+		QString optPath = optFile;
+		if (doc) optPath = doc->ToAbsolutePath(optFile);
+
 		QStringList fileNames;
-		fileNames.append(optFile);
+		fileNames.append(optPath);
 		fileNames.append(optFile);
 		return fileNames;
 	}
 	case 2:
 	{
-		QString summaryFile = QString::fromStdString(study->GetOutputFileName());
+		QString outFile = QString::fromStdString(study->GetOutputFileName());
+		QString outPath = outFile;
+		if (doc) outPath = doc->ToAbsolutePath(outFile);
+
 		QStringList fileNames;
-		fileNames.append(summaryFile);
-		fileNames.append(summaryFile);
+		fileNames.append(outPath);
+		fileNames.append(outFile);
 		return fileNames;
 	}
 	}

@@ -27,10 +27,7 @@ SOFTWARE.*/
 #include "FEBioStudy.h"
 #include "ModelDocument.h"
 #include <QFileInfo>
-#include <QDir>
-#include <FEBioRun/FEBioRun.h>
 #include <FEBio/FEBioExport4.h>
-#include <FEBioLink/FEBioClass.h>
 
 CStudy::CStudy(CModelDocument* doc, StudyType type) : m_doc(doc), m_type(type)
 {
@@ -43,16 +40,8 @@ COptimizationStudy::COptimizationStudy(CModelDocument* doc)
 	SetTypeString("Parameter optimization");
 }
 
-bool COptimizationStudy::Run()
+bool COptimizationStudy::WriteFiles(const QString& dir)
 {
-	CModelDocument* doc = GetDocument();
-	std::string filepath = doc->GetDocFilePath();
-	QFileInfo fi(QString::fromStdString(filepath));
-	QString dir = fi.absolutePath();
-
-	// set the working directory to this folder
-	QDir::setCurrent(dir);
-
 	QString name = QString::fromStdString(GetName());
 	QString studyPath = name + ".opt";
 	QString febPath = name + ".feb";
@@ -61,13 +50,13 @@ bool COptimizationStudy::Run()
 
 	QString logFileName = dir + "/" + name + ".log";
 
-	m_logFileName = logFileName.toStdString();
+	m_outputFile = logFileName.toStdString();
 
 	try {
 		setCurrentTask("Saving FEBio input file ...");
-		FEBioExport4* febExport = new FEBioExport4(doc->GetProject());
+		FEBioExport4* febExport = new FEBioExport4(GetDocument()->GetProject());
 		febExport->SetMixedMeshFlag(false);
-//		febExport->SetProgressTracker(prg);
+		//		febExport->SetProgressTracker(prg);
 		bool ret = febExport->Write(m_febioFileName.c_str());
 		if (ret == false)
 		{
@@ -80,31 +69,29 @@ bool COptimizationStudy::Run()
 		{
 			return errf("Failed creating the optimization input file.");
 		}
-
-		setCurrentTask("Running optimization ...");
-		string cmd = "-i " + m_febioFileName + " -s " + m_optionsFileName;
-		int returnCode = FEBio::runModel(cmd, nullptr, nullptr, nullptr);
-		if (returnCode != 0) return errf("Study failed! FEBio error terminated.");
 	}
 	catch (...)
 	{
 		return errf("Something went terribly wrong!");
 	}
 	return true;
+
 }
 
 void COptimizationStudy::Save(OArchive& ar)
 {
-	ar.WriteChunk(DataField::StudyName   , GetName());
-	ar.WriteChunk(DataField::StudyInfo   , GetInfo());
-	ar.WriteChunk(DataField::LogFileName , m_logFileName);
-	ar.WriteChunk(DataField::OptMethod   , m_ops.m_method);
-	ar.WriteChunk(DataField::ObjTol      , m_ops.m_obj_tol);
-	ar.WriteChunk(DataField::FDiffScale  , m_ops.m_f_diff_scale);
-	ar.WriteChunk(DataField::OutputLevel , m_ops.m_outLevel);
-	ar.WriteChunk(DataField::PrintLevel  , m_ops.m_printLevel);
-	ar.WriteChunk(DataField::Objective   , m_ops.m_objective);
-	ar.WriteChunk(DataField::ReportFlag  , m_ops.m_report);
+	ar.WriteChunk(DataField::StudyName      , GetName());
+	ar.WriteChunk(DataField::StudyInfo      , GetInfo());
+	ar.WriteChunk(DataField::FEBFileName    , m_febioFileName);
+	ar.WriteChunk(DataField::OptionsFileName, m_optionsFileName);
+	ar.WriteChunk(DataField::OutputFileName , m_outputFile);
+	ar.WriteChunk(DataField::OptMethod      , m_ops.m_method);
+	ar.WriteChunk(DataField::ObjTol         , m_ops.m_obj_tol);
+	ar.WriteChunk(DataField::FDiffScale     , m_ops.m_f_diff_scale);
+	ar.WriteChunk(DataField::OutputLevel    , m_ops.m_outLevel);
+	ar.WriteChunk(DataField::PrintLevel     , m_ops.m_printLevel);
+	ar.WriteChunk(DataField::Objective      , m_ops.m_objective);
+	ar.WriteChunk(DataField::ReportFlag     , m_ops.m_report);
 
 	// parameters
 	for (size_t i = 0; i < m_ops.m_params.size(); ++i)
@@ -167,7 +154,9 @@ void COptimizationStudy::Load(IArchive& ar)
 		{
 		case DataField::StudyName: ar.read(s); SetName(s); break;
 		case DataField::StudyInfo: ar.read(s); SetInfo(s); break;
-		case DataField::LogFileName: ar.read(m_logFileName); break;
+		case DataField::FEBFileName: ar.read(m_febioFileName); break;
+		case DataField::OptionsFileName: ar.read(m_optionsFileName); break;
+		case DataField::OutputFileName: ar.read(m_outputFile); break;
 		case DataField::OptMethod: ar.read(m_ops.m_method); break;
 		case DataField::ObjTol: ar.read(m_ops.m_obj_tol); break;
 		case DataField::FDiffScale: ar.read(m_ops.m_f_diff_scale); break;
@@ -276,6 +265,11 @@ CFEBioStudy::CFEBioStudy(CModelDocument* doc, FSCoreStudy* study) : CStudy(doc, 
 	SetStudy(study);
 }
 
+std::string CFEBioStudy::GetStudyType() const 
+{ 
+	return (m_study ? m_study->GetTypeString() : "");
+}
+
 void CFEBioStudy::SetStudy(FSCoreStudy* study)
 {
 	if (m_study) delete m_study;
@@ -353,31 +347,20 @@ bool WriteTaskControlFile(const std::string& filename, const std::string& taskNa
 	return true;
 }
 
-bool CFEBioStudy::Run()
+bool CFEBioStudy::WriteFiles(const QString& dir)
 {
-	if (m_study == nullptr) return errf("No study data found!");
-
-	CModelDocument* doc = GetDocument();
-	std::string filepath = doc->GetDocFilePath();
-	QFileInfo fi(QString::fromStdString(filepath));
-	QString dir = fi.absolutePath();
-
-	// set the working directory to this folder
-	QDir::setCurrent(dir);
-
 	QString name = QString::fromStdString(GetName());
 	QString studyPath = name + ".opt";
 	QString febPath = name + ".feb";
 	QString reportPath = name + ".febr";
 	m_febioFileName = febPath.toStdString();
 	m_optionsFileName = studyPath.toStdString();
-	m_reportFile = reportPath.toStdString();
+	m_outputFile = reportPath.toStdString();
 
 	try {
 		setCurrentTask("Saving FEBio input file ...");
-		FEBioExport4* febExport = new FEBioExport4(doc->GetProject());
+		FEBioExport4* febExport = new FEBioExport4(GetDocument()->GetProject());
 		febExport->SetMixedMeshFlag(false);
-		//		febExport->SetProgressTracker(prg);
 		bool ret = febExport->Write(m_febioFileName.c_str());
 		if (ret == false)
 		{
@@ -392,23 +375,22 @@ bool CFEBioStudy::Run()
 		{
 			return errf("Failed creating the study control file.");
 		}
-
-		setCurrentTask("Running study ...");
-		string cmd = "-i " + m_febioFileName + " -task=\"" + taskName + "\" " + m_optionsFileName;
-		int returnCode = FEBio::runModel(cmd, nullptr, nullptr, nullptr);
-		if (returnCode != 0) return errf("Study failed! FEBio error terminated.");
 	}
 	catch (...)
 	{
 		return errf("Something went terribly wrong!");
 	}
+
 	return true;
 }
 
 void CFEBioStudy::Save(OArchive& ar)
 {
-	ar.WriteChunk(StudyName, GetName());
-	ar.WriteChunk(StudyInfo, GetInfo());
+	ar.WriteChunk(StudyName      , GetName());
+	ar.WriteChunk(StudyInfo      , GetInfo());
+	ar.WriteChunk(FEBFileName    , m_febioFileName);
+	ar.WriteChunk(OptionsFileName, m_optionsFileName);
+	ar.WriteChunk(OutputFileName , m_outputFile);
 
 	if (m_study)
 	{
@@ -428,6 +410,9 @@ void CFEBioStudy::Load(IArchive& ar)
 		{
 		case StudyName: ar.read(s); SetName(s); break;
 		case StudyInfo: ar.read(s); SetInfo(s); break;
+		case FEBFileName: ar.read(m_febioFileName); break;
+		case OptionsFileName: ar.read(m_optionsFileName); break;
+		case OutputFileName: ar.read(m_outputFile); break;
 		case StudyData:
 		{
 			FSCoreStudy* study = new FSCoreStudy(GetDocument()->GetFSModel());

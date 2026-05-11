@@ -44,6 +44,8 @@ SOFTWARE.*/
 #include <QDebug>
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioClass.h>
+#include <FEBioRun/FEBioRun.h>
+#include "FEBioThread.h"
 #include "FEBioStudyReportDoc.h"
 
 
@@ -548,22 +550,6 @@ void CMainWindow::on_actionFEBioCheck_triggered()
 	if (modelDoc) DoModelCheck(modelDoc, false);
 }
 
-class RunStudyThread : public CustomThread
-{
-public:
-	RunStudyThread(CStudy* study) : m_study(study) {}
-
-	void run() Q_DECL_OVERRIDE
-	{
-		bool b = false;
-		if (m_study) b = m_study->Run();
-		emit resultReady(b);
-	}
-
-private:
-	CStudy* m_study;
-};
-
 void CMainWindow::RunOptimizationStudy(COptimizationStudy* study)
 {
 	// let's do some sanity checks
@@ -594,7 +580,7 @@ void CMainWindow::RunOptimizationStudy(COptimizationStudy* study)
 	}
 
 	// run the study
-	CDlgStartThread dlg(this, new RunStudyThread(study));
+	CDlgStartThread dlg(this, new CFEBioStudyThread(modelDoc, study));
 	if (dlg.exec())
 	{
 		QString msg = QString("The study \"%1\" completed successfully.").arg(name);
@@ -680,8 +666,13 @@ void CMainWindow::RunFEBioStudy(CFEBioStudy* study)
 		return;
 	}
 
+	// clear output for next job
+	ClearOutput();
+	ShowLogPanel();
+	ui->logPanel->ShowLog(CLogPanel::FEBIO_LOG);
+
 	// run the study
-	CDlgStartThread dlg(this, new RunStudyThread(study));
+	CDlgStartThread dlg(this, new CFEBioStudyThread(modelDoc, study));
 	if (dlg.exec())
 	{
 		QString msg = QString("The study \"%1\" completed successfully.").arg(name);

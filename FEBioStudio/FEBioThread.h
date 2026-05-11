@@ -27,33 +27,55 @@ SOFTWARE.*/
 #include <QProcess> // for QProcess::ExitStatus
 #include <QThread>
 #include <QtCore>
+#include "CustomThread.h"
 
 class CFEBioJob;
 class CMainWindow;
+class CDocument;
+class CStudy;
 
-class CFEBioThread : public QThread
+class CFEBioThread : public CustomThread
 {
 	Q_OBJECT
 
 public:
-	CFEBioThread(CMainWindow* wnd, CFEBioJob* job, QObject* parent);
-
-	void run() Q_DECL_OVERRIDE;
+	CFEBioThread();
 
 	void KillThread();
 
 	void appendLog(const char* sz);
 
-	QString GetOutput();
+	QString GetOutput() override;
 
 signals:
 	void resultsReady(int exitCode, QProcess::ExitStatus es);
 	void outputReady();
 
-private:
-	CMainWindow* m_wnd;
-	CFEBioJob* m_job;
+protected:
 	QString	m_outputBuffer;
 	bool	m_isOutputReady;
 	QMutex	m_mutex;
+};
+
+class CFEBioJobThread : public CFEBioThread
+{
+public:
+	CFEBioJobThread(CMainWindow* wnd, CFEBioJob* job, QObject* parent);
+
+	void run() Q_DECL_OVERRIDE;
+
+private:
+	CFEBioJob* m_job;
+};
+
+class CFEBioStudyThread : public CFEBioThread
+{
+public:
+	CFEBioStudyThread(CDocument* doc, CStudy* study) : m_doc(doc), m_study(study) {}
+
+	void run() Q_DECL_OVERRIDE;
+
+private:
+	CDocument* m_doc;
+	CStudy* m_study;
 };

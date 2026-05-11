@@ -36,6 +36,7 @@ enum StudyType
 };
 
 class CModelDocument;
+class QString;
 
 class CStudy : public FSThreadedTask
 {
@@ -44,15 +45,19 @@ public:
 
 	CModelDocument* GetDocument() { return m_doc; }
 
-	virtual bool Run() = 0;
+	// write input files for the study.
+	// the dir parameter specifies the directory where the files should be written.
+	virtual bool WriteFiles(const QString& dir) = 0;
+
+	virtual std::string GetStudyType() const = 0;
 
 	std::string GetFEBioFileName() const { return m_febioFileName; }
 	std::string GetOptionsFileName() const { return m_optionsFileName; }
+	std::string GetOutputFileName() const { return m_outputFile; }
 
 	void SetFEBioFileName(const std::string& fileName) { m_febioFileName = fileName; }
 	void SetOptionsFileName(const std::string& fileName) { m_optionsFileName = fileName; }
-
-	virtual std::string GetOutputFileName() const { return std::string(); }
+	void SetOutputFileName(const std::string& fileName) { m_outputFile = fileName; }
 
 	StudyType GetType() const { return m_type; }
 
@@ -61,6 +66,7 @@ public:
 protected:
 	std::string m_febioFileName;
 	std::string m_optionsFileName;
+	std::string m_outputFile;
 
 private:
 	CModelDocument* m_doc;
@@ -73,7 +79,7 @@ class COptimizationStudy : public CStudy
 	enum DataField {
 		StudyName,
 		StudyInfo,
-		LogFileName,
+		OutputFileName,
 		OptMethod,
 		ObjTol,
 		FDiffScale,
@@ -89,6 +95,8 @@ class COptimizationStudy : public CStudy
 		NDVar,
 		NDData,
 		ReportFlag,
+		FEBFileName,
+		OptionsFileName,
 	};
 
 public:
@@ -97,9 +105,9 @@ public:
 	void SetOptions(FEBioOpt ops) { m_ops = ops; }
 	FEBioOpt& Options() { return m_ops; }
 
-	bool Run() override;
+	bool WriteFiles(const QString& dir) override;
 
-	std::string GetOutputFileName() const override { return m_logFileName; }
+	std::string GetStudyType() const override { return "optimize"; };
 
 public:
 	void Save(OArchive& ar) override;
@@ -107,7 +115,6 @@ public:
 
 private:
 	FEBioOpt m_ops;
-	std::string m_logFileName;
 };
 
 class CFEBioStudy : public CStudy
@@ -117,12 +124,17 @@ class CFEBioStudy : public CStudy
 		StudyName,
 		StudyInfo,
 		StudyData,
+		FEBFileName,
+		OptionsFileName,
+		OutputFileName,
 	};
 
 public:
 	CFEBioStudy(CModelDocument* doc, FSCoreStudy* study = nullptr);
-	bool Run() override;
-	std::string GetOutputFileName() const override { return m_reportFile; }
+
+	bool WriteFiles(const QString& dir) override;
+
+	std::string GetStudyType() const override;
 
 private:
 	void SetStudy(FSCoreStudy* study);
@@ -135,5 +147,4 @@ public:
 
 private:
 	FSCoreStudy* m_study = nullptr;
-	std::string m_reportFile;
 };

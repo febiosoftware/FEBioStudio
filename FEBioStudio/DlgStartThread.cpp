@@ -41,6 +41,7 @@ using dseconds = duration<double>;
 class CDlgStartThreadUI
 {
 public:
+	CMainWindow*	m_wnd;
 	CustomThread*	m_thread;
 	bool			m_bdone;
 	bool			m_cancelled;
@@ -95,10 +96,11 @@ public:
 
 
 //=============================================================================
-CDlgStartThread::CDlgStartThread(CMainWindow* parent, CustomThread* thread) : QDialog(parent), ui(new CDlgStartThreadUI)
+CDlgStartThread::CDlgStartThread(CMainWindow* parent, CustomThread* thread = nullptr) : QDialog(parent), ui(new CDlgStartThreadUI)
 {
 	ui->setup(this);
 	
+	ui->m_wnd = parent;
 	ui->m_thread = thread;
 
 	if (parent)
@@ -107,6 +109,7 @@ CDlgStartThread::CDlgStartThread(CMainWindow* parent, CustomThread* thread) : QD
 	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	QObject::connect(ui->m_thread, SIGNAL(resultReady(bool)), this, SLOT(threadFinished(bool)));
 	QObject::connect(ui->m_thread, SIGNAL(taskChanged(QString)), ui->m_task, SLOT(setText(QString)));
+	QObject::connect(ui->m_thread, SIGNAL(outputReady()), this, SLOT(onReadyRead()));
 	
 	if (parent)
 	{
@@ -233,4 +236,13 @@ void CDlgStartThread::threadFinished(bool b)
 bool CDlgStartThread::GetReturnCode()
 {
 	return ui->m_breturn;
+}
+
+void CDlgStartThread::onReadyRead()
+{
+	if (ui->m_thread && ui->m_wnd)
+	{
+		QString s = ui->m_thread->GetOutput();
+		if (!s.isEmpty()) ui->m_wnd->AddOutputEntry(s);
+	}
 }
