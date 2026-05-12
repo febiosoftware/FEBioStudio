@@ -176,7 +176,7 @@ public:
 
 	void UpdateSize()
 	{
-		int currentSize = 0;
+		qint64 currentSize = 0;
 
 		for(int index = 0; index < childCount(); index++)
 		{
