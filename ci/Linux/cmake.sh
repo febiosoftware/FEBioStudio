@@ -14,6 +14,7 @@ run_cmake() {
         -DUSE_PYTHON=ON \
 		-DBUILD_UPDATER=ON \
 		-DBUILD_TESTS=ON \
+		-DUSE_MKL_OMP=ON \
         -DFFMPEG_INC=/usr/local/include \
         -DFFMPEG_LIB_DIR=/usr/local/lib \
         -DPython3_ROOT_DIR=/home/mherron/.pyenv/versions/3.13.1 \
