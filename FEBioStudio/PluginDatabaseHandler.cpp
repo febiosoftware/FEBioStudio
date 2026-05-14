@@ -80,7 +80,7 @@ void CPluginDatabaseHandler::update(QJsonDocument& jsonDoc)
 
 void CPluginDatabaseHandler::GetPlugins()
 {
-    std::string query("SELECT plugins.ID, plugins.name, plugins.repoName, users.username, plugins.description, "
+    std::string query("SELECT plugins.authorized, plugins.ID, plugins.name, plugins.repoName, users.username, plugins.description,"
         "plugins.image, COALESCE(SUM(downloads.downloads), 0) AS total_downloads FROM plugins JOIN users ON plugins.owner "
         "= users.ID LEFT JOIN downloads ON plugins.ID = downloads.plugin WHERE authorized = 1 GROUP BY plugins.ID, plugins.name, "
         "users.username, plugins.description, plugins.image");

@@ -369,6 +369,7 @@ elseif(APPLE)
 	
 	add_executable(FEBioStudio MACOSX_BUNDLE ${FBS_ICON} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
 	set_property(TARGET FEBioStudio PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+	set_target_properties(FEBioStudio PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/ci/MacOS/Info.plist")
 
 else()
 	add_executable(FEBioStudio ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)

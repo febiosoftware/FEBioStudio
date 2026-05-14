@@ -40,3 +40,11 @@ jobs:
           repository: "febiosoftware/Manuals"
           client-payload: "client_payload[ref_name]=${{ github.ref_name }}"
           event-type: release-published
+
+  update-repository-test-suite:
+    name: "Update Repository Test Suite"
+    runs-on: [self-hosted, Linux]
+    steps:
+      - name: "Update Repository Test Suite"
+        run: |
+          ssh repo "python3 /serverCode/serverTools/updateTestSuite.py"
