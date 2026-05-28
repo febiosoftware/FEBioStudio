@@ -147,7 +147,19 @@ public:
 		BOX box = m_renderSphere.GetBoundingBox();
 		if (box.Radius() < 1e-9) box = GetBoundingBox();
 
+		vec3d o = box.r0();
+		vec3d ex = o + vec3d(box.Width(), 0, 0);
+		vec3d ey = o + vec3d(0, box.Height(), 0);
+		vec3d ez = o + vec3d(0, 0, box.Depth());
+
 		glx::renderBox(engine, box, GLColor::White(), false);
+
+		engine.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
+		engine.beginShape();
+		engine.setColor(GLColor::Red()); engine.renderLine(o, ex);
+		engine.setColor(GLColor::Green()); engine.renderLine(o, ey);
+		engine.setColor(GLColor::Blue()); engine.renderLine(o, ez);
+		engine.endShape();
 	}
 
 	// get the bounding box of the entire scene
