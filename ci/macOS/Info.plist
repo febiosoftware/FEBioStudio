@@ -380,7 +380,7 @@
 	<key>LSEnvironment</key>
 	<dict>
 		<key>DYLD_LIBRARY_PATH</key>
-		<string>~/panua-pardiso-20240630-mac_arm64/lib</string>
+		<string>$(HOME)/panua-pardiso-20240630-mac_arm64/lib</string>
 		<key>PARDISOLICMESSAGE</key>
 		<string>1</string>
 	</dict>
