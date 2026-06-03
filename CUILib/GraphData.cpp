@@ -84,18 +84,18 @@ QRectF CPlotData::boundRect() const
 
 int compare(const void* p1, const void* p2)
 {
-	const QPointF& r1 = *((const QPointF*)(p1));
-	const QPointF& r2 = *((const QPointF*)(p2));
+	const CPlotData::DataPoint& r1 = *((const CPlotData::DataPoint*)(p1));
+	const CPlotData::DataPoint& r2 = *((const CPlotData::DataPoint*)(p2));
 
-	if (r1.x() < r2.x()) return -1;
-	else if (r1.x() > r2.x()) return 1;
+	if (r1.pos.x() < r2.pos.x()) return -1;
+	else if (r1.pos.x() > r2.pos.x()) return 1;
 	else return 0;
 }
 
 void CPlotData::sort()
 {
 	if (m_data.size() > 0)
-		qsort(&m_data[0], m_data.size(), sizeof(QPointF), compare);
+		qsort(&m_data[0], m_data.size(), sizeof(DataPoint), compare);
 }
 
 void CPlotData::addPoint(double x, double y)
