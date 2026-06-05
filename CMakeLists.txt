@@ -242,6 +242,8 @@ if(USE_FFMPEG)
     
 endif()
 
+set(USE_NEW_FFMPEG "OFF" CACHE BOOL "Enable or disable FFMPEG libraries < 8.0")
+
 if(USE_ZLIB)
 	if(NOT EXISTS ${ZLIB_LIBRARY_RELEASE})
 		message(SEND_ERROR "Could not find ZLIB. Check ZLIB_LIBRARY_RELEASE.")
@@ -320,6 +322,10 @@ endif()
 if(USE_FFMPEG)
 	add_definitions(-DFFMPEG)
 	include_directories(${FFMPEG_INC})
+endif()
+
+if (USE_NEW_FFMPEG)
+	add_definitions(-DNEW_FFMPEG)
 endif()
 
 if(USE_PYTHON)

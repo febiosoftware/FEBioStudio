@@ -215,7 +215,11 @@ void CMPEGAnimation::Close()
     fwrite(endcode, 1, sizeof(endcode), file);
 
     // deallocating AVCodecContext
+# ifdef NEW_FFMPEG
+    avcodec_free_context(&av_codec_context);
+#else
     avcodec_close(av_codec_context);
+#endif
     av_free(av_codec_context);
     if (file) fclose(file);
 	av_frame_free(&yuv_frame);
