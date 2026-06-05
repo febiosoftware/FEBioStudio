@@ -221,6 +221,12 @@ if(MODEL_REPO)
     endif()
 endif()
 
+set(USE_NEW_FFMPEG "OFF" CACHE BOOL "Enable or disable FFMPEG libraries < 8.0")
+
+if (USE_NEW_FFMPEG)
+   set(USE_FFMPEG "ON")
+endif()
+
 if(USE_FFMPEG)
     set(FFMPEG_LIB_NAMES avformat avcodec avutil swresample swscale)
     
@@ -241,8 +247,6 @@ if(USE_FFMPEG)
     endif()
     
 endif()
-
-set(USE_NEW_FFMPEG "OFF" CACHE BOOL "Enable or disable FFMPEG libraries < 8.0")
 
 if(USE_ZLIB)
 	if(NOT EXISTS ${ZLIB_LIBRARY_RELEASE})
