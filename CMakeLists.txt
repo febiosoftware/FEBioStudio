@@ -221,6 +221,12 @@ if(MODEL_REPO)
     endif()
 endif()
 
+set(USE_NEW_FFMPEG "OFF" CACHE BOOL "Enable or disable FFMPEG libraries < 8.0")
+
+if (USE_NEW_FFMPEG)
+   set(USE_FFMPEG "ON")
+endif()
+
 if(USE_FFMPEG)
     set(FFMPEG_LIB_NAMES avformat avcodec avutil swresample swscale)
     
@@ -320,6 +326,10 @@ endif()
 if(USE_FFMPEG)
 	add_definitions(-DFFMPEG)
 	include_directories(${FFMPEG_INC})
+endif()
+
+if (USE_NEW_FFMPEG)
+	add_definitions(-DNEW_FFMPEG)
 endif()
 
 if(USE_PYTHON)
