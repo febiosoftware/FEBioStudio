@@ -250,12 +250,18 @@ bool CGLModel::Update(bool breset)
 	int ntime = fem.CurrentTimeIndex();
 	float dt = fem.CurrentTime() - fem.GetTimeValue(ntime);
 
+	FSMesh* currentMesh = fem.CurrentState()->GetFEMesh();
+	CPostObject* po = GetPostObject();
+	if (po && (po->GetFEMesh() != currentMesh))
+	{
+		po->SetFEMesh(currentMesh);
+	}
+
 	// update the state of the mesh
 	fem.UpdateMeshState(ntime);
 
 	// Calling this will rebuild the internal surfaces
 	// This should only be done when the mesh has changed
-	FSMesh* currentMesh = fem.CurrentState()->GetFEMesh();
 	if (breset || (currentMesh != m_lastMesh))
 	{
 		UpdateInternalSurfaces(false);

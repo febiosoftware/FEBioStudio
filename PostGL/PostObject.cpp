@@ -402,6 +402,19 @@ void CPostObject::BuildInternalSurfaces()
 					}
 				}
 			}
+			else
+			{
+				int index = dom[i];
+				// for shells on top of solids, we need to expose the underlying facet if the shell is hidden. 
+				if (el.IsShell() && (el.m_face[0] >= 0))
+				{
+					FSFace& face = pmesh->Face(el.m_face[0]);
+					if ((face.m_elem[0].eid == index) && (face.m_elem[1].eid >= 0))
+					{
+						m_innerSurface[m]->add(face);
+					}
+				}
+			}
 		}
 	}
 	BuildFERenderMesh();
