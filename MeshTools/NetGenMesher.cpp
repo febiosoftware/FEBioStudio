@@ -160,12 +160,13 @@ FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool sec
 	int nodes = ngmesh->GetNP();
 	int elems = ngmesh->GetNE();
 	int faces = ngmesh->GetNSE();
+	int edges = ngmesh->GetNSeg();
 
 	FSMesh* mesh = new FSMesh();
 
 	// solid mesh
 	if (elems) {
-		mesh->Create(nodes, elems, faces);
+		mesh->Create(nodes, elems, faces, edges);
 
 		// copy nodes
 		PointIndex pi;
@@ -211,6 +212,36 @@ FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool sec
 				{
 					mesh->Node(minj).m_gid = i;
 				}
+			}
+		}
+
+		// copy edges
+		SegmentIndex sgi;
+		i = 0;
+		for (sgi = 0; sgi < edges; sgi++, ++i)
+		{
+			// get the next edge
+			Segment sel = (*ngmesh)[sgi];
+
+			FSEdge& edge = mesh->Edge(i);
+
+			// get the edge's group ID (which is the same as the edge's index in the NG mesh)
+			edge.m_gid = sel.si - 1;
+
+			if (secondOrder == false)
+			{
+				edge.SetType(FE_EDGE2);
+				edge.n[0] = sel[0] - 1;
+				edge.n[1] = sel[1] - 1;
+				edge.n[2] = edge.n[1];
+			}
+			else
+			{
+				int np = sel.GetNP();
+				edge.SetType(FE_EDGE3);
+				edge.n[0] = sel[0] - 1;
+				edge.n[1] = sel[1] - 1;
+				edge.n[2] = sel[2] - 1;
 			}
 		}
 
@@ -285,7 +316,7 @@ FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool sec
 	}
 	// shell mesh
 	else {
-		mesh->Create(nodes, faces, faces);
+		mesh->Create(nodes, faces, faces, edges);
 
 		// copy nodes
 		PointIndex pi;
@@ -299,6 +330,36 @@ FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool sec
 
 			FSNode& ni = mesh->Node(i);
 			ni.r = vec3d(x, y, z);
+		}
+
+		// copy edges
+		SegmentIndex sgi;
+		i = 0;
+		for (sgi = 0; sgi < edges; sgi++, ++i)
+		{
+			// get the next edge
+			Segment sel = (*ngmesh)[sgi];
+
+			FSEdge& edge = mesh->Edge(i);
+
+			// get the edge's group ID (which is the same as the edge's index in the NG mesh)
+			edge.m_gid = sel.si - 1;
+
+			if (secondOrder == false)
+			{
+				edge.SetType(FE_EDGE2);
+				edge.n[0] = sel[0] - 1;
+				edge.n[1] = sel[1] - 1;
+				edge.n[2] = edge.n[1];
+			}
+			else
+			{
+				int np = sel.GetNP();
+				edge.SetType(FE_EDGE3);
+				edge.n[0] = sel[0] - 1;
+				edge.n[1] = sel[1] - 1;
+				edge.n[2] = sel[2] - 1;
+			}
 		}
 
 		// copy facets
