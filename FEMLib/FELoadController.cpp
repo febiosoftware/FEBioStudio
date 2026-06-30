@@ -113,7 +113,7 @@ LoadCurve* FEBioLoadController::CreateLoadCurve()
 		for (int i = 0; i < v.size(); ++i)
 		{
 			vec2d& pi = v[i];
-			lc.Add(pi.x(), pi.y());
+			lc.Add(pi.x, pi.y);
 		}
 
 		return m_plc;
@@ -235,7 +235,7 @@ LoadCurve* FEBioFunction1D::CreateLoadCurve()
 		for (int i = 0; i < v.size(); ++i)
 		{
 			vec2d& pi = v[i];
-			lc.Add(pi.x(), pi.y());
+			lc.Add(pi.x, pi.y);
 		}
 
 		return m_plc;

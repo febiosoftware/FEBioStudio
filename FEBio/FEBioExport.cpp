@@ -51,7 +51,7 @@ template <> std::string type_to_string<vec2f>(const vec2f& v)
 template <> std::string type_to_string<vec2d>(const vec2d& v)
 {
 	std::stringstream ss;
-	ss << v.x() << "," << v.y();
+	ss << v.x << "," << v.y;
 	return ss.str();
 }
 
@@ -309,7 +309,7 @@ void FEBioExport::WriteParam(Param &p)
 		for (int i = 0; i < v.size(); ++i)
 		{
 			vec2d& p = v[i];
-			double d[2] = { p.x(), p.y() };
+			double d[2] = { p.x, p.y };
 			m_xml.add_leaf("pt", d, 2);
 		}
 		m_xml.close_branch();

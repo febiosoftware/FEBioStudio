@@ -752,7 +752,7 @@ public:
 				case Param_VEC2D: {
 					vec2d v = StringToVec2d(value.toString());
 					vec2d s = p.GetVec2dValue();
-					if ((v.x() != s.x()) || (v.y() != s.y())) {
+					if ((v.x != s.x) || (v.y != s.y)) {
 						p.SetVec2dValue(v);
 						p.SetModified(true);
 					}

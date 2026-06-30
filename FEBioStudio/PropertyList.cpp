@@ -194,7 +194,7 @@ std::vector<double> StringToVectorDouble(const QString& s)
 
 QString Vec2dToString(const vec2d& r)
 {
-	return QString("{%1,%2}").arg(r.x()).arg(r.y());
+	return QString("{%1,%2}").arg(r.x).arg(r.y);
 }
 
 QString Vec3dToString(const vec3d& r)

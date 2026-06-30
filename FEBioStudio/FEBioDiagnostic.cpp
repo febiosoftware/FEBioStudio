@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "FEBioDiagnostic.h"
 #include "ModelDocument.h"
 #include <FEBio/FEBioExport3.h>
-#include <FEBioXML/XMLWriter.h>
+#include <FECore/XMLWriter.h>
 
 FEBioTangentDiagnostic::FEBioTangentDiagnostic()
 {

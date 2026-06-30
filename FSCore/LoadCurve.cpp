@@ -158,8 +158,8 @@ void LoadCurve::Save(OArchive& ar)
 		vec2d pt = Point(n);
 		ar.BeginChunk(CID_LC_POINT);
 		{
-			ar.WriteChunk(CID_LC_TIME, pt.x());
-			ar.WriteChunk(CID_LC_LOAD, pt.y());
+			ar.WriteChunk(CID_LC_TIME, pt.x);
+			ar.WriteChunk(CID_LC_LOAD, pt.y);
 		}
 		ar.EndChunk();
 	}

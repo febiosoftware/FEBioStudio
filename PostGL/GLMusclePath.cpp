@@ -1007,7 +1007,7 @@ bool GLMusclePath::UpdateGuidedPath(PathData* path, int ntime, bool reset)
 			{
 				FSFace& f = m_guideMesh.Face(p0.nproj);
 				m_guideMesh.FaceNodePosition(f, r);
-				vec3d q = f.eval(r, p0.q.x(), p0.q.y());
+				vec3d q = f.eval(r, p0.q.x, p0.q.y);
 				p1.r = q;
 			}
 		}

@@ -749,7 +749,7 @@ bool NIKE3DExport::ExportLoadCurve(NIKE3DProject& prj)
 		for (j=0; j<lc.Points(); ++j)
 		{
 			vec2d pt = lc.Point(j);
-			fprintf(m_fp, "%10lg%10lg\n", pt.x(), pt.y());
+			fprintf(m_fp, "%10lg%10lg\n", pt.x, pt.y);
 		}
 	}
 

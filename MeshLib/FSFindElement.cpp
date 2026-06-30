@@ -385,8 +385,8 @@ bool FindElement2D(const vec2d& r, int& elem, double q[2], FSMesh* mesh)
 			double R = box.GetMaxExtent();
 			box.Inflate(R * 1e-5);
 
-			if ((box.x0 < r.x()) && (box.x1 > r.x()) &&
-				(box.y0 < r.y()) && (box.y1 > r.y()))
+			if ((box.x0 < r.x) && (box.x1 > r.x) &&
+				(box.y0 < r.y) && (box.y1 > r.y))
 			{
 				q[0] = q[1] = 0.0;
 				if (project_inside_element2d(el, x, r, q))

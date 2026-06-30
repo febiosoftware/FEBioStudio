@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <MeshIO/FSFileExport.h>
-#include <FEBioXML/XMLWriter.h>
+#include <FECore/XMLWriter.h>
 #include "FEBioException.h"
 #include <FEMLib/FSProject.h>
 #include <sstream>

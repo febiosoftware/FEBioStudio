@@ -60,7 +60,7 @@ void CCurvePlotWidget::SetPointCurve(PointCurve* lc)
 		for (int i = 0; i < lc->Points(); ++i)
 		{
 			vec2d pt = lc->Point(i);
-			data->addPoint(pt.x(), pt.y());
+			data->addPoint(pt.x, pt.y);
 		}
 		addPlotData(data);
 

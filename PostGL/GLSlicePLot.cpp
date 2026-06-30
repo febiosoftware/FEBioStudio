@@ -107,8 +107,8 @@ bool CGLSlicePlot::UpdateData(bool bsave)
 		m_slice_range = GetVec2dValue(SLICE_RANGE);
 		m_user_slices = GetParamVectorDouble(USER_SLICES);
 
-		double& x = m_slice_range.x();
-		double& y = m_slice_range.y();
+		double& x = m_slice_range.x;
+		double& y = m_slice_range.y;
 		if (x < 0) x = 0;
 		if (y > 1) y = 1;
 		if (x > y) { double tmp = x; x = y; y = tmp; }
@@ -496,8 +496,8 @@ int CGLSlicePlot::CountFaces(std::vector<std::pair<int, float> >& activeElements
 	}
 
 	float frange = fmax - fmin;
-	fmax = fmin + frange * m_slice_range.y();
-	fmin = fmin + frange * m_slice_range.x();
+	fmax = fmin + frange * m_slice_range.y;
+	fmin = fmin + frange * m_slice_range.x;
 
 	int faceCount = 0;
 	if (m_nslices == 1)
