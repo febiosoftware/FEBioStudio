@@ -96,6 +96,7 @@ public:
 	bool IsRequired() const;
 	bool IsPreferred() const;
 	bool IsTopLevel() const;
+	bool IsFixed() const;
 
 private:
 	std::string			m_name;			// name of this property

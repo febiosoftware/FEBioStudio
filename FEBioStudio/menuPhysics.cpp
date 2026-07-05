@@ -793,17 +793,27 @@ void CMainWindow::on_actionAddMeshDataMap_triggered()
 
 		if (dlg.GetDataInitializer() == CDlgAddMeshData::INITIALIZER_CONST)
 		{
-			if (dlg.GetType() != FACE_DATA)
+			if ((dlg.GetType() != FACE_DATA) && (dlg.GetType() != ELEM_DATA))
 			{
-				QMessageBox::critical(this, "Create Data", "The const initializer option is only supported for surface data.");
+				QMessageBox::critical(this, "Create Data", "The const initializer option is only supported for surface and element data.");
 				return;
 			}
 
 			DATA_TYPE dataType = dlg.GetDataType();
-			FSConstFaceDataGenerator* gen = new FSConstFaceDataGenerator(fem, dataType);
-			gen->SetName(name.toStdString());
-			fem->AddMeshDataGenerator(gen);
-			UpdateModel(gen);
+			if (dlg.GetType() == FACE_DATA)
+			{
+				FSConstFaceDataGenerator* gen = new FSConstFaceDataGenerator(fem, dataType);
+				gen->SetName(name.toStdString());
+				fem->AddMeshDataGenerator(gen);
+				UpdateModel(gen);
+			}
+			else if (dlg.GetType() == ELEM_DATA)
+			{
+				FSConstElemDataGenerator* gen = new FSConstElemDataGenerator(fem, dataType);
+				gen->SetName(name.toStdString());
+				fem->AddMeshDataGenerator(gen);
+				UpdateModel(gen);
+			}
 		}
 		else
 		{

@@ -1481,9 +1481,29 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 	{
 		FEBioInputModel& feb = GetFEBioModel();
 		FSModel* fem = &feb.GetFSModel();
+
 		// allocate mesh data generator
-		const char* sztype = type->cvalue();
-		FSMeshDataGenerator* gen = FEBio::CreateElemDataGenerator(sztype, fem);
+		FSMeshDataGenerator* gen = nullptr;
+		if (*type == "const")
+		{
+			XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
+
+			// "const" data generator needs to be handled differently
+			DATA_TYPE dataType = DATA_TYPE::DATA_SCALAR;
+			if (dataTypeAtt)
+			{
+				if      (*dataTypeAtt == "scalar") dataType = DATA_TYPE::DATA_SCALAR;
+				else if (*dataTypeAtt == "vec3"  ) dataType = DATA_TYPE::DATA_VEC3;
+				else if (*dataTypeAtt == "mat3"  ) dataType = DATA_TYPE::DATA_MAT3;
+				else return false;
+			}
+			gen = new FSConstElemDataGenerator(fem, dataType);
+		}
+		else
+		{
+			gen = FEBio::CreateElemDataGenerator(type->m_val, fem);
+		}
+
 		if (gen)
 		{
 			XMLAtt* name = tag.AttributePtr("name");

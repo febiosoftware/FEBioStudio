@@ -105,7 +105,7 @@ bool CFEBioJobManager::startDefaultJob(CFEBioJob* job, CLaunchConfig* lc)
 {
 	if (im->febThread) return false;
 	CFEBioJob::SetActiveJob(job);
-	im->febThread = new CFEBioThread(im->wnd, job, this);
+	im->febThread = new CFEBioJobThread(im->wnd, job, this);
 	im->febThread->start();
 	return true;
 }

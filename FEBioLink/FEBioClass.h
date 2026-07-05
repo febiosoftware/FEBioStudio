@@ -64,6 +64,7 @@ class FEBeamFormulation;
 class FSMeshAdaptor;
 class FSVec3dValuator;
 class FSMat3dValuator;
+class FSCoreStudy;
 class FSProject;
 
 // forward declarations of FECore classes
@@ -172,6 +173,7 @@ namespace FEBio {
 	FSVec3dValuator*     CreateVec3dValuator    (const std::string& typeStr, FSModel* fem);
 	FSMat3dValuator*     CreateMat3dValuator    (const std::string& typeStr, FSModel* fem);
 	FSGenericClass*      CreateLinearSolver     (const std::string& typeStr, FSModel* fem);
+	FSCoreStudy*         CreateStudy            (const std::string& typeStr, FSModel* fem);
 
 	FSModelComponent* CreateClass(int superClassID, const std::string& typeStr, FSModel* fem, unsigned int flags = FSProperty::TOPLEVEL);
 	FSModelComponent* CreateClass(int classId, FSModel* fem, unsigned int flags = 0);

@@ -12,7 +12,8 @@ enum MeshDataGeneratorType
 	FE_FEBIO_FACEDATA_GENERATOR = 3,
 	FE_FEBIO_ELEMDATA_GENERATOR = 4,
 
-	FE_CONST_FACEDATA_GENERATOR = 5
+	FE_CONST_FACEDATA_GENERATOR = 5,
+	FE_CONST_ELEMDATA_GENERATOR = 6,
 };
 
 class FSMeshDataGenerator : public FSModelComponent, public FSHasOneItemList
@@ -148,6 +149,19 @@ public:
 private:
 	int			m_nUID;		// unique ID
 	static	int	m_nref;
+};
+
+class FSConstElemDataGenerator : public FSElemDataGenerator
+{
+public:
+	FSConstElemDataGenerator(FSModel* fem);
+	FSConstElemDataGenerator(FSModel* fem, DATA_TYPE dataType);
+
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
+private:
+	void BuildParameterList(int dataType);
 };
 
 class FEBioElemDataGenerator : public FSElemDataGenerator

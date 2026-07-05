@@ -874,6 +874,8 @@ void MathPlot::draw(QPainter& p)
 	MVariable* xvar = m.AddVariable("x");
 	m.Create(m_math);
 
+	if (!m.IsValid()) return;
+
 	QRectF vr = m_graph->m_viewRect;
 	QRect sr = m_graph->ScreenRect();
 

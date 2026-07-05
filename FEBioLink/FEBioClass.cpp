@@ -64,6 +64,7 @@ SOFTWARE.*/
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEMeshDataGenerator.h>
 #include <FEMLib/FSProject.h>
+#include <FEMLib/FSCoreStudy.h>
 #include <sstream>
 using namespace FEBio;
 using namespace std;
@@ -645,6 +646,12 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 		pms->SetMeshItemType(FE_EDGE_FLAG);
 		pms->SetSuperClassID(FEEDGE_ID);
 		pc = pms;
+	}
+	break;
+	case FETASK_ID:
+	{
+		if (baseClassId == FEBio::GetBaseClassIndex("FECoreStudy")) pc = new FSCoreStudy(fem);
+		else assert(false);
 	}
 	break;
 	default:
@@ -1431,6 +1438,16 @@ FSGenericClass* FEBio::CreateLinearSolver(const std::string& typeStr, FSModel* f
 		return pc;
 	}
 	else return CreateModelComponent<FSGenericClass>(FELINEARSOLVER_ID, typeStr, fem);
+}
+
+FSCoreStudy* FEBio::CreateStudy(const std::string& typeStr, FSModel* fem)
+{
+	if (typeStr.empty())
+	{
+		FSCoreStudy* pc = new FSCoreStudy(fem);
+		return pc;
+	}
+	else return CreateModelComponent<FSCoreStudy>(FETASK_ID, typeStr, fem);
 }
 
 FEShellFormulation* FEBio::CreateShellFormulation(const std::string& typeStr, FSModel* fem)

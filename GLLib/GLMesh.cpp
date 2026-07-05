@@ -966,7 +966,7 @@ void GLMesh::PartitionSurfaceByTags()
 	setModified(true);
 }
 
-void GLMesh::AutoEdgePartition()
+void GLMesh::AutoEdgePartition(int maxpartitions)
 {
 	m_EIL.clear();
 	if (m_Edge.empty()) return;
@@ -978,6 +978,7 @@ void GLMesh::AutoEdgePartition()
 	// since the edges are sorted, this is the last one
 	int NE = (int)m_Edge.size();
 	int EID = m_Edge[NE - 1].pid + 1;
+	if ((maxpartitions > 0) && (EID < maxpartitions)) EID = maxpartitions;
 
 	// find the start index and length of each edge
 	m_EIL.resize(EID);

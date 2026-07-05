@@ -84,6 +84,11 @@ bool FSProperty::IsTopLevel() const
 	return ((GetFlags() & FSProperty::TOPLEVEL) != 0);
 }
 
+bool FSProperty::IsFixed() const
+{
+	return ((GetFlags() & FSProperty::FIXED) != 0);
+}
+
 //-----------------------------------------------------------------------------
 void FSProperty::AddComponent(FSCoreBase* pm)
 {
@@ -197,7 +202,7 @@ void FSProperty::SetSize(int newSize)
 		for (int i = oldSize; i < newSize; ++i)
 		{
 			m_cmp[i] = nullptr;
-			if ((IsRequired() || IsPreferred()) && (m_defaultType.empty() == false))
+			if ((IsRequired() || IsPreferred() || IsFixed()) && (m_defaultType.empty() == false))
 			{
 				FSModel* fem = parent->GetFSModel();
 				FSModelComponent* pmci = FEBio::CreateClass(GetSuperClassID(), m_defaultType, fem, IsTopLevel());

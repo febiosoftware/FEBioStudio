@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <FEBioXML/XMLReader.h>
+#include <FECore/XMLReader.h>
 #include <FEMLib/FSProject.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEMultiMaterial.h>
@@ -98,7 +98,7 @@ protected:
 
 	void ParseMappedParameter(XMLTag& tag, Param* param);
 
-protected:
+public:
 	// NOTE: This is only used by FEBioFormat4 and FEBioFormat3.
 	//       Do not use in older file readers. 
 	void ParseModelComponent(FSModelComponent* pmc, XMLTag& tag);

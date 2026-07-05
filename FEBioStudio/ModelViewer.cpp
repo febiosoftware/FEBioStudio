@@ -2179,7 +2179,8 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	}
 	break;
 	case MT_STUDY:
-		menu.addAction("Configure ...", this, SLOT(OnConfigureStudy()));
+		if (dynamic_cast<COptimizationStudy*>(data->obj))
+			menu.addAction("Configure ...", this, SLOT(OnConfigureStudy()));
 		menu.addAction("Run ...", this, SLOT(OnRunStudy()));
 		del = true;
 		break;
@@ -2500,17 +2501,16 @@ void CModelViewer::OnDeleteAllStudies()
 void CModelViewer::OnRunStudy()
 {
 	COptimizationStudy* fbs = dynamic_cast<COptimizationStudy*>(m_currentObject);
-	if (fbs == nullptr) return;
-	CMainWindow* wnd = GetMainWindow();
-	wnd->RunOptimizationStudy(fbs);
-}
-
-void CModelViewer::OnConfigureStudy()
-{
-	COptimizationStudy* fbs = dynamic_cast<COptimizationStudy*>(m_currentObject);
-	if (fbs == nullptr) return;
-	CMainWindow* wnd = GetMainWindow();
-	wnd->ConfigureOptimizationStudy(fbs);
+	if (fbs)
+	{
+		CMainWindow* wnd = GetMainWindow();
+		wnd->RunOptimizationStudy(fbs);
+	}
+	else if (auto study = dynamic_cast<CFEBioStudy*>(m_currentObject))
+	{
+		CMainWindow* wnd = GetMainWindow();
+		wnd->RunFEBioStudy(study);
+	}
 }
 
 void CModelViewer::OnEditMeshData()

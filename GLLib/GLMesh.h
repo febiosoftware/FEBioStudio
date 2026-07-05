@@ -106,7 +106,7 @@ public:
 
 	void AutoSurfacePartition();
 
-	void AutoEdgePartition();
+	void AutoEdgePartition(int maxpartitions = -1);
 
 	void PartitionSurfaceByTags();
 

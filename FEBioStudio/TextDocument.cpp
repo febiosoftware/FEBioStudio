@@ -147,9 +147,11 @@ void CTextDocument::onFileChanged(const QString& fileName)
 
 CHTMLDocument::CHTMLDocument(CMainWindow* wnd) : CDocument(wnd)
 {
+	m_txt.setParent(nullptr);
 }
 
 QTextDocument* CHTMLDocument::GetText()
 {
+	std::string html = m_txt.toHtml().toStdString();
 	return &m_txt;
 }

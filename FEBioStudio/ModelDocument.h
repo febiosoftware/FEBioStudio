@@ -34,7 +34,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 typedef FSObjectList<CFEBioJob> CFEBioJobList;
-typedef FSObjectList<CFEBioStudy> CFEBioStudyList;
+typedef FSObjectList<CStudy> CStudyList;
 
 //-----------------------------------------------------------------------------
 class CModelContext;
@@ -42,7 +42,7 @@ class FSObject;
 class FEModifier;
 class FESurfaceModifier;
 class GSurfaceMeshObject;
-class CFEBioStudy;
+class CStudy;
 
 //-----------------------------------------------------------------------------
 class CModelDocument : public CGLDocument
@@ -129,14 +129,18 @@ public:
 	void DeleteAllJobs();
 
 public:
-	int FEBioStudies() const;
-	void AddFEBioStudy(CFEBioStudy* study);
-	CFEBioStudy* GetFEBioStudy(int i);
+	int Studies() const;
+	void AddStudy(CStudy* study);
+	CStudy* GetStudy(int i);
+	CStudy* FindStudyFromName(const std::string& name);
 	void DeleteAllStudies();
 
 public:
 	// import geometry (geometry is added to current project)
 	bool ImportGeometry(FSFileImport* preader, const char* szfile);
+
+	// open a study file
+	CFEBioStudy* OpenStudyFile(const std::string& fileName);
 
 public:
 	bool ExportMaterials(const std::string& fileName, const std::vector<GMaterial*>& matList);
@@ -158,7 +162,7 @@ private:
 	// the job list
 	CFEBioJobList	m_JobList;
 
-	CFEBioStudyList	m_StudyList;
+	CStudyList	m_StudyList;
 
 	CModelContext*	m_context;
 

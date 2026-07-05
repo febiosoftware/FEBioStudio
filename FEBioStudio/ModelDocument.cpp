@@ -47,6 +47,9 @@ SOFTWARE.*/
 #include "DocManager.h"
 #include <ImageLib/ImageModel.h>
 #include "PluginManager.h"
+#include <FECore/XMLReader.h>
+#include <FEBio/FEBioFormat4.h>
+#include <QFileInfo>
 
 class CModelContext
 {
@@ -421,20 +424,30 @@ void CModelDocument::DeleteAllJobs()
 	SetModifiedFlag();
 }
 
-int CModelDocument::FEBioStudies() const
+int CModelDocument::Studies() const
 {
 	return (int)m_StudyList.Size();
 }
 
-void CModelDocument::AddFEBioStudy(CFEBioStudy* study)
+void CModelDocument::AddStudy(CStudy* study)
 {
 	m_StudyList.Add(study);
 	SetModifiedFlag();
 }
 
-CFEBioStudy* CModelDocument::GetFEBioStudy(int i)
+CStudy* CModelDocument::GetStudy(int i)
 {
 	return m_StudyList[i];
+}
+
+CStudy* CModelDocument::FindStudyFromName(const std::string& name)
+{
+	for (int i = 0; i < Studies(); ++i)
+	{
+		CStudy* study = m_StudyList[i];
+		if (study->GetName() == name) return study;
+	}
+	return nullptr;
 }
 
 void CModelDocument::DeleteAllStudies()
@@ -524,7 +537,23 @@ void CModelDocument::Save(OArchive& ar)
 			job->Save(ar);
 		}
 		ar.EndChunk();
-	}	
+	}
+
+	// save the study lists
+	for (int i = 0; i < Studies(); ++i)
+	{
+		CStudy* study = GetStudy(i);
+		ar.BeginChunk(CID_FEBIOSTUDY);
+		{
+			ar.WriteChunk(CID_FEBIOSTUDY_TYPE, (int)study->GetType());
+			ar.BeginChunk(CID_FEBIOSTUDY_DATA);
+			{
+				study->Save(ar);
+			}
+			ar.EndChunk();
+		}
+		ar.EndChunk();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -704,6 +733,43 @@ void CModelDocument::Load(IArchive& ar)
 			CFEBioJob* job = new CFEBioJob(this);
 			m_JobList.Add(job);
 			job->Load(ar);
+		}
+		else if (nid == CID_FEBIOSTUDY)
+		{
+			CStudy* study = nullptr;
+			while (ar.OpenChunk() == IArchive::IO_OK)
+			{
+				int nid = ar.GetChunkID();
+				if (nid == CID_FEBIOSTUDY_TYPE)
+				{
+					int ntype = 0;
+					ar.read(ntype);
+
+					switch (ntype)
+					{
+					case StudyType::OPTIMIZATION_STUDY:
+						study = new COptimizationStudy(this);
+						break;
+					case StudyType::FEBIO_STUDY:
+						study = new CFEBioStudy(this);
+						break;
+					default:
+						assert(false);
+						ar.log("Unsupported study type found in file. Study will be ignored.");
+						break;
+					}
+				}
+				else if (nid == CID_FEBIOSTUDY_DATA)
+				{
+					if (study)
+					{
+						m_StudyList.Add(study);
+						study->Load(ar);
+					}
+					study = nullptr;
+				}
+				ar.CloseChunk();
+			}
 		}
 		ar.CloseChunk();
 	}
@@ -1352,4 +1418,47 @@ void CModelDocument::AssignColor(GPart* pg, GLColor c)
 		GMaterial* mat = GetFSModel()->GetMaterialFromID(matID);
 		if (mat) mat->SetColor(c);
 	}
+}
+
+CFEBioStudy* CModelDocument::OpenStudyFile(const std::string& fileName)
+{
+	CFEBioStudy* febStudy = nullptr;
+
+	// open the file
+	try {
+		XMLReader xml;
+		if (xml.Open(fileName.c_str()) == false) return nullptr;
+
+		// find the febio_study node
+		XMLTag tag;
+		if (xml.FindTag("febio_study", tag) == false) return nullptr;
+		// get the type attribute
+		const char* sztype = tag.AttributeValue("type");
+		if (sztype == nullptr) return nullptr;
+
+		// try to allocate the correct type of study
+		FSModel& fem = *GetFSModel();
+		std::unique_ptr<FSCoreStudy> study(FEBio::CreateStudy(sztype, &fem));
+		if (study == nullptr) return nullptr;
+
+		FEBioInputModel dummy(fem);
+		FEBioFormat4 fmt(nullptr, dummy);
+		fmt.ParseModelComponent(study.get(), tag);
+
+		febStudy = new CFEBioStudy(this, study.release());
+		febStudy->SetOptionsFileName(fileName);
+
+		QFileInfo fi(QString::fromStdString(fileName));
+		febStudy->SetName(fi.baseName().toStdString());
+
+		AddStudy(febStudy);
+
+		xml.Close();
+	}
+	catch (...)
+	{
+		return nullptr;
+	}
+
+	return febStudy;
 }

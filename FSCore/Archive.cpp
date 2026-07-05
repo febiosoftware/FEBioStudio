@@ -104,7 +104,11 @@ bool IArchive::IsValid() const
 //-----------------------------------------------------------------------------
 void IArchive::Close()
 {
-	while (m_Chunk.empty() == false) CloseChunk();
+	while (m_Chunk.empty() == false)
+	{
+		IArchive::CHUNK* pc = m_Chunk.top(); m_Chunk.pop();
+		delete pc;
+	}
 
 	// reset pointers
 	if (m_delfp) fclose(m_fp);
@@ -202,6 +206,7 @@ void IArchive::CloseChunk()
 
 	// get the current file position
 	long lpos = ftell(m_fp);
+	if (lpos < 0) throw std::runtime_error("error closing chunk (IArchive::CloseChunk)");
 
 	// calculate the offset to the end of the chunk
 	int noff = pc->nsize - (lpos - pc->lpos);
