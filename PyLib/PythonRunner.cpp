@@ -124,12 +124,17 @@ void CPythonRunner::runFile(QString fileName)
 
 	PyObject* obj = Py_BuildValue("s", szfile);
 	FILE* file = _Py_fopen_obj(obj, "r+");
-	if (file == nullptr) emit runFileFinished(false);
-
-	PyRun_SimpleFile(file, szfile);
-
+	if (file == nullptr)
+	{
+		emit runFileFinished(false);
+		return;
+	}
+	
+	int result = PyRun_SimpleFile(file, szfile);
+	emit runFileFinished(result == 0);
+#else
+	emit runFileFinished(false);
 #endif
-	emit runFileFinished(true);
 }
 
 #ifdef HAS_PYTHON
@@ -260,14 +265,17 @@ void CPythonRunner::runScript(QString script)
 	}
 
 	std::string s = script.toStdString();
-	PyRun_SimpleString(s.c_str());
+	int result = PyRun_SimpleString(s.c_str());
 
+	emit runScriptFinished(result == 0);
+#else
+	emit runScriptFinished(false);
 #endif
-	emit runScriptFinished(true);
 }
 
 void CPythonRunner::setPythonCWD(const std::string& cwd)
 {
-	std::string changeCWD = "import os\nos.chdir('" + cwd + "')\n";
-	py::exec(changeCWD.c_str());
+#ifdef HAS_PYTHON
+	py::module_::import("os").attr("chdir")(cwd);
+#endif
 }
