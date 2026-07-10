@@ -50,6 +50,7 @@ void PyRunContext::SetDocument(CDocument* doc)
 
 	CGLDocument* gldoc = dynamic_cast<CGLDocument*>(doc);
 	if (gldoc) pc->obj = gldoc->GetActiveObject();
+	else pc->obj = nullptr;
 }
 
 CDocument* PyRunContext::GetDocument()
