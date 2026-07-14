@@ -37,13 +37,13 @@ SOFTWARE.*/
 #include <MeshLib/MeshTools.h>
 #include <MeshLib/FSCurveMesh.h>
 #include <MeshLib/FSSurfaceMesh.h>
-
-
+#include <MeshTools/FEMesher.h>
 #ifdef HAS_PYTHON
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 #include "DocHeaders/PyMeshDocs.h"
+#include "PyUtil.h"
 
 namespace py = pybind11;
 
@@ -199,6 +199,12 @@ void init_FSMesh(py::module_& m)
         .def("FaceList", &FSMeshPartition::FaceList, "Get the list of face indices in this partition.")
         .def("ElementList", &FSMeshPartition::ElementList, "Get the list of element indices in this partition.")
         ;
+
+	py::class_<FEMesher, FSObject, std::unique_ptr<FEMesher, py::nodelete>>(mesh, "Mesher", "Class for generating meshes.")
+		.def_property_readonly("params", [](FEMesher& self) { return PyParameterList(&self); }, py::return_value_policy::reference_internal)
+		.def("__getattr__", [](FEMesher& self, const std::string& name) { return GetDynamicAttribute(self, name); })
+		.def("__setattr__", [](FEMesher& self, const std::string& name, py::object value) { SetDynamicAttribute(self, name, value); })
+		;
 
 }
 

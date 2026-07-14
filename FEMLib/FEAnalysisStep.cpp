@@ -145,7 +145,27 @@ int FSStep::ActiveBCs()
 //-----------------------------------------------------------------------------
 FSBoundaryCondition* FSStep::BC(int i) { return imp->m_BC[i]; }
 
-//-----------------------------------------------------------------------------
+FSBoundaryCondition* FSStep::FindBC(const std::string& name)
+{
+	for (int i = 0; i < imp->m_BC.Size(); ++i)
+	{
+		if (imp->m_BC[i]->GetName() == name) return imp->m_BC[i];
+	}
+	return nullptr;
+}
+
+FSBoundaryCondition* FSStep::AddBC(const std::string& name, const std::string& type)
+{
+	FSBoundaryCondition* pbc = FEBio::CreateBoundaryCondition(type, GetFSModel());
+	if (pbc)
+	{
+		pbc->SetName(name);
+		AddBC(pbc);
+		return pbc;
+	}
+	return nullptr;
+}
+
 void FSStep::AddBC(FSBoundaryCondition* pbc)
 { 
 	imp->m_BC.Add(pbc);

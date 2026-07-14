@@ -184,6 +184,7 @@ public:
 
 	// count named selections
 	int CountNamedSelections() const;
+	FSItemListBuilder* NamedSelection(int n);
 	FSItemListBuilder* FindNamedSelection(int nid);
 	FSItemListBuilder* FindNamedSelection(const std::string& name, unsigned int filter = MESH_ITEM_FLAGS::FE_ALL_FLAGS);
 	std::vector<FSItemListBuilder*> AllNamedSelections(int ntype = 0);

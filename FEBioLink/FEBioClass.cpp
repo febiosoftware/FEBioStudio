@@ -1485,7 +1485,8 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	case FEMESHADAPTORCRITERION_ID:
 	{
 		FSGenericClass* pc = new FSGenericClass(fem);
-		BuildModelComponent(superClassID, typeStr, pc, flags);
+		bool b = BuildModelComponent(superClassID, typeStr, pc, flags);
+		if (!b) { delete pc; return nullptr; }
 		return pc;
 	}
 	break;

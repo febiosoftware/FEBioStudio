@@ -205,6 +205,7 @@ public:
 
 	//! Get a particular material
 	Material* GetMaterial(int i) { return &m_Mat[i]; }
+	Material* FindMaterial(const std::string& name);
 
 	//! Clear all materials
 	void ClearMaterials() { m_Mat.clear(); }

@@ -65,6 +65,8 @@ public:
 	// boundary conditions
 	int BCs();
 	FSBoundaryCondition* BC(int i);
+	FSBoundaryCondition* FindBC(const std::string& name);
+	FSBoundaryCondition* AddBC(const std::string& name, const std::string& type);
 	void AddBC(FSBoundaryCondition* pbc);
 	void InsertBC(int n, FSBoundaryCondition* pbc);
 	int RemoveBC(FSBoundaryCondition* pbc);

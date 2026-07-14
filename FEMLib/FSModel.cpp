@@ -1121,6 +1121,20 @@ void FSModel::AddMaterial(GMaterial* pmat)
 	ClearMLT();
 }
 
+GMaterial* FSModel::AddMaterial(const std::string& name, const std::string& type)
+{
+	FSMaterial* pm = FEBio::CreateMaterial(type, this);
+	if (pm)
+	{
+		GMaterial* gm = new GMaterial;
+		gm->SetName(name);
+		gm->SetMaterialProperties(pm);
+		AddMaterial(gm);
+		return gm;
+	}
+	return nullptr;
+}
+
 void FSModel::InsertMaterial(int n, GMaterial* pm)
 { 
 	m_pMat.Insert(n, pm); 
@@ -1373,6 +1387,9 @@ void FSModel::Clear()
 
 	// remove all steps
 	m_pStep.Clear();
+
+	// remove all load controllers
+	m_LC.Clear();
 
 	// remove all meshes
 	m_GMdl->Clear();
@@ -1877,6 +1894,17 @@ FSStep* FSModel::GetStep(int i)
 	return m_pStep[i]; 
 }
 
+FSStep* FSModel::AddStep(const std::string& name, const std::string& type)
+{
+	FSStep* step = FEBio::CreateStep(type, this);
+	if (step)
+	{
+		step->SetName(name);
+		AddStep(step);
+	}
+	return step;
+}
+
 void FSModel::AddStep(FSStep* ps)
 { 
 	m_pStep.Add(ps); 
@@ -1915,6 +1943,15 @@ FSStep* FSModel::FindStep(int nid)
 		if (m_pStep[i]->GetID() == nid) return m_pStep[i];
 	}
 	assert(false);
+	return nullptr;
+}
+
+FSStep* FSModel::FindStep(const std::string& name)
+{
+	for (int i=0; i<(int) m_pStep.Size(); ++i)
+	{
+		if (m_pStep[i]->GetName() == name) return m_pStep[i];
+	}
 	return nullptr;
 }
 
@@ -2436,9 +2473,30 @@ FSLoadController* FSModel::GetLoadControllerFromID(int lc)
 	return nullptr;
 }
 
+FSLoadController* FSModel::FindLoadController(const std::string& name)
+{
+	for (int i = 0; i < m_LC.Size(); ++i)
+	{
+		FSLoadController* plc = m_LC[i];
+		if (plc->GetName() == name) return plc;
+	}
+	return nullptr;
+}
+
 void FSModel::AddLoadController(FSLoadController* plc)
 {
 	m_LC.Add(plc);
+}
+
+FSLoadController* FSModel::AddLoadController(const std::string& name, const std::string& type)
+{
+	FSLoadController* plc = FEBio::CreateLoadController(type, this);
+	if (plc)
+	{
+		plc->SetName(name);
+		AddLoadController(plc);
+	}
+	return plc;
 }
 
 int FSModel::RemoveLoadController(FSLoadController* plc)

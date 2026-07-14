@@ -32,10 +32,15 @@ SOFTWARE.*/
 #include <pybind11/stl.h>
 #include <FEBioStudio/ModelDocument.h>
 #include <FEBioStudio/MainWindow.h>
+#include <FEBioStudio/PropertyList.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEMLib/FSModel.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
+#include <GeomLib/GGroup.h>
+#include <GeomLib/FSGroup.h>
+#include <GeomLib/GItem.h>
+#include <MeshLib/FSItemListBuilder.h>
 #include <FEBio/FEBioExport4.h>
 #include <MeshIO/VTKExport.h>
 #include "PyExceptions.h"
@@ -44,38 +49,15 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include <MeshLib/FSCurveMesh.h>
+#include <FSCore/ClassDescriptor.h>
 #include "DocHeaders/PyModelDocs.h"
+#include "PyUtil.h"
 
 namespace py = pybind11;
 
 CModelDocument* GetActiveDocument()
 {
 	return dynamic_cast<CModelDocument*>(PyRunContext::GetDocument());
-}
-
-GMaterial* AddMaterial(FSModel& fem, const std::string& name, const std::string& type)
-{
-	FSMaterial* pm = FEBio::CreateMaterial(type, &fem);
-	if (pm)
-	{
-		GMaterial* gm = new GMaterial;
-		gm->SetName(name);
-		gm->SetMaterialProperties(pm);
-		fem.AddMaterial(gm);
-		return gm;
-	}
-	return nullptr;
-}
-
-FSStep* AddStep(FSModel& fem, const std::string& name, const std::string& typeString)
-{
-	FSStep* step = FEBio::CreateStep(typeString, &fem);
-	if (step)
-	{
-		step->SetName(name);
-		fem.AddStep(step);
-	}
-	return step;
 }
 
 GDiscreteSpringSet* AddSpringSet(FSModel& fem, const std::string& name, const std::string& typeStr)
@@ -158,115 +140,606 @@ FSModel* GetActiveModel()
 	return (doc ? doc->GetFSModel() : nullptr);
 }
 
+enum class PySelectionItemType
+{
+	None,
+	Node,
+	Edge,
+	Face,
+	Part
+};
+
+std::vector<py::handle> SelectionItemsFromPython(py::handle value)
+{
+	std::vector<py::handle> items;
+
+	if (py::isinstance<GNode>(value) || py::isinstance<GEdge>(value) ||
+		py::isinstance<GFace>(value) || py::isinstance<GPart>(value))
+	{
+		items.push_back(value);
+	}
+	else if (py::isinstance<py::sequence>(value) && !py::isinstance<py::str>(value))
+	{
+		py::sequence seq = py::reinterpret_borrow<py::sequence>(value);
+		for (py::handle item : seq)
+		{
+			items.push_back(item);
+		}
+	}
+	else
+	{
+		throw py::type_error("selection items must be geometry items or a sequence of geometry items");
+	}
+
+	if (items.empty())
+	{
+		throw py::value_error("selection cannot be empty");
+	}
+
+	return items;
+}
+
+PySelectionItemType SelectionItemType(py::handle item)
+{
+	if (py::isinstance<GNode>(item)) return PySelectionItemType::Node;
+	if (py::isinstance<GEdge>(item)) return PySelectionItemType::Edge;
+	if (py::isinstance<GFace>(item)) return PySelectionItemType::Face;
+	if (py::isinstance<GPart>(item)) return PySelectionItemType::Part;
+	return PySelectionItemType::None;
+}
+
+py::object GetItemListSelection(FSHasOneItemList& self)
+{
+	FSItemListBuilder* selection = self.GetItemList();
+	if (selection == nullptr) return py::none();
+	return py::cast(selection, py::return_value_policy::reference);
+}
+
+void SetItemListSelection(FSHasOneItemList& self, py::handle value)
+{
+	if (value.is_none())
+	{
+		self.SetItemList(nullptr);
+		return;
+	}
+
+	if (!py::isinstance<FSItemListBuilder>(value))
+	{
+		throw py::type_error("selection must be a named selection");
+	}
+
+	FSItemListBuilder* selection = value.cast<FSItemListBuilder*>();
+	if (selection && !selection->Supports(self.GetMeshItemType()))
+	{
+		throw py::type_error("selection is not compatible with this model component");
+	}
+
+	self.SetItemList(selection);
+}
+
+class PyMaterialList : public PyNamedCollection<FSModel, GMaterial>
+{
+public:
+	PyMaterialList(FSModel* model)
+		: PyNamedCollection<FSModel, GMaterial>(
+			model,
+			[](FSModel* model) { return model->Materials(); },
+			[](FSModel* model, int i) { return model->GetMaterial(i); },
+			[](FSModel* model, const std::string& name) { return model->FindMaterial(name); },
+			"material"
+		),
+		m_model(model) {}
+
+	GMaterial* add(const std::string& name, const std::string& type, py::kwargs kwargs)
+	{
+		GMaterial* gmat = m_model->AddMaterial(name, type);
+		if (gmat == nullptr) return nullptr;
+
+		FSMaterial* mat = gmat->GetMaterialProperties();
+		if (mat && kwargs.empty() == false)
+		{
+			for (auto item : kwargs)
+			{
+				std::string key = py::str(item.first);
+				py::object value = py::reinterpret_borrow<py::object>(item.second);
+				SetDynamicAttribute(*mat, key, value);
+			}
+		}
+
+		return gmat;
+	}
+
+private:
+	FSModel* m_model = nullptr;
+};
+
+class PyObjectList : public PyNamedCollection<GModel, GObject>
+{
+public:
+	PyObjectList(FSModel* model) : 
+		PyNamedCollection<GModel, GObject>(
+			&model->GetModel(),
+			[](GModel* model) { return model->Objects(); },
+			[](GModel* model, int i) { return model->Object(i); },
+			[](GModel* model, const std::string& name) { return model->FindObject(name); },
+			"object"
+		)
+	{
+		m_geom = &model->GetModel();
+	}
+
+	GObject* add(const std::string& name, const std::string& type, py::kwargs kwargs)
+	{
+		ClassKernel& fbs = *ClassKernel::GetInstance();
+		std::unique_ptr<FSObject> obj(fbs.CreateClass(CLASS_OBJECT, type.c_str()));
+
+		GObject* po = dynamic_cast<GObject*>(obj.get());
+		if (po == nullptr) return nullptr;
+
+		if (kwargs.empty() == false)
+		{
+			for (auto item : kwargs)
+			{
+				std::string key = py::str(item.first);
+				py::object value = py::reinterpret_borrow<py::object>(item.second);
+
+				SetDynamicAttribute(*po, key, value);
+			}
+
+			po->Update();
+		}
+
+		po->SetName(name);
+		m_geom->AddObject(po);
+		obj.release();
+		return po;
+	}
+
+private:
+	GModel* m_geom = nullptr;
+};
+
+class PyLoadControllerList : public PyNamedCollection<FSModel, FSLoadController>
+{
+public:
+	PyLoadControllerList(FSModel* model)
+		: PyNamedCollection<FSModel, FSLoadController>(
+			model,
+			[](FSModel* model) { return model->LoadControllers(); },
+			[](FSModel* model, int i) { return model->GetLoadController(i); },
+			[](FSModel* model, const std::string& name) { return model->FindLoadController(name); },
+			"load controller"
+		),
+		m_model(model) {}
+
+	FSLoadController* add(const std::string& name, const std::string& type, py::kwargs kwargs)
+	{
+		FSLoadController* lc = m_model->AddLoadController(name, type);
+		if (lc && !kwargs.empty())
+		{
+			for (auto item : kwargs)
+			{
+				std::string key = py::str(item.first);
+				py::object value = py::reinterpret_borrow<py::object>(item.second);
+				SetDynamicAttribute(*lc, key, value);
+			}
+		}
+		return lc;
+	}
+
+private:
+	FSModel* m_model = nullptr;
+};
+
+class PyStepList : public PyNamedCollection<FSModel, FSStep>
+{
+public:
+	PyStepList(FSModel* model)
+		: PyNamedCollection<FSModel, FSStep>(
+			model,
+			[](FSModel* model) { return model->Steps(); },
+			[](FSModel* model, int i) { return model->GetStep(i); },
+			[](FSModel* model, const std::string& name) { return model->FindStep(name); },
+			"step"
+		),
+		m_model(model) {}
+
+	FSStep* add(const std::string& name, const std::string& type, py::kwargs kwargs)
+	{
+		FSStep*step = m_model->AddStep(name, type);
+		if (step)
+		{
+			FEBio::InitDefaultProps(step);
+			if (!kwargs.empty())
+			{
+				for (auto item : kwargs)
+				{
+					std::string key = py::str(item.first);
+					py::object value = py::reinterpret_borrow<py::object>(item.second);
+					SetDynamicAttribute(*step, key, value);
+				}
+			}
+		}
+		return step;
+	}
+
+	FSStep* initial()
+	{
+		return m_model->GetStep(0);
+	}
+
+private:
+	FSModel* m_model = nullptr;
+};
+
+class PyBCList : public PyNamedCollection<FSStep, FSBoundaryCondition>
+{
+public:
+	PyBCList(FSStep* step)
+		: PyNamedCollection<FSStep, FSBoundaryCondition>(
+			step,
+			[](FSStep* step) { return step->BCs(); },
+			[](FSStep* step, int i) { return step->BC(i); },
+			[](FSStep* step, const std::string& name) { return step->FindBC(name); },
+			"boundary condition"
+		),
+		m_step(step) {}
+
+	FSBoundaryCondition* add(const std::string& name, const std::string& type, py::kwargs kwargs)
+	{
+		FSBoundaryCondition* bc = m_step->AddBC(name, type);
+		if (bc && !kwargs.empty())
+		{
+			for (auto item : kwargs)
+			{
+				std::string key = py::str(item.first);
+				py::object value = py::reinterpret_borrow<py::object>(item.second);
+				SetDynamicAttribute(*bc, key, value);
+			}
+		}
+		return bc;
+	}
+
+private:
+	FSStep* m_step = nullptr;
+};
+
+class PySelectionList : public PyNamedCollection<FSModel, FSItemListBuilder>
+{
+public:
+	PySelectionList(FSModel* model) :
+		PyNamedCollection<FSModel, FSItemListBuilder>(
+			model,
+			[](FSModel* model) { return model->GetModel().CountNamedSelections(); },
+			[](FSModel* model, int i) { return model->GetModel().NamedSelection(i); },
+			[](FSModel* model, const std::string& name) { return model->GetModel().FindNamedSelection(name); },
+			"named selection"
+		),
+		m_model(model) {}
+
+	FSItemListBuilder* add(const std::string& name, py::handle value)
+	{
+		if (name.empty())
+		{
+			throw py::value_error("selection name cannot be empty");
+		}
+
+		GModel& gmodel = m_model->GetModel();
+		if (gmodel.FindNamedSelection(name) != nullptr)
+		{
+			throw py::value_error("selection already exists: " + name);
+		}
+
+		std::vector<py::handle> items = SelectionItemsFromPython(value);
+		PySelectionItemType itemType = SelectionItemType(items[0]);
+
+		FSItemListBuilder* selection = nullptr;
+		switch (itemType)
+		{
+		case PySelectionItemType::Node:
+			selection = new GNodeList(&gmodel);
+			break;
+		case PySelectionItemType::Edge:
+			selection = new GEdgeList(&gmodel);
+			break;
+		case PySelectionItemType::Face:
+			selection = new GFaceList(&gmodel);
+			break;
+		case PySelectionItemType::Part:
+			selection = new GPartList(&gmodel);
+			break;
+		default:
+			throw py::type_error("selection items must be geometry items");
+		}
+
+		try
+		{
+			for (py::handle item : items)
+			{
+				if (SelectionItemType(item) != itemType)
+				{
+					throw py::type_error("selection items must all have the same geometry type");
+				}
+
+				switch (itemType)
+				{
+				case PySelectionItemType::Node:
+					selection->add(item.cast<GNode*>()->GetID());
+					break;
+				case PySelectionItemType::Edge:
+					selection->add(item.cast<GEdge*>()->GetID());
+					break;
+				case PySelectionItemType::Face:
+					selection->add(item.cast<GFace*>()->GetID());
+					break;
+				case PySelectionItemType::Part:
+					selection->add(item.cast<GPart*>()->GetID());
+					break;
+				default:
+					break;
+				}
+			}
+
+			selection->SetName(name);
+			gmodel.AddNamedSelection(selection);
+			return selection;
+		}
+		catch (...)
+		{
+			delete selection;
+			throw;
+		}
+	}
+
+private:
+	FSModel* m_model = nullptr;
+};
+
 // Initializes the fbs.mdl module
 void init_FBSModel(py::module& m)
 {
 	py::module mdl = m.def_submodule("mdl", "Module used to interact with an FEBio Studio model.");
 
-	mdl.def("GetActiveModel", GetActiveModel, "Returns the active FSModel instance.", py::return_value_policy::reference);
-	mdl.def("GetActiveObject", &PyRunContext::GetActiveObject, "Returns the active GObject instance.", py::return_value_policy::reference);
+	// collection wrapper for materials
+	py::class_<PyMaterialList>(mdl, "MaterialList")
+		.def("__len__", &PyMaterialList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyMaterialList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyMaterialList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", &PyMaterialList::iter)
+		.def("add", &PyMaterialList::add, py::return_value_policy::reference);
+
+	// collection wrapper for objects
+	py::class_<PyObjectList>(mdl, "ObjectList")
+		.def("__len__", &PyObjectList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyObjectList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyObjectList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", [](const PyObjectList& self) {
+			py::list items;
+			for (int i = 0; i < self.size(); ++i)
+			{
+				items.append(py::cast(self.get(i), py::return_value_policy::reference));
+			}
+			return py::iter(items);
+		})
+		.def("add", &PyObjectList::add, py::return_value_policy::reference)
+		;
+
+	// collection wrapper for steps
+	py::class_<PyStepList>(mdl, "StepList")
+		.def("__len__", &PyStepList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyStepList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyStepList::get, py::const_), py::return_value_policy::reference)
+		.def("add", &PyStepList::add, py::return_value_policy::reference)
+		.def_property_readonly("initial", &PyStepList::initial, py::return_value_policy::reference)
+		.def("__iter__", [](const PyStepList& self) {
+			py::list items;
+			for (int i = 0; i < self.size(); ++i)
+			{
+				items.append(py::cast(self.get(i), py::return_value_policy::reference));
+			}
+			return py::iter(items);
+		});
+
+	// collection wrapper for boundary conditions
+	py::class_<PyBCList>(mdl, "BCList")
+		.def("__len__", &PyBCList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyBCList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyBCList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", [](const PyBCList& self) {
+			py::list items;
+			for (int i = 0; i < self.size(); ++i)
+			{
+				items.append(py::cast(self.get(i), py::return_value_policy::reference));
+			}
+			return py::iter(items);
+		})
+		.def("add", &PyBCList::add, py::return_value_policy::reference)
+		;
+
+	// collection wrapper for load controllers
+	py::class_<PyLoadControllerList>(mdl, "LoadControllerList")
+		.def("__len__", &PyLoadControllerList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyLoadControllerList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyLoadControllerList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", [](const PyLoadControllerList& self) {
+			py::list items;
+			for (int i = 0; i < self.size(); ++i)
+			{
+				items.append(py::cast(self.get(i), py::return_value_policy::reference));
+			}
+			return py::iter(items);
+		})
+		.def("add", &PyLoadControllerList::add, py::return_value_policy::reference)
+		;
+
+	// collection wrapper for named selections
+	py::class_<PySelectionList>(mdl, "SelectionList")
+		.def("__len__", &PySelectionList::size)
+		.def("__getitem__", py::overload_cast<int>(&PySelectionList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PySelectionList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", &PySelectionList::iter)
+		.def("add", &PySelectionList::add, py::return_value_policy::reference)
+		;
+
+	// view wrapper for parameters
+	py::class_<PyParameter>(mdl, "Parameter")
+		.def_property("value", &PyParameter::value, &PyParameter::setValue)
+		.def_property("lc_id", &PyParameter::lcID, &PyParameter::setLCID)
+		.def_property("lc", &PyParameter::getLC, &PyParameter::setLC)
+		.def_property_readonly("name", &PyParameter::name)
+		.def_property_readonly("long_name", &PyParameter::longName)
+		.def_property_readonly("unit", &PyParameter::unit);
+
+	py::class_<PyParameterList>(mdl, "ParameterList")
+		.def("__len__", &PyParameterList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyParameterList::get, py::const_))
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyParameterList::get, py::const_))
+		.def("__iter__", [](const PyParameterList& self) {
+			py::list items;
+			for (int i = 0; i < self.size(); ++i)
+			{
+				items.append(self.get(i));
+			}
+			return py::iter(items);
+		});
+
+	py::class_<PyVec2dList>(mdl, "PointList")
+		.def("__len__", &PyVec2dList::size)
+		.def("__getitem__", &PyVec2dList::get)
+		.def("__iter__", &PyVec2dList::iter)
+		.def("add", py::overload_cast<double, double>(&PyVec2dList::add))
+		.def("add", py::overload_cast<py::handle>(&PyVec2dList::add))
+		.def("clear", &PyVec2dList::clear)
+		;
+
+	// minimal property slot wrapper for model components
+	py::class_<PyPropertySlot>(mdl, "PropertySlot")
+		.def("create", &PyPropertySlot::create)
+		.def("clear", &PyPropertySlot::clear)
+		.def_property_readonly("is_set", &PyPropertySlot::isSet)
+		.def_property_readonly("type_str", &PyPropertySlot::typeStr);
+
+	mdl.def("active_model", GetActiveModel, "Returns the active FSModel instance.", py::return_value_policy::reference);
+	mdl.def("active_object", &PyRunContext::GetActiveObject, "Returns the active GObject instance.", py::return_value_policy::reference);
 
 	py::class_<FSModel, std::unique_ptr<FSModel, py::nodelete>>(mdl, "Model", DOC(FSModel))
-		.def("Clear", &FSModel::Clear, DOC(FSModel, Clear))
-		.def("Purge", &FSModel::Purge, DOC(FSModel, Purge))
+		.def("clear", &FSModel::Reset, DOC(FSModel, Clear))
+		.def("purge", &FSModel::Purge, DOC(FSModel, Purge))
 
-		.def("ExportFEB", &ExportFEB, "Export the model to a FEBio file.")
-		.def("ExportVTK", &ExportVTK, "Export the model to a VTK file.")
+		.def("export_feb", &ExportFEB, "Export the model to a FEBio file.")
+		.def("export_vtk", &ExportVTK, "Export the model to a VTK file.")
 
-		.def("ImportGeometryFromFile", &ImportGeometryFromFile, "Import geometry from a file.")
+		.def("import_geometry_from_file", &ImportGeometryFromFile, "Import geometry from a file.")
 
-		// functions for adding geometry
-		.def("AddBox", [](FSModel& self, double W, double H, double D) {
-				GBox* box = new GBox(W, H, D);
-				self.GetModel().AddObject(box);
-				return box;}, "Add a box to the model.", py::return_value_policy::reference)
-
-		.def("AddDisc", [](FSModel& self, double R) {
+		.def("add_disc", [](FSModel& self, double R) {
 				GDisc* disc = new GDisc(R);
 				self.GetModel().AddObject(disc);
 				return disc;}, "Add a disc to the model.", py::return_value_policy::reference)
 
-		.def("AddMeshObject", [](FSModel& self, FSMesh* mesh) {
+		.def("add_mesh_object", [](FSModel& self, FSMesh* mesh) {
 				GMeshObject* po = new GMeshObject(mesh);
 				self.GetModel().AddObject(po);
 				return po;
 			}, "Add a mesh object to the model.", py::return_value_policy::reference)
 
-		.def("AddCurveMeshObject", [](FSModel& self, FSCurveMesh* mesh) {
+		.def("add_curve_mesh_object", [](FSModel& self, FSCurveMesh* mesh) {
 				GObject* po = new GCurveMeshObject(mesh);
 				self.GetModel().AddObject(po);
 				return po;
 			}, "Add a curve mesh object to the model.", py::return_value_policy::reference)
 
-        // --- functions to delete all components ---
-        .def("DeleteAllMaterials", &FSModel::DeleteAllMaterials, DOC(FSModel, DeleteAllMaterials))
-        .def("DeleteAllBC", &FSModel::DeleteAllBC, DOC(FSModel, DeleteAllBC))
-        .def("DeleteAllLoads", &FSModel::DeleteAllLoads, DOC(FSModel, DeleteAllLoads))
-        .def("DeleteAllIC", &FSModel::DeleteAllIC, DOC(FSModel, DeleteAllIC))
-        .def("DeleteAllContact", &FSModel::DeleteAllContact, DOC(FSModel, DeleteAllContact))
-        .def("DeleteAllConstraints", &FSModel::DeleteAllRigidBCs, DOC(FSModel, DeleteAllConstraints))
-        .def("DeleteAllRigidICs", &FSModel::DeleteAllRigidICs, DOC(FSModel, DeleteAllRigidICs))
-        .def("DeleteAllRigidLoads", &FSModel::DeleteAllRigidLoads, DOC(FSModel, DeleteAllRigidLoads))
-        .def("DeleteAllRigidConnectors", &FSModel::DeleteAllRigidConnectors, DOC(FSModel, DeleteAllRigidConnectors))
-        .def("DeleteAllSteps", &FSModel::DeleteAllSteps, DOC(FSModel, DeleteAllSteps))
-        .def("DeleteAllLoadControllers", &FSModel::DeleteAllLoadControllers, DOC(FSModel, DeleteAllLoadControllers))
-        .def("DeleteAllMeshDataGenerators", &FSModel::DeleteAllMeshDataGenerators, DOC(FSModel, DeleteAllMeshDataGenerators))
-        .def("ClearSelections", &FSModel::ClearSelections, DOC(FSModel, ClearSelections))
-
-        // --- material functions ---
-		.def("AddMaterial", [](FSModel& self, const std::string& name, const std::string& type) { return AddMaterial(self, name, type); })
-		.def("GetMaterial", &FSModel::GetMaterial, DOC(FSModel, GetMaterial))
-        .def("AssignMaterial", static_cast<void (FSModel::*)(GObject*, GMaterial*)>(&FSModel::AssignMaterial), DOC(FSModel, AssignMaterial))
-        .def("ReplaceMaterial", &FSModel::ReplaceMaterial, DOC(FSModel, ReplaceMaterial))
-        .def("CanDeleteMaterial", &FSModel::CanDeleteMaterial, DOC(FSModel, CanDeleteMaterial))
-        .def("DeleteMaterial", &FSModel::DeleteMaterial, DOC(FSModel, DeleteMaterial))
-        .def("InsertMaterial", &FSModel::InsertMaterial, DOC(FSModel, InsertMaterial))
-        .def("Materials", &FSModel::Materials, DOC(FSModel, Materials))
-        .def("GetMaterialFromID", &FSModel::GetMaterialFromID, DOC(FSModel, GetMaterialFromID))
-        .def("FindMaterial", &FSModel::FindMaterial, DOC(FSModel, FindMaterial))
-        .def("GetRigidConnectorFromID", &FSModel::GetRigidConnectorFromID, DOC(FSModel, GetRigidConnectorFromID))
-
-        // --- Analysis steps ---
-		.def("AddStep", [](FSModel& self, const std::string& name, const std::string& type) { return AddStep(self, name, type); }, DOC(FSModel, AddStep))
-		.def("Steps", &FSModel::Steps, DOC(FSModel, Steps))
-        .def("GetStep", &FSModel::GetStep, DOC(FSModel, GetStep))
-        .def("FindStep", &FSModel::FindStep, DOC(FSModel, FindStep))
-        .def("GetStepIndex", &FSModel::GetStepIndex, DOC(FSModel, GetStepIndex))
-        .def("DeleteStep", &FSModel::DeleteStep, DOC(FSModel, DeleteStep))
-        .def("InsertStep", &FSModel::InsertStep, DOC(FSModel, InsertStep))
-        .def("SwapSteps", &FSModel::SwapSteps, DOC(FSModel, SwapSteps))
-        .def("ReplaceStep", &FSModel::ReplaceStep, DOC(FSModel, ReplaceStep))
-        .def("AssignComponentToStep", &FSModel::AssignComponentToStep, DOC(FSModel, AssignComponentToStep))
-
-        // --- Object functions ---
-        .def("Objects", [] (FSModel& self){return self.GetModel().Objects();})
-        .def("Object", [] (FSModel& self, int i){return self.GetModel().Object(i);})
-		.def("AddObject", [](FSModel& self, GObject * po) { self.GetModel().AddObject(po); })
-        .def("FindObject", [] (FSModel& self, int i){return self.GetModel().FindObject(i);})
-        .def("FindObject", [] (FSModel& self, const string& str){return self.GetModel().FindObject(str);})
-        .def("FindObjectIndex", [] (FSModel& self, GObject* obj){return self.GetModel().FindObjectIndex(obj);})
-        .def("ReplaceObject", [] (FSModel& self, int i, GObject* obj){return self.GetModel().ReplaceObject(i, obj);})
-        .def("ReplaceObject", [] (FSModel& self, GObject* obj1, GObject* obj2){return self.GetModel().ReplaceObject(obj1, obj2);})
-        .def("RemoveObject", [] (FSModel& self, GObject* obj){return self.GetModel().RemoveObject(obj);})
-        .def("InsertObject", [] (FSModel& self, GObject* obj, int i){return self.GetModel().InsertObject(obj, i);})
-		.def("DeleteObject", [](FSModel& self, GObject* po) { self.GetModel().RemoveObject(po); delete po; })
-		.def("AddSpringSet", [](FSModel& self, const std::string& name, const std::string& type) { return AddSpringSet(self, name, type); })
+		.def_property_readonly(
+			"objects",
+			[](FSModel& self) { return PyObjectList(&self); },
+			py::return_value_policy::reference_internal
+		)
+		.def_property_readonly(
+			"materials",
+			[](FSModel& self) { return PyMaterialList(&self); },
+			py::return_value_policy::reference_internal
+		)
+		.def_property_readonly(
+			"load_controllers",
+			[](FSModel& self) { return PyLoadControllerList(&self); },
+			py::return_value_policy::reference_internal
+		)
+		.def_property_readonly(
+			"steps",
+			[](FSModel& self) { return PyStepList(&self); },
+			py::return_value_policy::reference_internal
+		)
+		.def_property_readonly(
+			"selections",
+			[](FSModel& self) { return PySelectionList(&self); },
+			py::return_value_policy::reference_internal
+		)
 		;
 
-	py::class_<FSStep, std::unique_ptr<FSStep, py::nodelete>>(mdl, "FSStep", "A class representing an analysis step in the FEBio model.")
-		.def("SetName", &FSObject::SetName, "Set the name of the step.");
+	py::class_<FSStep, FSObject, std::unique_ptr<FSStep, py::nodelete>>(mdl, "FSStep", "A class representing an analysis step in the FEBio model.")
+		.def_property_readonly("params", [](FSStep& self) { return PyParameterList(&self); }, py::return_value_policy::reference_internal)
+		.def("__getattr__", [](FSStep& self, const std::string& name) { return GetDynamicAttribute(self, name); })
+		.def("__setattr__", [](FSStep& self, const std::string& name, py::object value) { SetDynamicAttribute(self, name, value); })
+		.def_property_readonly(
+			"bcs",
+			[](FSStep& self) { return PyBCList(&self); },
+			py::return_value_policy::reference_internal
+		)
+		;
 
-	py::class_<GMaterial, std::unique_ptr<GMaterial, py::nodelete>>(mdl, "GMaterial", "A class representing a material in the FEBio model.")
-		.def("set", [](GMaterial* gm, std::string& paramName, float value) {
-			FSMaterial* pm = gm->GetMaterialProperties();
-			if (pm) {
-				Param* p = pm->GetParam(paramName.c_str());
-				if (p) p->SetFloatValue(value);
+	py::class_<GMaterial, FSObject, std::unique_ptr<GMaterial, py::nodelete>>(mdl, "Material", "A class representing a material in the FEBio model.")
+		.def_property_readonly("id", &GMaterial::GetID, "The unique ID of the material.")
+		.def_property_readonly("params", [](GMaterial& self) {
+		FSMaterial* material = self.GetMaterialProperties();
+		if (material == nullptr)
+			throw py::attribute_error("material has no FEBio properties");
+
+		return PyParameterList(material);
+			}, py::return_value_policy::reference_internal)
+		.def("__getattr__", [](GMaterial& self, const std::string& name) -> py::object {
+		FSMaterial* material = self.GetMaterialProperties();
+		if (material == nullptr)
+			throw py::attribute_error("material has no FEBio properties");
+
+		return GetDynamicAttribute(*material, name);
+			})
+		.def("__setattr__", [](GMaterial& self, const std::string& name, py::object value) {
+			if (name == "name") {
+				self.SetName(value.cast<std::string>());
+				return;
 			}
-		})
-		.def("SetName", &FSObject::SetName, "Set the name of the material.");
 
-	py::class_<GDiscreteSpringSet, std::unique_ptr<GDiscreteSpringSet, py::nodelete>>(mdl, "SpringSet", "A class representing a set of discrete springs in the FEBio model.")
+			FSMaterial* material = self.GetMaterialProperties();
+			if (material == nullptr)
+				throw py::attribute_error("material has no FEBio properties");
+
+			SetDynamicAttribute(*material, name, value);
+		});
+
+	py::class_<FSLoadController, FSObject, std::unique_ptr<FSLoadController>>(mdl, "LoadController")
+		.def_property_readonly("id", &FSLoadController::GetID, "The unique ID of the load controller.")
+		.def("__getattr__", [](FSLoadController& self, const std::string& name) { return GetDynamicAttribute(self, name); })
+		.def("__setattr__", [](FSLoadController& self, const std::string& name, py::object value) { SetDynamicAttribute(self, name, value); })
+		;
+
+	py::class_<FSBoundaryCondition, FSObject, std::unique_ptr<FSBoundaryCondition>>(mdl, "BoundaryCondition")
+		.def_property_readonly("params", [](FSBoundaryCondition& self) { return PyParameterList(&self); }, py::return_value_policy::reference_internal)
+		.def_property(
+			"selection",
+			[](FSBoundaryCondition& self) { return GetItemListSelection(self); },
+			[](FSBoundaryCondition& self, py::handle value) { SetItemListSelection(self, value); })
+		.def("__getattr__", [](FSBoundaryCondition& self, const std::string& name) { return GetDynamicAttribute(self, name); })
+		.def("__setattr__", [](FSBoundaryCondition& self, const std::string& name, py::object value) {
+			if (name == "selection")
+			{
+				SetItemListSelection(self, value);
+				return;
+			}
+
+			SetDynamicAttribute(self, name, value);
+		})
+		;
+
+	py::class_<GDiscreteSpringSet, FSObject, std::unique_ptr<GDiscreteSpringSet, py::nodelete>>(mdl, "SpringSet", "A class representing a set of discrete springs in the FEBio model.")
 		.def("AddSpring", static_cast<void (GDiscreteSpringSet::*)(int, int)>(&GDiscreteSpringSet::AddElement), "Add a spring between two nodes by their indices.");
 }
 #else

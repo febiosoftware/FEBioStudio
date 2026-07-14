@@ -235,6 +235,15 @@ void FEPostModel::AddMaterial(Material& mat)
 	m_Mat.push_back(mat); 
 }
 
+Material* FEPostModel::FindMaterial(const std::string& name)
+{
+	for (auto& mat : m_Mat)
+	{
+		if (mat.GetName() == name) return &mat;
+	}
+	return nullptr;
+}
+
 void FEPostModel::EnableMaterial(int i, bool enable)
 {
 	if (i >= 0 && i < m_Mat.size())

@@ -53,12 +53,54 @@ using namespace std;
 using namespace Post;
 namespace py = pybind11;
 
+class PyPostMaterialList
+{
+public:
+	PyPostMaterialList(FEPostModel* model) : m_model(model) {}
+
+	int size() const
+	{
+		return m_model->Materials();
+	}
+
+	Post::Material* get(int i) const
+	{
+		int n = m_model->Materials();
+		if (i < 0) i += n;
+
+		if (i < 0 || i >= n)
+		{
+			throw py::index_error("material index out of range");
+		}
+
+		return m_model->GetMaterial(i);
+	}
+
+	Post::Material* get(const std::string& name) const
+	{
+		Post::Material* mat = m_model->FindMaterial(name);
+		if (mat == nullptr)
+		{
+			throw py::key_error("material not found: " + name);
+		}
+
+		return mat;
+	}
+
+private:
+	FEPostModel* m_model = nullptr;
+};
+
+
 FEPostModel* ReadPlotFile(std::string filename)
 {
     FEPostModel* model = new FEPostModel;
     xpltFileReader reader(model);
 
-    reader.Load(filename.c_str());
+	if (reader.Load(filename.c_str()) == false)
+	{
+		throw pyGenericExcept("Failed to read plot file.");
+	}
 
     model->SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, 0, 0));
 
@@ -150,9 +192,16 @@ void init_FBSPost(py::module& m)
 {
 	py::module post = m.def_submodule("post", "Module used to interact with plot files");
 
-    post.def("ReadPlotFile", &ReadPlotFile, "Reads a plot file and returns a FEPostModel object.");
+	// view wrapper for materials
+	py::class_<PyPostMaterialList>(post, "MaterialList")
+		.def("__len__", &PyPostMaterialList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyPostMaterialList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyPostMaterialList::get, py::const_), py::return_value_policy::reference)
+	;
+
+    post.def("read_plotfile", &ReadPlotFile, "Reads a plot file and returns a FEPostModel object.");
 #ifndef PY_EXTERNAL
-	post.def("GetActiveModel", &GetActivePostModel, "Returns the active FEPostModel instance.", py::return_value_policy::reference);
+	post.def("active_model", &GetActivePostModel, "Returns the active FEPostModel instance.", py::return_value_policy::reference);
 #endif
 
 	post.def("IntegrateElements", &PostIntegrateElements, "Integrates a data field over an element set.");
@@ -168,9 +217,8 @@ void init_FBSPost(py::module& m)
 	py::class_<Material>(post, "Material", "Material class representing a material in the post-processing model.")
 		.def_property("name", &Material::GetName, &Material::SetName, "Name of the material.")
 		.def("SetColor", static_cast<void(Material::*)(uint8_t, uint8_t, uint8_t)>(&Material::setColor), "Sets the color of the material.")
-		.def("Show", &Material::show, "Shows the material.")
-		.def("Hide", &Material::hide, "Hides the material.")
-        .def("Enabled", &Material::enabled, "Checks if the material is enabled.")
+		.def_readwrite("visible", &Material::bvisible, "Visibility of the material.")
+		.def_readwrite("enabled", &Material::benable, "Enables or disables the material.")
         ;
 
 	py::class_<FEPostModel::PlotObject>(post, "PlotObject")
@@ -202,6 +250,10 @@ void init_FBSPost(py::module& m)
             py::return_value_policy::reference)
 		.def("GetPlotObject", &FEPostModel::FindPlotObject, py::return_value_policy::reference)
 		.def("EvaluatePlotObject", &FEPostModel::EvaluatePlotObject, py::return_value_policy::reference)
+		.def_property_readonly(
+			"materials",
+			[](FEPostModel& self) { return PyPostMaterialList(&self); },
+			py::return_value_policy::reference_internal)
 		;
 
 	py::enum_<Data_Tensor_Type>(post, "DataTensorType")
@@ -284,12 +336,16 @@ void init_FBSPost(py::module& m)
         .def("ApplyState", &FEDistanceMap::ApplyState)
 		;
 
-	py::class_<FEVTKExport>(post, "vtkExport", "class for exporting post-model to vtk file")
+	py::class_<FEVTKExport>(post, "VTKExport", "class for exporting post-model to vtk file")
 		.def(py::init<>())
-		.def("ExportAllStates", &FEVTKExport::ExportAllStates)
-		.def("ExportSelectedElementsOnly", &FEVTKExport::ExportSelectedElementsOnly)
-		.def("WriteSeriesFile", &FEVTKExport::WriteSeriesFile)
-		.def("Save", &FEVTKExport::Save)
+		.def_readwrite("export_all_states", &FEVTKExport::m_bwriteAllStates)
+		.def_readwrite("export_selected_elements_only", &FEVTKExport::m_bselElemsOnly)
+		.def_readwrite("write_series_file", &FEVTKExport::m_bwriteSeriesFile)
+		.def_readwrite("write_part_ids", &FEVTKExport::m_bwritePartIDs)
+		.def("save", [](FEVTKExport& self, FEPostModel& fem, const char* szfile) { 
+			bool b = self.Save(fem, szfile); 
+			if (!b) throw pyGenericExcept("Failed to save VTK file.");
+			})
 		;
 }
 

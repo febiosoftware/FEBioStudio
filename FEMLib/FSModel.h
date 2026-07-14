@@ -127,6 +127,9 @@ public:
 	//! Add a material to the model
 	void AddMaterial(GMaterial* pmat);
 
+	//! add a material from a type string
+	GMaterial* AddMaterial(const std::string& name, const std::string& type);
+
 	//! Replace a material in the model
 	void ReplaceMaterial(GMaterial* pold, GMaterial* pnew);
 
@@ -181,8 +184,13 @@ public:
 	FSStep* GetStep(int i);
 	//! Find an analysis step by ID
 	FSStep* FindStep(int nid);
+	//! Find an analysis step by name
+	FSStep* FindStep(const std::string& name);
 	//! Get the index of the specified analysis step
 	int GetStepIndex(FSStep* ps);
+
+	//! Create an analysis step of the specified type and add it to the model
+	FSStep* AddStep(const std::string& name, const std::string& type);
 
 	//! Add an analysis step to the model
 	void AddStep(FSStep* ps);
@@ -315,6 +323,10 @@ public:
 	FSLoadController* GetLoadController(int i);
 	//! Add a load controller to the model
 	void AddLoadController(FSLoadController* plc);
+
+	//! Add a load controller to the model by name and type
+	FSLoadController* AddLoadController(const std::string& name, const std::string& type);
+
 	//! Remove a load controller from the model
 	int RemoveLoadController(FSLoadController* plc);
 
@@ -323,6 +335,9 @@ public:
 
 	//! Get a load controller by ID
 	FSLoadController* GetLoadControllerFromID(int lc);
+
+	//! Find a load controller by name
+	FSLoadController* FindLoadController(const std::string& name);
 
 	//! Update load controller reference counts
 	void UpdateLoadControllerReferenceCounts();
