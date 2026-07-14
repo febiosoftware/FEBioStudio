@@ -45,6 +45,8 @@ py::tuple Vec2iToPython(const vec2i& v);
 py::tuple Vec2dToPython(const vec2d& v);
 py::list Vec2dVectorToPython(const std::vector<vec2d>& v);
 std::vector<vec2d> Vec2dVectorFromPython(py::handle value);
+vec3d Vec3dFromPython(py::handle value, const std::string& typeName = "vec3d");
+
 py::object ParamToPython(Param& p);
 void SetParamFromPython(Param& p, py::handle value);
 

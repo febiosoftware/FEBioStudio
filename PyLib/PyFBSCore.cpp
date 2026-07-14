@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 #include <FECore/FETransform.h>
 #include "DocHeaders/PyCoreDocs.h"
+#include "PyUtil.h"
 
 namespace py = pybind11;
 
@@ -85,9 +86,14 @@ void init_FBSCore(py::module& m)
 		;
 
 	py::class_<Transform>(core, "Transform", DOC(Transform))
-		.def("Rotate", static_cast<void (Transform::*)(quatd, vec3d)> (&Transform::Rotate), DOC(Transform, Rotate))
-		.def("SetPosition", &Transform::SetPosition, DOC(Transform, SetPosition))
-		.def("SetEulerAngles", static_cast<void (Transform::*)(double, double, double)> (&Transform::SetRotation), DOC(Transform, SetRotation))
+		.def_property(
+			"position",
+			[](Transform& self) { return self.GetPosition(); },
+			[](Transform& self, py::handle value) {
+				self.SetPosition(Vec3dFromPython(value, "position"));
+			}
+		)
+		.def("set_euler_angles_deg", static_cast<void(Transform::*)(double,double,double)>(&Transform::SetRotation))
 		;
 
 	py::class_<FSObject, std::unique_ptr<FSObject, py::nodelete>>(core, "FSObject", "Base class for all FEBio Studio objects")

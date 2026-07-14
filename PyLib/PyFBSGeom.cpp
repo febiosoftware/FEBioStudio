@@ -237,9 +237,9 @@ void init_FBSGeom(py::module& m)
 
 	py::class_<GObject, FSObject, std::unique_ptr<GObject, py::nodelete>>(geom, "GObject", DOC(GObject))
 		.def("assign_material", [](GObject& self, GMaterial* mat) { for (int i = 0; i < self.Parts(); ++i) self.Part(i)->SetMaterialID(mat->GetID()); })
-		.def_property("pos", &GBaseObject::GetPosition, &GBaseObject::SetPosition, "The position of the object in world coordinates. This is a property that can be set or retrieved.")
 		.def("__getattr__", [](GObject& self, const std::string& name) { return GetDynamicAttribute(self, name); })
 		.def("__setattr__", [](GObject& self, const std::string& name, py::object value) { SetDynamicAttribute(self, name, value); })
+		.def_property_readonly( "transform", [](GObject& self) -> Transform& { return self.GetTransform(); }, py::return_value_policy::reference_internal)
 		.def_property_readonly(
 			"nodes",
 			[](GObject& self) { return PyNodeList(&self); },

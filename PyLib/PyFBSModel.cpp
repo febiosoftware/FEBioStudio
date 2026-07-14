@@ -107,33 +107,6 @@ bool ExportVTK(FSModel& fem, std::string& fileName)
 	return vtk.Write(fileName.c_str());
 }
 
-GObject* ImportGeometryFromFile(FSModel& fem, std::string& fileName)
-{
-	if (fileName.empty()) return nullptr;
-
-	CModelDocument* doc = GetActiveDocument();
-	if (doc == nullptr) return nullptr;
-
-	CMainWindow* wnd = doc->GetMainWindow();
-	if (wnd == nullptr) return nullptr;
-
-	FileReader* fileReader = wnd->CreateFileReader(QString::fromStdString(fileName));
-	if (fileReader == nullptr) return nullptr;
-
-	GObject* po = nullptr;
-	if (fileReader->Load(fileName.c_str()))
-	{
-		GModel& mdl = fem.GetModel();
-		if (mdl.Objects())
-		{
-			po = mdl.Object(mdl.Objects() - 1);
-		}
-	}
-
-	delete fileReader;
-	return po;
-}
-
 FSModel* GetActiveModel()
 {
 	CModelDocument* doc = GetActiveDocument();
@@ -292,6 +265,35 @@ public:
 		po->SetName(name);
 		m_geom->AddObject(po);
 		obj.release();
+		return po;
+	}
+
+	GObject* import_file(const std::string& fileName)
+	{
+		// TODO: I want to make changes here so I don't need the CModelDocument and CMainWindow classes. 
+		// I want to be able to import a file directly into the model without needing to go through the document and window classes. 
+		// This will make it easier to use this function in a headless mode or in a script.
+		if (fileName.empty()) return nullptr;
+
+		CModelDocument* doc = GetActiveDocument();
+		if (doc == nullptr) return nullptr;
+
+		CMainWindow* wnd = doc->GetMainWindow();
+		if (wnd == nullptr) return nullptr;
+
+		FileReader* fileReader = wnd->CreateFileReader(QString::fromStdString(fileName));
+		if (fileReader == nullptr) return nullptr;
+
+		GObject* po = nullptr;
+		if (fileReader->Load(fileName.c_str()))
+		{
+			if (m_geom->Objects())
+			{
+				po = m_geom->Object(m_geom->Objects() - 1);
+			}
+		}
+
+		delete fileReader;
 		return po;
 	}
 
@@ -522,6 +524,7 @@ void init_FBSModel(py::module& m)
 			return py::iter(items);
 		})
 		.def("add", &PyObjectList::add, py::return_value_policy::reference)
+		.def("import_file", &PyObjectList::import_file, py::return_value_policy::reference)
 		;
 
 	// collection wrapper for steps
@@ -628,8 +631,6 @@ void init_FBSModel(py::module& m)
 
 		.def("export_feb", &ExportFEB, "Export the model to a FEBio file.")
 		.def("export_vtk", &ExportVTK, "Export the model to a VTK file.")
-
-		.def("import_geometry_from_file", &ImportGeometryFromFile, "Import geometry from a file.")
 
 		.def("add_disc", [](FSModel& self, double R) {
 				GDisc* disc = new GDisc(R);

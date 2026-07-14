@@ -84,6 +84,19 @@ std::vector<vec2d> Vec2dVectorFromPython(py::handle value)
 	return v;
 }
 
+vec3d Vec3dFromPython(py::handle value, const std::string& typeName)
+{
+	try
+	{
+		return value.cast<vec3d>();
+	}
+	catch (const py::cast_error&)
+	{
+		std::vector<double> v = DoubleSequenceFromPython(value, 3, typeName);
+		return vec3d(v[0], v[1], v[2]);
+	}
+}
+
 py::object ParamToPython(Param& p)
 {
 	switch (p.GetParamType())
