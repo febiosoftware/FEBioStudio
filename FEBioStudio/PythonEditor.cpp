@@ -182,6 +182,7 @@ void CPythonEditor::on_actionRun_triggered()
 	pyrun->SetWorkingDirectory(ui->editCwd->text());
 
 	QString script = ui->edit->toPlainText();
+	m_runTimer.start();
 	emit runScript(script);
 }
 
@@ -199,7 +200,8 @@ void CPythonEditor::on_python_finished(bool b)
 	ui->actionStop->setEnabled(false);
 
 	mainWnd->Update(this, true);
-	mainWnd->AddPythonLogEntry(QString(">>> python stopped\n"));
+	double elapsedSeconds = m_runTimer.elapsed() / 1000.0;
+	mainWnd->AddPythonLogEntry(QString(">>> python stopped (elapsed time: %1 seconds)\n").arg(elapsedSeconds, 0, 'f', 3));
 }
 
 void CPythonEditor::on_edit_textChanged()
