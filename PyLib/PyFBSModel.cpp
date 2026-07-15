@@ -268,6 +268,21 @@ public:
 		return po;
 	}
 
+	GObject* addMeshObject(const std::string& name)
+	{
+		GMeshObject* po = new GMeshObject(new FSMesh());
+		po->SetName(name);
+		m_geom->AddObject(po);
+		return po;
+	}
+
+	void remove(GObject* po)
+	{
+		if (po == nullptr) return;
+		m_geom->RemoveObject(po); // This does not delete the object!
+		delete po;
+	}
+
 	GObject* import_file(const std::string& fileName)
 	{
 		// TODO: I want to make changes here so I don't need the CModelDocument and CMainWindow classes. 
@@ -524,6 +539,8 @@ void init_FBSModel(py::module& m)
 			return py::iter(items);
 		})
 		.def("add", &PyObjectList::add, py::return_value_policy::reference)
+		.def("add_mesh_object", &PyObjectList::addMeshObject, py::return_value_policy::reference, py::arg("name"))
+		.def("remove", &PyObjectList::remove)
 		.def("import_file", &PyObjectList::import_file, py::return_value_policy::reference)
 		;
 
@@ -631,11 +648,6 @@ void init_FBSModel(py::module& m)
 
 		.def("export_feb", &ExportFEB, "Export the model to a FEBio file.")
 		.def("export_vtk", &ExportVTK, "Export the model to a VTK file.")
-
-		.def("add_disc", [](FSModel& self, double R) {
-				GDisc* disc = new GDisc(R);
-				self.GetModel().AddObject(disc);
-				return disc;}, "Add a disc to the model.", py::return_value_policy::reference)
 
 		.def("add_mesh_object", [](FSModel& self, FSMesh* mesh) {
 				GMeshObject* po = new GMeshObject(mesh);

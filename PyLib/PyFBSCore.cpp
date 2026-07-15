@@ -93,7 +93,10 @@ void init_FBSCore(py::module& m)
 				self.SetPosition(Vec3dFromPython(value, "position"));
 			}
 		)
+		.def("rotate", py::overload_cast<quatd, vec3d>(&Transform::Rotate), DOC(Transform, Rotate))
 		.def("set_euler_angles_deg", static_cast<void(Transform::*)(double,double,double)>(&Transform::SetRotation))
+		.def("local_to_global", &Transform::LocalToGlobal, DOC(Transform, LocalToGlobal))
+		.def("global_to_local", &Transform::GlobalToLocal, DOC(Transform, GlobalToLocal))
 		;
 
 	py::class_<FSObject, std::unique_ptr<FSObject, py::nodelete>>(core, "FSObject", "Base class for all FEBio Studio objects")

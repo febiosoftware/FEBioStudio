@@ -261,6 +261,44 @@ py::object GetDynamicAttribute(FSObject& self, const std::string& name);
 void SetDynamicAttribute(FSObject& self, const std::string& name, py::object value);
 
 template <class Owner, class Item>
+class PyIndexedCollection
+{
+public:
+	using CountFn = std::function<int(Owner*)>;
+	using GetFn = std::function<Item* (Owner*, int)>;
+
+	PyIndexedCollection(Owner* owner, CountFn count, GetFn get, std::string itemName = "item")
+		: m_owner(owner), m_count(count), m_get(get), m_itemName(std::move(itemName)) {}
+
+	int size() const { return m_count(m_owner); }
+
+	Item* get(int i) const
+	{
+		int n = size();
+		if (i < 0) i += n;
+
+		if (i < 0 || i >= n)
+			throw py::index_error(m_itemName + " index out of range");
+
+		return m_get(m_owner, i);
+	}
+
+	py::iterator iter() const
+	{
+		py::list items;
+		for (int i = 0; i < size(); ++i)
+			items.append(py::cast(get(i), py::return_value_policy::reference));
+		return py::iter(items);
+	}
+
+private:
+	Owner* m_owner;
+	CountFn m_count;
+	GetFn m_get;
+	std::string m_itemName;
+};
+
+template <class Owner, class Item>
 class PyNamedCollection
 {
 public:

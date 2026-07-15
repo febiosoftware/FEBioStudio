@@ -47,26 +47,315 @@ SOFTWARE.*/
 
 namespace py = pybind11;
 
+template <typename MeshType, typename ItemType>
+class PyMeshItemRef {
+public:
+
+	using GetFunc = std::function<ItemType& (MeshType*, int)>;
+
+	PyMeshItemRef(MeshType* mesh, int index, GetFunc getFunc) : m_mesh(mesh), m_index(index), m_getFunc(getFunc) {}
+
+	int index() const { return m_index; }
+
+	int id() const { return m_getFunc(m_mesh, m_index).GetID(); }
+
+	ItemType& item() { return m_getFunc(m_mesh, m_index); }
+
+private:
+	MeshType* m_mesh = nullptr;
+	int m_index = -1;
+	GetFunc m_getFunc;
+};
+
+class PyNodeRef : public PyMeshItemRef<FSLineMesh, FSNode> {
+public:
+	PyNodeRef(FSLineMesh* mesh, int index) : PyMeshItemRef<FSLineMesh, FSNode>(mesh, index, [](FSLineMesh* m, int i) -> FSNode& { return m->Node(i); }) {}
+
+	vec3d pos() { return item().r; }
+	void setPos(vec3d r) { item().r = r; }
+};
+
+class PyFaceRef : public PyMeshItemRef<FSMesh, FSFace> {
+public:
+	PyFaceRef(FSMesh* mesh, int index) : PyMeshItemRef<FSMesh, FSFace>(mesh, index, [](FSMesh* m, int i) -> FSFace& { return m->Face(i); }) {}
+};
+
+class PyElementRef : public PyMeshItemRef<FSMesh, FSElement> {
+public:
+	PyElementRef(FSMesh* mesh, int index) : PyMeshItemRef<FSMesh, FSElement>(mesh, index, [](FSMesh* m, int i) -> FSElement& { return m->Element(i); }) {}
+
+	void SetType(int ntype) { item().SetType(ntype); }
+};
+
+class PyElementNodeList
+{
+public:
+	PyElementNodeList(FSElement* el) : m_el(el) {}
+
+	int size() const { return m_el->Nodes(); }
+
+	int get(int i) const
+	{
+		int n = size();
+		if (i < 0) i += n;
+		if (i < 0 || i >= n)
+			throw py::index_error("node index out of range");
+		return m_el->m_node[i];
+	}
+
+	void set(int i, int nodeId)
+	{
+		int n = size();
+		if (i < 0) i += n;
+		if (i < 0 || i >= n)
+			throw py::index_error("node index out of range");
+		m_el->m_node[i] = nodeId;
+	}
+
+private:
+	FSElement* m_el;
+};
+
+class PyMeshEdgeList : public PyIndexedCollection<FSLineMesh, FSEdge>
+{
+public:
+	PyMeshEdgeList(FSLineMesh* mesh) : PyIndexedCollection<FSLineMesh, FSEdge>(mesh,
+		[](FSLineMesh* m) { return m->Edges(); },
+		[](FSLineMesh* m, int i) { return &m->Edge(i); },
+		"edge") {}
+};
+
+class PyMeshNodeList
+{
+public:
+	PyMeshNodeList(FSLineMesh* mesh) : m_mesh(mesh) {}
+
+	int size() const
+	{
+		return m_mesh->Nodes();
+	}
+
+	PyNodeRef get(int i) const
+	{
+		int n = size();
+		if (i < 0) i += n;
+
+		if (i < 0 || i >= n)
+			throw py::index_error("node index out of range");
+
+		return PyNodeRef(m_mesh, i);
+	}
+
+	py::iterator iter() const
+	{
+		py::list items;
+		for (int i = 0; i < size(); ++i)
+			items.append(py::cast(get(i)));
+
+		return py::iter(items);
+	}
+
+private:
+	FSLineMesh* m_mesh = nullptr;
+};
+
+class PyMeshFaceList
+{
+public:
+	PyMeshFaceList(FSMesh* mesh) : m_mesh(mesh) {}
+
+	int size() const
+	{
+		return m_mesh->Faces();
+	}
+
+	PyFaceRef get(int i) const
+	{
+		int n = size();
+		if (i < 0) i += n;
+
+		if (i < 0 || i >= n)
+			throw py::index_error("face index out of range");
+
+		return PyFaceRef(m_mesh, i);
+	}
+
+	py::iterator iter() const
+	{
+		py::list items;
+		for (int i = 0; i < size(); ++i)
+			items.append(py::cast(get(i)));
+
+		return py::iter(items);
+	}
+
+private:
+	FSMesh* m_mesh = nullptr;
+};
+
+class PySurfaceFaceList
+{
+public:
+	PySurfaceFaceList(FSSurface* surf) : m_surf(surf) {}
+
+	int size() const
+	{
+		return m_surf->size();
+	}
+
+	PyFaceRef get(int i) const
+	{
+		int n = size();
+		if (i < 0) i += n;
+
+		if (i < 0 || i >= n)
+			throw py::index_error("face index out of range");
+
+		return PyFaceRef(m_surf->GetMesh(), (*m_surf)[i]);
+	}
+
+	py::iterator iter() const
+	{
+		py::list items;
+		for (int i = 0; i < size(); ++i)
+			items.append(py::cast(get(i)));
+
+		return py::iter(items);
+	}
+
+private:
+	FSSurface* m_surf = nullptr;
+};
+
+
+class PyMeshElementList
+{
+public:
+	PyMeshElementList(FSMesh* mesh) : m_mesh(mesh) {}
+
+	int size() const
+	{
+		return m_mesh->Elements();
+	}
+
+	PyElementRef get(int i) const
+	{
+		int n = size();
+		if (i < 0) i += n;
+
+		if (i < 0 || i >= n)
+			throw py::index_error("element index out of range");
+
+		return PyElementRef(m_mesh, i);
+	}
+
+	py::iterator iter() const
+	{
+		py::list items;
+		for (int i = 0; i < size(); ++i)
+			items.append(py::cast(get(i)));
+
+		return py::iter(items);
+	}
+
+private:
+	FSMesh* m_mesh = nullptr;
+};
+
+class PyMeshSurfaceList : public PyNamedCollection<FSMesh, FSSurface>
+{
+public:
+	PyMeshSurfaceList(FSMesh* mesh) : PyNamedCollection<FSMesh, FSSurface>(
+		mesh, 
+		[](FSMesh* m) { return m->FESurfaces(); },
+		[](FSMesh* m, int i) { return m->GetFESurface(i); },
+		[](FSMesh* m, const std::string& name) { return m->FindFESurface(name); },
+		"surface") {}
+};
+
 void init_FSMesh(py::module_& m)
 {
     py::module mesh = m.def_submodule("mesh", "Module used to interact with FE Meshes");
 
 	mesh.def("FindAllIntersections", FindAllIntersections);
 
+	py::class_<PyNodeRef>(mesh, "NodeRef")
+		.def_property_readonly("index", &PyNodeRef::index)
+		.def_property_readonly("id", &PyNodeRef::id)
+		.def_property_readonly(
+			"node",
+			[](PyNodeRef& self) -> FSNode& { return self.item(); },
+			py::return_value_policy::reference_internal
+		)
+		.def_property("pos", &PyNodeRef::pos, &PyNodeRef::setPos)
+		;
+
+
+	py::class_<PyFaceRef>(mesh, "FaceRef")
+		.def_property_readonly("index", &PyFaceRef::index)
+		.def_property_readonly("id", &PyFaceRef::id)
+		.def_property_readonly(
+			"face",
+			[](PyFaceRef& self) -> FSFace& { return self.item(); },
+			py::return_value_policy::reference_internal
+		);
+
+	py::class_<PyElementRef>(mesh, "ElementRef")
+		.def_property_readonly("index", &PyElementRef::index)
+		.def_property_readonly("id", &PyElementRef::id)
+		.def_property_readonly(
+			"element",
+			[](PyElementRef& self) -> FSElement& { return self.item(); },
+			py::return_value_policy::reference_internal
+		)
+		.def_property_readonly( "nodes", [](PyElementRef& self) -> PyElementNodeList { return PyElementNodeList(&self.item()); }, py::return_value_policy::reference_internal)
+		.def("set_type", &PyElementRef::SetType);
+
+
+	py::class_<PyElementNodeList>(mesh, "ElementNodeList")
+		.def("__len__", &PyElementNodeList::size)
+		.def("__getitem__", &PyElementNodeList::get)
+		.def("__setitem__", &PyElementNodeList::set);
+
+	py::class_<PyMeshNodeList>(mesh, "MeshNodeList")
+		.def("__len__", &PyMeshNodeList::size)
+		.def("__getitem__", &PyMeshNodeList::get, py::return_value_policy::reference)
+		;
+
+	py::class_<PyMeshEdgeList>(mesh, "MeshEdgeList")
+		.def("__len__", &PyMeshEdgeList::size)
+		.def("__getitem__", &PyMeshEdgeList::get, py::return_value_policy::reference)
+		;
+
+	py::class_<PyMeshFaceList>(mesh, "MeshFaceList")
+		.def("__len__", &PyMeshFaceList::size)
+		.def("__getitem__", &PyMeshFaceList::get, py::return_value_policy::reference)
+		;
+
+	py::class_<PyMeshElementList>(mesh, "MeshElementList")
+		.def("__len__", &PyMeshElementList::size)
+		.def("__getitem__", &PyMeshElementList::get, py::return_value_policy::reference)
+		;
+
+	py::class_<PyMeshSurfaceList>(mesh, "MeshSurfaceList")
+		.def("__len__", &PyMeshSurfaceList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyMeshSurfaceList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyMeshSurfaceList::get, py::const_), py::return_value_policy::reference)
+		;
+
+	py::class_<PySurfaceFaceList>(mesh, "SurfaceFaceList")
+		.def("__len__", &PySurfaceFaceList::size)
+		.def("__getitem__", &PySurfaceFaceList::get, py::return_value_policy::reference)
+		;
+
 	py::class_<FSLineMesh, std::unique_ptr<FSLineMesh, py::nodelete>>(mesh, "LineMesh", DOC(FSLineMesh))
-		.def("Nodes", &FSLineMesh::Nodes, DOC(FSLineMesh, Nodes))
-		.def("Node", [](FSLineMesh& self, int i) {return &self.Node(i); }, DOC(FSLineMesh, Node))
 
-		.def("Edges", &FSLineMesh::Edges, DOC(FSLineMesh, Edges))
-		.def("Edge", [](FSLineMesh& self, int i) {return &self.Edge(i); }, DOC(FSLineMesh, Edge))
-
-        .def("LocalToGlobal", &FSLineMesh::LocalToGlobal, DOC(FSLineMesh, LocalToGlobal))
-        .def("NodePosition", &FSLineMesh::NodePosition, DOC(FSLineMesh, NodePosition))
+		.def_property_readonly( "nodes", [](FSLineMesh& self) { return PyMeshNodeList(&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly( "edges", [](FSLineMesh& self) { return PyMeshEdgeList(&self); }, py::return_value_policy::reference_internal)
 		;
 
 	py::class_<FSMeshBase, FSLineMesh, std::unique_ptr<FSMeshBase, py::nodelete>>(mesh, "MeshBase", DOC(FSMeshBase))
-		.def("Faces", &FSMesh::Faces, DOC(FSMeshBase, Faces))
-		.def("Face", [](FSMeshBase& self, int i) {return &self.Face(i); }, DOC(FSMeshBase, Face))
+		.def_property_readonly("faces", [](FSMesh& self) { return PyMeshFaceList(&self); }, py::return_value_policy::reference_internal)
 		;
 
     py::class_<FSSurfaceMesh, FSMeshBase, std::unique_ptr<FSSurfaceMesh, py::nodelete>>(mesh, "SurfaceMesh", DOC(FSSurfaceMesh))
@@ -76,19 +365,16 @@ void init_FSMesh(py::module_& m)
         ;
 
 	py::class_<FSMesh, FSMeshBase, std::unique_ptr<FSMesh, py::nodelete>>(mesh, "Mesh", DOC(FSMesh))
-		.def(py::init<>())
-        .def("Create", &FSMesh::Create, DOC(FSMesh, Create))
-        .def("Clear", &FSMesh::Clear, DOC(FSMesh, Clear))
+		// new interface
+		.def("clear", &FSMesh::Clear, DOC(FSMesh, Clear))
+		.def("create", &FSMesh::Create, DOC(FSMesh, Create))
+		.def("rebuild_mesh", &FSMesh::RebuildMesh, DOC(FSMesh, RebuildMesh))
 
-        .def("Elements", &FSMesh::Elements, DOC(FSMesh, Elements))
-        .def("Element", [](FSMesh& self, int i) {return &self.Element(i); }, DOC(FSMesh, Element))
+		.def_property_readonly("elements", [](FSMesh& self) { return PyMeshElementList(&self); }, py::return_value_policy::reference_internal)
 
-		.def("RebuildMesh", &FSMesh::RebuildMesh, DOC(FSMesh, RebuildMesh))
+		.def_property_readonly("surfaces", [](FSMesh& self) { return PyMeshSurfaceList(&self); }, py::return_value_policy::reference_internal)
 
-		.def("Surfaces", &FSMesh::FESurfaces, DOC(FSMesh, FESurfaces))
-		.def("Surface", &FSMesh::GetFESurface, py::return_value_policy::reference, DOC(FSMesh, GetFESurface))
-		.def("FindSurface", &FSMesh::FindFESurface, py::return_value_policy::reference)
-
+		// old interface 
 		.def("NodeIndexFromID", &FSMesh::NodeIndexFromID, DOC(FSMesh, NodeIndexFromID))
 
 		.def("MeshDataFields", &FSMesh::MeshDataFields, DOC(FSMesh, MeshDataFields))
@@ -183,7 +469,9 @@ void init_FSMesh(py::module_& m)
         .def("GetMesh", &FSGroup::GetMesh, py::return_value_policy::reference, "Get the mesh associated with this group.")
         ;
 
-	py::class_<FSSurface, FSGroup>(mesh, "FESurface", "Class representing a mesh surface.");
+	py::class_<FSSurface, FSGroup>(mesh, "FESurface", "Class representing a mesh surface.")
+		.def_property_readonly("faces", [](FSSurface& self) { return PySurfaceFaceList(&self); }, py::return_value_policy::reference_internal)
+		;
 
 	py::class_<FSNodeSet, FSGroup>(mesh, "FSNodeSet", "Class representing a set of mesh nodes.");
 

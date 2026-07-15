@@ -356,6 +356,138 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 	return "(invalid)";
 }
 
+
+std::string to_lower(std::string s)
+{
+	std::transform(s.begin(), s.end(), s.begin(),
+		[](unsigned char c) { return std::tolower(c); });
+	return s;
+}
+
+int ModelDataField::componentCode(const std::string& componentName, Data_Tensor_Type ntype)
+{
+	// convert component name to lower case
+	std::string s = to_lower(componentName);
+
+	if (ntype == TENSOR_SCALAR)
+	{
+		switch (m_ntype)
+		{
+		case DATA_SCALAR: return 0; break;
+		case DATA_VEC3:
+		{
+			if      (s == "x") return 0;
+			else if (s == "y") return 1;
+			else if (s == "z") return 2;
+			else if (s == "xy") return 3;
+			else if (s == "yz") return 4;
+			else if (s == "xz") return 5;
+			else if (s == "magnitude") return 6;
+		}
+		break;
+		case DATA_MAT3:
+		{
+			if      (s == "xx") return 0;
+			else if (s == "xy") return 1;
+			else if (s == "xz") return 2;
+			else if (s == "yx") return 3;
+			else if (s == "yy") return 4;
+			else if (s == "yz") return 5;
+			else if (s == "zx") return 6;
+			else if (s == "zy") return 7;
+			else if (s == "zz") return 8;
+			else if (s == "magnitude") return 9;
+		}
+		break;
+		case DATA_MAT3S:
+		{
+			if      (s == "xx") return 0;
+			else if (s == "yy") return 1;
+			else if (s == "zz") return 2;
+			else if ((s == "xy") || (s == "yx")) return 3;
+			else if ((s == "yz") || (s == "zy")) return 4;
+			else if ((s == "xz") || (s == "zx")) return 5;
+			else if (s == "effective") return 6;
+			else if (s == "p1") return 7;
+			else if (s == "p2") return 8;
+			else if (s == "p3") return 9;
+			else if (s == "dev_p1") return 10;
+			else if (s == "dev_p2") return 11;
+			else if (s == "dev_p3") return 12;
+			else if (s == "max_shear") return 13;
+			else if (s == "magnitude") return 14;
+			else if (s == "i1") return 15;
+			else if (s == "i2") return 16;
+			else if (s == "i3") return 17;
+		}
+		break;
+		case DATA_MAT3SD:
+		{
+			if (s == "xx") return 0;
+			else if (s == "yy") return 1;
+			else if (s == "zz") return 2;
+		}
+		break;
+		case DATA_TENS4S:
+		{
+			if (s == "xxxx") return 0;
+			else if (s == "xxyy") return 1;
+			else if (s == "yyyy") return 2;
+			else if (s == "xxzz") return 3;
+			else if (s == "yyzz") return 4;
+			else if (s == "zzzz") return 5;
+			else if (s == "xxxy") return 6;
+			else if (s == "yyxy") return 7;
+			else if (s == "zzxy") return 8;
+			else if (s == "xyxy") return 9;
+			else if (s == "xxyz") return 10;
+			else if (s == "yyyz") return 11;
+			else if (s == "zzyz") return 12;
+			else if (s == "xyyz") return 13;
+			else if (s == "yzyz") return 14;
+			else if (s == "xxxz") return 15;
+			else if (s == "yyxz") return 16;
+			else if (s == "zzxz") return 17;
+			else if (s == "xyxz") return 18;
+			else if (s == "yzxz") return 19;
+			else if (s == "xzxz") return 20;
+		}
+		break;
+		case DATA_ARRAY:
+		{
+			if (m_arrayNames.size() == m_arraySize)
+			{
+				for (int i = 0; i < m_arraySize; ++i)
+				{
+					if (s == to_lower(m_arrayNames[i])) return i;
+				}
+			}
+			else
+			{
+				return std::stoi(s);
+			}
+		}
+		break;
+		}
+	}
+	else if (ntype == TENSOR_VECTOR)
+	{
+		switch (m_ntype)
+		{
+		case DATA_VEC3: return 0; break;
+		case DATA_MAT3S:
+		{
+			if      (s == "p1") return 0;
+			else if (s == "p2") return 1;
+			else if (s == "p3") return 2;
+		}
+		break;
+		}
+	}
+
+	return -1;
+}
+
 void ModelDataField::SetUnits(const char* sz)
 {
 	if (sz) m_units = sz;

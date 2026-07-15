@@ -256,7 +256,8 @@ void init_FBSGeom(py::module& m)
 			"parts",
 			[](GObject& self) { return PyPartList(&self); },
 			py::return_value_policy::reference_internal)
-		.def_property_readonly("mesher", &GObject::GetFEMesher, DOC(GObject, GetFEMesher))
+		.def_property_readonly("mesh", py::overload_cast<>(&GObject::GetFEMesh), py::return_value_policy::reference_internal)
+		.def_property_readonly("mesher", &GObject::GetFEMesher, py::return_value_policy::reference_internal, DOC(GObject, GetFEMesher))
 		.def("build_mesh", [](GObject& self, py::kwargs kwargs) 
 			{
 				FEMesher* mesher = self.GetFEMesher();
