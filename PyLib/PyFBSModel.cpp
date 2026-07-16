@@ -276,6 +276,14 @@ public:
 		return po;
 	}
 
+	GObject* addCurveMeshObject(const std::string& name)
+	{
+		GCurveMeshObject* po = new GCurveMeshObject(new FSCurveMesh());
+		po->SetName(name);
+		m_geom->AddObject(po);
+		return po;
+	}
+
 	void remove(GObject* po)
 	{
 		if (po == nullptr) return;
@@ -540,6 +548,7 @@ void init_FBSModel(py::module& m)
 		})
 		.def("add", &PyObjectList::add, py::return_value_policy::reference)
 		.def("add_mesh_object", &PyObjectList::addMeshObject, py::return_value_policy::reference, py::arg("name"))
+		.def("add_curve_mesh_object", &PyObjectList::addCurveMeshObject, py::return_value_policy::reference, py::arg("name"))
 		.def("remove", &PyObjectList::remove)
 		.def("import_file", &PyObjectList::import_file, py::return_value_policy::reference)
 		;

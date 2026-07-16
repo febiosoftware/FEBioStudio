@@ -32,10 +32,13 @@ SOFTWARE.*/
 #include <pybind11/stl.h>
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GObject.h>
+#include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GBaseObject.h>
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GItem.h>
+#include <MeshLib/FSCurveMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #include <MeshLib/FSMesh.h>
 #include <FEMLib/GMaterial.h>
 #include <FECore/FETransform.h>
@@ -256,9 +259,11 @@ void init_FBSGeom(py::module& m)
 			"parts",
 			[](GObject& self) { return PyPartList(&self); },
 			py::return_value_policy::reference_internal)
-		.def_property_readonly("mesh", py::overload_cast<>(&GObject::GetFEMesh), py::return_value_policy::reference_internal)
-		.def_property_readonly("mesher", &GObject::GetFEMesher, py::return_value_policy::reference_internal, DOC(GObject, GetFEMesher))
-		.def("build_mesh", [](GObject& self, py::kwargs kwargs) 
+		.def("update_geometry", [](GObject& self) { self.Update(); }, DOC(GObject, Update))
+		.def_property_readonly("geometry_mesh", py::overload_cast<>(&GObject::GetEditableLineMesh), py::return_value_policy::reference_internal)
+		.def_property_readonly("fe_mesh", py::overload_cast<>(&GObject::GetFEMesh), py::return_value_policy::reference_internal)
+		.def_property_readonly("fe_mesher", &GObject::GetFEMesher, py::return_value_policy::reference_internal, DOC(GObject, GetFEMesher))
+		.def("build_fe_mesh", [](GObject& self, py::kwargs kwargs) 
 			{
 				FEMesher* mesher = self.GetFEMesher();
 				if (!kwargs.empty() && mesher)
@@ -272,7 +277,6 @@ void init_FBSGeom(py::module& m)
 				}
 				self.BuildMesh();
 			}, DOC(GObject, BuildMesh))
-		.def("update", [](GObject& self) { self.Update(); }, DOC(GObject, Update))
 		.def("assign_material", [](GObject& self, GMaterial* mat) { for (int i = 0; i < self.Parts(); ++i) self.Part(i)->SetMaterialID(mat->GetID()); })
 		;
 

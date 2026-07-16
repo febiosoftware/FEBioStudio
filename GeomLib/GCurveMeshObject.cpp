@@ -54,14 +54,14 @@ void GCurveMeshObject::ClearMesh()
 	Update();
 }
 
-void GCurveMeshObject::Update()
+bool GCurveMeshObject::Update(bool b)
 {
 	if (m_curve == nullptr)
 	{
 		m_Node.clear();
 		m_Edge.clear();
 		SetRenderMesh(nullptr);
-		return;
+		return true;
 	}
 
 	// get the end points
@@ -143,6 +143,8 @@ void GCurveMeshObject::Update()
 	}
 
 	SetRenderMesh(nullptr);
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------

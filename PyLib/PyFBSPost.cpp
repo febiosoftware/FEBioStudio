@@ -309,7 +309,7 @@ void init_FBSPost(py::module& m)
 	py::class_<FEState>(post, "State", DOC(Post, FEState))
 		.def_readonly("time", &FEState::m_time, DOC(Post, FEState, m_time))
 
-		.def_property_readonly("mesh", &FEState::GetFEMesh, DOC(Post, FEState, GetFEMesh), py::return_value_policy::reference)
+		.def_property_readonly("fe_mesh", &FEState::GetFEMesh, DOC(Post, FEState, GetFEMesh), py::return_value_policy::reference)
 
 		.def("evaluate", [](FEState& self, const std::string& fieldName, int component) -> FEState&
 			{

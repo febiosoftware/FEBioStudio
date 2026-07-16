@@ -37,7 +37,7 @@ public:
 	GCurveMeshObject(FSCurveMesh* pm = 0);
 
 	// updates the GObject data structures based on the curve mesh
-	void Update();
+	bool Update(bool b = true) override;
 
 	// return the curve mesh
 	FSCurveMesh* GetCurveMesh();

@@ -393,7 +393,7 @@ void init_FSMesh(py::module_& m)
 
 	py::class_<FSCurveMesh, FSLineMesh, std::unique_ptr<FSCurveMesh, py::nodelete>>(mesh, "CurveMesh", DOC(FSCurveMesh))
 		.def(py::init<>(), DOC(FSCurveMesh, FSCurveMesh))
-		.def("CreateFromPoints", &FSCurveMesh::CreateFromPoints, DOC(FSCurveMesh, CreateFromPoints))
+		.def("create_from_points", &FSCurveMesh::CreateFromPoints, DOC(FSCurveMesh, CreateFromPoints))
 		;
 
 	py::class_<FSMeshData, FSObject, std::unique_ptr<FSMeshData, py::nodelete>>(mesh, "MeshData", DOC(FSMeshData))
