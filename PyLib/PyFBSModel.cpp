@@ -536,6 +536,29 @@ private:
 	FSModel* m_model = nullptr;
 };
 
+class PyPlotVariableList : public PyNamedCollection<FSModel, CPlotVariable>
+{
+public:
+	PyPlotVariableList(FSModel* model) :
+		PyNamedCollection<FSModel, CPlotVariable>(
+			model,
+			[](FSModel* model) { return model->GetPlotDataSettings().PlotVariables(); },
+			[](FSModel* model, int i) { return &model->GetPlotDataSettings().PlotVariable(i); },
+			[](FSModel* model, const std::string& name) { return model->GetPlotDataSettings().FindVariable(name); },
+			"plot variable"
+		),
+		m_model(model) {}
+
+	CPlotVariable* add(const std::string& name)
+	{
+		CPlotDataSettings& plt = m_model->GetPlotDataSettings();
+		return plt.AddPlotVariable(name, true, true, DOMAIN_MESH);
+	}
+
+private:
+	FSModel* m_model = nullptr;
+};
+
 // Initializes the fbs.mdl module
 void init_FBSModel(py::module& m)
 {
@@ -683,6 +706,21 @@ void init_FBSModel(py::module& m)
 	mdl.def("active_model", GetActiveModel, "Returns the active FSModel instance.", py::return_value_policy::reference);
 	mdl.def("active_object", &PyRunContext::GetActiveObject, "Returns the active GObject instance.", py::return_value_policy::reference);
 
+	py::class_<PyPlotVariableList>(mdl, "PlotVariableList")
+		.def("__len__", &PyPlotVariableList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyPlotVariableList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyPlotVariableList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", [](const PyPlotVariableList& self) {
+				py::list items;
+				for (int i = 0; i < self.size(); ++i)
+				{
+					items.append(py::cast(self.get(i), py::return_value_policy::reference));
+				}
+				return py::iter(items);
+			})
+		.def("add", &PyPlotVariableList::add, py::return_value_policy::reference)
+		;
+
 	py::class_<FSModel, std::unique_ptr<FSModel, py::nodelete>>(mdl, "Model", DOC(FSModel))
 		.def("clear", &FSModel::Reset, DOC(FSModel, Clear))
 		.def("purge", &FSModel::Purge, DOC(FSModel, Purge))
@@ -730,6 +768,11 @@ void init_FBSModel(py::module& m)
 		.def_property_readonly(
 			"selections",
 			[](FSModel& self) { return PySelectionList(&self); },
+			py::return_value_policy::reference_internal
+		)
+		.def_property_readonly(
+			"plot_variables",
+			[](FSModel& self) { return PyPlotVariableList(&self); },
 			py::return_value_policy::reference_internal
 		)
 		;
@@ -796,6 +839,10 @@ void init_FBSModel(py::module& m)
 
 			SetDynamicAttribute(self, name, value);
 		})
+		;
+
+	py::class_<CPlotVariable>(mdl, "PlotVariable")
+		.def_property_readonly("name", &CPlotVariable::name)
 		;
 }
 #else

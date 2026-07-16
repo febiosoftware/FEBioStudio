@@ -148,7 +148,12 @@ void CPlotDataSettings::Clear()
 CPlotVariable* CPlotDataSettings::AddPlotVariable(const std::string& var, bool b, bool s, DOMAIN_TYPE type)
 {
 	CPlotVariable* pv = FindVariable(var);
-	if (pv) return pv;
+	if (pv)
+	{
+		pv->setActive(b);
+		pv->setShown(s);
+		return pv;
+	}
 
 	CPlotVariable v(var, b, s, type);
 	m_plot.push_back(v);
