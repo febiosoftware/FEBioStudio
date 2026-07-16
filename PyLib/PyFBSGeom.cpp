@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <MeshLib/FSSurfaceMesh.h>
 #include <MeshLib/FSMesh.h>
 #include <FEMLib/GMaterial.h>
+#include <FEMLib/GDiscreteObject.h>
 #include <FECore/FETransform.h>
 #include "DocHeaders/PyGeomDocs.h"
 #include <MeshTools/FEMesher.h>
@@ -208,6 +209,49 @@ private:
 	GObject* m_obj = nullptr;
 };
 
+class PyDiscreteSpringList : public PyIndexedCollection<GDiscreteSpringSet, GDiscreteElement>
+{
+public:
+	PyDiscreteSpringList(GDiscreteSpringSet* set) : PyIndexedCollection<GDiscreteSpringSet, GDiscreteElement>(set,
+		[](GDiscreteSpringSet* s) { return s->size(); },
+		[](GDiscreteSpringSet* s, int i) { return &s->element(i); }
+	), m_set(set) {}
+
+	GDiscreteElement* add(int n0, int n1)
+	{
+		m_set->AddElement(n0, n1);
+		return &m_set->element(m_set->size() - 1);
+	}
+
+private:
+	GDiscreteSpringSet* m_set;
+};
+
+class PyDiscreteElementNodeList
+{
+public:
+	PyDiscreteElementNodeList(GDiscreteElement* element) : m_element(element) {}
+
+	int size() const { return 2; }
+
+	int get(int i) const
+	{
+		if (i < 0) i += 2;
+		if (i < 0 || i >= 2) throw py::index_error("node index out of range");
+		return m_element->m_node[i];
+	}
+
+	void set(int i, int value)
+	{
+		if (i < 0) i += 2;
+		if (i < 0 || i >= 2) throw py::index_error("node index out of range");
+		m_element->m_node[i] = value;
+	}
+
+private:
+	GDiscreteElement* m_element = nullptr;
+};
+
 // Initializes the fbs.geom module
 void init_FBSGeom(py::module& m)
 {
@@ -280,32 +324,55 @@ void init_FBSGeom(py::module& m)
 		.def("assign_material", [](GObject& self, GMaterial* mat) { for (int i = 0; i < self.Parts(); ++i) self.Part(i)->SetMaterialID(mat->GetID()); })
 		;
 
+	py::class_<PyDiscreteSpringList>(geom, "DiscreteSpringList")
+		.def("__len__", &PyDiscreteSpringList::size)
+		.def("__getitem__", &PyDiscreteSpringList::get, py::return_value_policy::reference)
+		.def("add", &PyDiscreteSpringList::add, py::return_value_policy::reference)
+		;
+
+	py::class_<PyDiscreteElementNodeList>(geom, "DiscreteElementNodeList")
+		.def("__len__", &PyDiscreteElementNodeList::size)
+		.def("__getitem__", &PyDiscreteElementNodeList::get, py::return_value_policy::reference)
+		.def("__setitem__", &PyDiscreteElementNodeList::set)
+		;
+
     py::class_<GSurfaceMeshObject, GObject, std::unique_ptr<GSurfaceMeshObject, py::nodelete>>(geom, "GSurfaceMeshObject")
         .def(py::init<FSSurfaceMesh*>())
         ;
 
-	py::class_<GMeshObject, GObject, std::unique_ptr<GMeshObject, py::nodelete>>(geom, "GMeshObject", DOC(GMeshObject))
-		.def("AddNode", static_cast<int (GMeshObject::*)(vec3d)>(&GMeshObject::AddNode), DOC(GMeshObject, AddNode))
-		.def("MakeGNode", &GMeshObject::MakeGNode, DOC(GMeshObject, MakeGNode))
+	py::class_<GMeshObject, GObject, std::unique_ptr<GMeshObject, py::nodelete>>(geom, "MeshObject", DOC(GMeshObject))
+		.def("add_node", static_cast<int (GMeshObject::*)(vec3d)>(&GMeshObject::AddNode), DOC(GMeshObject, AddNode))
+		.def("get_or_create_geometry_node", &GMeshObject::MakeGNode, DOC(GMeshObject, MakeGNode))
 		;
 
-	py::class_<GBox, GObject, std::unique_ptr<GBox, py::nodelete>>(geom, "GBox", DOC(GBox));
+	py::class_<GBox, GObject, std::unique_ptr<GBox, py::nodelete>>(geom, "Box", DOC(GBox));
 
-	py::class_<GDisc, GObject, std::unique_ptr<GDisc, py::nodelete>>(geom, "GDisc", DOC(GDisc))
+	py::class_<GDisc, GObject, std::unique_ptr<GDisc, py::nodelete>>(geom, "Disc", DOC(GDisc))
 		.def("CreateMesh", &GDisc::CreateMesh, DOC(GDisc, CreateMesh))
 		;
 
-	py::class_<GNode, std::unique_ptr<GNode, py::nodelete>>(geom, "GNode", DOC(GNode))
+	py::class_<GNode, std::unique_ptr<GNode, py::nodelete>>(geom, "Node", DOC(GNode))
 		.def_property_readonly("type", &GNode::Type, DOC(GNode, Type))
 		.def_property_readonly("local_position", static_cast<vec3d & (GNode::*)()>(&GNode::LocalPosition), DOC(GNode, LocalPosition))
 		.def_property_readonly("position", [](GNode& self) { return self.Position(); }, DOC(GNode, Position))
 		.def("make_required", &GNode::MakeRequired, DOC(GNode, MakeRequired))
 		;
 
-	py::class_<GEdge, std::unique_ptr<GEdge, py::nodelete>>(geom, "GEdge", DOC(GEdge));
-	py::class_<GFace, std::unique_ptr<GFace, py::nodelete>>(geom, "GFace", DOC(GFace));
-	py::class_<GPart, std::unique_ptr<GPart, py::nodelete>>(geom, "GPart", DOC(GPart))
+	py::class_<GEdge, std::unique_ptr<GEdge, py::nodelete>>(geom, "Edge", DOC(GEdge));
+	py::class_<GFace, std::unique_ptr<GFace, py::nodelete>>(geom, "Face", DOC(GFace));
+	py::class_<GPart, std::unique_ptr<GPart, py::nodelete>>(geom, "Part", DOC(GPart))
 		.def_property("material_id", &GPart::GetMaterialID, &GPart::SetMaterialID);
+
+	py::class_<GDiscreteElement, FSObject, std::unique_ptr<GDiscreteElement, py::nodelete>>(geom, "DiscreteElement")
+		.def_property_readonly("nodes", [](GDiscreteElement& self) { return PyDiscreteElementNodeList(&self); }, py::return_value_policy::reference_internal)
+		;
+
+	py::class_<GDiscreteObject, FSObject, std::unique_ptr<GDiscreteObject, py::nodelete>>(geom, "DiscreteObject");
+
+	py::class_<GDiscreteSpringSet, GDiscreteObject, std::unique_ptr<GDiscreteSpringSet, py::nodelete>>(geom, "DiscreteSpringSet")
+		.def_property_readonly("springs", [](GDiscreteSpringSet& self) { return PyDiscreteSpringList(&self); }, py::return_value_policy::reference_internal)
+		;
+
 }
 #else
 void init_FBSGeom(pybind11::module_& m) {}

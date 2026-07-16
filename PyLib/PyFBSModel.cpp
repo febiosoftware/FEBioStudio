@@ -60,37 +60,6 @@ CModelDocument* GetActiveDocument()
 	return dynamic_cast<CModelDocument*>(PyRunContext::GetDocument());
 }
 
-GDiscreteSpringSet* AddSpringSet(FSModel& fem, const std::string& name, const std::string& typeStr)
-{
-	GModel& gmodel = fem.GetModel();
-
-	auto set = new GDiscreteSpringSet(&gmodel);
-
-	if (typeStr == "Linear")
-	{
-		set->SetMaterial(new FSLinearSpringMaterial(&fem));
-	}
-	else if (typeStr == "Nonlinear")
-	{
-		set->SetMaterial(new FSNonLinearSpringMaterial(&fem));
-	}
-	else if (typeStr == "Hill")
-	{
-		set->SetMaterial(new FSHillContractileMaterial(&fem));
-	}
-	else
-	{
-		delete set;
-		return nullptr;
-	}
-
-	set->SetName(name);
-
-	gmodel.AddDiscreteObject(set);
-
-	return set;
-}
-
 bool ExportFEB(FSModel& fem, std::string& fileName)
 {
 	CModelDocument* doc = GetActiveDocument();
@@ -520,6 +489,53 @@ private:
 	FSModel* m_model = nullptr;
 };
 
+class PyDiscreteObjectList : public PyNamedCollection<FSModel, GDiscreteObject>
+{
+public:
+	PyDiscreteObjectList(FSModel* model) :
+		PyNamedCollection<FSModel, GDiscreteObject>(
+			model,
+			[](FSModel* model) { return model->GetModel().DiscreteObjects(); },
+			[](FSModel* model, int i) { return model->GetModel().DiscreteObject(i); },
+			[](FSModel* model, const std::string& name) { return model->GetModel().FindDiscreteObject(name); },
+			"discrete object"
+		),
+		m_model(model) {}
+
+	GDiscreteObject* addSpringSet(const std::string& name, const std::string& type)
+	{
+		GModel& gmodel = m_model->GetModel();
+
+		auto set = new GDiscreteSpringSet(&gmodel);
+
+		if (type == "Linear")
+		{
+			set->SetMaterial(new FSLinearSpringMaterial(m_model));
+		}
+		else if (type == "Nonlinear")
+		{
+			set->SetMaterial(new FSNonLinearSpringMaterial(m_model));
+		}
+		else if (type == "Hill")
+		{
+			set->SetMaterial(new FSHillContractileMaterial(m_model));
+		}
+		else
+		{
+			delete set;
+			return nullptr;
+		}
+
+		set->SetName(name);
+
+		gmodel.AddDiscreteObject(set);
+		return set;
+	}
+
+private:
+	FSModel* m_model = nullptr;
+};
+
 // Initializes the fbs.mdl module
 void init_FBSModel(py::module& m)
 {
@@ -551,6 +567,22 @@ void init_FBSModel(py::module& m)
 		.def("add_curve_mesh_object", &PyObjectList::addCurveMeshObject, py::return_value_policy::reference, py::arg("name"))
 		.def("remove", &PyObjectList::remove)
 		.def("import_file", &PyObjectList::import_file, py::return_value_policy::reference)
+		;
+
+	// collection wrapper for discrete objects
+	py::class_<PyDiscreteObjectList>(mdl, "DiscreteObjectList")
+		.def("__len__", &PyDiscreteObjectList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyDiscreteObjectList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyDiscreteObjectList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", [](const PyDiscreteObjectList& self) {
+				py::list items;
+				for (int i = 0; i < self.size(); ++i)
+				{
+					items.append(py::cast(self.get(i), py::return_value_policy::reference));
+				}
+				return py::iter(items);
+			})
+		.def("add_spring_set", &PyDiscreteObjectList::addSpringSet, py::return_value_policy::reference)
 		;
 
 	// collection wrapper for steps
@@ -676,6 +708,11 @@ void init_FBSModel(py::module& m)
 			py::return_value_policy::reference_internal
 		)
 		.def_property_readonly(
+			"discrete_objects",
+			[](FSModel& self) { return PyDiscreteObjectList(&self); },
+			py::return_value_policy::reference_internal
+		)
+		.def_property_readonly(
 			"materials",
 			[](FSModel& self) { return PyMaterialList(&self); },
 			py::return_value_policy::reference_internal
@@ -760,9 +797,6 @@ void init_FBSModel(py::module& m)
 			SetDynamicAttribute(self, name, value);
 		})
 		;
-
-	py::class_<GDiscreteSpringSet, FSObject, std::unique_ptr<GDiscreteSpringSet, py::nodelete>>(mdl, "SpringSet", "A class representing a set of discrete springs in the FEBio model.")
-		.def("AddSpring", static_cast<void (GDiscreteSpringSet::*)(int, int)>(&GDiscreteSpringSet::AddElement), "Add a spring between two nodes by their indices.");
 }
 #else
 void init_FBSModel(pybind11::module_& m) {}

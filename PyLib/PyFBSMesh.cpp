@@ -277,7 +277,7 @@ void init_FSMesh(py::module_& m)
 {
     py::module mesh = m.def_submodule("mesh", "Module used to interact with FE Meshes");
 
-	mesh.def("FindAllIntersections", FindAllIntersections);
+	mesh.def("find_all_intersections", FindAllIntersections);
 
 	py::class_<PyNodeRef>(mesh, "NodeRef")
 		.def_property_readonly("index", &PyNodeRef::index)

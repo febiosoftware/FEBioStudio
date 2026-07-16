@@ -138,9 +138,11 @@ public:
 public:
 	const int& Node(int n) const { return m_node[n]; }
 
+public:
+	int	m_node[2];
+
 protected:
 	int		m_nid;
-	int		m_node[2];
 
 	static	int	m_ncount;
 };

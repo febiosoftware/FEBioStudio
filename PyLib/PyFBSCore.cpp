@@ -63,10 +63,10 @@ void init_FBSCore(py::module& m)
         .def(-py::self, DOC(vec3d, operator_sub_2))
         .def(py::self * double(), DOC(vec3d, operator_mul))
         .def(py::self / double(), DOC(vec3d, operator_div))
-        .def("Length", &vec3d::Length, DOC(vec3d, Length))
-        .def("SqrLength", &vec3d::SqrLength, DOC(vec3d, SqrLength))
-        .def("Normalize", &vec3d::Normalize, DOC(vec3d, Normalize))
-        .def("Normalized", &vec3d::Normalized, DOC(vec3d, Normalized))
+        .def("length", &vec3d::Length, DOC(vec3d, Length))
+        .def("sqr_length", &vec3d::SqrLength, DOC(vec3d, SqrLength))
+        .def("normalize", &vec3d::Normalize, DOC(vec3d, Normalize))
+        .def("normalized", &vec3d::Normalized, DOC(vec3d, Normalized))
         .def_readwrite("x", &vec3d::x, DOC(vec3d, x))
         .def_readwrite("y", &vec3d::y, DOC(vec3d, y))
         .def_readwrite("z", &vec3d::z, DOC(vec3d, z))
@@ -82,7 +82,7 @@ void init_FBSCore(py::module& m)
 			[](const quatd& q) {
 				return "(" + std::to_string(q.x) + ", " + std::to_string(q.y) + ", " + std::to_string(q.z) + ", " + std::to_string(q.w) + ")";
 			})
-		.def("Inverse", &quatd::Inverse, DOC(quatd, Inverse))
+		.def("inverse", &quatd::Inverse, DOC(quatd, Inverse))
 		;
 
 	py::class_<Transform>(core, "Transform", DOC(Transform))
