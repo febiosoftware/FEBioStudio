@@ -629,7 +629,7 @@ void FEBioExport3::BuildItemLists(FSProject& prj)
 	}
 
 	// check all the (surface) plot variables
-	CPlotDataSettings& plt = prj.GetPlotDataSettings();
+	CPlotDataSettings& plt = m_pfem->GetPlotDataSettings();
 	for (int i = 0; i<plt.PlotVariables(); ++i)
 	{
 		CPlotVariable& var = plt.PlotVariable(i);
@@ -4980,7 +4980,7 @@ void FEBioExport3::WriteElementList(FSElemList& el)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteOutputSection()
 {
-	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
+	CPlotDataSettings& plt = m_pfem->GetPlotDataSettings();
 	int N = plt.PlotVariables();
 	if (N > 0)
 	{

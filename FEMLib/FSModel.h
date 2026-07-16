@@ -35,6 +35,8 @@ SOFTWARE.*/
 #include "FELoadController.h"
 #include "FEMeshDataGenerator.h"
 #include "GMaterial.h"
+#include "PlotDataSettings.h"
+#include "LogDataSettings.h"
 #include "FEDataVariable.h"
 #include "FESoluteData.h"
 #include "FEDOF.h"
@@ -372,6 +374,10 @@ public:
     //! Get allocator IDs of all in-use plugins
     void GetActivePluginIDs(std::unordered_set<int>& allocatorIDs);
 
+public:
+	CPlotDataSettings& GetPlotDataSettings() { return m_plt; }
+	CLogDataSettings& GetLogDataSettings() { return m_log; }
+
 protected:
 	// I/O helper functions
 	//! Load data from archive
@@ -416,6 +422,9 @@ protected:
 	FSObjectList<FSLoadController>		m_LC;
 	//! Mesh data generators
 	FSObjectList<FSMeshDataGenerator>	m_MD;
+
+	CPlotDataSettings	m_plt;		// plot file settings
+	CLogDataSettings	m_log;		// log file settings
 
 	//! Material look-up table
 	std::vector<GMaterial*>	m_MLT;

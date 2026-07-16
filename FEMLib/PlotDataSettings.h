@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <FSCore/Serializable.h>
 #include <MeshLib/FSItemListBuilder.h>
 
-class FSProject;
+class FSModel;
 
 //-----------------------------------------------------------------------------
 // Output variable for plot file
@@ -84,7 +84,7 @@ public:
 	};
 
 public:
-	CPlotDataSettings(FSProject& prj);
+	CPlotDataSettings(FSModel& mdl);
 
 	//! save to file
 	void Save(OArchive& ar);
@@ -108,8 +108,10 @@ public:
 	void AddPlotVariable(CPlotVariable& var);
 	CPlotVariable* FindVariable(const std::string& var);
 
+	void InitDefaultPlotVariables(const std::string& moduleName);
+
 private:
-	FSProject&	m_prj;
+	FSModel&	m_fsm;
 	PlotFormat m_plotFormat = PLOT_FEBIO;
 	std::vector<CPlotVariable>	m_plot;		// plot file variables
 };

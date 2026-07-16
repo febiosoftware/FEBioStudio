@@ -184,7 +184,7 @@ std::string defaultStepName(FSModel* fem, FSStep* ps)
 	return ss.str();
 }
 
-FSModel::FSModel() : m_skipGeometry(false)
+FSModel::FSModel() : m_skipGeometry(false), m_plt(*this), m_log(*this)
 {
 	m_GMdl = std::make_unique<GModel>(this);
 	Reset();
@@ -1406,6 +1406,9 @@ void FSModel::Reset()
 
 	// define the initial step
 	m_pStep.Add(new FSInitialStep(this));
+
+	// initialize the plot data
+	m_plt.Init();
 }
 
 int FSModel::CountMeshDataFields()
@@ -2224,6 +2227,23 @@ void FSModel::ClearSelections()
 			FSModelConstraint* mc = step->Constraint(i);
 			mc->SetItemList(nullptr);
 		}
+	}
+
+	for (int i = 0; i < m_plt.PlotVariables(); ++i)
+	{
+		CPlotVariable& plt = m_plt.PlotVariable(i);
+		plt.removeAllDomains();
+	}
+
+	for (int i = 0; i < m_log.LogDataSize(); )
+	{
+		FSHasOneItemList* pl = dynamic_cast<FSHasOneItemList*>(&m_log.LogData(i));
+		if (pl)
+		{
+			if (pl->GetItemList()) m_log.RemoveLogData(i);
+			else i++;
+		}
+		else i++;
 	}
 
 	GetModel().RemoveNamedSelections();

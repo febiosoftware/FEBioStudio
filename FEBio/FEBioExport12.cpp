@@ -4067,7 +4067,7 @@ void FEBioExport12::WriteSurface(XMLElement& el, FSItemListBuilder* pl)
 
 void FEBioExport12::WriteOutputSection()
 {
-	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
+	CPlotDataSettings& plt = m_pfem->GetPlotDataSettings();
 	int N = plt.PlotVariables();
 	if (N > 0)
 	{

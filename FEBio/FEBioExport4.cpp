@@ -3469,7 +3469,7 @@ void FEBioExport4::WriteElementList(FSElemList& el)
 //-----------------------------------------------------------------------------
 void FEBioExport4::WriteOutputSection()
 {
-	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
+	CPlotDataSettings& plt = m_pfem->GetPlotDataSettings();
 	int N = plt.PlotVariables();
 	if (N > 0)
 	{
