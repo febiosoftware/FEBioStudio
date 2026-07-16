@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "ui_pythoneditor.h"
 #include <PyLib/PythonRunner.h>
 #include <PyLib/PyRunContext.h>
+#include <QCloseEvent>
 
 CPythonEditor::CPythonEditor(CMainWindow* wnd) : QMainWindow(wnd), mainWnd(wnd), ui(new Ui::CPythonEditor)
 {
@@ -43,9 +44,26 @@ CPythonEditor::CPythonEditor(CMainWindow* wnd) : QMainWindow(wnd), mainWnd(wnd),
 	connect(pyrun, &CPythonRunner::runScriptFinished, this, &CPythonEditor::on_python_finished);
 }
 
+CPythonEditor::~CPythonEditor()
+{
+	delete ui;
+}
+
+void CPythonEditor::closeEvent(QCloseEvent* ev)
+{
+	if (saveModifiedScript())
+	{
+		QMainWindow::closeEvent(ev);
+	}
+	else
+	{
+		ev->ignore();
+	}
+}
+
 void CPythonEditor::on_actionNew_triggered()
 {
-	if (QMessageBox::question(this, "New Script", "Are you sure you want to start a new script?") == QMessageBox::Yes)
+	if (saveModifiedScript())
 	{
 		ui->edit->clear();
 		ui->edit->appendPlainText("from fbs import *\n");
@@ -57,6 +75,8 @@ void CPythonEditor::on_actionNew_triggered()
 
 void CPythonEditor::on_actionOpen_triggered()
 {
+	if (!saveModifiedScript()) return;
+
 	QString filePath = QFileDialog::getOpenFileName(this, "Open Python file", "", "Python files (*.py)");
 	if (!filePath.isEmpty())
 	{
@@ -77,12 +97,13 @@ void CPythonEditor::on_actionOpen_triggered()
 		ui->edit->setPlainText(fileContent);
 
 		fileName = filePath;
+		ui->editCwd->setText(QFileInfo(fileName).absolutePath());
 		ui->isModified = false;
 		updateWindowTitle();
 	}
 }
 
-bool SaveScript(const QString& filePath, const QString& fileText)
+static bool SaveScript(const QString& filePath, const QString& fileText)
 {
 	if (filePath.isEmpty()) return false;
 
@@ -92,11 +113,9 @@ bool SaveScript(const QString& filePath, const QString& fileText)
 		return false;
 	}
 
-	// Read the entire file contents using QTextStream
 	QTextStream out(&file);
 	out << fileText;
 
-	// Close the file
 	file.close();
 
 	return true;
@@ -120,40 +139,68 @@ void CPythonEditor::updateWindowTitle()
 
 void CPythonEditor::on_actionSave_triggered()
 {
-	if (fileName.isEmpty())
-	{
-		on_actionSaveAs_triggered();
-	}
-	else
-	{
-		QString script = ui->edit->toPlainText();
-		if (!SaveScript(fileName, script))
-		{
-			QMessageBox::critical(this, "Python Editor", "Failed to save the script to file.");
-		}
-
-		ui->isModified = false;
-		updateWindowTitle();
-	}
+	saveScript();
 }
 
 void CPythonEditor::on_actionSaveAs_triggered()
 {
+	saveScriptAs();
+}
+
+bool CPythonEditor::saveScript()
+{
+	if (fileName.isEmpty()) return saveScriptAs();
+
+	QString script = ui->edit->toPlainText();
+	if (!SaveScript(fileName, script))
+	{
+		QMessageBox::critical(this, "Python Editor", "Failed to save the script to file.");
+		return false;
+	}
+
+	ui->isModified = false;
+	updateWindowTitle();
+	return true;
+}
+
+bool CPythonEditor::saveScriptAs()
+{
 	QString filePath = QFileDialog::getSaveFileName(this, "Save Python file", "", "Python files (*.py)");
 	if (!filePath.isEmpty())
 	{
+		if (QFileInfo(filePath).suffix().isEmpty()) filePath += ".py";
+
 		QString script = ui->edit->toPlainText();
 		if (SaveScript(filePath, script))
 		{
 			fileName = filePath;
 			ui->isModified = false;
 			updateWindowTitle();
+			return true;
 		}
 		else
 		{
 			QMessageBox::critical(this, "Python Editor", "Failed to save the script to file.");
 		}
 	}
+
+	return false;
+}
+
+bool CPythonEditor::saveModifiedScript()
+{
+	if (!ui->isModified) return true;
+
+	QMessageBox::StandardButton ret = QMessageBox::warning(
+		this,
+		"Python Editor",
+		"The script has been modified.\nDo you want to save your changes?",
+		QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+		QMessageBox::Save);
+
+	if (ret == QMessageBox::Save) return saveScript();
+	if (ret == QMessageBox::Discard) return true;
+	return false;
 }
 
 void CPythonEditor::on_actionClose_triggered()
@@ -170,6 +217,13 @@ void CPythonEditor::on_actionRun_triggered()
 		return;
 	}
 
+	QString cwd = ui->editCwd->text().trimmed();
+	if (!cwd.isEmpty() && !QDir(cwd).exists())
+	{
+		QMessageBox::critical(this, "Python", QString("The working directory does not exist:\n%1").arg(cwd));
+		return;
+	}
+
 	mainWnd->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
 	mainWnd->AddPythonLogEntry(QString(">>> running python ...\n"));
 		
@@ -179,7 +233,7 @@ void CPythonEditor::on_actionRun_triggered()
 	ui->actionRun->setEnabled(false);
 	ui->actionStop->setEnabled(true);
 
-	pyrun->SetWorkingDirectory(ui->editCwd->text());
+	pyrun->SetWorkingDirectory(cwd);
 
 	QString script = ui->edit->toPlainText();
 	m_runTimer.start();
@@ -188,6 +242,9 @@ void CPythonEditor::on_actionRun_triggered()
 
 void CPythonEditor::on_actionStop_triggered()
 {
+	ui->actionStop->setEnabled(false);
+	mainWnd->AddPythonLogEntry(QString(">>> stopping python ...\n"));
+
 	CPythonRunner* pyrun = CPythonRunner::GetInstance();
 	pyrun->interrupt();
 }

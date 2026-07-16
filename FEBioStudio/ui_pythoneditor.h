@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QMenuBar>
 #include <QMenu>
 #include <QLineEdit>
+#include <QKeySequence>
 
 class Ui::CPythonEditor
 {
@@ -50,7 +51,7 @@ public:
 		edit->setObjectName("edit");
 		edit->useDarkTheme(darkTheme);
 
-		QTextDocument* doc = new QTextDocument;
+		QTextDocument* doc = new QTextDocument(edit);
 		doc->setDocumentLayout(new QPlainTextDocumentLayout(doc));
 
 		QFont font;
@@ -75,6 +76,11 @@ public:
 		QAction* actionClose  = new QAction("Close", wnd); actionClose->setObjectName("actionClose");
 		actionRun  = new QAction("Run script" , wnd); actionRun ->setObjectName("actionRun" ); actionRun ->setIcon(CIconProvider::GetIcon("play"));
 		actionStop = new QAction("Stop script" , wnd); actionStop->setObjectName("actionStop" ); actionStop->setIcon(CIconProvider::GetIcon("stop"));
+
+		QList<QKeySequence> runShortcuts;
+		runShortcuts << QKeySequence(Qt::Key_F5) << QKeySequence(Qt::CTRL | Qt::Key_R);
+		actionRun->setShortcuts(runShortcuts);
+		actionStop->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_F5));
 
 		actionStop->setEnabled(false);
 

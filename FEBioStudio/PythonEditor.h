@@ -33,6 +33,7 @@ namespace Ui {
 }
 
 class CMainWindow;
+class QCloseEvent;
 
 class CPythonEditor : public QMainWindow
 {
@@ -40,6 +41,10 @@ class CPythonEditor : public QMainWindow
 
 public:
 	CPythonEditor(CMainWindow* wnd);
+	~CPythonEditor();
+
+protected:
+	void closeEvent(QCloseEvent* ev) override;
 
 private slots:
 	void on_actionNew_triggered();
@@ -57,6 +62,9 @@ signals:
 
 private:
 	void updateWindowTitle();
+	bool saveScript();
+	bool saveScriptAs();
+	bool saveModifiedScript();
 
 private:
 	Ui::CPythonEditor* ui;
