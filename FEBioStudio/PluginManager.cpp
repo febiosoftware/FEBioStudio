@@ -437,9 +437,9 @@ void CPluginManager::OnHTMLError(QString& message, int pluginID)
     emit HTMLError(message);
 }
 
-void CPluginManager::SumbitPlugin(QByteArray& pluginInfo)
+void CPluginManager::SubmitPlugin(QByteArray& pluginInfo)
 {
-    imp->m_repo.sumbitPlugin(pluginInfo);
+    imp->m_repo.submitPlugin(pluginInfo);
 }
 
 void CPluginManager::UploadImage(QByteArray& token, QString& filename)
