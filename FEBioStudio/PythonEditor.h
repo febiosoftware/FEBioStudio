@@ -64,6 +64,8 @@ private slots:
 	void on_actionUnindent_triggered();
 	void on_actionNormalizeIndentation_triggered();
 	void on_actionDuplicateLine_triggered();
+	void on_actionMoveLineUp_triggered();
+	void on_actionMoveLineDown_triggered();
 	void on_actionRun_triggered();
 	void on_actionStop_triggered();
 	void on_actionWordWrap_toggled(bool checked);
@@ -90,6 +92,7 @@ private:
 	void indentSelection();
 	void unindentSelection();
 	void normalizeIndentation();
+	void moveSelectedLines(int direction);
 	void autoIndent();
 
 private:

@@ -388,6 +388,16 @@ void CPythonEditor::on_actionDuplicateLine_triggered()
 	ui->edit->duplicateLine();
 }
 
+void CPythonEditor::on_actionMoveLineUp_triggered()
+{
+	moveSelectedLines(-1);
+}
+
+void CPythonEditor::on_actionMoveLineDown_triggered()
+{
+	moveSelectedLines(1);
+}
+
 void CPythonEditor::on_actionRun_triggered()
 {
 	CPythonRunner* pyrun = CPythonRunner::GetInstance();
@@ -655,6 +665,63 @@ void CPythonEditor::normalizeIndentation()
 		lineCursor.insertText(normalizedText);
 	}
 	cursor.endEditBlock();
+}
+
+void CPythonEditor::moveSelectedLines(int direction)
+{
+	if ((direction != -1) && (direction != 1)) return;
+
+	QTextCursor cursor = ui->edit->textCursor();
+	int firstBlock = firstSelectedBlock(cursor);
+	int lastBlock = lastSelectedBlock(cursor);
+	int blockCount = ui->edit->blockCount();
+
+	if (((direction < 0) && (firstBlock == 0)) || ((direction > 0) && (lastBlock >= blockCount - 1))) return;
+
+	QStringList lines = ui->edit->toPlainText().split('\n', Qt::KeepEmptyParts);
+	if (lines.size() != blockCount) return;
+
+	int lineCount = lastBlock - firstBlock + 1;
+	QStringList movingLines;
+	for (int i = 0; i < lineCount; ++i)
+	{
+		movingLines << lines.takeAt(firstBlock);
+	}
+
+	int insertIndex = (direction < 0 ? firstBlock - 1 : firstBlock + 1);
+	for (int i = 0; i < movingLines.size(); ++i)
+	{
+		lines.insert(insertIndex + i, movingLines[i]);
+	}
+
+	int newFirstBlock = firstBlock + direction;
+	int newLastBlock = lastBlock + direction;
+	int column = cursor.positionInBlock();
+	bool hadSelection = cursor.hasSelection();
+
+	QTextCursor editCursor(ui->edit->document());
+	editCursor.beginEditBlock();
+	editCursor.select(QTextCursor::Document);
+	editCursor.insertText(lines.join("\n"));
+	editCursor.endEditBlock();
+
+	QTextBlock firstMovedBlock = ui->edit->document()->findBlockByNumber(newFirstBlock);
+	if (!firstMovedBlock.isValid()) return;
+
+	QTextCursor newCursor(firstMovedBlock);
+	if (hadSelection)
+	{
+		QTextBlock afterLastMovedBlock = ui->edit->document()->findBlockByNumber(newLastBlock).next();
+		int selectionEnd = afterLastMovedBlock.isValid() ? afterLastMovedBlock.position() : ui->edit->document()->characterCount() - 1;
+		newCursor.setPosition(firstMovedBlock.position());
+		newCursor.setPosition(selectionEnd, QTextCursor::KeepAnchor);
+	}
+	else
+	{
+		newCursor.setPosition(firstMovedBlock.position() + qMin(column, firstMovedBlock.text().length()));
+	}
+
+	ui->edit->setTextCursor(newCursor);
 }
 
 void CPythonEditor::autoIndent()
