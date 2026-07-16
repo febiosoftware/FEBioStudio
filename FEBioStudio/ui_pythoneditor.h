@@ -50,6 +50,7 @@ public:
 	QAction* actionIndent = nullptr;
 	QAction* actionUnindent = nullptr;
 	QAction* actionNormalizeIndentation = nullptr;
+	QAction* actionDuplicateLine = nullptr;
 	QAction* actionRun = nullptr;
 	QAction* actionStop = nullptr;
 	QAction* actionWordWrap = nullptr;
@@ -97,6 +98,7 @@ public:
 		actionIndent = new QAction("Indent Selection", wnd); actionIndent->setObjectName("actionIndent"); actionIndent->setShortcut(Qt::CTRL | Qt::Key_BracketRight);
 		actionUnindent = new QAction("Unindent Selection", wnd); actionUnindent->setObjectName("actionUnindent"); actionUnindent->setShortcut(Qt::CTRL | Qt::Key_BracketLeft);
 		actionNormalizeIndentation = new QAction("Normalize Indentation", wnd); actionNormalizeIndentation->setObjectName("actionNormalizeIndentation");
+		actionDuplicateLine = new QAction("Duplicate Line", wnd); actionDuplicateLine->setObjectName("actionDuplicateLine"); actionDuplicateLine->setShortcut(Qt::CTRL| Qt::Key_D);
 		actionRun  = new QAction("Run script" , wnd); actionRun ->setObjectName("actionRun" ); actionRun ->setIcon(CIconProvider::GetIcon("play"));
 		actionStop = new QAction("Stop script" , wnd); actionStop->setObjectName("actionStop" ); actionStop->setIcon(CIconProvider::GetIcon("stop"));
 		actionWordWrap = new QAction("Word Wrap", wnd); actionWordWrap->setObjectName("actionWordWrap");
@@ -139,6 +141,8 @@ public:
 		menuEdit->addAction(actionIndent);
 		menuEdit->addAction(actionUnindent);
 		menuEdit->addAction(actionNormalizeIndentation);
+		menuEdit->addSeparator();
+		menuEdit->addAction(actionDuplicateLine);
 
 		QMenu* menuView = new QMenu("View", menuBar);
 		menuBar->addAction(menuView->menuAction());

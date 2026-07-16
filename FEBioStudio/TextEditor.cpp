@@ -378,8 +378,7 @@ public:
 		QString keywords = toString(szpythonkeys, sizeof(szpythonkeys) / sizeof(const char*));
 		QString funcs    = toString(szpythonfncs, sizeof(szpythonfncs) / sizeof(const char*));
 
-		QString lineComment("#.*");
-		QString stringLiterals("(?i)\\b(?:r|u|b|f|fr|rf|br|rb)?([\"'])(?:\\\\.|(?!\\1).)*\\1");
+		QString stringLiterals("(?i)(?:\\b(?:fr|rf|br|rb|r|u|b|f))?(\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*')");
 		QString numbers("\\b(?:0[xX][0-9a-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|(?:\\d[\\d_]*\\.?[\\d_]*|\\.\\d[\\d_]*)(?:[eE][+-]?\\d[\\d_]*)?[jJ]?)\\b");
 		QString allcaps("\\b[A-Z][A-Z_\\d]*\\b");
 		QString braces("[\\(\\[\\{\\)\\]\\}]");
@@ -404,7 +403,7 @@ public:
 			AddRule(classNames     , QColor("darkBlue"), QFont::Bold);
 			AddRule(functionNames  , QColor("darkBlue"));
 			AddRule(stringLiterals , QColor("orangered"));
-			AddRule(lineComment    , Qt::darkGreen);
+			m_commentFormat.setForeground(Qt::darkGreen);
 		}
 		else // dark theme
 		{
@@ -420,7 +419,7 @@ public:
 			AddRule(classNames     , QColor("dodgerblue"), QFont::Bold);
 			AddRule(functionNames  , QColor("dodgerblue"));
 			AddRule(stringLiterals , QColor("orange"));
-			AddRule(lineComment    , QColor("forestgreen"));
+			m_commentFormat.setForeground(QColor("forestgreen"));
 		}
 
 	}
@@ -428,10 +427,60 @@ public:
 	void highlightBlock(const QString& text) override
 	{
 		ApplyRules(text);
+		HighlightLineComment(text);
 		HighlightMultilineStrings(text);
 	}
 
 private:
+	void HighlightLineComment(const QString& text)
+	{
+		int index = FindLineComment(text);
+		if (index >= 0) setFormat(index, text.length() - index, m_commentFormat);
+	}
+
+	int FindLineComment(const QString& text) const
+	{
+		for (int i = 0; i < text.length(); ++i)
+		{
+			QChar ch = text[i];
+			if (ch == '#') return i;
+
+			if ((ch == '"') || (ch == '\''))
+			{
+				if ((i + 2 < text.length()) && (text[i + 1] == ch) && (text[i + 2] == ch))
+				{
+					int end = text.indexOf(QString(3, ch), i + 3);
+					if (end == -1) return -1;
+					i = end + 2;
+				}
+				else
+				{
+					i = FindStringEnd(text, i);
+					if (i == -1) return -1;
+				}
+			}
+		}
+
+		return -1;
+	}
+
+	int FindStringEnd(const QString& text, int start) const
+	{
+		QChar quote = text[start];
+		for (int i = start + 1; i < text.length(); ++i)
+		{
+			if (text[i] == '\\')
+			{
+				i++;
+				continue;
+			}
+
+			if (text[i] == quote) return i;
+		}
+
+		return -1;
+	}
+
 	void HighlightMultilineStrings(const QString& text)
 	{
 		setCurrentBlockState(0);
@@ -499,6 +548,7 @@ private:
 
 private:
 	QTextCharFormat m_stringFormat;
+	QTextCharFormat m_commentFormat;
 };
 
 CTextEditor::CTextEditor(QWidget* parent) : QPlainTextEdit(parent)
@@ -524,7 +574,8 @@ void CTextEditor::useDarkTheme(bool b)
 	m_useDarkTheme = b;
 
 	QPalette p = palette();
-	p.setColor(QPalette::Text, (b ? Qt::lightGray : Qt::black));// QColor::fromRgb(51, 153, 255)));
+	p.setColor(QPalette::Text, (b ? QColor(225, 225, 225) : Qt::black));// QColor::fromRgb(51, 153, 255)));
+	p.setColor(QPalette::Base, (b ? QColor(24, 26, 28) : Qt::white));
 	setPalette(p);
 }
 
@@ -748,7 +799,7 @@ void CTextEditor::highlightCurrentLine()
 
 	QBrush bg;
 	if (m_useDarkTheme)
-		bg = QColor::fromRgb(0, 51, 102);
+		bg = QColor::fromRgb(34, 48, 64);
 	else
 		bg = QColor::fromRgb(240, 240, 255);
 

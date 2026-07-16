@@ -31,11 +31,16 @@ SOFTWARE.*/
 #include <PyLib/PyRunContext.h>
 #include <QCloseEvent>
 #include <QDir>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QFileInfo>
 #include <QInputDialog>
 #include <QKeyEvent>
+#include <QMimeData>
 #include <QPlainTextEdit>
 #include <QTextBlock>
 #include <QTextCursor>
+#include <QUrl>
 
 namespace
 {
@@ -78,6 +83,7 @@ CPythonEditor::CPythonEditor(CMainWindow* wnd) : QMainWindow(wnd), mainWnd(wnd),
 	ui->setup(this, wnd->usingDarkTheme());
 	ui->edit->appendPlainText("from fbs import *\n");
 	ui->edit->installEventFilter(this);
+	ui->edit->viewport()->installEventFilter(this);
 
 	// Hook this up to the python runner (remember, this lives on a separate thread)
 	CPythonRunner* pyrun = CPythonRunner::GetInstance(); assert(pyrun);
@@ -104,7 +110,40 @@ void CPythonEditor::closeEvent(QCloseEvent* ev)
 
 bool CPythonEditor::eventFilter(QObject* obj, QEvent* ev)
 {
-	if ((obj == ui->edit) && (ev->type() == QEvent::KeyPress))
+	if (((obj == ui->edit) || (obj == ui->edit->viewport())) && ((ev->type() == QEvent::DragEnter) || (ev->type() == QEvent::DragMove)))
+	{
+		QDragMoveEvent* dragEvent = static_cast<QDragMoveEvent*>(ev);
+		const QMimeData* mimeData = dragEvent->mimeData();
+		if (mimeData && mimeData->hasUrls())
+		{
+			const QList<QUrl> urls = mimeData->urls();
+			if ((urls.size() == 1) && urls[0].isLocalFile() && (QFileInfo(urls[0].toLocalFile()).suffix().compare("py", Qt::CaseInsensitive) == 0))
+			{
+				dragEvent->acceptProposedAction();
+				return true;
+			}
+		}
+	}
+	else if (((obj == ui->edit) || (obj == ui->edit->viewport())) && (ev->type() == QEvent::Drop))
+	{
+		QDropEvent* dropEvent = static_cast<QDropEvent*>(ev);
+		const QMimeData* mimeData = dropEvent->mimeData();
+		if (mimeData && mimeData->hasUrls())
+		{
+			const QList<QUrl> urls = mimeData->urls();
+			if ((urls.size() == 1) && urls[0].isLocalFile())
+			{
+				QString filePath = urls[0].toLocalFile();
+				if (QFileInfo(filePath).suffix().compare("py", Qt::CaseInsensitive) == 0)
+				{
+					dropEvent->acceptProposedAction();
+					if (saveModifiedScript()) openScript(filePath);
+					return true;
+				}
+			}
+		}
+	}
+	else if ((obj == ui->edit) && (ev->type() == QEvent::KeyPress))
 	{
 		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(ev);
 		if ((keyEvent->key() == Qt::Key_Return) || (keyEvent->key() == Qt::Key_Enter))
@@ -150,29 +189,7 @@ void CPythonEditor::on_actionOpen_triggered()
 	if (!saveModifiedScript()) return;
 
 	QString filePath = QFileDialog::getOpenFileName(this, "Open Python file", "", "Python files (*.py)");
-	if (!filePath.isEmpty())
-	{
-		QFile file(filePath);
-		if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-		{
-			QMessageBox::critical(this, "Open Python file", "Failed to open the file!");
-			return;
-		}
-
-		// Read the entire file contents using QTextStream
-		QTextStream in(&file);
-		QString fileContent = in.readAll();
-
-		// Close the file
-		file.close();
-
-		ui->edit->setPlainText(fileContent);
-
-		fileName = filePath;
-		ui->editCwd->setText(QFileInfo(fileName).absolutePath());
-		ui->isModified = false;
-		updateWindowTitle();
-	}
+	if (!filePath.isEmpty()) openScript(filePath);
 }
 
 static bool SaveScript(const QString& filePath, const QString& fileText)
@@ -197,7 +214,7 @@ void CPythonEditor::updateWindowTitle()
 {
 	if (fileName.isEmpty())
 	{
-		setWindowTitle("Python Editor");
+		setWindowTitle(ui->isModified ? "Python Editor*" : "Python Editor");
 	}
 	else
 	{
@@ -207,6 +224,28 @@ void CPythonEditor::updateWindowTitle()
 		else
 			setWindowTitle("Python Editor [" + fi.fileName() + "]");
 	}
+}
+
+bool CPythonEditor::openScript(const QString& filePath)
+{
+	QFile file(filePath);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		QMessageBox::critical(this, "Open Python file", "Failed to open the file!");
+		return false;
+	}
+
+	QTextStream in(&file);
+	QString fileContent = in.readAll();
+	file.close();
+
+	ui->edit->setPlainText(fileContent);
+
+	fileName = filePath;
+	ui->editCwd->setText(QFileInfo(fileName).absolutePath());
+	ui->isModified = false;
+	updateWindowTitle();
+	return true;
 }
 
 void CPythonEditor::on_actionSave_triggered()
@@ -342,6 +381,11 @@ void CPythonEditor::on_actionUnindent_triggered()
 void CPythonEditor::on_actionNormalizeIndentation_triggered()
 {
 	normalizeIndentation();
+}
+
+void CPythonEditor::on_actionDuplicateLine_triggered()
+{
+	ui->edit->duplicateLine();
 }
 
 void CPythonEditor::on_actionRun_triggered()

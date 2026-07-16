@@ -63,6 +63,7 @@ private slots:
 	void on_actionIndent_triggered();
 	void on_actionUnindent_triggered();
 	void on_actionNormalizeIndentation_triggered();
+	void on_actionDuplicateLine_triggered();
 	void on_actionRun_triggered();
 	void on_actionStop_triggered();
 	void on_actionWordWrap_toggled(bool checked);
@@ -75,6 +76,7 @@ signals:
 
 private:
 	void updateWindowTitle();
+	bool openScript(const QString& filePath);
 	bool saveScript();
 	bool saveScriptAs();
 	bool saveModifiedScript();
