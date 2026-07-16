@@ -130,7 +130,7 @@ public:
     void OnDownloadFinished(int id);
     void OnHTMLError(QString& message, int pluginID = 0);
 
-    void SumbitPlugin(QByteArray& pluginInfo);
+    void SubmitPlugin(QByteArray& pluginInfo);
     void UploadImage(QByteArray& token, QString& filename);
 
     void WriteConfigFile(const std::string& fileName);
