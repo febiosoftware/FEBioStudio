@@ -259,6 +259,7 @@ private:
 
 py::object GetDynamicAttribute(FSObject& self, const std::string& name);
 void SetDynamicAttribute(FSObject& self, const std::string& name, py::object value);
+void SetDynamicAttributes(FSObject& self, py::kwargs kwargs);
 
 template <class Owner, class Item>
 class PyIndexedCollection

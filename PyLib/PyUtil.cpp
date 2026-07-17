@@ -288,4 +288,14 @@ void SetDynamicAttribute(FSObject& self, const std::string& name, py::object val
 	throw py::attribute_error("unknown attribute: " + name);
 }
 
+void SetDynamicAttributes(FSObject& self, py::kwargs kwargs)
+{
+	for (auto item : kwargs)
+	{
+		std::string key = py::str(item.first);
+		py::object value = py::reinterpret_borrow<py::object>(item.second);
+		SetDynamicAttribute(self, key, value);
+	}
+}
+
 #endif // HAS_PYTHON

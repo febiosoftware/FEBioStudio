@@ -35,6 +35,9 @@ SOFTWARE.*/
 #include <FEBioStudio/PropertyList.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEMLib/FSModel.h>
+#include <FEMLib/FEInterface.h>
+#include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FEMeshAdaptor.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GGroup.h>
@@ -49,6 +52,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include <MeshLib/FSCurveMesh.h>
+#include <FEMLib/LogDataSettings.h>
 #include <FSCore/ClassDescriptor.h>
 #include "DocHeaders/PyModelDocs.h"
 #include "PyUtil.h"
@@ -159,6 +163,17 @@ void SetItemListSelection(FSHasOneItemList& self, py::handle value)
 	self.SetItemList(selection);
 }
 
+FSItemListBuilder* PyValueToItemList(py::handle value)
+{
+	if (value.is_none()) return nullptr;
+	if (!py::isinstance<FSItemListBuilder>(value))
+	{
+		throw py::type_error("selection must be a named selection");
+	}
+	FSItemListBuilder* selection = value.cast<FSItemListBuilder*>();
+	return selection;
+}
+
 class PyMaterialList : public PyNamedCollection<FSModel, GMaterial>
 {
 public:
@@ -178,15 +193,7 @@ public:
 		if (gmat == nullptr) return nullptr;
 
 		FSMaterial* mat = gmat->GetMaterialProperties();
-		if (mat && kwargs.empty() == false)
-		{
-			for (auto item : kwargs)
-			{
-				std::string key = py::str(item.first);
-				py::object value = py::reinterpret_borrow<py::object>(item.second);
-				SetDynamicAttribute(*mat, key, value);
-			}
-		}
+		if (mat) SetDynamicAttributes(*mat, kwargs);
 
 		return gmat;
 	}
@@ -220,14 +227,7 @@ public:
 
 		if (kwargs.empty() == false)
 		{
-			for (auto item : kwargs)
-			{
-				std::string key = py::str(item.first);
-				py::object value = py::reinterpret_borrow<py::object>(item.second);
-
-				SetDynamicAttribute(*po, key, value);
-			}
-
+			SetDynamicAttributes(*po, kwargs);
 			po->Update();
 		}
 
@@ -309,15 +309,7 @@ public:
 	FSLoadController* add(const std::string& name, const std::string& type, py::kwargs kwargs)
 	{
 		FSLoadController* lc = m_model->AddLoadController(name, type);
-		if (lc && !kwargs.empty())
-		{
-			for (auto item : kwargs)
-			{
-				std::string key = py::str(item.first);
-				py::object value = py::reinterpret_borrow<py::object>(item.second);
-				SetDynamicAttribute(*lc, key, value);
-			}
-		}
+		if (lc) SetDynamicAttributes(*lc, kwargs);
 		return lc;
 	}
 
@@ -344,15 +336,7 @@ public:
 		if (step)
 		{
 			FEBio::InitDefaultProps(step);
-			if (!kwargs.empty())
-			{
-				for (auto item : kwargs)
-				{
-					std::string key = py::str(item.first);
-					py::object value = py::reinterpret_borrow<py::object>(item.second);
-					SetDynamicAttribute(*step, key, value);
-				}
-			}
+			SetDynamicAttributes(*step, kwargs);
 		}
 		return step;
 	}
@@ -382,16 +366,150 @@ public:
 	FSBoundaryCondition* add(const std::string& name, const std::string& type, py::kwargs kwargs)
 	{
 		FSBoundaryCondition* bc = m_step->AddBC(name, type);
-		if (bc && !kwargs.empty())
-		{
-			for (auto item : kwargs)
-			{
-				std::string key = py::str(item.first);
-				py::object value = py::reinterpret_borrow<py::object>(item.second);
-				SetDynamicAttribute(*bc, key, value);
-			}
-		}
+		if (bc) SetDynamicAttributes(*bc, kwargs);
 		return bc;
+	}
+
+private:
+	FSStep* m_step = nullptr;
+};
+
+class PyLoadList : public PyNamedCollection<FSStep, FSLoad>
+{
+public:
+	PyLoadList(FSStep* step)
+		: PyNamedCollection<FSStep, FSLoad>(
+			step,
+			[](FSStep* step) { return step->Loads(); },
+			[](FSStep* step, int i) { return step->Load(i); },
+			[](FSStep* step, const std::string& name) { return step->FindLoad(name); },
+			"load"
+		),
+		m_step(step) {}
+
+	FSLoad* addNodalLoad(const std::string& name, const std::string& type, py::kwargs kwargs)
+	{
+		FSLoad* load = m_step->AddNodalLoad(name, type);
+		if (load) SetDynamicAttributes(*load, kwargs);
+		return load;
+	}
+
+	FSLoad* addSurfaceLoad(const std::string& name, const std::string& type, py::kwargs kwargs)
+	{
+		FSLoad* load = m_step->AddSurfaceLoad(name, type);
+		if (load) SetDynamicAttributes(*load, kwargs);
+		return load;
+	}
+
+	FSLoad* addBodyLoad(const std::string& name, const std::string& type, py::kwargs kwargs)
+	{
+		FSLoad* load = m_step->AddBodyLoad(name, type);
+		if (load) SetDynamicAttributes(*load, kwargs);
+		return load;
+	}
+
+private:
+	FSStep* m_step = nullptr;
+};
+
+class PyICList : public PyNamedCollection<FSStep, FSInitialCondition>
+{
+public:
+	PyICList(FSStep* step)
+		: PyNamedCollection<FSStep, FSInitialCondition>(
+			step,
+			[](FSStep* step) { return step->ICs(); },
+			[](FSStep* step, int i) { return step->IC(i); },
+			[](FSStep* step, const std::string& name) { return step->FindIC(name); },
+			"initial condition"
+		),
+		m_step(step) {}
+
+	FSInitialCondition* add(const std::string& name, const std::string& type, py::kwargs kwargs)
+	{
+		FSInitialCondition* ic = m_step->AddIC(name, type);
+		if (ic) SetDynamicAttributes(*ic, kwargs);
+		return ic;
+	}
+
+private:
+	FSStep* m_step = nullptr;
+};
+
+class PyContactList : public PyNamedCollection<FSStep, FSPairedInterface>
+{
+public:
+	PyContactList(FSStep* step)
+		: PyNamedCollection<FSStep, FSPairedInterface>(
+			step,
+			[](FSStep* step) { return step->Interfaces(); },
+			[](FSStep* step, int i) { return dynamic_cast<FSPairedInterface*>(step->Interface(i)); },
+			[](FSStep* step, const std::string& name) { return dynamic_cast<FSPairedInterface*>(step->FindInterface(name)); },
+			"interface"
+		),
+		m_step(step) {}
+
+	FSPairedInterface* add(const std::string& name, const std::string& type, py::kwargs kwargs)
+	{
+		FSInterface* iface = m_step->AddInterface(name, type);
+
+		FSPairedInterface* paired = dynamic_cast<FSPairedInterface*>(iface);
+		if (paired == nullptr)
+		{
+			if (iface) delete iface;
+			throw py::type_error("interface is not a paired interface");
+		}
+
+		if (paired) SetDynamicAttributes(*paired, kwargs);
+		return paired;
+	}
+
+private:
+	FSStep* m_step = nullptr;
+};
+
+class PyConstraintList : public PyNamedCollection<FSStep, FSModelConstraint>
+{
+public:
+	PyConstraintList(FSStep* step)
+		: PyNamedCollection<FSStep, FSModelConstraint>(
+			step,
+			[](FSStep* step) { return step->Constraints(); },
+			[](FSStep* step, int i) { return step->Constraint(i); },
+			[](FSStep* step, const std::string& name) { return step->FindConstraint(name); },
+			"constraint"
+		),
+		m_step(step) {}
+
+	FSModelConstraint* add(const std::string& name, const std::string& type, py::kwargs kwargs)
+	{
+		FSModelConstraint* constraint = m_step->AddConstraint(name, type);
+		if (constraint) SetDynamicAttributes(*constraint, kwargs);
+		return constraint;
+	}
+
+private:
+	FSStep* m_step = nullptr;
+};
+
+class PyMeshAdaptorList : public PyNamedCollection<FSStep, FSMeshAdaptor>
+{
+public:
+	PyMeshAdaptorList(FSStep* step)
+		: PyNamedCollection<FSStep, FSMeshAdaptor>(
+			step,
+			[](FSStep* step) { return step->MeshAdaptors(); },
+			[](FSStep* step, int i) { return step->MeshAdaptor(i); },
+			[](FSStep* step, const std::string& name) { return step->FindMeshAdaptor(name); },
+			"mesh adaptor"
+		),
+		m_step(step) {}
+
+	FSMeshAdaptor* add(const std::string& name, const std::string& type, py::kwargs kwargs)
+	{
+		FSMeshAdaptor* adaptor = m_step->AddMeshAdaptor(name, type);
+		if (adaptor) SetDynamicAttributes(*adaptor, kwargs);
+		return adaptor;
 	}
 
 private:
@@ -559,6 +677,22 @@ private:
 	FSModel* m_model = nullptr;
 };
 
+class PyLogVariableList : public PyIndexedCollection<FSModel, FSLogData>
+{
+public:
+	PyLogVariableList(FSModel* model) :
+		PyIndexedCollection<FSModel, FSLogData>(
+			model,
+			[](FSModel* model) { return model->GetLogDataSettings().LogDataSize(); },
+			[](FSModel* model, int i) { return &model->GetLogDataSettings().LogData(i); },
+			"log variable"
+		),
+		m_model(model) {}
+
+private:
+	FSModel* m_model = nullptr;
+};
+
 // Initializes the fbs.mdl module
 void init_FBSModel(py::module& m)
 {
@@ -638,6 +772,89 @@ void init_FBSModel(py::module& m)
 			return py::iter(items);
 		})
 		.def("add", &PyBCList::add, py::return_value_policy::reference)
+		;
+
+	// collection wrapper for loads
+	py::class_<PyLoadList>(mdl, "LoadList")
+		.def("__len__", &PyLoadList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyLoadList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyLoadList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", [](const PyLoadList& self) {
+		py::list items;
+		for (int i = 0; i < self.size(); ++i)
+		{
+			items.append(py::cast(self.get(i), py::return_value_policy::reference));
+		}
+		return py::iter(items);
+			})
+		.def("add_nodal_load"  , &PyLoadList::addNodalLoad  , py::return_value_policy::reference)
+		.def("add_surface_load", &PyLoadList::addSurfaceLoad, py::return_value_policy::reference)
+		.def("add_body_load"   , &PyLoadList::addBodyLoad   , py::return_value_policy::reference)
+		;
+
+	// collection wrapper for initial conditions
+	py::class_<PyICList>(mdl, "ICList")
+		.def("__len__", &PyICList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyICList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyICList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", [](const PyICList& self) {
+		py::list items;
+		for (int i = 0; i < self.size(); ++i)
+		{
+			items.append(py::cast(self.get(i), py::return_value_policy::reference));
+		}
+		return py::iter(items);
+			})
+		.def("add", &PyICList::add, py::return_value_policy::reference)
+		;
+
+
+	// collection wrapper for contact definitions
+	py::class_<PyContactList>(mdl, "ContactList")
+		.def("__len__", &PyContactList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyContactList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyContactList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", [](const PyContactList& self) {
+		py::list items;
+		for (int i = 0; i < self.size(); ++i)
+		{
+			items.append(py::cast(self.get(i), py::return_value_policy::reference));
+		}
+		return py::iter(items);
+			})
+		.def("add", &PyContactList::add, py::return_value_policy::reference)
+		;
+
+	// collection wrapper for nonlinear constraints
+	py::class_<PyConstraintList>(mdl, "ConstraintList")
+		.def("__len__", &PyConstraintList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyConstraintList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyConstraintList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", [](const PyConstraintList& self) {
+		py::list items;
+		for (int i = 0; i < self.size(); ++i)
+		{
+			items.append(py::cast(self.get(i), py::return_value_policy::reference));
+		}
+		return py::iter(items);
+			})
+		.def("add", &PyConstraintList::add, py::return_value_policy::reference)
+		;
+
+	// collection wrapper for mesh adaptors
+	py::class_<PyMeshAdaptorList>(mdl, "MeshAdaptorList")
+		.def("__len__", &PyMeshAdaptorList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyMeshAdaptorList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyMeshAdaptorList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", [](const PyMeshAdaptorList& self) {
+		py::list items;
+		for (int i = 0; i < self.size(); ++i)
+		{
+			items.append(py::cast(self.get(i), py::return_value_policy::reference));
+		}
+		return py::iter(items);
+			})
+		.def("add", &PyMeshAdaptorList::add, py::return_value_policy::reference)
 		;
 
 	// collection wrapper for load controllers
@@ -721,6 +938,19 @@ void init_FBSModel(py::module& m)
 		.def("add", &PyPlotVariableList::add, py::return_value_policy::reference)
 		;
 
+	py::class_<PyLogVariableList>(mdl, "LogVariableList")
+		.def("__len__", &PyLogVariableList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyLogVariableList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", [](const PyLogVariableList& self) {
+				py::list items;
+				for (int i = 0; i < self.size(); ++i)
+				{
+					items.append(py::cast(self.get(i), py::return_value_policy::reference));
+				}
+				return py::iter(items);
+			})
+		;
+
 	py::class_<FSModel, std::unique_ptr<FSModel, py::nodelete>>(mdl, "Model", DOC(FSModel))
 		.def("clear", &FSModel::Reset, DOC(FSModel, Clear))
 		.def("purge", &FSModel::Purge, DOC(FSModel, Purge))
@@ -775,6 +1005,11 @@ void init_FBSModel(py::module& m)
 			[](FSModel& self) { return PyPlotVariableList(&self); },
 			py::return_value_policy::reference_internal
 		)
+		.def_property_readonly(
+			"log_variables",
+			[](FSModel& self) { return PyLogVariableList(&self); },
+			py::return_value_policy::reference_internal
+		)
 		;
 
 	py::class_<FSStep, FSObject, std::unique_ptr<FSStep, py::nodelete>>(mdl, "FSStep", "A class representing an analysis step in the FEBio model.")
@@ -782,8 +1017,33 @@ void init_FBSModel(py::module& m)
 		.def("__getattr__", [](FSStep& self, const std::string& name) { return GetDynamicAttribute(self, name); })
 		.def("__setattr__", [](FSStep& self, const std::string& name, py::object value) { SetDynamicAttribute(self, name, value); })
 		.def_property_readonly(
-			"bcs",
+			"boundary_conditions",
 			[](FSStep& self) { return PyBCList(&self); },
+			py::return_value_policy::reference_internal
+		)
+		.def_property_readonly(
+			"loads",
+			[](FSStep& self) { return PyLoadList(&self); },
+			py::return_value_policy::reference_internal
+		)
+		.def_property_readonly(
+			"initial_conditions",
+			[](FSStep& self) { return PyICList(&self); },
+			py::return_value_policy::reference_internal
+		)
+		.def_property_readonly(
+			"contacts",
+			[](FSStep& self) { return PyContactList(&self); },
+			py::return_value_policy::reference_internal
+		)
+		.def_property_readonly(
+			"constraints",
+			[](FSStep& self) { return PyConstraintList(&self); },
+			py::return_value_policy::reference_internal
+		)
+		.def_property_readonly(
+			"mesh_adaptors",
+			[](FSStep& self) { return PyMeshAdaptorList(&self); },
 			py::return_value_policy::reference_internal
 		)
 		;
@@ -841,9 +1101,100 @@ void init_FBSModel(py::module& m)
 		})
 		;
 
-	py::class_<CPlotVariable>(mdl, "PlotVariable")
-		.def_property_readonly("name", &CPlotVariable::name)
+	py::class_<FSLoad, FSObject, std::unique_ptr<FSLoad>>(mdl, "Load")
+		.def_property_readonly("params", [](FSLoad& self) { return PyParameterList(&self); }, py::return_value_policy::reference_internal)
+		.def_property(
+			"selection",
+			[](FSLoad& self) { return GetItemListSelection(self); },
+			[](FSLoad& self, py::handle value) { SetItemListSelection(self, value); })
+		.def("__getattr__", [](FSLoad& self, const std::string& name) { return GetDynamicAttribute(self, name); })
+		.def("__setattr__", [](FSLoad& self, const std::string& name, py::object value) {
+				if (name == "selection")
+				{
+					SetItemListSelection(self, value);
+					return;
+				}
+
+				SetDynamicAttribute(self, name, value);
+				}
+			)
 		;
+
+	py::class_<FSInitialCondition, FSObject, std::unique_ptr<FSInitialCondition>>(mdl, "InitialCondition")
+		.def_property_readonly("params", [](FSInitialCondition& self) { return PyParameterList(&self); }, py::return_value_policy::reference_internal)
+		.def_property(
+			"selection",
+			[](FSInitialCondition& self) { return GetItemListSelection(self); },
+			[](FSInitialCondition& self, py::handle value) { SetItemListSelection(self, value); })
+		.def("__getattr__", [](FSInitialCondition& self, const std::string& name) { return GetDynamicAttribute(self, name); })
+		.def("__setattr__", [](FSInitialCondition& self, const std::string& name, py::object value) {
+			if (name == "selection")
+			{
+				SetItemListSelection(self, value);
+				return;
+			}
+
+			SetDynamicAttribute(self, name, value);
+		})
+		;
+
+	py::class_<FSPairedInterface, FSObject, std::unique_ptr<FSPairedInterface>>(mdl, "PairedInterface")
+		.def_property_readonly("params", [](FSPairedInterface& self) { return PyParameterList(&self); }, py::return_value_policy::reference_internal)
+		.def_property(
+			"primary",
+			[](FSPairedInterface& self) { return self.GetPrimarySurface(); },
+			[](FSPairedInterface& self, FSItemListBuilder* selection) { self.SetPrimarySurface(selection); })
+		.def_property(
+			"secondary",
+			[](FSPairedInterface& self) { return self.GetSecondarySurface(); },
+			[](FSPairedInterface& self, FSItemListBuilder* selection) { self.SetSecondarySurface(selection); })
+		.def("__getattr__", [](FSPairedInterface& self, const std::string& name) { return GetDynamicAttribute(self, name); })
+		.def("__setattr__", [](FSPairedInterface& self, const std::string& name, py::object value) {
+			if (name == "primary")
+			{
+				self.SetPrimarySurface(PyValueToItemList(value));
+				return;
+			}
+			else if (name == "secondary")
+			{
+				self.SetSecondarySurface(PyValueToItemList(value));
+				return;
+			}
+
+			SetDynamicAttribute(self, name, value);
+		})
+		;
+
+	py::class_<FSModelConstraint, FSObject, std::unique_ptr<FSModelConstraint>>(mdl, "ModelConstraint")
+		.def_property_readonly("params", [](FSModelConstraint& self) { return PyParameterList(&self); }, py::return_value_policy::reference_internal)
+		.def("__getattr__", [](FSModelConstraint& self, const std::string& name) { return GetDynamicAttribute(self, name); })
+		.def("__setattr__", [](FSModelConstraint& self, const std::string& name, py::object value) {
+		SetDynamicAttribute(self, name, value);
+			})
+		;
+
+	py::class_<FSMeshAdaptor, FSObject, std::unique_ptr<FSMeshAdaptor>>(mdl, "MeshAdaptor")
+		.def_property_readonly("params", [](FSModelConstraint& self) { return PyParameterList(&self); }, py::return_value_policy::reference_internal)
+		.def_property(
+			"selection",
+			[](FSMeshAdaptor& self) { return GetItemListSelection(self); },
+			[](FSMeshAdaptor& self, py::handle value) { SetItemListSelection(self, value); })
+		.def("__getattr__", [](FSMeshAdaptor& self, const std::string& name) { return GetDynamicAttribute(self, name); })
+		.def("__setattr__", [](FSMeshAdaptor& self, const std::string& name, py::object value) {
+				if (name == "selection")
+				{
+					SetItemListSelection(self, value);
+					return;
+				}
+
+				SetDynamicAttribute(self, name, value);
+			})
+		;
+
+	py::class_<CPlotVariable, std::unique_ptr<CPlotVariable, py::nodelete>>(mdl, "PlotVariable")
+		.def_property_readonly("name", &CPlotVariable::name);
+
+	py::class_<FSLogData, std::unique_ptr<FSLogData, py::nodelete>>(mdl, "LogVariable");
 }
 #else
 void init_FBSModel(pybind11::module_& m) {}
