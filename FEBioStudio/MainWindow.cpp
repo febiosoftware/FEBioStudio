@@ -107,6 +107,7 @@ SOFTWARE.*/
 #include "RemoteJob.h"
 #include "DlgRemoteProgress.h"
 #include <FSCore/FSLogger.h>
+#include <FSCore/util.h>
 #include "PropertyList.h"
 #include "FileProcessor.h"
 #include "modelcheck.h"
@@ -1962,7 +1963,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("lighting", vs.m_bLighting);
 		settings.setValue("ambientLight", vs.m_ambient);
 		settings.setValue("diffuseLight", vs.m_diffuse);
-		settings.setValue("lightDirection", Vec3fToString(vs.m_light));
+		settings.setValue("lightDirection", QString::fromStdString(Vec3fToString(vs.m_light)));
 		settings.setValue("environmentMap", fbs.m_envMapFile);
 		settings.setValue("useEnvironmentMap", vs.m_use_environment_map);
 
@@ -2128,7 +2129,7 @@ void CMainWindow::readSettings()
 		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
 		vs.m_ambient = settings.value("ambientLight", vs.m_ambient).toDouble();
 		vs.m_diffuse = settings.value("diffuseLight", vs.m_diffuse).toDouble();
-		vs.m_light = StringToVec3f(settings.value("lightDirection", "{0.5,0.5,1}").toString());
+		vs.m_light = StringToVec3f(settings.value("lightDirection", "{0.5,0.5,1}").toString().toStdString());
 		QString envmap = settings.value("environmentMap").toString();
 		fbs.m_envMapFile = envmap;
 		vs.m_use_environment_map = settings.value("useEnvironmentMap", false).toBool();

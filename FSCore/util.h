@@ -24,7 +24,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
+#include "math3d.h"
+#include <vector>
+#include <string>
 
 double bias(double g, double x);
 
 double gain(double g, double x);
+
+std::string Vec2dToString(const vec2d& r);
+std::string Vec3dToString(const vec3d& r);
+std::string Vec3fToString(const vec3f& r);
+vec2d StringToVec2d(const std::string& s);
+vec3d StringToVec3d(const std::string& s);
+vec3f StringToVec3f(const std::string& s);
+mat3d StringToMat3d(const std::string& s);
+mat3ds StringToMat3ds(const std::string& s);
+std::string Mat3dToString(const mat3d& a);
+std::string Mat3dsToString(const mat3ds& a);
+std::string Vec2iToString(const vec2i& r);
+vec2i StringToVec2i(const std::string& s);
+std::vector<int> StringToVectorInt(const std::string& s);
+std::string VectorIntToString(const std::vector<int>& v);
+std::vector<double> StringToVectorDouble(const std::string& s);
+std::string VectorDoubleToString(const std::vector<double>& v);

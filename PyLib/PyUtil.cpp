@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #ifdef HAS_PYTHON
 #include "PyUtil.h"
-#include <FEBioStudio/PropertyList.h> // for Mat3dToString, Mat3dsToString, StringToMat3d, StringToMat3ds (TODO: Move these functions to FSCore?)
+#include <FSCore/util.h>
 #include <FEBioLink/FEBioClass.h>
 
 std::vector<double> DoubleSequenceFromPython(py::handle value, size_t size, const std::string& name)
@@ -117,9 +117,9 @@ py::object ParamToPython(Param& p)
 	case Param_COLOR:
 		return py::cast(p.GetColorValue());
 	case Param_MAT3D:
-		return py::str(Mat3dToString(p.GetMat3dValue()).toStdString());
+		return py::str(Mat3dToString(p.GetMat3dValue()));
 	case Param_MAT3DS:
-		return py::str(Mat3dsToString(p.GetMat3dsValue()).toStdString());
+		return py::str(Mat3dsToString(p.GetMat3dsValue()));
 	case Param_VEC2I:
 		return Vec2iToPython(p.GetVec2iValue());
 	case Param_VEC2D:
@@ -178,10 +178,10 @@ void SetParamFromPython(Param& p, py::handle value)
 		p.SetColorValue(value.cast<GLColor>());
 		break;
 	case Param_MAT3D:
-		p.SetMat3dValue(StringToMat3d(QString::fromStdString(value.cast<std::string>())));
+		p.SetMat3dValue(StringToMat3d(value.cast<std::string>()));
 		break;
 	case Param_MAT3DS:
-		p.SetMat3dsValue(StringToMat3ds(QString::fromStdString(value.cast<std::string>())));
+		p.SetMat3dsValue(StringToMat3ds(value.cast<std::string>()));
 		break;
 	case Param_VEC2I:
 	{

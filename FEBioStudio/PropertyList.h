@@ -214,20 +214,3 @@ protected:
 	template <class T>
 	T& value(int n) { return *((T*)Property(n).data()); }
 };
-
-QString Vec2dToString(const vec2d& r);
-QString Vec3dToString(const vec3d& r);
-QString Vec3fToString(const vec3f& r);
-vec2d StringToVec2d(const QString& s);
-vec3d StringToVec3d(const QString& s);
-vec3f StringToVec3f(const QString& s);
-mat3d StringToMat3d(const QString& s);
-mat3ds StringToMat3ds(const QString& s);
-QString Mat3dToString(const mat3d& a);
-QString Mat3dsToString(const mat3ds& a);
-QString Vec2iToString(const vec2i& r);
-vec2i StringToVec2i(const QString& s);
-std::vector<int> StringToVectorInt(const QString& s);
-QString VectorIntToString(const std::vector<int>& v);
-std::vector<double> StringToVectorDouble(const QString& s);
-QString VectorDoubleToString(const std::vector<double>& v);

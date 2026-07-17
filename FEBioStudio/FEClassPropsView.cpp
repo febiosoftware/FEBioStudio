@@ -51,6 +51,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMaterial.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
+#include <FSCore/util.h>
 #include "SelectionBox.h"
 #include "DlgAddPhysicsItem.h"
 #include "MainWindow.h"
@@ -345,7 +346,7 @@ public:
 					break;
 					case Param_VEC3D:
 					{
-						QString v = Vec3dToString(p.val<vec3d>());
+						QString v = QString::fromStdString(Vec3dToString(p.val<vec3d>()));
 						const char* szunit = p.GetUnit();
 						if (szunit)
 						{
@@ -362,11 +363,11 @@ public:
 						return (b ? "Yes" : "No");
 					}
 					break;
-					case Param_VEC2I: return Vec2iToString(p.val<vec2i>()); break;
-					case Param_VEC2D: return Vec2dToString(p.val<vec2d>()); break;
+					case Param_VEC2I: return QString::fromStdString(Vec2iToString(p.val<vec2i>())); break;
+					case Param_VEC2D: return QString::fromStdString(Vec2dToString(p.val<vec2d>())); break;
 					case Param_MAT3D:
 					{
-						QString v = Mat3dToString(p.val<mat3d>());
+						QString v = QString::fromStdString(Mat3dToString(p.val<mat3d>()));
 						const char* szunit = p.GetUnit();
 						if (szunit)
 						{
@@ -379,7 +380,7 @@ public:
 					break;
 					case Param_MAT3DS:
 					{
-						QString v = Mat3dsToString(p.val<mat3ds>());
+						QString v = QString::fromStdString(Mat3dsToString(p.val<mat3ds>()));
 						const char* szunit = p.GetUnit();
 						if (szunit)
 						{
@@ -462,14 +463,14 @@ public:
 					case Param_ARRAY_INT:
 					{
 						std::vector<int> v = p.val<std::vector<int> >();
-						QString s = VectorIntToString(v);
+						QString s = QString::fromStdString(VectorIntToString(v));
 						return s;
 					}
 					break;
 					case Param_ARRAY_DOUBLE:
 					{
 						std::vector<double> v = p.val<std::vector<double> >();
-						QString s = VectorDoubleToString(v);
+						QString s = QString::fromStdString(VectorDoubleToString(v));
 						return s;
 					}
 					break;
@@ -482,7 +483,7 @@ public:
 						{
 							assert((m_index >= 0) && (m_index < v.size()));
 							vec2d& r = v[m_index];
-							s = Vec2dToString(r);
+							s = QString::fromStdString(Vec2dToString(r));
 						}
 						return s;
 					}
@@ -506,12 +507,12 @@ public:
 						return n;
 					}
 					break;
-					case Param_VEC3D: return Vec3dToString(p.val<vec3d>()); break;
+					case Param_VEC3D: return QString::fromStdString(Vec3dToString(p.val<vec3d>())); break;
 					case Param_BOOL: return (p.val<bool>() ? 1 : 0); break;
-					case Param_VEC2I:return Vec2iToString(p.val<vec2i>()); break;
-					case Param_VEC2D:return Vec2dToString(p.val<vec2d>()); break;
-					case Param_MAT3D: return Mat3dToString(p.val<mat3d>()); break;
-					case Param_MAT3DS: return Mat3dsToString(p.val<mat3ds>()); break;
+					case Param_VEC2I:return QString::fromStdString(Vec2iToString(p.val<vec2i>())); break;
+					case Param_VEC2D:return QString::fromStdString(Vec2dToString(p.val<vec2d>())); break;
+					case Param_MAT3D: return QString::fromStdString(Mat3dToString(p.val<mat3d>())); break;
+					case Param_MAT3DS: return QString::fromStdString(Mat3dsToString(p.val<mat3ds>())); break;
 					case Param_MATH: return QString::fromStdString(p.GetMathString()); break;
 					case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
 					case Param_STD_VECTOR_INT: return -1; break;
@@ -526,19 +527,19 @@ public:
 					{
 						std::vector<vec2d> v = p.GetVectorVec2dValue();
 						if (m_index == -1) return (int) v.size();
-						else return Vec2dToString(v[m_index]);
+						else return QString::fromStdString(Vec2dToString(v[m_index]));
 					}
 					break;
 					case Param_ARRAY_INT:
 					{
 						std::vector<int> v = p.GetArrayIntValue();
-						return VectorIntToString(v);
+						return QString::fromStdString(VectorIntToString(v));
 					}
 					break;
 					case Param_ARRAY_DOUBLE:
 					{
 						std::vector<double> v = p.GetArrayDoubleValue();
-						return VectorDoubleToString(v);
+						return QString::fromStdString(VectorDoubleToString(v));
 					}
 					break;
 					default:
@@ -682,14 +683,14 @@ public:
 				}
 				break;
 				case Param_VEC3D: {
-					vec3d v = StringToVec3d(value.toString());
+					vec3d v = StringToVec3d(value.toString().toStdString());
 					if ((v == p.GetVec3dValue()) == false) {
 						p.SetVec3dValue(v);
 						p.SetModified(true);
 					}
 				}break;
 				case Param_VEC2I: {
-					vec2i v = StringToVec2i(value.toString());
+					vec2i v = StringToVec2i(value.toString().toStdString());
 					vec2i s = p.GetVec2iValue();
 					if ((v.x != s.x) || (v.y != s.y)) {
 						p.SetVec2iValue(v);
@@ -697,7 +698,7 @@ public:
 					}
 				}break;
 				case Param_VEC2D: {
-					vec2d v = StringToVec2d(value.toString());
+					vec2d v = StringToVec2d(value.toString().toStdString());
 					vec2d s = p.GetVec2dValue();
 					if ((v.x() != s.x()) || (v.y() != s.y())) {
 						p.SetVec2dValue(v);
@@ -705,13 +706,13 @@ public:
 					}
 				}break;
 				case Param_MAT3D: {
-					mat3d m = StringToMat3d(value.toString());
+					mat3d m = StringToMat3d(value.toString().toStdString());
 					p.SetMat3dValue(m);
 					p.SetModified(true);
 				}
 				break;
 				case Param_MAT3DS: {
-					mat3ds m = StringToMat3ds(value.toString());
+					mat3ds m = StringToMat3ds(value.toString().toStdString());
 					p.SetMat3dsValue(m);
 					p.SetModified(true);
 				}
@@ -784,7 +785,7 @@ public:
 					}
 					else
 					{
-						vec2d r = StringToVec2d(value.toString());
+						vec2d r = StringToVec2d(value.toString().toStdString());
 						v[m_index] = r;
 						p.SetVectorVec2dValue(v);
 					}
@@ -794,7 +795,7 @@ public:
 				case Param_ARRAY_INT:
 				{
 					QString s = value.toString();
-					std::vector<int> v = StringToVectorInt(s);
+					std::vector<int> v = StringToVectorInt(s.toStdString());
 					p.SetArrayIntValue(v);
 					p.SetModified(true);
 				}
@@ -802,7 +803,7 @@ public:
 				case Param_ARRAY_DOUBLE:
 				{
 					QString s = value.toString();
-					std::vector<double> v = StringToVectorDouble(s);
+					std::vector<double> v = StringToVectorDouble(s.toStdString());
 					p.SetArrayDoubleValue(v);
 					p.SetModified(true);
 				}

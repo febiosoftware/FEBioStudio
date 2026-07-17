@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include "DataFieldSelector.h"
 #include "PropertyListView.h"
 #include "units.h"
+#include <FSCore/util.h>
 
 //=================================================================================================
 
@@ -542,7 +543,7 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 			}
 			else
 			{
-				std::vector<int> l = StringToVectorInt(v.toString());
+				std::vector<int> l = StringToVectorInt(v.toString().toStdString());
 				QListWidget* pw = new QListWidget;
 				for (int i = 0; i < pi.values.size(); ++i)
 				{

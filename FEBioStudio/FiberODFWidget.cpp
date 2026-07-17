@@ -72,6 +72,7 @@ SOFTWARE.*/
 #include <GLLib/GLScene.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
+#include <FSCore/util.h>
 
 using std::vector;
 using std::complex;
@@ -519,12 +520,12 @@ private:
 		int nodf = currentODF();
 		if ((nodf < 0) || (nodf >= analysis->ODFs())) return;
 		CODF* odf = analysis->GetODF(nodf);
-		pos->setText(Vec3dToString(odf->m_position));
-		meanDir->setText(Vec3dToString(odf->m_meanDir));
+		pos->setText(QString::fromStdString(Vec3dToString(odf->m_position)));
+		meanDir->setText(QString::fromStdString(Vec3dToString(odf->m_meanDir)));
 		FA->setText(QString::number(odf->m_FA));
 		GFA->setText(QString::number(odf->m_GFA));
         meanIntensity->setText(QString::number(odf->m_meanIntensity));
-		EFD_alpha->setText(Vec3dToString(odf->m_EFD_alpha));
+		EFD_alpha->setText(QString::fromStdString(Vec3dToString(odf->m_EFD_alpha)));
 		VM3_beta->setText(QString::number(odf->m_VM3_beta.x));
         VM3_phi->setText(QString::number(odf->m_VM3_beta.y));
         VM3_theta->setText(QString::number(odf->m_VM3_beta.z));

@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include "GLDocument.h"
 #include <PostGL/GLModel.h>
 #include <GLLib/GLScene.h>
+#include <FSCore/util.h>
 #include "MainWindow.h"
 #include "DragBox.h"
 using namespace Post;
@@ -192,12 +193,12 @@ public:
 
 	void SetPoint(int i, const vec3d& r)
 	{
-		pt[i]->setText(Vec3dToString(r));
+		pt[i]->setText(QString::fromStdString(Vec3dToString(r)));
 	}
 
 	vec3d GetPoint(int i)
 	{
-		return StringToVec3d(pt[i]->text());
+		return StringToVec3d(pt[i]->text().toStdString());
 	}
 
 	void SetPoints(const vec3d& r1, const vec3d& r2, const vec3d& r3)
@@ -410,9 +411,9 @@ void CPlaneTool::onCopy()
 	double d = ui->GetOffset();
 
 	QString s;
-	s += Vec3dToString(r1) + QString("\n");
-	s += Vec3dToString(r2) + QString("\n");
-	s += Vec3dToString(r3) + QString("\n");
+	s += QString::fromStdString(Vec3dToString(r1)) + QString("\n");
+	s += QString::fromStdString(Vec3dToString(r2)) + QString("\n");
+	s += QString::fromStdString(Vec3dToString(r3)) + QString("\n");
 	s += QString("%1, %2, %3, %4\n").arg(N.x).arg(N.y).arg(N.z).arg(d);
 
 	clipboard->setText(s);

@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include "GLHighlighter.h"
 #include <MeshTools/FEGeodesic.h>
 #include <GLLib/GLMesh.h>
+#include <FSCore/util.h>
 #include "PropertyList.h" // for Vec3dToString
 #include "ModelDocument.h"
 
@@ -89,13 +90,13 @@ void CCreateGeodesicCurvePane::setInput(const vec3d& r)
 		GLHighlighter::ClearHighlights();
 		if (m_tmp) { delete m_tmp; m_tmp = nullptr; }
 		m_r[0] = r;
-		m_in[0]->setText(Vec3dToString(r));
+		m_in[0]->setText(QString::fromStdString(Vec3dToString(r)));
 		m_input = 1;
 	}
 	else if (m_input == 1)
 	{
 		m_r[1] = r;
-		m_in[1]->setText(Vec3dToString(r));
+		m_in[1]->setText(QString::fromStdString(Vec3dToString(r)));
 		m_input = 0;
 		BuildGeodesic();
 	}

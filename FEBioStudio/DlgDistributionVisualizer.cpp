@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <GLLib/glx.h>
 #include <GLWLib/GLTriad.h>
+#include <FSCore/util.h>
 
 GLMesh CreateSphere()
 {
@@ -232,10 +233,10 @@ public:
 			case FE_PARAM_DOUBLE_MAPPED: return p->value<FEParamDouble>().constValue(); break;
 			case FE_PARAM_INT: return p->value<int>(); break;
 			case FE_PARAM_BOOL: return p->value<bool>(); break;
-			case FE_PARAM_VEC3D: return Vec3dToString(p->value<vec3d>()); break;
-			case FE_PARAM_VEC3D_MAPPED: return Vec3dToString(p->value<FEParamVec3>().constValue()); break;
-			case FE_PARAM_MAT3DS: return Mat3dsToString(p->value<mat3ds>()); break;
-			case FE_PARAM_MAT3DS_MAPPED: return Mat3dsToString(p->value<FEParamMat3ds>().constValue()); break;
+			case FE_PARAM_VEC3D: return QString::fromStdString(Vec3dToString(p->value<vec3d>())); break;
+			case FE_PARAM_VEC3D_MAPPED: return QString::fromStdString(Vec3dToString(p->value<FEParamVec3>().constValue())); break;
+			case FE_PARAM_MAT3DS: return QString::fromStdString(Mat3dsToString(p->value<mat3ds>())); break;
+			case FE_PARAM_MAT3DS_MAPPED: return QString::fromStdString(Mat3dsToString(p->value<FEParamMat3ds>().constValue())); break;
 			default: return QString(); break;
 			}
 		}
@@ -294,25 +295,25 @@ public:
 			break;
 			case FE_PARAM_VEC3D:
 			{
-				vec3d val = StringToVec3d(v.toString());
+				vec3d val = StringToVec3d(v.toString().toStdString());
 				p->value<vec3d>() = val;
 			}
 			break;
 			case FE_PARAM_VEC3D_MAPPED:
 			{
-				vec3d val = StringToVec3d(v.toString());
+				vec3d val = StringToVec3d(v.toString().toStdString());
 				p->value<FEParamVec3>().constValue() = val;
 			}
 			break;
 			case FE_PARAM_MAT3DS:
 			{
-				mat3ds val = StringToMat3ds(v.toString());
+				mat3ds val = StringToMat3ds(v.toString().toStdString());
 				p->value<mat3ds>() = val;
 			}
 			break;
 			case FE_PARAM_MAT3DS_MAPPED:
 			{
-				mat3ds val = StringToMat3ds(v.toString());
+				mat3ds val = StringToMat3ds(v.toString().toStdString());
 				p->value<FEParamMat3ds>().constValue() = val;
 			}
 			break;

@@ -37,7 +37,8 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QComboBox>
 #include <QStackedWidget>
-#include "PropertyList.h" // for StringToVec3d
+#include <FSCore/util.h>
+
 
 bool string_to_int_list(QString listString, std::vector<int>& list);
 
@@ -166,12 +167,12 @@ void CDlgFind::accept()
 	}
 	else if (m_method == 1)
 	{
-		m_coord = StringToVec3d(ui->pcoord->text());
+		m_coord = StringToVec3d(ui->pcoord->text().toStdString());
 	}
 	else
 	{
-		m_min = StringToVec3d(ui->pmin->text());
-		m_max = StringToVec3d(ui->pmax->text());
+		m_min = StringToVec3d(ui->pmin->text().toStdString());
+		m_max = StringToVec3d(ui->pmax->text().toStdString());
 	}
 
 	QDialog::accept();

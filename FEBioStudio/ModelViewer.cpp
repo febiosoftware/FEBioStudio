@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMultiMaterial.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
+#include <FSCore/util.h>
 #include "Commands.h"
 #include "PropertyList.h"
 #include <FSCore/FSDir.h>
@@ -668,15 +669,15 @@ void CModelViewer::on_props_paramChanged(FSCoreBase* pc, Param* p)
 	case Param_INT   : sv = QString::number(p->GetIntValue()); break;
 	case Param_FLOAT : sv = QString::number(p->GetFloatValue()); break;
 	case Param_BOOL  : sv = (p->GetBoolValue()?"Yes":"No"); break;
-	case Param_VEC3D : sv = Vec3dToString(p->GetVec3dValue()); break;
+	case Param_VEC3D : sv = QString::fromStdString(Vec3dToString(p->GetVec3dValue())); break;
 	case Param_STRING: sv = QString("\"%1\"").arg(QString::fromStdString(p->GetStringValue())); break;
 	case Param_MATH  : sv = QString("\"%1\"").arg(QString::fromStdString(p->GetMathString())); break;
 	case Param_COLOR : break;
-	case Param_MAT3D : sv = Mat3dToString(p->GetMat3dValue()); break;
-	case Param_MAT3DS: sv = Mat3dsToString(p->GetMat3dsValue()); break;
-	case Param_VEC2I : sv = Vec2iToString(p->GetVec2iValue()); break;
-	case Param_STD_VECTOR_INT   : sv = VectorIntToString(p->GetVectorIntValue());  break;
-	case Param_STD_VECTOR_DOUBLE: sv = VectorDoubleToString(p->GetVectorDoubleValue());  break;
+	case Param_MAT3D : sv = QString::fromStdString(Mat3dToString(p->GetMat3dValue())); break;
+	case Param_MAT3DS: sv = QString::fromStdString(Mat3dsToString(p->GetMat3dsValue())); break;
+	case Param_VEC2I : sv = QString::fromStdString(Vec2iToString(p->GetVec2iValue())); break;
+	case Param_STD_VECTOR_INT   : sv = QString::fromStdString(VectorIntToString(p->GetVectorIntValue()));  break;
+	case Param_STD_VECTOR_DOUBLE: sv = QString::fromStdString(VectorDoubleToString(p->GetVectorDoubleValue()));  break;
 	case Param_STD_VECTOR_VEC2D: break;
 	case Param_ARRAY_INT: break;			// fixed size array of int
 	case Param_ARRAY_DOUBLE: break;			// fixed size array of double
