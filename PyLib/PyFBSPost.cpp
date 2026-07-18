@@ -92,6 +92,33 @@ private:
 	CGLModel* m_model = nullptr;
 };
 
+class PyPostPlotList : public PyNamedCollection<CGLModel, Post::CGLPlot>
+{
+public:
+	PyPostPlotList(CGLModel* model) : PyNamedCollection<CGLModel, Post::CGLPlot>
+		(model, [](CGLModel* m) { return m->Plots(); },
+			[](CGLModel* m, int i) { return m->Plot(i); },
+			[](CGLModel* m, const std::string& name) { return m->FindPlot(name); },
+			"plot"), m_model(model) {}
+
+	CGLPlot* add(const std::string& name, const std::string& type, py::kwargs kwargs)
+	{
+		CGLPlot* plot = m_model->AddPlot(name.c_str(), type.c_str());
+		if (plot == nullptr)
+		{
+			throw pyGenericExcept("Failed to add plot.");
+		}
+		if (!kwargs.empty())
+		{
+			SetDynamicAttributes(*plot, kwargs);
+		}
+		return plot;
+	}
+
+private:
+	CGLModel* m_model = nullptr;
+};
+
 // TODO: I'm pretty sure this is a memory leak since no one is deleting the FEPostModel
 CGLModel* ReadPlotFile(std::string filename)
 {
@@ -245,6 +272,13 @@ void init_FBSPost(py::module& m)
 		.def("__getitem__", py::overload_cast<const std::string&>(&PyPostDataFieldList::get, py::const_), py::return_value_policy::reference)
 		;
 
+	py::class_<PyPostPlotList>(post, "PlotList")
+		.def("__len__", &PyPostPlotList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyPostPlotList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyPostPlotList::get, py::const_), py::return_value_policy::reference)
+		.def("add", &PyPostPlotList::add, "Adds a new plot to the model.")
+		;
+
     post.def("read_plot_file", &ReadPlotFile, "Reads a plot file and returns a post::PostModel object.");
 
 #ifndef PY_EXTERNAL
@@ -278,18 +312,24 @@ void init_FBSPost(py::module& m)
 		.def("GetDataField", &FEPostModel::PlotObject::FindObjectData, "Returns the name of the plot object.")
 		;
 
-	py::class_<CGLModel>(post, "PostModel")
+	py::class_<CGLModel, std::unique_ptr<CGLModel, py::nodelete>>(post, "PostModel")
 
 		// new interface
 		.def_property_readonly( "materials"  , [](CGLModel& self) { return PyPostMaterialList (&self); }, py::return_value_policy::reference_internal)
 		.def_property_readonly( "states"     , [](CGLModel& self) { return PyPostStateList    (&self); }, py::return_value_policy::reference_internal)
 		.def_property_readonly( "data_fields", [](CGLModel& self) { return PyPostDataFieldList(&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly( "plots"      , [](CGLModel& self) { return PyPostPlotList     (&self); }, py::return_value_policy::reference_internal)
 
 		// old interface (TODO: refactor and remove)
 		.def("AddDataField", [](CGLModel& self, ModelDataField* df, const std::string& name) { self.GetFSModel()->AddDataField(df, name); }, "Adds a data field to the model.")
         .def("GetDataManager", [](CGLModel& self) { return self.GetFSModel()->GetDataManager(); }, py::return_value_policy::reference)
 		.def("GetPlotObject", [](CGLModel& self, const std::string& name) { return self.GetFSModel()->FindPlotObject(name); }, py::return_value_policy::reference)
 		.def("EvaluatePlotObject", [](CGLModel& self, FEPostModel::PlotObject* po, ModelDataField* data, int comp, int ntime) { return self.GetFSModel()->EvaluatePlotObject(po, *data, comp, ntime); }, py::return_value_policy::reference)
+		;
+
+	py::class_<CGLPlot, FSObject, std::unique_ptr<CGLPlot, py::nodelete>>(post, "Plot")
+		.def("__getattr__", [](CGLPlot& self, const std::string& name) { return GetDynamicAttribute(self, name); })
+		.def("__setattr__", [](CGLPlot& self, const std::string& name, py::object value) { SetDynamicAttribute(self, name, value); })
 		;
 
 	py::enum_<Data_Tensor_Type>(post, "DataTensorType")

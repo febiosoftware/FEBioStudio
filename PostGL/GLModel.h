@@ -244,6 +244,7 @@ public:
 public:
 	// edits plots
 	void AddPlot(Post::CGLPlot* pplot, bool update = true);
+	CGLPlot* AddPlot(const std::string& name, const std::string& type);
 	void RemovePlot(Post::CGLPlot* pplot);
 
 	GPlotList& GetPlotList() { return m_pPlot; }
@@ -251,6 +252,7 @@ public:
 
 	int Plots() { return (int)m_pPlot.Size(); }
 	CGLPlot* Plot(int i) { return m_pPlot[i]; }
+	CGLPlot* FindPlot(const std::string& name);
 
 	void MovePlotUp(Post::CGLPlot* plot);
 	void MovePlotDown(Post::CGLPlot* plot);
