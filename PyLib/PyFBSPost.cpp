@@ -136,6 +136,60 @@ CGLModel* ReadPlotFile(std::string filename)
     return glm;
 }
 
+// helper function for converting a py::handle to a datafield code
+int PyHandleToDataFieldCode(FEPostModel& model, py::handle fieldSpec)
+{
+	FEDataManager* dm = model.GetDataManager();
+
+	std::string fieldName;
+	std::string componentName;
+
+	if (py::isinstance<py::str>(fieldSpec))
+	{
+		fieldName = fieldSpec.cast<std::string>();
+	}
+	else if (py::isinstance<py::tuple>(fieldSpec))
+	{
+		py::tuple t = py::reinterpret_borrow<py::tuple>(fieldSpec);
+		if (t.size() != 2)
+		{
+			throw py::type_error("field must be a string or a (field, component) tuple");
+		}
+
+		if (!py::isinstance<py::str>(t[0]) || !py::isinstance<py::str>(t[1]))
+		{
+			throw py::type_error("field tuple must contain two strings: (field, component)");
+		}
+
+		fieldName = t[0].cast<std::string>();
+		componentName = t[1].cast<std::string>();
+	}
+	else
+	{
+		throw py::type_error("field must be a string or a (field, component) tuple");
+	}
+
+	int fieldIndex = dm->FindDataField(fieldName);
+	if (fieldIndex < 0)
+	{
+		throw py::value_error("Data field not found: " + fieldName);
+	}
+
+	Post::ModelDataField* field = *dm->DataField(fieldIndex);
+
+	int component = 0;
+	if (!componentName.empty())
+	{
+		component = field->componentCode(componentName, Post::TENSOR_SCALAR);
+		if (component == -1)
+		{
+			throw py::value_error("Invalid component name: " + componentName);
+		}
+	}
+
+	return field->GetFieldID() | component;
+}
+
 #ifndef PY_EXTERNAL
 
 CGLModel* GetActivePostModel()
@@ -149,21 +203,13 @@ CGLModel* GetActivePostModel()
 }
 #endif
 
-double PostIntegrateElements(FEPostModel& model, const std::string& elsetName, const std::string& fieldName, const std::string& component, int state)
+double PostIntegrateElements(FEPostModel& model, const std::string& elsetName, int fieldCode, int state)
 {
 	FEState* ps = model.GetState(state);
 	if (ps == nullptr)
 	{
 		throw pyGenericExcept("Invalid state index.");
 	}
-
-	int fieldID = model.GetDataManager()->FindDataField(fieldName);
-	if (fieldID < 0)
-	{
-		throw pyGenericExcept("Invalid field name.");
-	}
-	ModelDataField* pdf = *model.GetDataManager()->DataField(fieldID);
-	fieldID = pdf->GetFieldID();
 
 	FSMesh* mesh = ps->GetFEMesh();
 	if (mesh == nullptr) return 0.0;
@@ -189,9 +235,7 @@ double PostIntegrateElements(FEPostModel& model, const std::string& elsetName, c
 		}
 	}
 
-	int componentCode = pdf->componentCode(component, Post::TENSOR_SCALAR);
-
-	if (!model.Evaluate(fieldID | componentCode, state))
+	if (!model.Evaluate(fieldCode, state))
 	{
 		return 0.0;
 	}
@@ -199,21 +243,13 @@ double PostIntegrateElements(FEPostModel& model, const std::string& elsetName, c
 	return Post::IntegrateElems(*mesh, elemList, ps);
 }
 
-double PostIntegrateFaces(FEPostModel& model, const std::string& surfName, const std::string& fieldName, const std::string& component, int state)
+double PostIntegrateFaces(FEPostModel& model, const std::string& surfName, int fieldCode, int state)
 {
 	FEState* ps = model.GetState(state);
 	if (ps == nullptr)
 	{
 		throw pyGenericExcept("Invalid state index.");
 	}
-
-	int fieldID = model.GetDataManager()->FindDataField(fieldName);
-	if (fieldID < 0)
-	{
-		throw pyGenericExcept("Invalid field name.");
-	}
-	ModelDataField* pdf = *model.GetDataManager()->DataField(fieldID);
-	fieldID = pdf->GetFieldID();
 
 	FSMesh* mesh = ps->GetFEMesh();
 	if (mesh == nullptr) return 0.0;
@@ -240,9 +276,7 @@ double PostIntegrateFaces(FEPostModel& model, const std::string& surfName, const
 		}
 	}
 
-	int componentCode = pdf->componentCode(component, Post::TENSOR_SCALAR);
-
-	if (!model.Evaluate(fieldID | componentCode, state, true))
+	if (!model.Evaluate(fieldCode, state, true))
 	{
 		return 0.0;
 	}
@@ -354,18 +388,11 @@ void init_FBSPost(py::module& m)
 
 		.def_property_readonly("fe_mesh", &FEState::GetFEMesh, DOC(Post, FEState, GetFEMesh), py::return_value_policy::reference)
 
-		.def("evaluate", [](FEState& self, const std::string& fieldName, int component) -> FEState&
+		.def("evaluate", [](FEState& self, py::handle fieldRef) -> FEState&
 			{
 				FEPostModel* model = self.GetFSModel();
-				FEDataManager* dm = model->GetDataManager();
-				int fieldID = dm->FindDataField(fieldName);
-				if (fieldID < 0)
-				{
-					throw pyGenericExcept("Data field not found.");
-				}
-
-				Post::ModelDataField* field = *dm->DataField(fieldID);
-				model->Evaluate(field->GetFieldID() | component, self.m_id);
+				int fieldCode = PyHandleToDataFieldCode(*model, fieldRef);
+				model->Evaluate(fieldCode, self.m_id);
 				return self;
 			}, "Evaluates a specific data field on the state.",
 			py::return_value_policy::reference)
@@ -375,16 +402,18 @@ void init_FBSPost(py::module& m)
 		.def_readonly("face_data", &FEState::m_FACE, DOC(Post, FEState, m_FACE), py::return_value_policy::reference)
 		.def_readonly("elem_data", &FEState::m_ELEM, DOC(Post, FEState, m_ELEM), py::return_value_policy::reference)
 
-		.def("integrate_elements", [](FEState& self, const std::string& elsetName, const std::string& fieldName, const std::string& component) {
+		.def("integrate_elements", [](FEState& self, const std::string& elsetName, py::handle fieldRef) {
 			FEPostModel* fem = self.GetFSModel();
-			return PostIntegrateElements(*fem, elsetName, fieldName, component, self.m_id); },
-			py::arg("elset_name"), py::arg("field_name"), py::arg("component") = "",
+			int fieldCode = PyHandleToDataFieldCode(*fem, fieldRef);
+			return PostIntegrateElements(*fem, elsetName, fieldCode, self.m_id); },
+			py::arg("elset"), py::arg("field"),
 			"Integrates a data field over an element set.")
 	
-		.def("integrate_faces", [](FEState& self, const std::string& surfName, const std::string& fieldName, const std::string& component) { 
+		.def("integrate_faces", [](FEState& self, const std::string& surfName, py::handle fieldRef) {
 			FEPostModel* fem = self.GetFSModel();
-			return PostIntegrateFaces(*fem, surfName, fieldName, component, self.m_id); },
-			py::arg("surf_name"), py::arg("field_name"), py::arg("component") = "",
+			int fieldCode = PyHandleToDataFieldCode(*fem, fieldRef);
+			return PostIntegrateFaces(*fem, surfName, fieldCode, self.m_id); },
+			py::arg("surf"), py::arg("field"),
 			"Integrates a data field over a surface.")
 
 		.def("NodePosition", [](FEState& self, int index) { return to_vec3d(self.NodePosition(index)); }, "Returns the position of a node at the specified index.", py::return_value_policy::reference)
