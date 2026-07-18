@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <PostLib/FEDistanceMap.h>
 #include <PostLib/DataFilter.h>
 #include <PostLib/FEVTKExport.h>
+#include <PostGL/GLModel.h>
 #include "DocHeaders/PyPostDocs.h"
 #include "PyExceptions.h"
 #ifndef PY_EXTERNAL
@@ -54,44 +55,45 @@ using namespace std;
 using namespace Post;
 namespace py = pybind11;
 
-class PyPostMaterialList : public PyNamedCollection<FEPostModel, Post::Material>
+class PyPostMaterialList : public PyNamedCollection<CGLModel, Post::Material>
 {
 public:
-	PyPostMaterialList(FEPostModel* model) : PyNamedCollection<FEPostModel, Post::Material>
-		(model, [](FEPostModel* m) { return m->Materials(); },
-			[](FEPostModel* m, int i) { return m->GetMaterial(i); },
-			[](FEPostModel* m, const std::string& name) { return m->FindMaterial(name); },
+	PyPostMaterialList(CGLModel* model) : PyNamedCollection<CGLModel, Post::Material>
+		(model, [](CGLModel* m) { return m->GetFSModel()->Materials(); },
+			[](CGLModel* m, int i) { return m->GetFSModel()->GetMaterial(i); },
+			[](CGLModel* m, const std::string& name) { return m->GetFSModel()->FindMaterial(name); },
 			"material") {}
 private:
-	FEPostModel* m_model = nullptr;
+	CGLModel* m_model = nullptr;
 };
 
-class PyPostDataFieldList : public PyNamedCollection<FEPostModel, Post::ModelDataField>
+class PyPostDataFieldList : public PyNamedCollection<CGLModel, Post::ModelDataField>
 {
 public:
-	PyPostDataFieldList(FEPostModel* model) : PyNamedCollection<FEPostModel, Post::ModelDataField>
-		(model, [](FEPostModel* m) { return m->GetDataManager()->DataFields(); },
-			[](FEPostModel* m, int i) { return *m->GetDataManager()->DataField(i); },
-			[](FEPostModel* m, const std::string& name) { 
-				int index = m->GetDataManager()->FindDataField(name); 
-				return (index >= 0) ? *m->GetDataManager()->DataField(index) : nullptr; },
+	PyPostDataFieldList(CGLModel* model) : PyNamedCollection<CGLModel, Post::ModelDataField>
+		(model, [](CGLModel* m) { return m->GetFSModel()->GetDataManager()->DataFields(); },
+			[](CGLModel* m, int i) { return *m->GetFSModel()->GetDataManager()->DataField(i); },
+			[](CGLModel* m, const std::string& name) { 
+				int index = m->GetFSModel()->GetDataManager()->FindDataField(name); 
+				return (index >= 0) ? *m->GetFSModel()->GetDataManager()->DataField(index) : nullptr; },
 			"data field") {}
 private:
-	FEPostModel* m_model = nullptr;
+	CGLModel* m_model = nullptr;
 };
 
-class PyPostStateList : public PyIndexedCollection<FEPostModel, Post::FEState>
+class PyPostStateList : public PyIndexedCollection<CGLModel, Post::FEState>
 {
 public:
-	PyPostStateList(FEPostModel* model) : PyIndexedCollection<FEPostModel, Post::FEState>
-		(model, [](FEPostModel* m) { return m->GetStates(); },
-			[](FEPostModel* m, int i) { return m->GetState(i); },
+	PyPostStateList(CGLModel* model) : PyIndexedCollection<CGLModel, Post::FEState>
+		(model, [](CGLModel* m) { return m->GetFSModel()->GetStates(); },
+			[](CGLModel* m, int i) { return m->GetFSModel()->GetState(i); },
 			"state") {}
 private:
-	FEPostModel* m_model = nullptr;
+	CGLModel* m_model = nullptr;
 };
 
-FEPostModel* ReadPlotFile(std::string filename)
+// TODO: I'm pretty sure this is a memory leak since no one is deleting the FEPostModel
+CGLModel* ReadPlotFile(std::string filename)
 {
     FEPostModel* model = new FEPostModel;
     xpltFileReader reader(model);
@@ -103,19 +105,20 @@ FEPostModel* ReadPlotFile(std::string filename)
 
     model->SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, 0, 0));
 
-    return model;
+	CGLModel* glm = new CGLModel(model);
+    return glm;
 }
 
 #ifndef PY_EXTERNAL
 
-FEPostModel* GetActivePostModel()
+CGLModel* GetActivePostModel()
 {
 	CPostDocument* doc = dynamic_cast<CPostDocument*>(PyRunContext::GetDocument());
 	if (doc == nullptr)
 	{
 		throw pyGenericExcept("There is no active post document.");
 	}
-	return (doc ? doc->GetFSModel() : nullptr);
+	return (doc ? doc->GetGLModel() : nullptr);
 }
 #endif
 
@@ -250,11 +253,11 @@ void init_FBSPost(py::module& m)
 
     InitStandardDataFields();
 
-    post.def("AddStandardDataField", pybind11::overload_cast<FEPostModel&, const std::string&>(&AddStandardDataField), 
+    post.def("AddStandardDataField", [](CGLModel& model, const std::string& dataField) { return AddStandardDataField(*model.GetFSModel(), dataField); },
         "Adds a standard data field to the model.", py::arg("model"), py::arg("dataField"));
 
-	post.def("SurfaceNormalProjection", &Post::SurfaceNormalProjection, "Projects the surface normals onto a specified plane.",
-        py::return_value_policy::reference);
+	post.def("SurfaceNormalProjection", [](CGLModel& model, ModelDataField& df, const std::string& plane) { return Post::SurfaceNormalProjection(*model.GetFSModel(), &df, plane); },
+        "Projects the surface normals onto a specified plane.", py::return_value_policy::reference);
 
 	py::class_<Material>(post, "Material", "Material class representing a material in the post-processing model.")
 		.def_property("name", &Material::GetName, &Material::SetName, "Name of the material.")
@@ -275,18 +278,18 @@ void init_FBSPost(py::module& m)
 		.def("GetDataField", &FEPostModel::PlotObject::FindObjectData, "Returns the name of the plot object.")
 		;
 
-	py::class_<FEPostModel>(post, "PostModel", DOC(Post, FEPostModel))
+	py::class_<CGLModel>(post, "PostModel")
 
 		// new interface
-		.def_property_readonly( "materials"  , [](FEPostModel& self) { return PyPostMaterialList (&self); }, py::return_value_policy::reference_internal)
-		.def_property_readonly( "states"     , [](FEPostModel& self) { return PyPostStateList    (&self); }, py::return_value_policy::reference_internal)
-		.def_property_readonly( "data_fields", [](FEPostModel& self) { return PyPostDataFieldList(&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly( "materials"  , [](CGLModel& self) { return PyPostMaterialList (&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly( "states"     , [](CGLModel& self) { return PyPostStateList    (&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly( "data_fields", [](CGLModel& self) { return PyPostDataFieldList(&self); }, py::return_value_policy::reference_internal)
 
 		// old interface (TODO: refactor and remove)
-		.def("AddDataField", static_cast<void(FEPostModel::*)(ModelDataField*, const std::string&)>(&FEPostModel::AddDataField), "Adds a data field to the model.")
-        .def("GetDataManager", &FEPostModel::GetDataManager, DOC(Post, FEPostModel, GetDataManager), py::return_value_policy::reference)
-		.def("GetPlotObject", &FEPostModel::FindPlotObject, py::return_value_policy::reference)
-		.def("EvaluatePlotObject", &FEPostModel::EvaluatePlotObject, py::return_value_policy::reference)
+		.def("AddDataField", [](CGLModel& self, ModelDataField* df, const std::string& name) { self.GetFSModel()->AddDataField(df, name); }, "Adds a data field to the model.")
+        .def("GetDataManager", [](CGLModel& self) { return self.GetFSModel()->GetDataManager(); }, py::return_value_policy::reference)
+		.def("GetPlotObject", [](CGLModel& self, const std::string& name) { return self.GetFSModel()->FindPlotObject(name); }, py::return_value_policy::reference)
+		.def("EvaluatePlotObject", [](CGLModel& self, FEPostModel::PlotObject* po, ModelDataField* data, int comp, int ntime) { return self.GetFSModel()->EvaluatePlotObject(po, *data, comp, ntime); }, py::return_value_policy::reference)
 		;
 
 	py::enum_<Data_Tensor_Type>(post, "DataTensorType")
@@ -387,8 +390,8 @@ void init_FBSPost(py::module& m)
 		.value("I3", Data_Mat3ds_Component::MAT3DS_I3)
 		;
 
-	py::class_<FEDistanceMap, ModelDataField, std::unique_ptr<FEDistanceMap, py::nodelete>>(post, "DistanceMap")
-		.def(py::init<FEPostModel*, int>())
+/*	py::class_<FEDistanceMap, ModelDataField, std::unique_ptr<FEDistanceMap, py::nodelete>>(post, "DistanceMap")
+		.def(py::init<CGLModel*, int>())
         .def("Init", &FEDistanceMap::Init)
 		.def("SetSelection1", &FEDistanceMap::SetSelection1)
 		.def("SetSelection2", &FEDistanceMap::SetSelection2)
@@ -399,15 +402,15 @@ void init_FBSPost(py::module& m)
 		.def("Apply", &FEDistanceMap::Apply)
         .def("ApplyState", &FEDistanceMap::ApplyState)
 		;
-
+*/
 	py::class_<FEVTKExport>(post, "VTKExport", "class for exporting post-model to vtk file")
 		.def(py::init<>())
 		.def_readwrite("export_all_states", &FEVTKExport::m_bwriteAllStates)
 		.def_readwrite("export_selected_elements_only", &FEVTKExport::m_bselElemsOnly)
 		.def_readwrite("write_series_file", &FEVTKExport::m_bwriteSeriesFile)
 		.def_readwrite("write_part_ids", &FEVTKExport::m_bwritePartIDs)
-		.def("save", [](FEVTKExport& self, FEPostModel& fem, const char* szfile) { 
-			bool b = self.Save(fem, szfile); 
+		.def("save", [](FEVTKExport& self, CGLModel& model, const char* szfile) { 
+			bool b = self.Save(*model.GetFSModel(), szfile); 
 			if (!b) throw pyGenericExcept("Failed to save VTK file.");
 			})
 		;
