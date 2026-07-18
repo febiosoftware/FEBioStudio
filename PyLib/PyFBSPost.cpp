@@ -144,6 +144,12 @@ int PyHandleToDataFieldCode(FEPostModel& model, py::handle fieldSpec)
 	std::string fieldName;
 	std::string componentName;
 
+	if (py::isinstance<py::int_>(fieldSpec))
+	{
+		int fieldCode = fieldSpec.cast<int>();
+		return fieldCode;
+	}
+	else
 	if (py::isinstance<py::str>(fieldSpec))
 	{
 		fieldName = fieldSpec.cast<std::string>();
@@ -353,12 +359,43 @@ void init_FBSPost(py::module& m)
 		.def_property_readonly( "states"     , [](CGLModel& self) { return PyPostStateList    (&self); }, py::return_value_policy::reference_internal)
 		.def_property_readonly( "data_fields", [](CGLModel& self) { return PyPostDataFieldList(&self); }, py::return_value_policy::reference_internal)
 		.def_property_readonly( "plots"      , [](CGLModel& self) { return PyPostPlotList     (&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly("colormap", [](CGLModel& self) { return self.GetColorMap(); }, py::return_value_policy::reference)
 
 		// old interface (TODO: refactor and remove)
 		.def("AddDataField", [](CGLModel& self, ModelDataField* df, const std::string& name) { self.GetFSModel()->AddDataField(df, name); }, "Adds a data field to the model.")
         .def("GetDataManager", [](CGLModel& self) { return self.GetFSModel()->GetDataManager(); }, py::return_value_policy::reference)
 		.def("GetPlotObject", [](CGLModel& self, const std::string& name) { return self.GetFSModel()->FindPlotObject(name); }, py::return_value_policy::reference)
 		.def("EvaluatePlotObject", [](CGLModel& self, FEPostModel::PlotObject* po, ModelDataField* data, int comp, int ntime) { return self.GetFSModel()->EvaluatePlotObject(po, *data, comp, ntime); }, py::return_value_policy::reference)
+		;
+
+	py::class_<CGLColorMap, std::unique_ptr<CGLColorMap, py::nodelete>>(post, "ColorMap")
+		.def_property("datafield", 
+			[](CGLColorMap& self) { return self.GetEvalField(); }, 
+			[](CGLColorMap& self, py::handle fieldRef) { 
+				int field = PyHandleToDataFieldCode(*self.GetModel()->GetFSModel(), fieldRef);
+				self.SetEvalField(field); },
+			py::return_value_policy::reference)
+		.def("__getattr__", [](CGLColorMap& self, const std::string& name) { return GetDynamicAttribute(self, name); })
+		.def("__setattr__", [](CGLColorMap& self, const std::string& name, py::object value)
+			{ 
+				if (name == "datafield")
+				{
+					int field = PyHandleToDataFieldCode(*self.GetModel()->GetFSModel(), value);
+					self.SetEvalField(field);
+					return;
+				}
+				if (name == "gradient")
+				{
+					int cmap = ColorMapManager::FindColorMapFromName(py::cast<std::string>(value));
+					if (cmap == -1)
+					{
+						throw py::value_error("Invalid color gradient name: " + py::cast<std::string>(value));
+					}
+					self.SetColorMap(cmap);
+					return;
+				}
+				SetDynamicAttribute(self, name, value); 
+			})
 		;
 
 	py::class_<CGLPlot, FSObject, std::unique_ptr<CGLPlot, py::nodelete>>(post, "Plot")
