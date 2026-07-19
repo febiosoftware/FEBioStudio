@@ -42,6 +42,9 @@ SOFTWARE.*/
 #include "PyFBSGeom.h"
 #include <XPLTLib/xpltFileReader.h>
 
+#include <PostGL/GLModel.h>
+#include "PyExceptions.h"
+
 #ifndef PY_EXTERNAL
 #include "PyFBSModel.h"
 #include <FEBioStudio/FEBioStudio.h>
@@ -49,9 +52,7 @@ SOFTWARE.*/
 #include <FEBioStudio/ModelDocument.h>
 #include <FEBioStudio/PostDocument.h>
 #include <FEBioStudio/DocManager.h>
-#include <PostGL/GLModel.h>
 #include "PyRunContext.h"
-#include "PyExceptions.h"
 #endif
 
 namespace py = pybind11;
@@ -232,7 +233,7 @@ PY_MODULE_TYPE(fbs, m)
 	m.attr("post_models") = py::cast(PyPostModelList());
 
 #else
-	post.def("read_plot_file", &ReadPlotFile, "Reads a plot file and returns a post::PostModel object.");
+	m.def("read_plot_file", &ReadPlotFile, "Reads a plot file and returns a post::PostModel object.");
 #endif
 }
 
