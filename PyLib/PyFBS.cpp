@@ -40,11 +40,18 @@ SOFTWARE.*/
 #include "PyFBSPost.h"
 #include "PyFBSMesh.h"
 #include "PyFBSGeom.h"
+#include <XPLTLib/xpltFileReader.h>
 
 #ifndef PY_EXTERNAL
 #include "PyFBSModel.h"
 #include <FEBioStudio/FEBioStudio.h>
 #include <FEBioStudio/MainWindow.h>
+#include <FEBioStudio/ModelDocument.h>
+#include <FEBioStudio/PostDocument.h>
+#include <FEBioStudio/DocManager.h>
+#include <PostGL/GLModel.h>
+#include "PyRunContext.h"
+#include "PyExceptions.h"
 #endif
 
 namespace py = pybind11;
@@ -61,7 +68,139 @@ public:
 
 	void flush() {}
 };
-#endif
+
+FSModel* GetActiveModel()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(PyRunContext::GetDocument());
+	if (doc == nullptr)
+	{
+		throw pyGenericExcept("There is no active model.");
+	}
+	return (doc ? doc->GetFSModel() : nullptr);
+}
+
+Post::CGLModel* GetActivePostModel()
+{
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(PyRunContext::GetDocument());
+	if (doc == nullptr)
+	{
+		throw pyGenericExcept("There is no active post model.");
+	}
+	return (doc ? doc->GetGLModel() : nullptr);
+}
+
+// Make sure that this class never stores any internal state! 
+// Otherwise, it might be better to make it a singleton or a static class.
+class PyModelList
+{
+public:
+	PyModelList() {}
+	FSModel* get(const std::string& name)
+	{
+		CMainWindow* wnd = FBS::getMainWindow();
+		if (wnd == nullptr) return nullptr;
+
+		CDocManager* docManager = wnd->GetDocManager();
+		if (docManager == nullptr) return nullptr;
+
+		for (int i = 0; i < docManager->Documents(); ++i)
+		{
+			CDocument* doc = docManager->GetDocument(i);
+			if (CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc))
+			{
+				if (modelDoc->GetDocTitle() == name) return modelDoc->GetFSModel();
+			}
+		}
+
+		throw py::value_error("No model with name '" + name + "' found.");
+
+		return nullptr;
+	}
+
+	int size()
+	{
+		CMainWindow* wnd = FBS::getMainWindow();
+		if (wnd == nullptr) return 0;
+
+		CDocManager* docManager = wnd->GetDocManager();
+		if (docManager == nullptr) return 0;
+
+		int count = 0;
+		for (int i = 0; i < docManager->Documents(); ++i)
+		{
+			CDocument* doc = docManager->GetDocument(i);
+			if (dynamic_cast<CModelDocument*>(doc)) count++;
+		}
+
+		return count;
+	}
+};
+
+class PyPostModelList
+{
+public:
+	PyPostModelList() {}
+	Post::CGLModel* get(const std::string& name)
+	{
+		CMainWindow* wnd = FBS::getMainWindow();
+		if (wnd == nullptr) return nullptr;
+
+		CDocManager* docManager = wnd->GetDocManager();
+		if (docManager == nullptr) return nullptr;
+
+		for (int i = 0; i < docManager->Documents(); ++i)
+		{
+			CDocument* doc = docManager->GetDocument(i);
+			if (CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc))
+			{
+				if (postDoc->GetDocTitle() == name) return postDoc->GetGLModel();
+			}
+		}
+
+		throw py::value_error("No model with name '" + name + "' found.");
+
+		return nullptr;
+	}
+
+	int size()
+	{
+		CMainWindow* wnd = FBS::getMainWindow();
+		if (wnd == nullptr) return 0;
+
+		CDocManager* docManager = wnd->GetDocManager();
+		if (docManager == nullptr) return 0;
+
+		int count = 0;
+		for (int i = 0; i < docManager->Documents(); ++i)
+		{
+			CDocument* doc = docManager->GetDocument(i);
+			if (dynamic_cast<CPostDocument*>(doc)) count++;
+		}
+
+		return count;
+	}
+};
+
+#else 
+
+// TODO: I'm pretty sure this is a memory leak since no one is deleting the FEPostModel
+Post::CGLModel* ReadPlotFile(std::string filename)
+{
+	Post::FEPostModel* model = new Post::FEPostModel;
+	xpltFileReader reader(model);
+
+	if (reader.Load(filename.c_str()) == false)
+	{
+		throw pyGenericExcept("Failed to read plot file.");
+	}
+
+	model->SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, 0, 0));
+
+	Post::CGLModel* glm = new Post::CGLModel(model);
+	return glm;
+}
+
+#endif // PY_EXTERNAL
 
 PY_MODULE_TYPE(fbs, m)
 {
@@ -76,7 +215,24 @@ PY_MODULE_TYPE(fbs, m)
 		.def("write", &CPyOutput::write)
 		.def("flush", &CPyOutput::flush);
 
-    init_FBSModel(m);
+	init_FBSModel(m);
+
+	py::class_<PyModelList>(m, "ModelRegistry")
+		.def("__len__", &PyModelList::size)
+		.def("__getitem__", &PyModelList::get);
+
+	py::class_<PyPostModelList>(m, "PostModelRegistry")
+		.def("__len__", &PyPostModelList::size)
+		.def("__getitem__", &PyPostModelList::get);
+
+	m.def("active_model", &GetActiveModel, "Returns the active Model instance.", py::return_value_policy::reference);
+	m.def("active_post_model", &GetActivePostModel, "Returns the active post::PostModel instance.", py::return_value_policy::reference);
+
+	m.attr("models") = py::cast(PyModelList());
+	m.attr("post_models") = py::cast(PyPostModelList());
+
+#else
+	post.def("read_plot_file", &ReadPlotFile, "Reads a plot file and returns a post::PostModel object.");
 #endif
 }
 

@@ -202,13 +202,36 @@ private:
 };
 
 
-class PyMeshElementList : public PyIndexedCollection<FSMesh, FSElement>
+class PyMeshElementList
 {
 public:
-	PyMeshElementList(FSMesh* mesh) : PyIndexedCollection<FSMesh, FSElement>(mesh,
-		[](FSMesh* m) { return m->Elements(); },
-		[](FSMesh* m, int i) { return &m->Element(i); },
-		"element") {}
+	PyMeshElementList(FSMesh* mesh) : m_mesh(mesh) {}
+
+	int size() const
+	{
+		return m_mesh->Elements();
+	}
+
+	PyElementRef get(int i) const
+	{
+		int n = size();
+		if (i < 0) i += n;
+
+		if (i < 0 || i >= n)
+			throw py::index_error("element index out of range");
+
+		return PyElementRef(m_mesh, i);
+	}
+
+	py::iterator iter() const
+	{
+		py::list items;
+		for (int i = 0; i < size(); ++i)
+			items.append(py::cast(get(i)));
+
+		return py::iter(items);
+	}
+
 private:
 	FSMesh* m_mesh = nullptr;
 };
@@ -389,7 +412,7 @@ void init_FSMesh(py::module_& m)
         .def("Nodes", &FSElement::Nodes, DOC(FSElement, Nodes))
 		.def("Node", [](FSElement& self, int node) { return self.m_node[node]; }, "Get the node ID at the specified index.")
 		.def("SetNode", [](FSElement& self, int node, int val) { self.m_node[node] = val; }, "Set the node ID at the specified index.")
-		.def("SetType", &FSElement::SetType, DOC(FSElement, SetType))
+		.def("set_type", &FSElement::SetType, DOC(FSElement, SetType))
 		.def("SetAxes", &FSElement::setAxes, DOC(FSElement, setAxes))
         ;
 

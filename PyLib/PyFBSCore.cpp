@@ -44,7 +44,7 @@ void init_FBSCore(py::module& m)
 {
     py::module core = m.def_submodule("core", "Module used to interact with the FEBio and FEBio Studio core classes");
 
-	py::class_<GLColor>(core, "color", DOC(GLColor))
+	py::class_<GLColor>(core, "Color", DOC(GLColor))
 		.def(py::init<>(), DOC(GLColor, GLColor))
 		.def(py::init<uint8_t, uint8_t, uint8_t>(), DOC(GLColor, GLColor, 3))
 		.def_readwrite("r", &GLColor::r, DOC(GLColor, r))
@@ -52,7 +52,7 @@ void init_FBSCore(py::module& m)
 		.def_readwrite("b", &GLColor::b, DOC(GLColor, b))
 		.def_readwrite("a", &GLColor::a, DOC(GLColor, a));
 
-	py::class_<vec3d>(core, "vec3d")
+	py::class_<vec3d>(core, "Vec3")
         .def(py::init<>(), DOC(vec3d, vec3d))
         .def(py::init<double, double, double>(), DOC(vec3d, vec3d, 3))
         .def(py::self + py::self, DOC(vec3d, operator_add))
@@ -75,7 +75,7 @@ void init_FBSCore(py::module& m)
                 return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
             });
 
-	py::class_<quatd>(core, "quatd", DOC(quatd))
+	py::class_<quatd>(core, "Quaternion", DOC(quatd))
 		.def(py::init<>(), DOC(quatd, quatd))
 		.def(py::init<const vec3d&, const vec3d&>(), DOC(quatd, quatd, 4))
 		.def("__repr__",

@@ -59,14 +59,13 @@ SOFTWARE.*/
 
 namespace py = pybind11;
 
-CModelDocument* GetActiveDocument()
-{
-	return dynamic_cast<CModelDocument*>(PyRunContext::GetDocument());
-}
-
 bool ExportFEB(FSModel& fem, std::string& fileName)
 {
-	CModelDocument* doc = GetActiveDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(PyRunContext::GetDocument());
+	if (doc == nullptr)
+	{
+		throw pyGenericExcept("There is no active model.");
+	}
 	assert(doc->GetFSModel() == &fem);
 	FEBioExport4 feb(doc->GetProject());
 	return feb.Write(fileName.c_str());
@@ -74,16 +73,14 @@ bool ExportFEB(FSModel& fem, std::string& fileName)
 
 bool ExportVTK(FSModel& fem, std::string& fileName)
 {
-	CModelDocument* doc = GetActiveDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(PyRunContext::GetDocument());
+	if (doc == nullptr)
+	{
+		throw pyGenericExcept("There is no active model.");
+	}
 	assert(doc->GetFSModel() == &fem);
 	VTKExport vtk(doc->GetProject());
 	return vtk.Write(fileName.c_str());
-}
-
-FSModel* GetActiveModel()
-{
-	CModelDocument* doc = GetActiveDocument();
-	return (doc ? doc->GetFSModel() : nullptr);
 }
 
 enum class PySelectionItemType
@@ -267,7 +264,7 @@ public:
 		// This will make it easier to use this function in a headless mode or in a script.
 		if (fileName.empty()) return nullptr;
 
-		CModelDocument* doc = GetActiveDocument();
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(PyRunContext::GetDocument());
 		if (doc == nullptr) return nullptr;
 
 		CMainWindow* wnd = doc->GetMainWindow();
@@ -696,7 +693,7 @@ private:
 // Initializes the fbs.mdl module
 void init_FBSModel(py::module& m)
 {
-	py::module mdl = m.def_submodule("mdl", "Module used to interact with an FEBio Studio model.");
+	py::module mdl = m.def_submodule("model", "Module used to interact with an FEBio Studio model.");
 
 	// collection wrapper for materials
 	py::class_<PyMaterialList>(mdl, "MaterialList")
@@ -919,9 +916,6 @@ void init_FBSModel(py::module& m)
 		.def("clear", &PyPropertySlot::clear)
 		.def_property_readonly("is_set", &PyPropertySlot::isSet)
 		.def_property_readonly("type_str", &PyPropertySlot::typeStr);
-
-	mdl.def("active_model", GetActiveModel, "Returns the active FSModel instance.", py::return_value_policy::reference);
-	mdl.def("active_object", &PyRunContext::GetActiveObject, "Returns the active GObject instance.", py::return_value_policy::reference);
 
 	py::class_<PyPlotVariableList>(mdl, "PlotVariableList")
 		.def("__len__", &PyPlotVariableList::size)

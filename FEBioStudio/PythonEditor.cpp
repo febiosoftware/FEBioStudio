@@ -81,7 +81,7 @@ CPythonEditor::CPythonEditor(CMainWindow* wnd) : QMainWindow(wnd), mainWnd(wnd),
 	setWindowTitle("Python Editor");
 	setMinimumSize(800, 600);
 	ui->setup(this, wnd->usingDarkTheme());
-	ui->edit->appendPlainText("from fbs import *\n");
+	ui->edit->appendPlainText("import fbs\n");
 	ui->edit->installEventFilter(this);
 	ui->edit->viewport()->installEventFilter(this);
 
@@ -177,7 +177,7 @@ void CPythonEditor::on_actionNew_triggered()
 	if (saveModifiedScript())
 	{
 		ui->edit->clear();
-		ui->edit->appendPlainText("from fbs import *\n");
+		ui->edit->appendPlainText("import fbs\n");
 		fileName.clear();
 		ui->isModified = false;
 		updateWindowTitle();

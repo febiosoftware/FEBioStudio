@@ -28,7 +28,6 @@ SOFTWARE.*/
 #ifdef HAS_PYTHON
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <XPLTLib/xpltFileReader.h>
 #include <PostLib/FEPostModel.h>
 #include <PostLib/FEState.h>
 #include <PostLib/FEDataManager.h>
@@ -161,23 +160,6 @@ private:
 	CGLModel* m_model = nullptr;
 };
 
-// TODO: I'm pretty sure this is a memory leak since no one is deleting the FEPostModel
-CGLModel* ReadPlotFile(std::string filename)
-{
-    FEPostModel* model = new FEPostModel;
-    xpltFileReader reader(model);
-
-	if (reader.Load(filename.c_str()) == false)
-	{
-		throw pyGenericExcept("Failed to read plot file.");
-	}
-
-    model->SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, 0, 0));
-
-	CGLModel* glm = new CGLModel(model);
-    return glm;
-}
-
 // helper function for converting a py::handle to a datafield code
 int PyHandleToDataFieldCode(FEPostModel& model, py::handle fieldSpec)
 {
@@ -274,19 +256,6 @@ std::vector<int> PyHandleToSurfaceSelection(py::handle selection, const std::str
 
 	throw py::type_error(propertyName + " must be a FaceRef, a sequence of FaceRef objects, or a FESurface");
 }
-
-#ifndef PY_EXTERNAL
-
-CGLModel* GetActivePostModel()
-{
-	CPostDocument* doc = dynamic_cast<CPostDocument*>(PyRunContext::GetDocument());
-	if (doc == nullptr)
-	{
-		throw pyGenericExcept("There is no active post document.");
-	}
-	return (doc ? doc->GetGLModel() : nullptr);
-}
-#endif
 
 double PostIntegrateElements(FEPostModel& model, const std::string& elsetName, int fieldCode, int state)
 {
@@ -403,12 +372,6 @@ void init_FBSPost(py::module& m)
 		.def("__getitem__", py::overload_cast<const std::string&>(&PyPostPlotList::get, py::const_), py::return_value_policy::reference)
 		.def("add", &PyPostPlotList::add, "Adds a new plot to the model.")
 		;
-
-    post.def("read_plot_file", &ReadPlotFile, "Reads a plot file and returns a post::PostModel object.");
-
-#ifndef PY_EXTERNAL
-	post.def("active_model", &GetActivePostModel, "Returns the active post::PostModel instance.", py::return_value_policy::reference);
-#endif
 
     InitStandardDataFields();
 
