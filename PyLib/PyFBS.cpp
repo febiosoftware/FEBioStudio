@@ -136,11 +136,13 @@ public:
 		return count;
 	}
 };
+#endif // PY_EXTERNAL
 
+// singleton instance of PyPostModelList
 class PyPostModelList
 {
 public:
-	PyPostModelList() {}
+#ifndef PY_EXTERNAL
 	Post::CGLModel* get(const std::string& name)
 	{
 		CMainWindow* wnd = FBS::getMainWindow();
@@ -162,9 +164,20 @@ public:
 
 		return nullptr;
 	}
+#else
+	Post::CGLModel* get(int i)
+	{
+		if (i < 0) i += (int)m_postModels.size();
+		if (i < 0 || i >= (int)m_postModels.size())
+			throw py::index_error("Index out of range.");
+
+		return m_postModels[i].get();
+	}
+#endif
 
 	int size()
 	{
+#ifndef PY_EXTERNAL
 		CMainWindow* wnd = FBS::getMainWindow();
 		if (wnd == nullptr) return 0;
 
@@ -179,29 +192,42 @@ public:
 		}
 
 		return count;
+#else
+		return (int)m_postModels.size();
+#endif
 	}
+
+#ifdef PY_EXTERNAL
+	Post::CGLModel* open(const std::string& filename)
+	{
+		Post::FEPostModel* model = new Post::FEPostModel;
+		xpltFileReader reader(model);
+
+		if (reader.Load(filename.c_str()) == false)
+		{
+			throw pyGenericExcept("Failed to read plot file.");
+		}
+
+		model->SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, 0, 0));
+
+		Post::CGLModel* glm = new Post::CGLModel(model);
+		return glm;
+	}
+#endif
+	static PyPostModelList& Instance() { return instance; }
+
+private:
+	static PyPostModelList instance;
+	PyPostModelList() {}
+	PyPostModelList(const PyPostModelList&) = delete;
+	PyPostModelList& operator=(const PyPostModelList&) = delete;
+
+#ifdef PY_EXTERNAL
+	std::vector<std::unique_ptr<Post::CGLModel>> m_postModels;
+#endif
 };
 
-#else 
-
-// TODO: I'm pretty sure this is a memory leak since no one is deleting the FEPostModel
-Post::CGLModel* ReadPlotFile(std::string filename)
-{
-	Post::FEPostModel* model = new Post::FEPostModel;
-	xpltFileReader reader(model);
-
-	if (reader.Load(filename.c_str()) == false)
-	{
-		throw pyGenericExcept("Failed to read plot file.");
-	}
-
-	model->SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, 0, 0));
-
-	Post::CGLModel* glm = new Post::CGLModel(model);
-	return glm;
-}
-
-#endif // PY_EXTERNAL
+PyPostModelList PyPostModelList::instance;
 
 PY_MODULE_TYPE(fbs, m)
 {
@@ -224,16 +250,23 @@ PY_MODULE_TYPE(fbs, m)
 
 	py::class_<PyPostModelList>(m, "PostModelRegistry")
 		.def("__len__", &PyPostModelList::size)
-		.def("__getitem__", &PyPostModelList::get);
+		.def("__getitem__", &PyPostModelList::get)
+		;
 
 	m.def("active_model", &GetActiveModel, "Returns the active Model instance.", py::return_value_policy::reference);
 	m.def("active_post_model", &GetActivePostModel, "Returns the active post::PostModel instance.", py::return_value_policy::reference);
 
 	m.attr("models") = py::cast(PyModelList());
-	m.attr("post_models") = py::cast(PyPostModelList());
+	m.attr("post_models") = py::cast(&PyPostModelList::Instance(), py::return_value_policy::reference);
 
 #else
-	m.def("read_plot_file", &ReadPlotFile, "Reads a plot file and returns a post::PostModel object.");
+	py::class_<PyPostModelList>(m, "PostModelRegistry")
+		.def("__len__", &PyPostModelList::size)
+		.def("__getitem__", &PyPostModelList::get)
+		.def("open", &PyPostModelList::open, py::return_value_policy::reference, "Opens a plot file and returns a post::PostModel object.")
+		;
+
+	m.attr("post_models") = py::cast(&PyPostModelList::Instance(), py::return_value_policy::reference);
 #endif
 }
 
