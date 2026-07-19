@@ -24,8 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "PyFBSMesh.h"
-
 #include <MeshLib/FSMesh.h>
 #include <MeshLib/FSMeshItem.h>
 #include <MeshLib/FSNode.h>
@@ -39,6 +37,7 @@ SOFTWARE.*/
 #include <MeshLib/FSSurfaceMesh.h>
 #include <MeshTools/FEMesher.h>
 #ifdef HAS_PYTHON
+#include "PyFBSMesh.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
@@ -47,37 +46,12 @@ SOFTWARE.*/
 
 namespace py = pybind11;
 
-template <typename MeshType, typename ItemType>
-class PyMeshItemRef {
-public:
-
-	using GetFunc = std::function<ItemType& (MeshType*, int)>;
-
-	PyMeshItemRef(MeshType* mesh, int index, GetFunc getFunc) : m_mesh(mesh), m_index(index), m_getFunc(getFunc) {}
-
-	int index() const { return m_index; }
-
-	int id() const { return m_getFunc(m_mesh, m_index).GetID(); }
-
-	ItemType& item() { return m_getFunc(m_mesh, m_index); }
-
-private:
-	MeshType* m_mesh = nullptr;
-	int m_index = -1;
-	GetFunc m_getFunc;
-};
-
 class PyNodeRef : public PyMeshItemRef<FSLineMesh, FSNode> {
 public:
 	PyNodeRef(FSLineMesh* mesh, int index) : PyMeshItemRef<FSLineMesh, FSNode>(mesh, index, [](FSLineMesh* m, int i) -> FSNode& { return m->Node(i); }) {}
 
 	vec3d pos() { return item().r; }
 	void setPos(vec3d r) { item().r = r; }
-};
-
-class PyFaceRef : public PyMeshItemRef<FSMesh, FSFace> {
-public:
-	PyFaceRef(FSMesh* mesh, int index) : PyMeshItemRef<FSMesh, FSFace>(mesh, index, [](FSMesh* m, int i) -> FSFace& { return m->Face(i); }) {}
 };
 
 class PyElementRef : public PyMeshItemRef<FSMesh, FSElement> {
@@ -228,36 +202,13 @@ private:
 };
 
 
-class PyMeshElementList
+class PyMeshElementList : public PyIndexedCollection<FSMesh, FSElement>
 {
 public:
-	PyMeshElementList(FSMesh* mesh) : m_mesh(mesh) {}
-
-	int size() const
-	{
-		return m_mesh->Elements();
-	}
-
-	PyElementRef get(int i) const
-	{
-		int n = size();
-		if (i < 0) i += n;
-
-		if (i < 0 || i >= n)
-			throw py::index_error("element index out of range");
-
-		return PyElementRef(m_mesh, i);
-	}
-
-	py::iterator iter() const
-	{
-		py::list items;
-		for (int i = 0; i < size(); ++i)
-			items.append(py::cast(get(i)));
-
-		return py::iter(items);
-	}
-
+	PyMeshElementList(FSMesh* mesh) : PyIndexedCollection<FSMesh, FSElement>(mesh,
+		[](FSMesh* m) { return m->Elements(); },
+		[](FSMesh* m, int i) { return &m->Element(i); },
+		"element") {}
 private:
 	FSMesh* m_mesh = nullptr;
 };

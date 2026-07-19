@@ -84,7 +84,11 @@ public:
 
 	void SetSelection2(std::vector<int>& s) { m_surf2.m_face = s; }
 
+	std::vector<int> GetSelection1() { return m_surf1.m_face; }
+	std::vector<int> GetSelection2() { return m_surf2.m_face; }
+
     void SetSigned(bool sign) { m_bsigned = sign; }
+	bool GetSigned() { return m_bsigned; }
 
 	void SetMethod(int nopt) { m_nopt = nopt; }
 

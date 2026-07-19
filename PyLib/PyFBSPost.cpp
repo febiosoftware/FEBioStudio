@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <PostLib/FEVTKExport.h>
 #include <PostGL/GLModel.h>
 #include "DocHeaders/PyPostDocs.h"
+#include "PyFBSMesh.h"
 #include "PyExceptions.h"
 #ifndef PY_EXTERNAL
 #include <FEBioStudio/PostDocument.h>
@@ -76,7 +77,48 @@ public:
 			[](CGLModel* m, const std::string& name) { 
 				int index = m->GetFSModel()->GetDataManager()->FindDataField(name); 
 				return (index >= 0) ? *m->GetFSModel()->GetDataManager()->DataField(index) : nullptr; },
-			"data field") {}
+			"data field"), m_model(model) {}
+
+	ModelDataField* add(const std::string& name, const std::string& type, py::kwargs kwargs)
+	{
+		FEPostModel* fem = m_model->GetFSModel();
+		ModelDataField* field = nullptr;
+
+		if (type == "distance map")
+		{
+			field = new FEDistanceMap(fem, IMPLICIT_DATA);
+		}
+		else
+		{
+			throw py::value_error("Invalid data field type: " + type);
+		}
+		
+		if (field == nullptr)
+		{
+			throw pyGenericExcept("Failed to add data field.");
+		}
+
+		fem->AddDataField(field, name);
+
+		if (!kwargs.empty())
+		{
+			SetDynamicAttributes(*field, kwargs);
+		}
+
+		return field;
+	}
+
+private:
+	CGLModel* m_model = nullptr;
+};
+
+class PyPostFEMeshList : public PyIndexedCollection<CGLModel, FSMesh>
+{
+public:
+	PyPostFEMeshList(CGLModel* model) : PyIndexedCollection<CGLModel, FSMesh>
+		(model, [](CGLModel* m) { return m->GetFSModel()->Meshes(); },
+			[](CGLModel* m, int i) { return m->GetFSModel()->GetFEMesh(i); },
+			"mesh") {}
 private:
 	CGLModel* m_model = nullptr;
 };
@@ -196,6 +238,43 @@ int PyHandleToDataFieldCode(FEPostModel& model, py::handle fieldSpec)
 	return field->GetFieldID() | component;
 }
 
+std::vector<int> PyHandleToSurfaceSelection(py::handle selection, const std::string& propertyName)
+{
+	if (py::isinstance<FSSurface>(selection))
+	{
+		FSSurface& surface = selection.cast<FSSurface&>();
+		return surface.CopyItems();
+	}
+
+	if (py::isinstance<PyFaceRef>(selection))
+	{
+		PyFaceRef face = selection.cast<PyFaceRef>();
+		return { face.index() };
+	}
+
+	if (py::isinstance<py::sequence>(selection) && !py::isinstance<py::str>(selection))
+	{
+		py::sequence items = py::reinterpret_borrow<py::sequence>(selection);
+		std::vector<int> faceIndices;
+		faceIndices.reserve(items.size());
+
+		for (py::handle item : items)
+		{
+			if (!py::isinstance<PyFaceRef>(item))
+			{
+				throw py::type_error(propertyName + " sequence must contain only FaceRef objects");
+			}
+
+			PyFaceRef face = item.cast<PyFaceRef>();
+			faceIndices.push_back(face.index());
+		}
+
+		return faceIndices;
+	}
+
+	throw py::type_error(propertyName + " must be a FaceRef, a sequence of FaceRef objects, or a FESurface");
+}
+
 #ifndef PY_EXTERNAL
 
 CGLModel* GetActivePostModel()
@@ -306,10 +385,16 @@ void init_FBSPost(py::module& m)
 		.def("__getitem__", &PyPostStateList::get, py::return_value_policy::reference)
 		;
 
+	py::class_<PyPostFEMeshList>(post, "FEMeshList")
+		.def("__len__", &PyPostFEMeshList::size)
+		.def("__getitem__", &PyPostFEMeshList::get, py::return_value_policy::reference)
+		;
+
 	py::class_<PyPostDataFieldList>(post, "DataFieldList")
 		.def("__len__", &PyPostDataFieldList::size)
 		.def("__getitem__", py::overload_cast<int>(&PyPostDataFieldList::get, py::const_), py::return_value_policy::reference)
 		.def("__getitem__", py::overload_cast<const std::string&>(&PyPostDataFieldList::get, py::const_), py::return_value_policy::reference)
+		.def("add", &PyPostDataFieldList::add, "Adds a new data field to the model.")
 		;
 
 	py::class_<PyPostPlotList>(post, "PlotList")
@@ -355,15 +440,16 @@ void init_FBSPost(py::module& m)
 	py::class_<CGLModel, std::unique_ptr<CGLModel, py::nodelete>>(post, "PostModel")
 
 		// new interface
-		.def_property_readonly( "materials"  , [](CGLModel& self) { return PyPostMaterialList (&self); }, py::return_value_policy::reference_internal)
-		.def_property_readonly( "states"     , [](CGLModel& self) { return PyPostStateList    (&self); }, py::return_value_policy::reference_internal)
-		.def_property_readonly( "data_fields", [](CGLModel& self) { return PyPostDataFieldList(&self); }, py::return_value_policy::reference_internal)
-		.def_property_readonly( "plots"      , [](CGLModel& self) { return PyPostPlotList     (&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly("materials"  , [](CGLModel& self) { return PyPostMaterialList (&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly("states"     , [](CGLModel& self) { return PyPostStateList    (&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly("data_fields", [](CGLModel& self) { return PyPostDataFieldList(&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly("plots"      , [](CGLModel& self) { return PyPostPlotList     (&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly("fe_meshes"  , [](CGLModel& self) { return PyPostFEMeshList   (&self); }, py::return_value_policy::reference_internal)
+
 		.def_property_readonly("colormap", [](CGLModel& self) { return self.GetColorMap(); }, py::return_value_policy::reference)
 
 		// old interface (TODO: refactor and remove)
 		.def("AddDataField", [](CGLModel& self, ModelDataField* df, const std::string& name) { self.GetFSModel()->AddDataField(df, name); }, "Adds a data field to the model.")
-        .def("GetDataManager", [](CGLModel& self) { return self.GetFSModel()->GetDataManager(); }, py::return_value_policy::reference)
 		.def("GetPlotObject", [](CGLModel& self, const std::string& name) { return self.GetFSModel()->FindPlotObject(name); }, py::return_value_policy::reference)
 		.def("EvaluatePlotObject", [](CGLModel& self, FEPostModel::PlotObject* po, ModelDataField* data, int comp, int ntime) { return self.GetFSModel()->EvaluatePlotObject(po, *data, comp, ntime); }, py::return_value_policy::reference)
 		;
@@ -407,12 +493,6 @@ void init_FBSPost(py::module& m)
         .value("DATA_SCALAR", Data_Tensor_Type::TENSOR_SCALAR)
         .value("DATA_VECTOR", Data_Tensor_Type::TENSOR_VECTOR)
         .value("DATA_TENSOR2", Data_Tensor_Type::TENSOR_TENSOR2);
-
-	py::class_<FEDataManager>(post, "DataManager", DOC(Post, FEDataManager))
-        .def("DataFields", &FEDataManager::DataFields, DOC(Post, FEDataManager, DataFields))
-        .def("DataField", [](FEDataManager& self, int i){return *self.DataField(i); }, DOC(Post, FEDataManager, DataField), py::return_value_policy::reference)
-        .def("FindDataField", &FEDataManager::FindDataField, DOC(Post, FEDataManager, FindDataField))
-        ;
 
 	py::class_<ModelDataField, std::unique_ptr<ModelDataField, py::nodelete>>(post, "ModelDataField", DOC(Post, ModelDataField))
 		.def_property("name", &ModelDataField::GetName, &ModelDataField::SetName, "Name of the data field.")
@@ -496,19 +576,21 @@ void init_FBSPost(py::module& m)
 		.value("I3", Data_Mat3ds_Component::MAT3DS_I3)
 		;
 
-/*	py::class_<FEDistanceMap, ModelDataField, std::unique_ptr<FEDistanceMap, py::nodelete>>(post, "DistanceMap")
-		.def(py::init<CGLModel*, int>())
-        .def("Init", &FEDistanceMap::Init)
-		.def("SetSelection1", &FEDistanceMap::SetSelection1)
-		.def("SetSelection2", &FEDistanceMap::SetSelection2)
-		.def("SetSigned", &FEDistanceMap::SetSigned)
-		.def("FlipPrimary", &FEDistanceMap::FlipPrimary)
-		.def("FlipSecondary", &FEDistanceMap::FlipSecondary)
-		.def("SetMethod", &FEDistanceMap::SetMethod)
-		.def("Apply", &FEDistanceMap::Apply)
-        .def("ApplyState", &FEDistanceMap::ApplyState)
+	py::class_<FEDistanceMap, ModelDataField, std::unique_ptr<FEDistanceMap, py::nodelete>>(post, "DistanceMap")
+		.def_property("selection1", [](FEDistanceMap& self) { return self.GetSelection1(); }, [](FEDistanceMap& self, py::handle sel) 
+			{
+				std::vector<int> items = PyHandleToSurfaceSelection(sel, "selection1");
+				self.SetSelection1(items);
+			})
+		.def_property("selection2", [](FEDistanceMap& self) { return self.GetSelection2(); }, [](FEDistanceMap& self, py::handle sel)
+			{
+				std::vector<int> items = PyHandleToSurfaceSelection(sel, "selection2");
+				self.SetSelection2(items);
+			})
+		.def_property("signed", [](FEDistanceMap& self) { return self.GetSigned(); }, [](FEDistanceMap& self, bool sign) { self.SetSigned(sign); })
+		.def("apply", &FEDistanceMap::Apply)
 		;
-*/
+
 	py::class_<FEVTKExport>(post, "VTKExport", "class for exporting post-model to vtk file")
 		.def(py::init<>())
 		.def_readwrite("export_all_states", &FEVTKExport::m_bwriteAllStates)
