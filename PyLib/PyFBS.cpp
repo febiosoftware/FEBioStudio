@@ -165,11 +165,11 @@ public:
 #else
 	Post::CGLModel* get(int i)
 	{
-		if (i < 0) i += (int)m_postModels.size();
-		if (i < 0 || i >= (int)m_postModels.size())
+		if (i < 0) i += (int)m_GLModels.size();
+		if (i < 0 || i >= (int)m_GLModels.size())
 			throw py::index_error("Index out of range.");
 
-		return m_postModels[i].get();
+		return m_GLModels[i].get();
 	}
 #endif
 
@@ -191,25 +191,27 @@ public:
 
 		return count;
 #else
-		return (int)m_postModels.size();
+		return (int)m_GLModels.size();
 #endif
 	}
 
 #ifdef PY_EXTERNAL
 	Post::CGLModel* open(const std::string& filename)
 	{
-		Post::FEPostModel* model = new Post::FEPostModel;
-		xpltFileReader reader(model);
+		std::unique_ptr<Post::FEPostModel> postModel(new Post::FEPostModel);
+		xpltFileReader reader(postModel.get());
 
 		if (reader.Load(filename.c_str()) == false)
 		{
 			throw py::value_error("Failed to read plot file.");
 		}
 
-		model->SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, 0, 0));
+		postModel->SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, 0, 0));
 
-		Post::CGLModel* glm = new Post::CGLModel(model);
-		return glm;
+		m_postModels.push_back(std::move(postModel));
+		m_GLModels.push_back(std::unique_ptr<Post::CGLModel>(new Post::CGLModel(m_postModels.back().get())));
+
+		return m_GLModels.back().get();
 	}
 #endif
 	static PyPostModelList& Instance() { return instance; }
@@ -221,7 +223,8 @@ private:
 	PyPostModelList& operator=(const PyPostModelList&) = delete;
 
 #ifdef PY_EXTERNAL
-	std::vector<std::unique_ptr<Post::CGLModel>> m_postModels;
+	std::vector<std::unique_ptr<Post::FEPostModel>> m_postModels;
+	std::vector<std::unique_ptr<Post::CGLModel>> m_GLModels;
 #endif
 };
 

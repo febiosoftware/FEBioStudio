@@ -1196,39 +1196,39 @@ void StandardDataFieldManager::Init()
 {
 	if (m_stdDataFields.empty() == false) return;
 
-	Add<FEDataField_T<NodePosition> >("Position", IMPLICIT_DATA);
-	Add<FEDataField_T<NodeInitPos > >("Initial Position", IMPLICIT_DATA);
-	Add<FEDataField_T<DeformationGradient> >("Deformation gradient", IMPLICIT_DATA);
-	Add<StrainDataField >("Infinitesimal strain", StrainDataField::INF_STRAIN);
+	Add<FEDataField_T<NodePosition> >("position", IMPLICIT_DATA);
+	Add<FEDataField_T<NodeInitPos > >("initial position", IMPLICIT_DATA);
+	Add<FEDataField_T<DeformationGradient> >("deformation gradient", IMPLICIT_DATA);
+	Add<StrainDataField >("infinitesimal strain", StrainDataField::INF_STRAIN);
 	Add<StrainDataField >("Lagrange strain"     , StrainDataField::LAGRANGE          );
-	Add<StrainDataField >("Right Cauchy-Green"  , StrainDataField::RIGHT_CAUCHY_GREEN);
-	Add<StrainDataField >("Right stretch"       , StrainDataField::RIGHT_STRETCH     );
+	Add<StrainDataField >("right Cauchy-Green"  , StrainDataField::RIGHT_CAUCHY_GREEN);
+	Add<StrainDataField >("right stretch"       , StrainDataField::RIGHT_STRETCH     );
 	Add<StrainDataField >("Biot strain"         , StrainDataField::BIOT              );
-	Add<StrainDataField >("Right Hencky"        , StrainDataField::RIGHT_HENCKY      );
-	Add<StrainDataField >("Left Cauchy-Green"   , StrainDataField::LEFT_CAUCHY_GREEN );
-	Add<StrainDataField >("Left stretch"        , StrainDataField::LEFT_STRETCH      );
-	Add<StrainDataField >("Left Hencky"         , StrainDataField::LEFT_HENCKY       );
+	Add<StrainDataField >("right Hencky"        , StrainDataField::RIGHT_HENCKY      );
+	Add<StrainDataField >("left Cauchy-Green"   , StrainDataField::LEFT_CAUCHY_GREEN );
+	Add<StrainDataField >("left stretch"        , StrainDataField::LEFT_STRETCH      );
+	Add<StrainDataField >("left Hencky"         , StrainDataField::LEFT_HENCKY       );
 	Add<StrainDataField >("Almansi strain"      , StrainDataField::ALMANSI           );
 	Add<FEDataField_T<LagrangeStrain2D     > >("Lagrange Strain 2D"        , IMPLICIT_DATA);
-	Add<FEDataField_T<InfStrain2D          > >("Infinitesimal Strain 2D"   , IMPLICIT_DATA);
-	Add<FEDataField_T<ElementVolume        > >("Volume"                    , IMPLICIT_DATA);
-	Add<FEDataField_T<VolumeRatio          > >("Volume ratio"              , IMPLICIT_DATA);
-	Add<FEDataField_T<VolumeStrain         > >("Volume strain"             , IMPLICIT_DATA);
-	Add<FEDataField_T<AspectRatio          > >("Aspect ratio"              , IMPLICIT_DATA);
-	Add<CurvatureField >("1-Princ curvature"         , CurvatureField::PRINC1_CURVATURE);
-	Add<CurvatureField >("2-Princ curvature"         , CurvatureField::PRINC2_CURVATURE);
+	Add<FEDataField_T<InfStrain2D          > >("infinitesimal strain 2D"   , IMPLICIT_DATA);
+	Add<FEDataField_T<ElementVolume        > >("volume"                    , IMPLICIT_DATA);
+	Add<FEDataField_T<VolumeRatio          > >("volume ratio"              , IMPLICIT_DATA);
+	Add<FEDataField_T<VolumeStrain         > >("volume strain"             , IMPLICIT_DATA);
+	Add<FEDataField_T<AspectRatio          > >("aspect ratio"              , IMPLICIT_DATA);
+	Add<CurvatureField >("1-princ curvature"         , CurvatureField::PRINC1_CURVATURE);
+	Add<CurvatureField >("2-princ curvature"         , CurvatureField::PRINC2_CURVATURE);
 	Add<CurvatureField >("Gaussian curvature"        , CurvatureField::GAUSS_CURVATURE );
-	Add<CurvatureField >("Mean curvature"            , CurvatureField::MEAN_CURVATURE  );
+	Add<CurvatureField >("mean curvature"            , CurvatureField::MEAN_CURVATURE  );
 	Add<CurvatureField >("RMS curvature"             , CurvatureField::RMS_CURVATURE   );
-	Add<CurvatureField >("Princ curvature difference", CurvatureField::DIFF_CURVATURE  );
-	Add<FEDataField_T<SurfaceCongruency           > >("Congruency", IMPLICIT_DATA);
-	Add<FEDataField_T<PrincCurvatureVector1> >("1-Princ curvature vector", IMPLICIT_DATA);
-	Add<FEDataField_T<PrincCurvatureVector2> >("2-Princ curvature vector", IMPLICIT_DATA);
-	Add<FEDistanceMap >("Distance map", IMPLICIT_DATA);
-	Add<FEAreaCoverage>("Area coverage", IMPLICIT_DATA);
-	Add<FEDataField_T<FEFacetArea> >("Facet area", IMPLICIT_DATA);
-	Add<FEDataField_T<FEElementMaterial> >("Material ID");
-	Add<FEDataField_T<FESurfaceNormal> >("Surface normal", IMPLICIT_DATA);
+	Add<CurvatureField >("princ curvature difference", CurvatureField::DIFF_CURVATURE  );
+	Add<FEDataField_T<SurfaceCongruency           > >("congruency", IMPLICIT_DATA);
+	Add<FEDataField_T<PrincCurvatureVector1> >("1-princ curvature vector", IMPLICIT_DATA);
+	Add<FEDataField_T<PrincCurvatureVector2> >("2-princ curvature vector", IMPLICIT_DATA);
+	Add<FEDistanceMap >("distance map", IMPLICIT_DATA);
+	Add<FEAreaCoverage>("area coverage", IMPLICIT_DATA);
+	Add<FEDataField_T<FEFacetArea> >("facet area", IMPLICIT_DATA);
+	Add<FEDataField_T<FEElementMaterial> >("material ID");
+	Add<FEDataField_T<FESurfaceNormal> >("surface normal", IMPLICIT_DATA);
 }
 
 void Post::InitStandardDataFields()
@@ -1244,6 +1244,11 @@ int Post::StandardDataFields()
 std::string Post::GetStandarDataFieldName(int i)
 {
 	return StandardDataFieldManager::GetStandarDataFieldName(i);
+}
+
+Post::ModelDataField* Post::CreateStandardDataField(FEPostModel& fem, const std::string& dataField)
+{
+	return StandardDataFieldManager::CreateDataField(&fem, dataField);
 }
 
 bool Post::AddStandardDataField(Post::FEPostModel& fem, const std::string& dataField)

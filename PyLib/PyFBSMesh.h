@@ -55,9 +55,9 @@ private:
 	GetFunc m_getFunc;
 };
 
-class PyFaceRef : public PyMeshItemRef<FSMesh, FSFace> {
+class PyFaceRef : public PyMeshItemRef<FSMeshBase, FSFace> {
 public:
-	PyFaceRef(FSMesh* mesh, int index) : PyMeshItemRef<FSMesh, FSFace>(mesh, index, [](FSMesh* m, int i) -> FSFace& { return m->Face(i); }) {}
+	PyFaceRef(FSMeshBase* mesh, int index) : PyMeshItemRef<FSMeshBase, FSFace>(mesh, index, [](FSMeshBase* m, int i) -> FSFace& { return m->Face(i); }) {}
 };
 
 void init_FSMesh(pybind11::module_& m);

@@ -83,6 +83,16 @@ public:
 		return part;
 	}
 
+	py::list iter() const
+	{
+		py::list lst;
+		for (int i = 0; i < m_obj->Parts(); ++i)
+		{
+			lst.append(m_obj->Part(i));
+		}
+		return lst;
+	}
+
 	void AssignMaterial(GMaterial* mat)
 	{
 		for (int i = 0; i < m_obj->Parts(); ++i)
@@ -129,6 +139,16 @@ public:
 		return face;
 	}
 
+	py::list iter() const
+	{
+		py::list lst;
+		for (int i = 0; i < m_obj->Faces(); ++i)
+		{
+			lst.append(m_obj->Face(i));
+		}
+		return lst;
+	}
+
 private:
 	GObject* m_obj = nullptr;
 };
@@ -167,6 +187,16 @@ public:
 		return edge;
 	}
 
+	py::list iter() const
+	{
+		py::list lst;
+		for (int i = 0; i < m_obj->Edges(); ++i)
+		{
+			lst.append(m_obj->Edge(i));
+		}
+		return lst;
+	}
+
 private:
 	GObject* m_obj = nullptr;
 };
@@ -203,6 +233,16 @@ public:
 		}
 
 		return node;
+	}
+
+	py::list iter() const
+	{
+		py::list lst;
+		for (int i = 0; i < m_obj->Nodes(); ++i)
+		{
+			lst.append(m_obj->Node(i));
+		}
+		return lst;
 	}
 
 private:
@@ -248,6 +288,14 @@ public:
 		m_element->m_node[i] = value;
 	}
 
+	py::list iter() const
+	{
+		py::list lst;
+		lst.append(m_element->m_node[0]);
+		lst.append(m_element->m_node[1]);
+		return lst;
+	}
+
 private:
 	GDiscreteElement* m_element = nullptr;
 };
@@ -262,27 +310,35 @@ void init_FBSGeom(py::module& m)
 		.def("__len__", &PyPartList::size)
 		.def("__getitem__", py::overload_cast<int>(&PyPartList::get, py::const_), py::return_value_policy::reference)
 		.def("__getitem__", py::overload_cast<const std::string&>(&PyPartList::get, py::const_), py::return_value_policy::reference)
-		.def("assign_material", &PyPartList::AssignMaterial);
+		.def("__iter__", &PyPartList::iter)
+		.def("assign_material", &PyPartList::AssignMaterial)
+		;
 
 	// view wrapper for surfaces
 	py::class_<PySurfaceList>(geom, "SurfaceList")
 		.def("__len__", &PySurfaceList::size)
 		.def("__getitem__", py::overload_cast<int>(&PySurfaceList::get, py::const_), py::return_value_policy::reference)
-		.def("__getitem__", py::overload_cast<const std::string&>(&PySurfaceList::get, py::const_), py::return_value_policy::reference);
+		.def("__getitem__", py::overload_cast<const std::string&>(&PySurfaceList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", &PySurfaceList::iter)
+		;
 
 	// view wrapper for edges
 	py::class_<PyEdgeList>(geom, "EdgeList")
 		.def("__len__", &PyEdgeList::size)
 		.def("__getitem__", py::overload_cast<int>(&PyEdgeList::get, py::const_), py::return_value_policy::reference)
-		.def("__getitem__", py::overload_cast<const std::string&>(&PyEdgeList::get, py::const_), py::return_value_policy::reference);
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyEdgeList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", &PyEdgeList::iter)
+		;
 
 	// view wrapper for nodes
 	py::class_<PyNodeList>(geom, "NodeList")
 		.def("__len__", &PyNodeList::size)
 		.def("__getitem__", py::overload_cast<int>(&PyNodeList::get, py::const_), py::return_value_policy::reference)
-		.def("__getitem__", py::overload_cast<const std::string&>(&PyNodeList::get, py::const_), py::return_value_policy::reference);
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyNodeList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", &PyNodeList::iter)
+		;
 
-	py::class_<GObject, FSObject, std::unique_ptr<GObject, py::nodelete>>(geom, "GObject", DOC(GObject))
+	py::class_<GObject, FSObject, std::unique_ptr<GObject, py::nodelete>>(geom, "Object", DOC(GObject))
 		.def("assign_material", [](GObject& self, GMaterial* mat) { for (int i = 0; i < self.Parts(); ++i) self.Part(i)->SetMaterialID(mat->GetID()); })
 		.def("__getattr__", [](GObject& self, const std::string& name) { return GetDynamicAttribute(self, name); })
 		.def("__setattr__", [](GObject& self, const std::string& name, py::object value) { SetDynamicAttribute(self, name, value); })
@@ -327,6 +383,7 @@ void init_FBSGeom(py::module& m)
 	py::class_<PyDiscreteSpringList>(geom, "DiscreteSpringList")
 		.def("__len__", &PyDiscreteSpringList::size)
 		.def("__getitem__", &PyDiscreteSpringList::get, py::return_value_policy::reference)
+		.def("__iter__", &PyDiscreteSpringList::iter)
 		.def("add", &PyDiscreteSpringList::add, py::return_value_policy::reference)
 		;
 
@@ -334,21 +391,16 @@ void init_FBSGeom(py::module& m)
 		.def("__len__", &PyDiscreteElementNodeList::size)
 		.def("__getitem__", &PyDiscreteElementNodeList::get, py::return_value_policy::reference)
 		.def("__setitem__", &PyDiscreteElementNodeList::set)
+		.def("__iter__", &PyDiscreteElementNodeList::iter)
 		;
 
-    py::class_<GSurfaceMeshObject, GObject, std::unique_ptr<GSurfaceMeshObject, py::nodelete>>(geom, "GSurfaceMeshObject")
+    py::class_<GSurfaceMeshObject, GObject, std::unique_ptr<GSurfaceMeshObject, py::nodelete>>(geom, "SurfaceMeshObject")
         .def(py::init<FSSurfaceMesh*>())
         ;
 
 	py::class_<GMeshObject, GObject, std::unique_ptr<GMeshObject, py::nodelete>>(geom, "MeshObject", DOC(GMeshObject))
 		.def("add_node", static_cast<int (GMeshObject::*)(vec3d)>(&GMeshObject::AddNode), DOC(GMeshObject, AddNode))
 		.def("get_or_create_geometry_node", &GMeshObject::MakeGNode, DOC(GMeshObject, MakeGNode))
-		;
-
-	py::class_<GBox, GObject, std::unique_ptr<GBox, py::nodelete>>(geom, "Box", DOC(GBox));
-
-	py::class_<GDisc, GObject, std::unique_ptr<GDisc, py::nodelete>>(geom, "Disc", DOC(GDisc))
-		.def("CreateMesh", &GDisc::CreateMesh, DOC(GDisc, CreateMesh))
 		;
 
 	py::class_<GNode, std::unique_ptr<GNode, py::nodelete>>(geom, "Node", DOC(GNode))

@@ -171,6 +171,7 @@ bool ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp
 void InitStandardDataFields();
 int StandardDataFields(); 
 std::string GetStandarDataFieldName(int i);
+ModelDataField* CreateStandardDataField(FEPostModel& fem, const std::string& dataField);
 bool AddStandardDataField(FEPostModel& fem, const std::string& dataField);
 bool AddStandardDataField(FEPostModel& fem, const std::string& dataField, std::vector<int> selectionList);
 

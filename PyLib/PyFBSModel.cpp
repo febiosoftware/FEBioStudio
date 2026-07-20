@@ -1005,7 +1005,7 @@ void init_FBSModel(py::module& m)
 		)
 		;
 
-	py::class_<FSStep, FSObject, std::unique_ptr<FSStep, py::nodelete>>(mdl, "FSStep", "A class representing an analysis step in the FEBio model.")
+	py::class_<FSStep, FSObject, std::unique_ptr<FSStep, py::nodelete>>(mdl, "Step", "A class representing an analysis step in the FEBio model.")
 		.def_property_readonly("params", [](FSStep& self) { return PyParameterList(&self); }, py::return_value_policy::reference_internal)
 		.def("__getattr__", [](FSStep& self, const std::string& name) { return GetDynamicAttribute(self, name); })
 		.def("__setattr__", [](FSStep& self, const std::string& name, py::object value) { SetDynamicAttribute(self, name, value); })
@@ -1134,21 +1134,21 @@ void init_FBSModel(py::module& m)
 	py::class_<FSPairedInterface, FSObject, std::unique_ptr<FSPairedInterface>>(mdl, "PairedInterface")
 		.def_property_readonly("params", [](FSPairedInterface& self) { return PyParameterList(&self); }, py::return_value_policy::reference_internal)
 		.def_property(
-			"primary",
+			"primary_selection",
 			[](FSPairedInterface& self) { return self.GetPrimarySurface(); },
 			[](FSPairedInterface& self, FSItemListBuilder* selection) { self.SetPrimarySurface(selection); })
 		.def_property(
-			"secondary",
+			"secondary_selection",
 			[](FSPairedInterface& self) { return self.GetSecondarySurface(); },
 			[](FSPairedInterface& self, FSItemListBuilder* selection) { self.SetSecondarySurface(selection); })
 		.def("__getattr__", [](FSPairedInterface& self, const std::string& name) { return GetDynamicAttribute(self, name); })
 		.def("__setattr__", [](FSPairedInterface& self, const std::string& name, py::object value) {
-			if (name == "primary")
+			if (name == "primary_selection")
 			{
 				self.SetPrimarySurface(PyValueToItemList(value));
 				return;
 			}
-			else if (name == "secondary")
+			else if (name == "secondary_selection")
 			{
 				self.SetSecondarySurface(PyValueToItemList(value));
 				return;
@@ -1167,7 +1167,7 @@ void init_FBSModel(py::module& m)
 		;
 
 	py::class_<FSMeshAdaptor, FSObject, std::unique_ptr<FSMeshAdaptor>>(mdl, "MeshAdaptor")
-		.def_property_readonly("params", [](FSModelConstraint& self) { return PyParameterList(&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly("params", [](FSMeshAdaptor& self) { return PyParameterList(&self); }, py::return_value_policy::reference_internal)
 		.def_property(
 			"selection",
 			[](FSMeshAdaptor& self) { return GetItemListSelection(self); },

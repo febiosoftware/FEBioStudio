@@ -99,7 +99,7 @@ void init_FBSCore(py::module& m)
 		.def("global_to_local", &Transform::GlobalToLocal, DOC(Transform, GlobalToLocal))
 		;
 
-	py::class_<FSObject, std::unique_ptr<FSObject, py::nodelete>>(core, "FSObject", "Base class for all FEBio Studio objects")
+	py::class_<FSObject, std::unique_ptr<FSObject, py::nodelete>>(core, "Base", "Base class for all FEBio Studio objects")
 		.def_property("name", &FSObject::GetName, &FSObject::SetName, "Get or set the name of the object")
 		;
 
