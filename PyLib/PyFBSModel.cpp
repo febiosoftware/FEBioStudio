@@ -878,44 +878,6 @@ void init_FBSModel(py::module& m)
 		.def("add", &PySelectionList::add, py::return_value_policy::reference)
 		;
 
-	// view wrapper for parameters
-	py::class_<PyParameter>(mdl, "Parameter")
-		.def_property("value", &PyParameter::value, &PyParameter::setValue)
-		.def_property("lc_id", &PyParameter::lcID, &PyParameter::setLCID)
-		.def_property("lc", &PyParameter::getLC, &PyParameter::setLC)
-		.def_property_readonly("name", &PyParameter::name)
-		.def_property_readonly("long_name", &PyParameter::longName)
-		.def_property_readonly("unit", &PyParameter::unit);
-
-	py::class_<PyParameterList>(mdl, "ParameterList")
-		.def("__len__", &PyParameterList::size)
-		.def("__getitem__", py::overload_cast<int>(&PyParameterList::get, py::const_))
-		.def("__getitem__", py::overload_cast<const std::string&>(&PyParameterList::get, py::const_))
-		.def("__iter__", [](const PyParameterList& self) {
-			py::list items;
-			for (int i = 0; i < self.size(); ++i)
-			{
-				items.append(self.get(i));
-			}
-			return py::iter(items);
-		});
-
-	py::class_<PyVec2dList>(mdl, "PointList")
-		.def("__len__", &PyVec2dList::size)
-		.def("__getitem__", &PyVec2dList::get)
-		.def("__iter__", &PyVec2dList::iter)
-		.def("add", py::overload_cast<double, double>(&PyVec2dList::add))
-		.def("add", py::overload_cast<py::handle>(&PyVec2dList::add))
-		.def("clear", &PyVec2dList::clear)
-		;
-
-	// minimal property slot wrapper for model components
-	py::class_<PyPropertySlot>(mdl, "PropertySlot")
-		.def("create", &PyPropertySlot::create)
-		.def("clear", &PyPropertySlot::clear)
-		.def_property_readonly("is_set", &PyPropertySlot::isSet)
-		.def_property_readonly("type_str", &PyPropertySlot::typeStr);
-
 	py::class_<PyPlotVariableList>(mdl, "PlotVariableList")
 		.def("__len__", &PyPlotVariableList::size)
 		.def("__getitem__", py::overload_cast<int>(&PyPlotVariableList::get, py::const_), py::return_value_policy::reference)

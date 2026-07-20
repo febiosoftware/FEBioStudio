@@ -208,6 +208,19 @@ public:
 		return PyParameter(p, m_model);
 	}
 
+	py::list iter() const
+	{
+		py::list items;
+		for (int i = 0; i < size(); ++i)
+			items.append(get(i));
+		return items;
+	}
+
+	bool contains(const std::string& name) const
+	{
+		return m_params->GetParam(name.c_str()) != nullptr;
+	}
+
 private:
 	ParamContainer* m_params = nullptr;
 	FSModel* m_model = nullptr;
