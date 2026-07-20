@@ -41,9 +41,7 @@ SOFTWARE.*/
 #include "PyFBSMesh.h"
 #include "PyFBSGeom.h"
 #include <XPLTLib/xpltFileReader.h>
-
 #include <PostGL/GLModel.h>
-#include "PyExceptions.h"
 
 #ifndef PY_EXTERNAL
 #include "PyFBSModel.h"
@@ -75,7 +73,7 @@ FSModel* GetActiveModel()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(PyRunContext::GetDocument());
 	if (doc == nullptr)
 	{
-		throw pyGenericExcept("There is no active model.");
+		throw std::runtime_error("There is no active model.");
 	}
 	return (doc ? doc->GetFSModel() : nullptr);
 }
@@ -85,7 +83,7 @@ Post::CGLModel* GetActivePostModel()
 	CPostDocument* doc = dynamic_cast<CPostDocument*>(PyRunContext::GetDocument());
 	if (doc == nullptr)
 	{
-		throw pyGenericExcept("There is no active post model.");
+		throw std::runtime_error("There is no active post model.");
 	}
 	return (doc ? doc->GetGLModel() : nullptr);
 }
@@ -205,7 +203,7 @@ public:
 
 		if (reader.Load(filename.c_str()) == false)
 		{
-			throw pyGenericExcept("Failed to read plot file.");
+			throw py::value_error("Failed to read plot file.");
 		}
 
 		model->SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, 0, 0));

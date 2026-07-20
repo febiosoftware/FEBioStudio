@@ -46,7 +46,6 @@ SOFTWARE.*/
 #include <MeshLib/FSItemListBuilder.h>
 #include <FEBio/FEBioExport4.h>
 #include <MeshIO/VTKExport.h>
-#include "PyExceptions.h"
 #include "PyRunContext.h"
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GMeshObject.h>
@@ -64,7 +63,7 @@ bool ExportFEB(FSModel& fem, std::string& fileName)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(PyRunContext::GetDocument());
 	if (doc == nullptr)
 	{
-		throw pyGenericExcept("There is no active model.");
+		throw std::runtime_error("There is no active model.");
 	}
 	assert(doc->GetFSModel() == &fem);
 	FEBioExport4 feb(doc->GetProject());
@@ -76,7 +75,7 @@ bool ExportVTK(FSModel& fem, std::string& fileName)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(PyRunContext::GetDocument());
 	if (doc == nullptr)
 	{
-		throw pyGenericExcept("There is no active model.");
+		throw std::runtime_error("There is no active model.");
 	}
 	assert(doc->GetFSModel() == &fem);
 	VTKExport vtk(doc->GetProject());

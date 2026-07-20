@@ -40,11 +40,9 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include "DocHeaders/PyPostDocs.h"
 #include "PyFBSMesh.h"
-#include "PyExceptions.h"
 #ifndef PY_EXTERNAL
 #include <FEBioStudio/PostDocument.h>
 #include "PyRunContext.h"
-#include "PyExceptions.h"
 #endif
 #include "PyUtil.h"
 
@@ -94,7 +92,7 @@ public:
 		
 		if (field == nullptr)
 		{
-			throw pyGenericExcept("Failed to add data field.");
+			throw std::runtime_error("Failed to add data field.");
 		}
 
 		fem->AddDataField(field, name);
@@ -147,7 +145,7 @@ public:
 		CGLPlot* plot = m_model->AddPlot(name.c_str(), type.c_str());
 		if (plot == nullptr)
 		{
-			throw pyGenericExcept("Failed to add plot.");
+			throw std::runtime_error("Failed to add plot.");
 		}
 		if (!kwargs.empty())
 		{
@@ -262,7 +260,7 @@ double PostIntegrateElements(FEPostModel& model, const std::string& elsetName, i
 	FEState* ps = model.GetState(state);
 	if (ps == nullptr)
 	{
-		throw pyGenericExcept("Invalid state index.");
+		throw py::value_error("Invalid state index.");
 	}
 
 	FSMesh* mesh = ps->GetFEMesh();
@@ -270,7 +268,7 @@ double PostIntegrateElements(FEPostModel& model, const std::string& elsetName, i
 	FSElemSet* set = mesh->FindFEElemSet(elsetName);
 	if (set == nullptr)
 	{
-		throw pyGenericExcept("Invalid element set name.");
+		throw py::value_error("Invalid element set name.");
 	}
 
 	std::vector<int> elemList = set->CopyItems();
@@ -302,7 +300,7 @@ double PostIntegrateFaces(FEPostModel& model, const std::string& surfName, int f
 	FEState* ps = model.GetState(state);
 	if (ps == nullptr)
 	{
-		throw pyGenericExcept("Invalid state index.");
+		throw py::value_error("Invalid state index.");
 	}
 
 	FSMesh* mesh = ps->GetFEMesh();
@@ -311,7 +309,7 @@ double PostIntegrateFaces(FEPostModel& model, const std::string& surfName, int f
 	FSSurface* surf = mesh->FindFESurface(surfName);
 	if (surf == nullptr)
 	{
-		throw pyGenericExcept("Invalid surface name.");
+		throw py::value_error("Invalid surface name.");
 	}
 
 	std::vector<int> faceList = surf->CopyItems();
@@ -562,7 +560,7 @@ void init_FBSPost(py::module& m)
 		.def_readwrite("write_part_ids", &FEVTKExport::m_bwritePartIDs)
 		.def("save", [](FEVTKExport& self, CGLModel& model, const char* szfile) { 
 			bool b = self.Save(*model.GetFSModel(), szfile); 
-			if (!b) throw pyGenericExcept("Failed to save VTK file.");
+			if (!b) throw std::runtime_error("Failed to save VTK file.");
 			})
 		;
 }
