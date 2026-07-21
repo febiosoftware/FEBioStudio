@@ -193,8 +193,9 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 	if (moduleId < -1) throw XMLReader::InvalidAttributeValue(tag, "type", atype.m_val.c_str());
 	
 	FSProject& prj = FileReader()->GetProject();
-	prj.SetModule(moduleId, false);
 	m_nAnalysis = moduleId;
+	FSModel& fem = prj.GetFSModel();
+	fem.SetModule(moduleId, false);
 
 	if (tag.isempty() == false)
 	{
@@ -204,13 +205,13 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 			{
 				// NOTE: the values are defined in FEBioStudio\units.h. 
 				const char* sz = tag.szvalue();
-				if      (strcmp(sz, "SI"     ) == 0) prj.SetUnits(2);
-				else if (strcmp(sz, "mm-N-s" ) == 0) prj.SetUnits(3);
-				else if (strcmp(sz, "mm-kg-s") == 0) prj.SetUnits(4);
-				else if (strcmp(sz, "um-nN-s") == 0) prj.SetUnits(5);
-				else if (strcmp(sz, "CGS"    ) == 0) prj.SetUnits(6);
-                else if (strcmp(sz, "mm-g-s" ) == 0) prj.SetUnits(7);
-                else if (strcmp(sz, "mm-mg-s") == 0) prj.SetUnits(8);
+				if      (strcmp(sz, "SI"     ) == 0) fem.SetUnits(2);
+				else if (strcmp(sz, "mm-N-s" ) == 0) fem.SetUnits(3);
+				else if (strcmp(sz, "mm-kg-s") == 0) fem.SetUnits(4);
+				else if (strcmp(sz, "um-nN-s") == 0) fem.SetUnits(5);
+				else if (strcmp(sz, "CGS"    ) == 0) fem.SetUnits(6);
+                else if (strcmp(sz, "mm-g-s" ) == 0) fem.SetUnits(7);
+                else if (strcmp(sz, "mm-mg-s") == 0) fem.SetUnits(8);
 				else AddLogEntry("Unrecognized unit system.");
 			}
 			++tag;

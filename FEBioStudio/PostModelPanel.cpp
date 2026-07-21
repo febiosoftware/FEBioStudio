@@ -1687,7 +1687,7 @@ void CPostModelPanel::OnExportMCSurface()
 			string filename = fileName.toStdString();
 			FSMesh mesh;
 			mc->GetMesh(mesh);
-			FSProject dummy;
+			FSModel dummy;
 			STLExport stl(dummy);
 
 			bool b = stl.Write(filename.c_str(), &mesh);

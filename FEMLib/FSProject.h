@@ -78,12 +78,6 @@ public:
 	//! load project from file
 	void Load(IArchive& ar);
 
-	//! Get the project title
-	const std::string& GetTitle() { return m_title; }
-
-	//! set the project title
-	void SetTitle(const std::string& title);
-
 	//! reset project data
 	void Reset();
 
@@ -95,19 +89,6 @@ public:
 
 	//! Get the log file settings
 	CLogDataSettings& GetLogDataSettings() { return m_fem.GetLogDataSettings(); }
-
-	//! set default plot variables
-	void SetDefaultPlotVariables();
-
-	int GetModule() const;
-	void SetModule(int mod, bool setDefaultPlotVariables = true);
-
-	std::string GetModuleName() const;
-
-	static void InitModules();
-
-	void SetUnits(int units);
-	int GetUnits() const;
 
     void GetActivePluginIDs(std::unordered_set<int>& allocatorIDs);
 
@@ -134,8 +115,7 @@ protected:
 	void ConvertMeshAdaptors(std::ostream& log, FSStep& newStep, FSStep& oldStep);
 
 private:
-	std::string			m_title;	// Project Title
 	FSModel				m_fem;		// FE model data
-	int					m_module;	// active module
-	int					m_units;	// unit system (read from feb file)
 };
+
+void InitModules();

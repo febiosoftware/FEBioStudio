@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "STLExport.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
-#include <FEMLib/FSProject.h>
+#include <FEMLib/FSModel.h>
 
 void stl_write_face(FILE* fp, const vec3d& fn, const vec3d& r0, const vec3d& r1, const vec3d& r2)
 {
@@ -125,7 +125,7 @@ bool stl_write_surface(FILE* fp, FSSurface* surf)
 	return true;
 }
 
-STLExport::STLExport(FSProject& prj) : FSFileExport(prj)
+STLExport::STLExport(FSModel& fem) : m_fem(fem)
 {
 }
 
@@ -140,8 +140,7 @@ bool STLExport::Write(const char* szfile)
 
 	int n;
 
-	FSModel* ps = &m_prj.GetFSModel();
-	GModel& model = ps->GetModel();
+	GModel& model = m_fem.GetModel();
 
 	// only the selected object is exported, unless no object is selected, 
 	// then we export them all. So, we first need to know how many are selected.

@@ -507,7 +507,7 @@ void FSStep::RemoveAllRigidConstraints()
 //-----------------------------------------------------------------------------
 int FSStep::RigidLoads()
 {
-	return imp->m_RL.Size();
+	return (int)imp->m_RL.Size();
 }
 
 int FSStep::RigidLoads(int ntype)
@@ -537,7 +537,7 @@ void FSStep::InsertRigidLoad(int n, FSRigidLoad* prc)
 
 int FSStep::RemoveRigidLoad(FSRigidLoad* prc)
 {
-	return imp->m_RL.Remove(prc);
+	return (int)imp->m_RL.Remove(prc);
 }
 
 void FSStep::RemoveAllRigidLoads()
@@ -548,7 +548,7 @@ void FSStep::RemoveAllRigidLoads()
 //-----------------------------------------------------------------------------
 int FSStep::RigidBCs()
 {
-	return imp->m_RBC.Size();
+	return (int)imp->m_RBC.Size();
 }
 
 int FSStep::RigidBCs(int ntype)
@@ -578,7 +578,7 @@ void FSStep::InsertRigidBC(int n, FSRigidBC* prc)
 
 int FSStep::RemoveRigidBC(FSRigidBC* prc)
 {
-	return imp->m_RBC.Remove(prc);
+	return (int)imp->m_RBC.Remove(prc);
 }
 
 void FSStep::RemoveAllRigidBCs()
@@ -589,7 +589,7 @@ void FSStep::RemoveAllRigidBCs()
 //-----------------------------------------------------------------------------
 int FSStep::RigidICs()
 {
-	return imp->m_RIC.Size();
+	return (int)imp->m_RIC.Size();
 }
 
 int FSStep::RigidICs(int ntype)
@@ -619,7 +619,7 @@ void FSStep::InsertRigidIC(int n, FSRigidIC* prc)
 
 int FSStep::RemoveRigidIC(FSRigidIC* prc)
 {
-	return imp->m_RIC.Remove(prc);
+	return (int)imp->m_RIC.Remove(prc);
 }
 
 void FSStep::RemoveAllRigidICs()

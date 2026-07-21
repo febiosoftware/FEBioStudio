@@ -130,7 +130,7 @@ bool NIKE3DImport::Load(const char* szfile)
 	FSModel& fem = *m_fem;
 
 	// set the project's module
-	m_prj.SetModule(FEBio::GetModuleId("solid"));
+	fem.SetModule(FEBio::GetModuleId("solid"));
 
 	// create a nike project
 	NIKE3DProject nike;

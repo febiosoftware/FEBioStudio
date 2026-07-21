@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FEBioExport.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
-#include <FEMLib/FSProject.h>
+#include <FEMLib/FSModel.h>
 #include <sstream>
 #include <iomanip>
 
@@ -93,7 +93,7 @@ template <> std::string type_to_string<mat3d>(const mat3d& v)
 }
 
 //=============================================================================
-FEBioExport::FEBioExport(FSProject& prj) : FSFileExport(prj)
+FEBioExport::FEBioExport(FSModel& fem) : m_fem(fem)
 {
 	m_compress = false;
 	m_exportSelections = false;
@@ -144,8 +144,7 @@ XMLWriter& FEBioExport::GetXMLWriter()
 const char* FEBioExport::GetEnumKey(Param& p)
 {
 	assert((p.GetParamType() == Param_CHOICE) || (p.GetParamType() == Param_INT));
-	FSModel& fem = m_prj.GetFSModel();
-	return fem.GetEnumKey(p, false);
+	return m_fem.GetEnumKey(p, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -167,7 +166,7 @@ void FEBioExport::WriteParam(Param &p)
 	const char* szindex = p.GetIndexName();
 	int nindex = p.GetIndexValue();
 
-	FSModel& fem = m_prj.GetFSModel();
+	FSModel& fem = m_fem;
 
 	// setup the xml-element
 	XMLElement e;
@@ -330,13 +329,12 @@ void FEBioExport::Clear()
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioExport::PrepareExport(FSProject& prj)
+bool FEBioExport::PrepareExport()
 {
 	Clear();
 
 	// get the model
-	FSModel& fem = prj.GetFSModel();
-	GModel& model = fem.GetModel();
+	GModel& model = m_fem.GetModel();
 
 	// make sure all objects are meshed
 	for (int i = 0; i < model.Objects(); ++i)
@@ -378,13 +376,13 @@ bool FEBioExport::PrepareExport(FSProject& prj)
 	}
 
 	// set material tags
-	for (int i = 0; i<fem.Materials(); ++i) fem.GetMaterial(i)->m_ntag = i + 1;
+	for (int i = 0; i<m_fem.Materials(); ++i) m_fem.GetMaterial(i)->m_ntag = i + 1;
 
 	// build load controller table
 	m_LCT.clear();
-	for (int i = 0; i < fem.LoadControllers(); ++i)
+	for (int i = 0; i < m_fem.LoadControllers(); ++i)
 	{
-		FSLoadController* plc = fem.GetLoadController(i);
+		FSLoadController* plc = m_fem.GetLoadController(i);
 		m_LCT[plc->GetID()] = i + 1;
 	}
 

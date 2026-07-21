@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <MeshIO/FSFileExport.h>
 #include <FECore/XMLWriter.h>
 #include "FEBioException.h"
-#include <FEMLib/FSProject.h>
+#include <FEMLib/FSModel.h>
 #include <sstream>
 #include <map>
 
@@ -57,7 +57,7 @@ enum FEBioExportSections
 class FEBioExport : public FSFileExport
 {
 public:
-	FEBioExport(FSProject& prj);
+	FEBioExport(FSModel& fem);
 
 	void SetPlotfileCompressionFlag(bool b);
 	void SetExportSelectionsFlag(bool b);
@@ -73,7 +73,7 @@ protected:
 
 	virtual void Clear();
 
-	virtual bool PrepareExport(FSProject& prj);
+	virtual bool PrepareExport();
 
 	void WriteNote(FSObject* po);
 
@@ -86,7 +86,8 @@ public: // helper functions for writing to the xml file directly
 	XMLWriter& GetXMLWriter();
 
 protected:
-	XMLWriter		m_xml;
+	FSModel&	m_fem;
+	XMLWriter	m_xml;
 
 	unsigned int m_section;	//!< write section flags
 

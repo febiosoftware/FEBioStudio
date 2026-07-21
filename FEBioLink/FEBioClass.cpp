@@ -1717,6 +1717,6 @@ FSModelComponent* FEBio::CloneModelComponent(FSModelComponent* pmc, FSModel* fem
 void FEBio::SetActiveProject(FSProject* prj)
 {
 	if (prj == nullptr) SetActiveModule(-1);
-	else SetActiveModule(prj->GetModule());
+	else SetActiveModule(prj->GetFSModel().GetModule());
 	activeProject = prj;
 }

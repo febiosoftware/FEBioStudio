@@ -236,6 +236,53 @@ FSModel::FSModel() : m_skipGeometry(false), m_plt(*this), m_log(*this)
 	AddScienceParam(0, UNIT_FARADAY_CONSTANT, "Fc", "Faraday's constant");
 
 	m_MLT_offset = 0;
+	m_module = -1;
+	m_units = 0; // 0 = no unit system
+}
+
+void FSModel::SetUnits(int units)
+{
+	m_units = units;
+}
+
+int FSModel::GetUnits() const
+{
+	return m_units;
+}
+
+std::string FSModel::GetModuleName() const
+{
+	int mod = FEBio::GetActiveModule();
+	assert(mod == m_module);
+	return FEBio::GetModuleName(mod);
+}
+
+void FSModel::SetModule(int mod, bool setDefaultPlotVariables)
+{
+	m_module = mod;
+	FEBio::SetActiveModule(mod);
+
+	// get the list of variables
+	if (mod != -1)
+	{
+		FEBio::InitFSModel(*this);
+
+		if (setDefaultPlotVariables)
+		{
+			GetPlotDataSettings().Clear();
+			// add some default variables
+			// TODO: Maybe I can pull this info from FEBio somehow
+			SetDefaultPlotVariables();
+		}
+	}
+}
+
+void FSModel::SetDefaultPlotVariables()
+{
+	int moduleId = GetModule();
+	const char* szmod = FEBio::GetModuleName(moduleId); assert(szmod);
+	if (szmod == nullptr) return;
+	GetPlotDataSettings().InitDefaultPlotVariables(szmod);
 }
 
 void FSModel::ClearVariables()

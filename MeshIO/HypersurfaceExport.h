@@ -31,8 +31,11 @@ SOFTWARE.*/
 class HypersurfaceExport : public FSFileExport
 {
 public:
-	HypersurfaceExport(FSProject& prj);
+	HypersurfaceExport(FSModel& fem);
 	~HypersurfaceExport(void);
 
 	bool Write(const char* szfile) override;
+
+private:
+	FSModel& m_fem;
 };

@@ -27,9 +27,9 @@ SOFTWARE.*/
 #include "ViewpointExport.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
-#include <FEMLib/FSProject.h>
+#include <FEMLib/FSModel.h>
 
-ViewpointExport::ViewpointExport(FSProject& prj) : FSFileExport(prj)
+ViewpointExport::ViewpointExport(FSModel& fem) : m_fem(fem)
 {
 }
 
@@ -51,8 +51,7 @@ bool ViewpointExport::Write(const char* szfile)
 	FILE* fp = fopen(szfcor, "wt");
 	if (fp == 0) return false;
 
-	FSModel* ps = &m_prj.GetFSModel();
-	GModel& model = ps->GetModel();
+	GModel& model = m_fem.GetModel();
 
 	int nn = 1;
 	for (m=0; m<model.Objects(); ++m)

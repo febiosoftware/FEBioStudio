@@ -840,7 +840,7 @@ void CModelTree::Build(CModelDocument* doc)
 	std::string modelName = doc->GetDocFileBase();
 	if (modelName.empty()) modelName = "Model";
 
-	std::string moduleName = prj.GetModuleName();
+	std::string moduleName = fem.GetModuleName();
 
 	if      (m_nfilter == ModelTreeFilter::FILTER_GEOMETRY ) modelName += " > Geometry";
 	else if (m_nfilter == ModelTreeFilter::FILTER_MATERIALS) modelName += " > Materials";

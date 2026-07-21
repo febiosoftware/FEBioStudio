@@ -27,11 +27,11 @@ SOFTWARE.*/
 #include "MeshExport.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
-#include <FEMLib/FSProject.h>
+#include <FEMLib/FSModel.h>
 #include <memory>
 //using namespace std;
 
-MeshExport::MeshExport(FSProject& prj) : FSFileExport(prj)
+MeshExport::MeshExport(FSModel& fem) : m_fem(fem)
 {
 }
 
@@ -41,8 +41,7 @@ MeshExport::~MeshExport(void)
 
 bool MeshExport::Write(const char* szfile)
 {
-	FSModel& fem = m_prj.GetFSModel();
-	GModel& model = fem.GetModel();
+	GModel& model = m_fem.GetModel();
 
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;

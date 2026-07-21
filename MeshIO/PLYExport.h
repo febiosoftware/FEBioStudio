@@ -31,8 +31,11 @@ SOFTWARE.*/
 class PLYExport : public FSFileExport
 {
 public:
-	PLYExport(FSProject& prj);
+	PLYExport(FSModel& fem);
 	~PLYExport(void);
 
 	bool Write(const char* szfile) override;
+
+private:
+	FSModel& m_fem;
 };

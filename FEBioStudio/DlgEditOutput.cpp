@@ -371,7 +371,8 @@ void CDlgEditOutput::showEvent(QShowEvent* ev)
 {
 	ui->clearLists();
 
-	int module = m_prj.GetModule();
+	FSModel& fem = m_prj.GetFSModel();
+	int module = fem.GetModule();
 
 	ui->m_plt.clear();
 

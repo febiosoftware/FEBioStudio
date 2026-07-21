@@ -97,7 +97,7 @@ QStringList GetFEBioChoices(int moduleId, int superClassId)
 
 CStepSettings::CStepSettings(FSProject& prj)
 {
-	m_moduleId = prj.GetModule();
+	m_moduleId = prj.GetFSModel().GetModule();
 }
 
 void CStepSettings::BuildProperties()

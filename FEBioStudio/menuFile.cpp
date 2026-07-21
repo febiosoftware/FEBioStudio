@@ -665,9 +665,9 @@ void CMainWindow::ExportPostGeometry()
 	break;
 	case 2:
 	{
-		// We need a dummy project
-		FSProject prj;
-		STLExport stl(prj);
+		// We need a dummy model to export the post geometry to STL.
+		FSModel dummy;
+		STLExport stl(dummy);
 		bret = stl.Write(szfilename, doc->GetPostObject());
 	}
 	break;
@@ -838,7 +838,7 @@ void CMainWindow::ExportGeometry()
 		const char* szfile = sfile.c_str();
 
 		// get the project
-		FSProject& fem = doc->GetProject();
+		FSModel& fem = *doc->GetFSModel();
 
 		AddLogEntry(QString("Writing file %1 ... ").arg(fileName));
 
@@ -1561,7 +1561,8 @@ void CMainWindow::on_actionExportFEModel_triggered()
 		const char* szfile = sfile.c_str();
 
 		// get the project
-		FSProject& fem = doc->GetProject();
+		FSProject& prj = doc->GetProject();
+		FSModel& fem = prj.GetFSModel();
 
 		// pass the units to the model project
 		fem.SetUnits(doc->GetUnitSystem());

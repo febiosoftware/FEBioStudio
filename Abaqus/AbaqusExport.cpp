@@ -24,13 +24,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "AbaqusExport.h"
-#include <FEMLib/FSProject.h>
+#include <FEMLib/FSModel.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 
-AbaqusExport::AbaqusExport(FSProject& prj) : FSFileExport(prj)
+AbaqusExport::AbaqusExport(FSModel& fem) : m_fem(fem)
 {
-
+	m_fp = nullptr;
 }
 
 AbaqusExport::~AbaqusExport(void)
@@ -52,7 +52,7 @@ bool AbaqusExport::Write(const char* szfile)
 	fprintf(fp, "*HEADING\n");
 	fprintf(fp, "%s\n", m_heading.c_str());
 
-	GModel& model = m_prj.GetFSModel().GetModel();
+	GModel& model = m_fem.GetModel();
 
 	// write nodes
 	int nc = 1;

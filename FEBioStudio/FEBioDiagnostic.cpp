@@ -38,7 +38,7 @@ FEBioTangentDiagnostic::FEBioTangentDiagnostic()
 
 bool FEBioTangentDiagnostic::WriteDiagnosticFile(CModelDocument* doc, const std::string& fileName)
 {
-	FEBioExport3 febioExport(doc->GetProject());
+	FEBioExport3 febioExport(*doc->GetFSModel());
 
 	XMLWriter& xml = febioExport.GetXMLWriter();
 

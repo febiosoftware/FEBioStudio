@@ -781,9 +781,9 @@ bool CModelDocument::Initialize()
 {
 	// When called after reading an FEBio, the project's units may be different
 	// than the model's (which is initialized to the default units). 
-	if (m_Project.GetUnits() != 0)
+	if (GetFSModel()->GetUnits() != 0)
 	{
-		SetUnitSystem(m_Project.GetUnits());
+		SetUnitSystem(GetFSModel()->GetUnits());
 
 		if (GetActiveDocument() == this)
 		{
@@ -1378,7 +1378,7 @@ BOX CModelDocument::GetBoundingBox()
 CModelDocument* CreateNewModelDocument(CMainWindow* wnd, int moduleID, std::string name, int units)
 {
 	CModelDocument* doc = new CModelDocument(wnd);
-	doc->GetProject().SetModule(moduleID);
+	doc->GetProject().GetFSModel().SetModule(moduleID);
 
 	CDocManager* dm = wnd->GetDocManager();
 

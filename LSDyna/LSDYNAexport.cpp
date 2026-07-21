@@ -33,7 +33,7 @@ SOFTWARE.*/
 using std::unique_ptr;
 
 //-----------------------------------------------------------------------------
-LSDYNAexport::LSDYNAexport(FSProject& prj) : FSFileExport(prj)
+LSDYNAexport::LSDYNAexport(FSModel& fem) : m_fem(fem)
 {
 	m_fp = 0;
 
@@ -73,8 +73,7 @@ bool LSDYNAexport::Write(const char *szfile)
 	m_fp = fopen(szfile, "wt");
 	if (m_fp == 0) return errf("Failed creating LSDYNA file %s", szfile);
 
-	FSModel* ps = &m_prj.GetFSModel();
-	GModel& model = ps->GetModel();
+	GModel& model = m_fem.GetModel();
 
 	// reset part counter
 	m_npart = 1;
@@ -116,8 +115,7 @@ bool LSDYNAexport::Write(const char *szfile)
 //-----------------------------------------------------------------------------
 bool LSDYNAexport::write_NODE()
 {
-	FSModel* ps = &(m_prj.GetFSModel());
-	GModel& model = ps->GetModel();
+	GModel& model = m_fem.GetModel();
 
 	fprintf(m_fp, "*NODE\n");
 	int n = 1;
@@ -147,8 +145,7 @@ bool LSDYNAexport::write_ELEMENT_SOLID()
 	int nn[FSElement::MAX_NODES];
 	int n = 1;
 
-	FSModel* ps = &(m_prj.GetFSModel());
-	GModel& model = ps->GetModel();
+	GModel& model = m_fem.GetModel();
 
 	fprintf(m_fp, "*ELEMENT_SOLID\n");
 	for (int i=0; i<model.Objects(); ++i)
@@ -193,8 +190,7 @@ bool LSDYNAexport::write_ELEMENT_SHELL()
 	int nn[8];
 	int n = 1;
 
-	FSModel* ps = &(m_prj.GetFSModel());
-	GModel& model = ps->GetModel();
+	GModel& model = m_fem.GetModel();
 		
 	fprintf(m_fp, "*ELEMENT_SHELL\n");
 
@@ -237,8 +233,7 @@ bool LSDYNAexport::write_ELEMENT_SHELL_THICKNESS()
 	int nn[8];
 	int n = 1;
 
-	FSModel* ps = &(m_prj.GetFSModel());
-	GModel& model = ps->GetModel();
+	GModel& model = m_fem.GetModel();
 		
 	fprintf(m_fp, "*ELEMENT_SHELL_THICKNESS\n");
 
@@ -279,8 +274,7 @@ bool LSDYNAexport::write_ELEMENT_SHELL_THICKNESS()
 //-----------------------------------------------------------------------------
 bool LSDYNAexport::write_SET_SHELL_LIST()
 {
-	FSModel* ps = &(m_prj.GetFSModel());
-	GModel& model = ps->GetModel();
+	GModel& model = m_fem.GetModel();
 
 	// export the parts
 	int n = 1;

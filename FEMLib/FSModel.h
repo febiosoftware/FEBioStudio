@@ -378,6 +378,21 @@ public:
 	CPlotDataSettings& GetPlotDataSettings() { return m_plt; }
 	CLogDataSettings& GetLogDataSettings() { return m_log; }
 
+	void SetUnits(int units);
+	int GetUnits() const;
+
+	void SetTitle(const std::string& title) { m_title = title; }
+
+	const std::string& GetTitle() { return m_title; }
+
+	int GetModule() const { return m_module; }
+	void SetModule(int mod, bool setDefaultPlotVariables = true);
+
+	std::string GetModuleName() const;
+
+	//! set default plot variables
+	void SetDefaultPlotVariables();
+
 protected:
 	// I/O helper functions
 	//! Load data from archive
@@ -433,6 +448,10 @@ protected:
 
 	//! Skip geometry section when loading file
 	bool m_skipGeometry;
+
+	std::string			m_title;	// Model Title
+	int					m_module;	// active module
+	int m_units;	// unit system (read from feb file)
 };
 
 //-----------------------------------------------------------------------------

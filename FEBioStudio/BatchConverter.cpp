@@ -82,37 +82,38 @@ void CConvertFEBtoFEB::Start()
 	for (it = m_files.begin(); it != m_files.end(); ++it)
 	{
 		FSProject prj;
+		FSModel& fem = prj.GetFSModel();
 		FEBioFileImport reader(prj);
 
 		FSFileExport* exporter = 0;
 		if (m_nformat == 0x0400)
 		{
 			// write version 4
-			FEBioExport4* writer = new FEBioExport4(prj); exporter = writer;
+			FEBioExport4* writer = new FEBioExport4(fem); exporter = writer;
 			writer->SetSectionFlags(m_section);
 		}
 		else if (m_nformat == 0x0300)
 		{
 			// write version 3
-			FEBioExport3* writer = new FEBioExport3(prj); exporter = writer;
+			FEBioExport3* writer = new FEBioExport3(fem); exporter = writer;
 			writer->SetSectionFlags(m_section);
 		}
 		else if (m_nformat == 0x0205)
 		{
 			// write version 2.5
-			FEBioExport25* writer = new FEBioExport25(prj); exporter = writer;
+			FEBioExport25* writer = new FEBioExport25(fem); exporter = writer;
 			writer->SetSectionFlags(m_section);
 		}
 		else if (m_nformat == 0x0200)
 		{
 			// Write version 2.0
-			FEBioExport2* writer = new FEBioExport2(prj); exporter = writer;
+			FEBioExport2* writer = new FEBioExport2(fem); exporter = writer;
 			writer->SetSectionFlags(m_section);
 		}
 		else if (m_nformat == 0x0102)
 		{
 			// Write version 1.x
-			FEBioExport12* writer = new FEBioExport12(prj); exporter = writer;
+			FEBioExport12* writer = new FEBioExport12(fem); exporter = writer;
 			writer->SetSectionFlags(m_section);
 		}
 		else
@@ -266,36 +267,37 @@ void CConvertFSMtoFEB::Start()
 		if (bret)
 		{
 			FSProject& prj = doc.GetProject();
+			FSModel& fem = prj.GetFSModel();
 
 			FSFileExport* exporter = 0;
 			if (m_format == 0x0400)
 			{
 				// write version 4
-				FEBioExport4* writer = new FEBioExport4(prj); exporter = writer;
+				FEBioExport4* writer = new FEBioExport4(fem); exporter = writer;
 				writer->SetSectionFlags(m_section);
 			}
 			else if (m_format == 0x0300)
 			{
 				// write version 3
-				FEBioExport3* writer = new FEBioExport3(prj); exporter = writer;
+				FEBioExport3* writer = new FEBioExport3(fem); exporter = writer;
 				writer->SetSectionFlags(m_section);
 			}
 			else if (m_format == 0x0205)
 			{
 				// write version 2.5
-				FEBioExport25* writer = new FEBioExport25(prj); exporter = writer;
+				FEBioExport25* writer = new FEBioExport25(fem); exporter = writer;
 				writer->SetSectionFlags(m_section);
 			}
 			else if (m_format == 0x0200)
 			{
 				// Write version 2.0
-				FEBioExport2* writer = new FEBioExport2(prj); exporter = writer;
+				FEBioExport2* writer = new FEBioExport2(fem); exporter = writer;
 				writer->SetSectionFlags(m_section);
 			}
 			else if (m_format == 0x0102)
 			{
 				// Write version 1.x
-				FEBioExport12* writer = new FEBioExport12(prj); exporter = writer;
+				FEBioExport12* writer = new FEBioExport12(fem); exporter = writer;
 				writer->SetSectionFlags(m_section);
 			}
 			else
@@ -381,19 +383,20 @@ void CConvertGeoFiles::Start()
 		if (importer)
 		{
 			FSProject& prj = importer->GetProject();
+			FSModel& fem = prj.GetFSModel();
 
 			FSFileExport* exporter = nullptr;
 			switch (m_format)
 			{
-			case 0: exporter = new VTKExport(prj); ext = "vtk"; break;
-			case 1: exporter = new PLYExport(prj); ext = "ply"; break;
-			case 2: exporter = new LSDYNAexport(prj); ext = "k"; break;
-			case 3: exporter = new HypersurfaceExport(prj); ext = "surf"; break;
-			case 4: exporter = new BYUExport(prj); ext = "byu"; break;
-			case 5: exporter = new STLExport(prj); ext = "stl"; break;
-			case 6: exporter = new ViewpointExport(prj); ext = "vp"; break;
-			case 7: exporter = new MeshExport(prj); ext = "mesh"; break;
-			case 8: exporter = new TetGenExport(prj); ext = "ele"; break;
+			case 0: exporter = new VTKExport(fem); ext = "vtk"; break;
+			case 1: exporter = new PLYExport(fem); ext = "ply"; break;
+			case 2: exporter = new LSDYNAexport(fem); ext = "k"; break;
+			case 3: exporter = new HypersurfaceExport(fem); ext = "surf"; break;
+			case 4: exporter = new BYUExport(fem); ext = "byu"; break;
+			case 5: exporter = new STLExport(fem); ext = "stl"; break;
+			case 6: exporter = new ViewpointExport(fem); ext = "vp"; break;
+			case 7: exporter = new MeshExport(fem); ext = "mesh"; break;
+			case 8: exporter = new TetGenExport(fem); ext = "ele"; break;
 			}
 
 			if (exporter == nullptr)

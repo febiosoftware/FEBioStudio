@@ -45,19 +45,7 @@ using namespace std;
 
 FSProject::FSProject(void)
 {
-	// set the title
-	m_title = "untitled";
-
-	m_module = -1;
-
-	m_units = 0; // 0 = no unit system
-
-	static bool init = false;
-	if (init == false)
-	{
-		InitModules();
-		init = true;
-	}
+	InitModules();
 }
 
 //-----------------------------------------------------------------------------
@@ -74,53 +62,11 @@ void FSProject::Reset()
 }
 
 //-----------------------------------------------------------------------------
-int FSProject::GetModule() const
-{
-	return m_module;// FEBio::GetActiveModule();
-}
-
-//-----------------------------------------------------------------------------
-std::string FSProject::GetModuleName() const
-{
-	int mod = FEBio::GetActiveModule();
-	assert(mod == m_module);
-	return FEBio::GetModuleName(mod);
-}
-
-//-----------------------------------------------------------------------------
-void FSProject::SetModule(int mod, bool setDefaultPlotVariables)
-{
-	m_module = mod;
-	FEBio::SetActiveModule(mod);
-
-	// get the list of variables
-	if (mod != -1)
-	{
-		FSModel& fem = GetFSModel();
-		FEBio::InitFSModel(fem);
-
-		if (setDefaultPlotVariables)
-		{
-			fem.GetPlotDataSettings().Clear();
-			// add some default variables
-			// TODO: Maybe I can pull this info from FEBio somehow
-			SetDefaultPlotVariables();
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void FSProject::SetTitle(const std::string& title)
-{ 
-	m_title = title; 
-}
-
-//-----------------------------------------------------------------------------
 // save project data to archive
 void FSProject::Save(OArchive& ar)
 {
 	// save the title
-	ar.WriteChunk(CID_PRJ_TITLE   , m_title);
+	ar.WriteChunk(CID_PRJ_TITLE   , m_fem.GetTitle());
 
 	// save the modules flag
 	int module = FEBio::GetActiveModule();
@@ -189,7 +135,13 @@ void FSProject::Load(IArchive &ar)
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case CID_PRJ_TITLE  : ar.read(m_title); break;
+		case CID_PRJ_TITLE:
+		{
+			std::string title;
+			ar.read(title);
+			m_fem.SetTitle(title);
+		}
+		break;
 		case CID_PRJ_MODULES: { 
 			int oldModuleId = 0;  
 			ar.read(oldModuleId); 
@@ -207,7 +159,7 @@ void FSProject::Load(IArchive &ar)
 		{
 			// if the moduleID == -1, then this file likely requires a plugin
 			if (moduleId == -1) throw std::runtime_error("Invalid module ID.");
-			SetModule(moduleId);
+			m_fem.SetModule(moduleId);
 			m_fem.Load(ar);
 		}
 		break;
@@ -271,8 +223,13 @@ int FSProject::Validate(std::string &szerr)
 	return nerrs;
 }
 
-void FSProject::InitModules()
+void InitModules()
 {
+	// make sure this is only called once
+	static bool init = false;
+	if (init) return;
+	init = true;
+
 	// register material categories
 	FEMaterialFactory::AddCategory("elastic"             , MODULE_MECH               , FE_MAT_ELASTIC);
 	FEMaterialFactory::AddCategory("uncoupled elastic"   , MODULE_MECH               , FE_MAT_ELASTIC_UNCOUPLED);
@@ -454,22 +411,10 @@ void FSProject::InitModules()
 }
 
 //-------------------------------------------------------------------------------------------------
-void FSProject::SetUnits(int units)
-{
-	m_units = units;
-}
-
-//-------------------------------------------------------------------------------------------------
-int FSProject::GetUnits() const
-{
-	return m_units;
-}
-
-//-------------------------------------------------------------------------------------------------
 void FSProject::GetActivePluginIDs(std::unordered_set<int>& allocatorIDs)
 {
     // Get the module allocator ID
-    allocatorIDs.insert(FEBio::GetModuleAllocatorID(m_module));
+    allocatorIDs.insert(FEBio::GetModuleAllocatorID(m_fem.GetModule()));
 
     m_fem.GetActivePluginIDs(allocatorIDs);
 
@@ -478,14 +423,6 @@ void FSProject::GetActivePluginIDs(std::unordered_set<int>& allocatorIDs)
 }
 
 //-------------------------------------------------------------------------------------------------
-void FSProject::SetDefaultPlotVariables()
-{
-	int moduleId = GetModule();
-	const char* szmod = FEBio::GetModuleName(moduleId); assert(szmod);
-	if (szmod == nullptr) return;
-	m_fem.GetPlotDataSettings().InitDefaultPlotVariables(szmod);
-}
-
 bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
 {
 	// we try to copy the parameter value, but we need to make sure
@@ -637,7 +574,7 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
 		default:
 			assert(false);
 		}
-		m_module = FEBio::GetActiveModule();
+		m_fem.SetModule(FEBio::GetActiveModule(), false);
 	}
 
 	ConvertMaterials(log);

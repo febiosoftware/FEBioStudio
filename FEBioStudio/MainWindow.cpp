@@ -3270,24 +3270,25 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 	string err;
 
 	// pass the units to the model project
-	doc->GetProject().SetUnits(doc->GetUnitSystem());
+	FSModel& fem = *doc->GetFSModel();
+	fem.SetUnits(doc->GetUnitSystem());
 
 	FEBioExport* writer = nullptr;
 	if (febioFileVersion == 0x0205)
 	{
-		FEBioExport25* feb = new FEBioExport25(doc->GetProject());
+		FEBioExport25* feb = new FEBioExport25(fem);
 		feb->SetExportSelectionsFlag(true);
 		writer = feb;
 	}
 	else if (febioFileVersion == 0x0300)
 	{
-		FEBioExport3* feb = new FEBioExport3(doc->GetProject());
+		FEBioExport3* feb = new FEBioExport3(fem);
 		feb->SetExportSelectionsFlag(true);
 		writer = feb;
 	}
 	else if (febioFileVersion == 0x0400)
 	{
-		FEBioExport4* feb = new FEBioExport4(doc->GetProject());
+		FEBioExport4* feb = new FEBioExport4(fem);
 		feb->SetMixedMeshFlag(allowHybridMesh);
 		feb->SetProgressTracker(prg);
 		writer = feb;

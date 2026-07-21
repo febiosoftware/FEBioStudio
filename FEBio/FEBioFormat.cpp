@@ -532,7 +532,7 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	{
 		int moduleId = FEBio::GetModuleId("solid");
 		if (moduleId < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", "solid"); }
-		FileReader()->GetProject().SetModule(moduleId, false);
+		fem.SetModule(moduleId, false);
 	}
 
 	// create a new analysis step from these control settings

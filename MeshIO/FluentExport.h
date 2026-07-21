@@ -27,14 +27,12 @@
 #pragma once
 
 #include "FSFileExport.h"
-#include <FEMLib/FSProject.h>
-#include <GeomLib/GObject.h>
-#include <GeomLib/GModel.h>
+#include <MeshLib/FSMesh.h>
 
 class FluentExport : public FSFileExport
 {
 public:
-    FluentExport(FSProject& prj);
+    FluentExport(FSModel& fem);
     ~FluentExport(void);
     
     bool Write(const char* szfile) override;
@@ -43,4 +41,7 @@ public:
     
     std::vector<FSFace>             m_nface;    // new faces
     std::vector<std::vector<int>>   m_nfc;      // node-face connectivity
+
+private:
+	FSModel& m_fem;
 };

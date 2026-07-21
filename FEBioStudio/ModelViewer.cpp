@@ -876,7 +876,7 @@ void CModelViewer::OnExportFESurface()
 	QString fileName = QFileDialog::getSaveFileName(this, "Save", QString(), QString("STL ascii (*.stl)"));
 	{
 		std::string filename = fileName.toStdString();
-		FSProject dummy;
+		FSModel dummy;
 		STLExport writer(dummy);
 		if (!writer.Write(filename.c_str(), surf))
 			QMessageBox::critical(this, "FEBio Studio", QString("Couldn't export to STL file:\n%1").arg(QString::fromStdString(writer.GetErrorMessage())));

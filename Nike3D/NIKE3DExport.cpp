@@ -24,19 +24,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-// NIKE3DExport.cpp: implementation of the NIKE3DExport class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "NIKE3DExport.h"
-#include <FEMLib/FSProject.h>
+#include <FEMLib/FSModel.h>
 using namespace std;
 
-//-----------------------------------------------------------------------------
-// NIKE3DExport
-//-----------------------------------------------------------------------------
-
-NIKE3DExport::NIKE3DExport(FSProject& prj) : FSFileExport(prj)
+NIKE3DExport::NIKE3DExport(FSModel& fem) : m_fem(fem)
 {
 	m_bcomm = false;
 	m_fp = nullptr;
@@ -47,13 +39,11 @@ NIKE3DExport::~NIKE3DExport()
 
 }
 
-//-----------------------------------------------------------------------------
-
 bool NIKE3DExport::Write(const char* szfile)
 {
 	// try to create a NIKE project
 	NIKE3DProject nike; 
-	if (nike.Create(m_prj) == false) return errf("Failed creating NIKE project.");
+	if (nike.Create(m_fem) == false) return errf("Failed creating NIKE project.");
 
 	// open the file
 	FILE* fp = m_fp = fopen(szfile, "wt");

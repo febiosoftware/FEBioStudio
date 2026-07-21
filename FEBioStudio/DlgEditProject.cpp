@@ -94,7 +94,8 @@ CDlgEditProject::CDlgEditProject(FSProject& prj, QWidget* parent): QDialog(paren
 {
 	ui->setup(this);
 
-	unsigned int modid = prj.GetModule();
+	FSModel& fem = prj.GetFSModel();
+	unsigned int modid = fem.GetModule();
 
 	vector<FEBio::FEBioModule> mods = FEBio::GetAllModules();
 	int current = -1;
@@ -117,7 +118,7 @@ void CDlgEditProject::accept()
 		return;
 	}
 	
-	m_prj.SetModule(moduleId);
+	m_prj.GetFSModel().SetModule(moduleId);
 
 	QDialog::accept();
 }

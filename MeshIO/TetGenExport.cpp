@@ -27,9 +27,9 @@ SOFTWARE.*/
 #include "TetGenExport.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
-#include <FEMLib/FSProject.h>
+#include <FEMLib/FSModel.h>
 
-TetGenExport::TetGenExport(FSProject& prj) : FSFileExport(prj)
+TetGenExport::TetGenExport(FSModel& fem) : m_fem(fem)
 {
 }
 
@@ -40,8 +40,7 @@ TetGenExport::~TetGenExport()
 bool TetGenExport::Write(const char *szfile)
 {
 	// get the model
-	FSModel* ps = &m_prj.GetFSModel();
-	GModel& model = ps->GetModel();
+	GModel& model = m_fem.GetModel();
 
 	char sznode[256] = {0};
 	strncpy(sznode, szfile, strlen(szfile));

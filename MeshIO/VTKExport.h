@@ -28,7 +28,6 @@ SOFTWARE.*/
 
 #include "FSFileExport.h"
 
-//-----------------------------------------------------------------------------
 struct VTKEXPORT_OPTIONS
 {
 	bool	bpartIds;		// write element's part IDs
@@ -39,7 +38,7 @@ struct VTKEXPORT_OPTIONS
 class VTKExport : public FSFileExport
 {
 public:
-	VTKExport(FSProject& prj);
+	VTKExport(FSModel& fem);
 	~VTKExport(void);
 
 	bool Write(const char* szfile) override;
@@ -48,5 +47,6 @@ public:
 	bool UpdateData(bool bsave) override;
 
 protected:
+	FSModel& m_fem;
 	VTKEXPORT_OPTIONS m_ops;
 };

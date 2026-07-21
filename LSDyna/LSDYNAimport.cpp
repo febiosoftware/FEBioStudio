@@ -56,12 +56,12 @@ bool LSDYNAimport::Load(const char* szfile)
 	else if (lsparser.GetErrorString()) errf(lsparser.GetErrorString());
 
 	// Make sure the solid module is set
+	FSModel& fem = m_prj.GetFSModel();
 	int moduleId = FEBio::GetModuleId("solid"); assert(moduleId >= 0);
-	if (m_prj.GetModule() != moduleId)
-		m_prj.SetModule(moduleId, false);
+	if (fem.GetModule() != moduleId)
+		fem.SetModule(moduleId, false);
 
 	// build the model
-	FSModel& fem = m_prj.GetFSModel();
 	bool b = m_dyna.BuildModel(fem);
 	if (b)
 	{

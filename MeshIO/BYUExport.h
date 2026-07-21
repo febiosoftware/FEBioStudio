@@ -31,8 +31,11 @@ SOFTWARE.*/
 class BYUExport : public FSFileExport
 {
 public:
-	BYUExport(FSProject& prj);
+	BYUExport(FSModel& fem);
 	~BYUExport(void);
 
 	bool Write(const char* szfile) override;
+
+private:
+	FSModel& m_fem;
 };

@@ -60,25 +60,13 @@ namespace py = pybind11;
 
 bool ExportFEB(FSModel& fem, std::string& fileName)
 {
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(PyRunContext::GetDocument());
-	if (doc == nullptr)
-	{
-		throw std::runtime_error("There is no active model.");
-	}
-	assert(doc->GetFSModel() == &fem);
-	FEBioExport4 feb(doc->GetProject());
+	FEBioExport4 feb(fem);
 	return feb.Write(fileName.c_str());
 }
 
 bool ExportVTK(FSModel& fem, std::string& fileName)
 {
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(PyRunContext::GetDocument());
-	if (doc == nullptr)
-	{
-		throw std::runtime_error("There is no active model.");
-	}
-	assert(doc->GetFSModel() == &fem);
-	VTKExport vtk(doc->GetProject());
+	VTKExport vtk(fem);
 	return vtk.Write(fileName.c_str());
 }
 
