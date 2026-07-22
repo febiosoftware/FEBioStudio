@@ -121,7 +121,7 @@ void GLPlotHelicalAxis::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_mdl == nullptr) return;
 
-	BOX box = m_mdl->GetFSModel()->GetBoundingBox();
+	BoundingBox box = m_mdl->GetFSModel()->GetBoundingBox();
 	re.pushTransform();
 
 	re.translate(pos);

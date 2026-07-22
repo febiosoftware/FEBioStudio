@@ -119,7 +119,7 @@ private:
 	double	m_shininess;
 	uint8_t m_ref;
 
-	BOX m_box;
+	BoundingBox m_box;
 
 	GLMesh*	m_mesh = nullptr;
 

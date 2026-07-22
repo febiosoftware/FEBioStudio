@@ -189,7 +189,7 @@ void CDlgPlaneCut::setPlaneCoordinates(double d[4])
 	if (scene == nullptr) return;
 	if (ui->m_ops == nullptr) return;
 
-	BOX box = scene->GetBoundingBox();
+	BoundingBox box = scene->GetBoundingBox();
 
 	double R = box.GetMaxExtent();
 	if (R < 1e-12) R = 1.0;

@@ -303,7 +303,7 @@ void CImageSlicer::Render(GLRenderEngine& re, GLContext& rc)
 	int nx = m_im.Width();
 	int ny = m_im.Height();
 
-	BOX box = GetImageModel()->GetBoundingBox();
+	BoundingBox box = GetImageModel()->GetBoundingBox();
 
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::TEXTURE_2D, false);
 	re.setTexture(m_tex);

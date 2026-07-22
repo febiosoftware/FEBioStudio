@@ -166,8 +166,8 @@ macro(findHdrSrcFEBio name)
 	file(GLOB SRC_${name} "${FEBioDir}/${name}/*.cpp")
 endmacro()
 
-set(FEBIOSTUDIO_LIBS GeomLib MeshIO MeshTools MeshLib FEMLib FSCore PostLib XPLTLib FEBioLink GLLib PostGL)
-set(FEBIO_LIBS FECore FEBioLib FEBioMech FEBioXML FEBioPlot NumCore FEBioTest FEBioFluid FEBioMix)
+set(FEBIOSTUDIO_LIBS GeomLib MeshIO MeshTools MeshLib FEMLib FSCore PostLib XPLTLib FEBioLink GLLib PostGL FEBio)
+set(FEBIO_LIBS FECore FEBioLib FEBioMech FEBioXML FEBioPlot NumCore FEBioTest FEBioFluid FEBioMix FEAMR febcode)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
@@ -204,7 +204,7 @@ target_compile_definitions(XPLTLib PRIVATE HAVE_ZLIB)
 target_include_directories(XPLTLib PRIVATE ${ZLIB_INCLUDE_DIR})
 target_link_libraries(XPLTLib PRIVATE ${ZLIB_LIBRARY_RELEASE})
 
-pybind11_add_module(fbs PyFBS.cpp PyFBSCore.cpp PyFBSPost.cpp PyFBSMesh.cpp PyFBSGeom.cpp PyUtil.cpp)
+pybind11_add_module(fbs PyFBS.cpp PyFBSCore.cpp PyFBSModel.cpp PyFBSPost.cpp PyFBSMesh.cpp PyFBSGeom.cpp PyUtil.cpp)
 
 if(USE_TETGEN)
 	target_include_directories(MeshTools PRIVATE ${TETGEN_INC})

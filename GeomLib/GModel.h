@@ -179,7 +179,7 @@ public:
 	FSNodeSet* GetNodesetFromID(int id);
 	FSSurface* GetSurfaceFromID(int id);
 
-	BOX GetBoundingBox();
+	BoundingBox GetBoundingBox();
 	void UpdateBoundingBox();
 
 	// count named selections

@@ -145,7 +145,7 @@ public:
 		engine.renderGMesh(m_renderSphere, !m_recache);
 		m_recache = false;
 
-		BOX box = m_renderSphere.GetBoundingBox();
+		BoundingBox box = m_renderSphere.GetBoundingBox();
 		if (box.Radius() < 1e-9) box = GetBoundingBox();
 
 		vec3d o = box.r0();
@@ -164,9 +164,9 @@ public:
 	}
 
 	// get the bounding box of the entire scene
-	BOX GetBoundingBox() override { 
-		BOX b = m_renderSphere.GetBoundingBox();
-		if (b.IsValid() == false) b = BOX(-1, -1, -1, 1, 1, 1);
+	BoundingBox GetBoundingBox() override {
+		BoundingBox b = m_renderSphere.GetBoundingBox();
+		if (b.IsValid() == false) b = BoundingBox(-1, -1, -1, 1, 1, 1);
 		return b;
 	}
 

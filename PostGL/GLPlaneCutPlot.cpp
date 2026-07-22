@@ -250,7 +250,7 @@ void CGLPlaneCutPlot::Render(GLRenderEngine& re, GLContext& rc)
 	if (fem == nullptr) return;
 
 	vec3d r = m_T.GetPosition();
-	BOX box = fem->GetBoundingBox();
+	BoundingBox box = fem->GetBoundingBox();
 	m_T.SetPosition(-box.Center());
 	m_T.SetRotation(quatd(0.0, vec3d(1, 0, 0)));
 
@@ -554,7 +554,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 {
 	// Get the bounding box. We need it for determining the scale
 	CGLModel* mdl = GetModel();
-	BOX box = GetModel()->GetFSModel()->GetBoundingBox();
+	BoundingBox box = GetModel()->GetFSModel()->GetBoundingBox();
 	double R = box.Radius();
 	m_scl = (R == 0.0 ? 1.0 : R);
 
@@ -1179,7 +1179,7 @@ public:
 	void Update() 
 	{
 		vec3d r = m_pc->GetPlanePosition();
-		m_box = BOX(r, r);
+		m_box = BoundingBox(r, r);
 		m_box.Inflate(m_pc->GetOffsetScale());
 
 		m_pc->UpdatePlaneCut();

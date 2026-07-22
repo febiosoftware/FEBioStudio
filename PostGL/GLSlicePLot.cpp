@@ -269,7 +269,7 @@ void CGLSlicePlot::UpdateBoundingBox()
 	FSMesh* pm = mdl->GetActiveMesh();
 
 	// only count enabled parts
-	BOX box;
+	BoundingBox box;
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
 		FSElement_& el = pm->ElementRef(i);

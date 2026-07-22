@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FSFindElement.h"
 #include "FSCoreMesh.h"
 #include "MeshTools.h"
+#include <FSCore/box.h>
 
 FSFindElement::OCTREE_BOX::OCTREE_BOX()
 {
@@ -62,7 +63,7 @@ void FSFindElement::OCTREE_BOX::split(int levels)
 				double ya = y0 + j*dy*0.5, yb = y0 + (j + 1)*dy*0.5;
 				double za = z0 + k*dz*0.5, zb = z0 + (k + 1)*dz*0.5;
 
-				BOX b(xa, ya, za, xb, yb, zb);
+				BoundingBox b(xa, ya, za, xb, yb, zb);
 				double R = b.GetMaxExtent();
 				b.Inflate(R*0.0001);
 
@@ -78,7 +79,7 @@ void FSFindElement::OCTREE_BOX::split(int levels)
 	}
 }
 
-void FSFindElement::OCTREE_BOX::Add(BOX& b, int nelem)
+void FSFindElement::OCTREE_BOX::Add(BoundingBox& b, int nelem)
 {
 	if (m_level == 0)
 	{
@@ -171,7 +172,7 @@ void FSFindElement::InitReferenceFrame(std::vector<bool>& flags)
 	if ((NN == 0) || (NE == 0)) return;
 
 	vec3d r = m_mesh.Node(0).r;
-	BOX box(r, r);
+	BoundingBox box(r, r);
 	for (int i = 1; i<m_mesh.Nodes(); ++i)
 	{
 		r = m_mesh.Node(i).r;
@@ -208,7 +209,7 @@ void FSFindElement::InitReferenceFrame(std::vector<bool>& flags)
 			// do a quick bounding box test
 			vec3d r0 = m_mesh.Node(e.m_node[0]).r;
 			vec3d r1 = r0;
-			BOX box(r0, r1);
+			BoundingBox box(r0, r1);
 			for (int j = 1; j<ne; ++j)
 			{
 				vec3d rj = m_mesh.Node(e.m_node[j]).r;
@@ -233,7 +234,7 @@ void FSFindElement::InitCurrentFrame(std::vector<bool>& flags)
 	if ((NN == 0) || (NE == 0)) return;
 
 	vec3d r = m_mesh.Node(0).r;
-	BOX box(r, r);
+	BoundingBox box(r, r);
 	for (int i = 1; i<m_mesh.Nodes(); ++i)
 	{
 		r = m_mesh.Node(i).r;
@@ -270,7 +271,7 @@ void FSFindElement::InitCurrentFrame(std::vector<bool>& flags)
 			// do a quick bounding box test
 			vec3d r0 = m_mesh.Node(e.m_node[0]).r;
 			vec3d r1 = r0;
-			BOX box(r0, r1);
+			BoundingBox box(r0, r1);
 			for (int j = 1; j<ne; ++j)
 			{
 				vec3d rj = m_mesh.Node(e.m_node[j]).r;
@@ -375,7 +376,7 @@ bool FindElement2D(const vec2d& r, int& elem, double q[2], FSMesh* mesh)
 		if (el.IsShell())
 		{
 			int nn = el.Nodes();
-			BOX box;
+			BoundingBox box;
 			for (int j = 0; j < nn; ++j)
 			{
 				x[j] = mesh->Node(el.m_node[j]).r;

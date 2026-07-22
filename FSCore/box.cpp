@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // Default constructor
-BOX::BOX()
+BoundingBox::BoundingBox()
 { 
 	x0 = y0 = z0 = 0;
 	x1 = y1 = z1 = 0; 
@@ -39,7 +39,7 @@ BOX::BOX()
 
 //-----------------------------------------------------------------------------
 // Constructor from coordinates
-BOX::BOX(double X0, double Y0, double Z0, double X1, double Y1, double Z1)
+BoundingBox::BoundingBox(double X0, double Y0, double Z0, double X1, double Y1, double Z1)
 { 
 	x0 = X0; y0 = Y0; z0 = Z0; 
 	x1 = X1; y1 = Y1; z1 = Z1; 
@@ -48,7 +48,7 @@ BOX::BOX(double X0, double Y0, double Z0, double X1, double Y1, double Z1)
 
 //-----------------------------------------------------------------------------
 // constructor from vectors
-BOX::BOX(const vec3d& r0, const vec3d& r1)
+BoundingBox::BoundingBox(const vec3d& r0, const vec3d& r1)
 {
 	x0 = r0.x; x1 = r1.x;
 	y0 = r0.y; y1 = r1.y;
@@ -58,7 +58,7 @@ BOX::BOX(const vec3d& r0, const vec3d& r1)
 
 //-----------------------------------------------------------------------------
 // return largest dimension of box
-double BOX::GetMaxExtent() const
+double BoundingBox::GetMaxExtent() const
 {
 	double w = Width();
 	double h = Height();
@@ -72,7 +72,7 @@ double BOX::GetMaxExtent() const
 
 //-----------------------------------------------------------------------------
 // return the center of the box
-vec3d BOX::Center() const
+vec3d BoundingBox::Center() const
 { 
 	return vec3d((x0+x1)*0.5f, (y0+y1)*0.5f, (z0+z1)*0.5f); 
 }
@@ -80,13 +80,13 @@ vec3d BOX::Center() const
 //-----------------------------------------------------------------------------
 // The radius is half the distance between the two corners.
 // (I think this is also the radius of the circumscribed sphere)
-double BOX::Radius() const
+double BoundingBox::Radius() const
 {
 	return 0.5*sqrt((x1-x0)*(x1-x0) + (y1-y0)*(y1-y0) + (z1-z0)*(z1-z0));
 }
 
 //-----------------------------------------------------------------------------
-void BOX::Range(vec3d& n, double& min, double& max)
+void BoundingBox::Range(vec3d& n, double& min, double& max)
 {
 	min = max = n*vec3d(x0, y0, z0);
 	double val;
@@ -101,7 +101,7 @@ void BOX::Range(vec3d& n, double& min, double& max)
 }
 
 //-----------------------------------------------------------------------------
-void BOX::Range(vec3d& n, vec3d& r0, vec3d& r1)
+void BoundingBox::Range(vec3d& n, vec3d& r0, vec3d& r1)
 {
 	double min, max;
 	min = max = n*vec3d(x0, y0, z0);
@@ -119,9 +119,9 @@ void BOX::Range(vec3d& n, vec3d& r0, vec3d& r1)
 }
 
 //-----------------------------------------------------------------------------
-BOX BOX::operator + (const BOX& b)
+BoundingBox BoundingBox::operator + (const BoundingBox& b)
 {
-	BOX a;
+	BoundingBox a;
 	a.x0 = MIN(x0, b.x0);
 	a.x1 = MAX(x1, b.x1);
 	a.y0 = MIN(y0, b.y0);
@@ -133,7 +133,7 @@ BOX BOX::operator + (const BOX& b)
 }
 
 //-----------------------------------------------------------------------------
-BOX& BOX::operator += (const BOX& b)
+BoundingBox& BoundingBox::operator += (const BoundingBox& b)
 {
 	if (!b.IsValid()) return *this;
 	if (m_valid)
@@ -155,7 +155,7 @@ BOX& BOX::operator += (const BOX& b)
 }
 
 //-----------------------------------------------------------------------------
-bool BOX::IsInside(const vec3d& r) const
+bool BoundingBox::IsInside(const vec3d& r) const
 {
 	if ((r.x >= x0) && (r.x <= x1) && 
 		(r.y >= y0) && (r.y <= y1) && 
@@ -165,7 +165,7 @@ bool BOX::IsInside(const vec3d& r) const
 }
 
 //-----------------------------------------------------------------------------
-void BOX::operator += (const vec3d& r)
+void BoundingBox::operator += (const vec3d& r)
 {
 	if (m_valid == false)
 	{
@@ -187,7 +187,7 @@ void BOX::operator += (const vec3d& r)
 }
 
 //-----------------------------------------------------------------------------
-void BOX::Inflate(double dx, double dy, double dz)
+void BoundingBox::Inflate(double dx, double dy, double dz)
 {
 	x0 -= dx; x1 += dx;
 	y0 -= dy; y1 += dy;
@@ -195,7 +195,7 @@ void BOX::Inflate(double dx, double dy, double dz)
 }
 
 //-----------------------------------------------------------------------------
-void BOX::InflateTo(double fx, double fy, double fz)
+void BoundingBox::InflateTo(double fx, double fy, double fz)
 {
 	double xc = x0 + x1;
 	double yc = y0 + y1;
@@ -206,7 +206,7 @@ void BOX::InflateTo(double fx, double fy, double fz)
 }
 
 //-----------------------------------------------------------------------------
-void BOX::Inflate(double f)
+void BoundingBox::Inflate(double f)
 {
 	x0 -= f; x1 += f;
 	y0 -= f; y1 += f;
@@ -214,7 +214,7 @@ void BOX::Inflate(double f)
 }
 
 //-----------------------------------------------------------------------------
-void BOX::Scale(double s)
+void BoundingBox::Scale(double s)
 {
 	vec3d c = Center();
 	double dx = 0.5*s*Width();
@@ -226,25 +226,25 @@ void BOX::Scale(double s)
 }
 
 //-----------------------------------------------------------------------------
-vec3d BOX::r0() const
+vec3d BoundingBox::r0() const
 {
 	return vec3d(x0, y0, z0);
 }
 
 //-----------------------------------------------------------------------------
-vec3d BOX::r1() const
+vec3d BoundingBox::r1() const
 {
 	return vec3d(x1, y1, z1);
 }
 
-BOX LocalToGlobalBox(const BOX& box, const Transform& T)
+BoundingBox LocalToGlobalBox(const BoundingBox& box, const Transform& T)
 {
-	if (!box.IsValid()) return BOX();
+	if (!box.IsValid()) return BoundingBox();
 
 	vec3d a = box.r0();
 	vec3d b = box.r1();
 
-	BOX globalBox;
+	BoundingBox globalBox;
 	globalBox += T.LocalToGlobal(vec3d(a.x, a.y, a.z));
 	globalBox += T.LocalToGlobal(vec3d(a.x, a.y, a.z));
 	globalBox += T.LocalToGlobal(vec3d(b.x, a.y, a.z));

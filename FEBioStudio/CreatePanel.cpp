@@ -28,62 +28,27 @@ SOFTWARE.*/
 #include "CreatePanel.h"
 #include "ui_createpanel.h"
 #include <GeomLib/GObject.h>
-#include <GeomLib/GPrimitive.h>
-#include <GeomLib/GFoamObject.h>
 #include <QMessageBox>
 #include "Commands.h"
 #include "MainWindow.h"
 #include "CreateP2PlinePane.h"
 #include "CreateGeodesicCurvePane.h"
 #include "CreateSpringPane.h"
-#include <GeomLib/GOCCObject.h>
 #include <GeomLib/GModel.h>
+#include <GeomLib/geomlib.h>
 #include <GLLib/GLScene.h>
-
-//------------------------------------------------------------------------------------------------------------
-REGISTER_CLASS2(GBox               , CLASS_OBJECT, "box"            , ":/icons/box.png"          , 0);
-REGISTER_CLASS2(GCylinder          , CLASS_OBJECT, "cylinder"       , ":/icons/cylinder.png"     , 0);
-REGISTER_CLASS2(GTube              , CLASS_OBJECT, "tube"           , ":/icons/tube.png"         , 0);
-REGISTER_CLASS2(GSphere            , CLASS_OBJECT, "sphere"         , ":/icons/sphere.png"       , 0);
-REGISTER_CLASS2(GCone              , CLASS_OBJECT, "cone"           , ":/icons/cone.png"         , 0);
-REGISTER_CLASS2(GTruncatedEllipsoid, CLASS_OBJECT, "ellipsoid"      , ":/icons/ellipsoid.png"    , 0);
-REGISTER_CLASS2(GTorus             , CLASS_OBJECT, "torus"          , ":/icons/torus.png"        , 0);
-REGISTER_CLASS2(GSlice             , CLASS_OBJECT, "slice"          , ":/icons/slice.png"        , 0);
-REGISTER_CLASS2(GSolidArc          , CLASS_OBJECT, "solid_arc"      , ":/icons/solidarc.png"     , 0);
-REGISTER_CLASS2(GHexagon           , CLASS_OBJECT, "hexagon"        , ":/icons/hexagon.png"      , 0);
-REGISTER_CLASS2(GQuartDogBone      , CLASS_OBJECT, "dog_bone"       , ":/icons/dogbone.png"      , 0);
-REGISTER_CLASS2(GCylinderInBox     , CLASS_OBJECT, "cylinder_in_box", ":/icons/cylinderinbox.png", 0);
-REGISTER_CLASS2(GSphereInBox       , CLASS_OBJECT, "sphere_in_box"  , ":/icons/sphereinbox.png"  , 0);
-REGISTER_CLASS2(GHollowSphere      , CLASS_OBJECT, "hollow_sphere"  , ":/icons/hollowsphere.png" , 0);
-REGISTER_CLASS2(GBoxInBox          , CLASS_OBJECT, "box_in_box"     , ":/icons/boxinbox.png"     , 0);
-REGISTER_CLASS2(GThinTube          , CLASS_OBJECT, "thin_tube"      , ":/icons/thintube.png"     , 0);
-REGISTER_CLASS2(GPatch             , CLASS_OBJECT, "patch"          , ":/icons/square.png"       , 0);
-REGISTER_CLASS2(GDisc              , CLASS_OBJECT, "disc"           , ":/icons/disc.png"         , 0);
-REGISTER_CLASS2(GRing              , CLASS_OBJECT, "ring"           , ":/icons/ring.png"         , 0);
-
-#ifndef NDEBUG
-REGISTER_CLASS2(GFoamObject, CLASS_OBJECT, "foam", ":icons/foam.png", 0);
-#endif
 
 REGISTER_CLASS2(GExtrudeModifier   , CLASS_MODIFIER, "extrude", ":/icons/extrude.png", 0);
 REGISTER_CLASS2(GRevolveModifier   , CLASS_MODIFIER, "revolve", ":/icons/revolve.png", 0);
 REGISTER_CLASS2(GBendModifier      , CLASS_MODIFIER, "bend"   , ":/icons/bend.png"   , 0);
-
-#ifndef NDEBUG
-REGISTER_CLASS2(GCylindricalPatch  , CLASS_OBJECT, "cylindrical_patch", ":/icons/cylpatch.png"     , 0);
-
-#ifdef HAS_OCC
-REGISTER_CLASS2(GOCCBottle			, CLASS_OBJECT, "bottle", ":/icons/bottle.png", 0);
-REGISTER_CLASS2(GOCCBox             , CLASS_OBJECT, "occ_box"   , ":/icons/box.png", 0);
-#endif
-
-#endif // NDEBUG
 
 //------------------------------------------------------------------------------------------------------------
 CCreatePanel::CCreatePanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CCreatePanel)
 {
 	ui->setupUi(this);
 	m_tmpObject = 0;
+
+	InitGeomLib();
 
 	// fill the button panels
 	// Primitives

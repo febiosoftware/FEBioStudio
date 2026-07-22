@@ -94,9 +94,9 @@ void CODFScene::Render(GLRenderEngine& engine, GLContext& rc)
 	if (m_analysis && m_ODF) m_analysis->renderODFMesh(engine, m_ODF, rc.m_cam->IsMoving());
 }
 
-BOX CODFScene::GetBoundingBox()
+BoundingBox CODFScene::GetBoundingBox()
 {
-	return BOX(-2, -2, -2, 2, 2, 2);
+	return BoundingBox(-2, -2, -2, 2, 2, 2);
 }
 
 class CODFPropertyList1 : public CPropertyList

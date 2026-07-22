@@ -178,7 +178,7 @@ public:
 public:
 	GModel*				m_parent;
 	FSModel*			m_ps;	//!< pointer to model
-	BOX					m_box;	//!< bounding box
+	BoundingBox					m_box;	//!< bounding box
 
 	FSObjectList<GObject>	m_Obj;	//!< list of objects
 
@@ -882,7 +882,7 @@ FSSurface* GModel::GetSurfaceFromID(int id)
 
 //-----------------------------------------------------------------------------
 
-BOX GModel::GetBoundingBox()
+BoundingBox GModel::GetBoundingBox()
 {
 	return imp->m_box;
 }
@@ -892,7 +892,7 @@ void GModel::UpdateBoundingBox()
 {
 	if (imp->m_Obj.Size() == 0)
 	{
-		imp->m_box = BOX(-1, -1, -1, 1, 1, 1);
+		imp->m_box = BoundingBox(-1, -1, -1, 1, 1, 1);
 	}
 	else
 	{

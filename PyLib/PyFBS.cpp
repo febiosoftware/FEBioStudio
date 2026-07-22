@@ -40,11 +40,16 @@ SOFTWARE.*/
 #include "PyFBSPost.h"
 #include "PyFBSMesh.h"
 #include "PyFBSGeom.h"
+#include "PyFBSModel.h"
+#include <FEMLib/FSModel.h>
 #include <XPLTLib/xpltFileReader.h>
 #include <PostGL/GLModel.h>
+#include <GeomLib/geomlib.h>
+#include <FEBioLib/febio.h>
+#include <FECore/FECore.h>
+#include <FEBioMech/FEBioMechModule.h>
 
 #ifndef PY_EXTERNAL
-#include "PyFBSModel.h"
 #include <FEBioStudio/FEBioStudio.h>
 #include <FEBioStudio/MainWindow.h>
 #include <FEBioStudio/ModelDocument.h>
@@ -87,13 +92,13 @@ Post::CGLModel* GetActivePostModel()
 	}
 	return (doc ? doc->GetGLModel() : nullptr);
 }
+#endif
 
-// Make sure that this class never stores any internal state! 
-// Otherwise, it might be better to make it a singleton or a static class.
+// singleton for managing the list of models
 class PyModelList
 {
 public:
-	PyModelList() {}
+#ifndef PY_EXTERNAL
 	FSModel* get(const std::string& name)
 	{
 		CMainWindow* wnd = FBS::getMainWindow();
@@ -115,7 +120,17 @@ public:
 
 		return nullptr;
 	}
+#else
+	FSModel* get(int i)
+	{
+		if (i < 0) i += (int)m_models.size();
+		if (i < 0 || i >= (int)m_models.size())
+			throw py::index_error("Index out of range.");
+		return m_models[i].get();
+	}
+#endif
 
+#ifndef PY_EXTERNAL
 	int size()
 	{
 		CMainWindow* wnd = FBS::getMainWindow();
@@ -133,8 +148,33 @@ public:
 
 		return count;
 	}
+#else
+	int size() const { return (int)m_models.size(); }
+
+	FSModel* add(const std::string& name)
+	{
+		std::unique_ptr<FSModel> model(new FSModel);
+		model->SetName(name);
+		m_models.push_back(std::move(model));
+		return m_models.back().get();
+	}
+#endif
+
+	static PyModelList& Instance() { return instance; }
+
+private:
+	static PyModelList instance;
+	PyModelList() {}
+	PyModelList(const PyModelList&) = delete;
+	PyModelList& operator=(const PyModelList&) = delete;
+
+#ifdef PY_EXTERNAL
+	std::vector<std::unique_ptr<FSModel>> m_models;
+#endif
 };
-#endif // PY_EXTERNAL
+
+PyModelList PyModelList::instance;
+
 
 // singleton instance of PyPostModelList
 class PyPostModelList
@@ -236,6 +276,7 @@ PY_MODULE_TYPE(fbs, m)
     init_FSMesh(m);
 	init_FBSPost(m);
 	init_FBSGeom(m);
+	init_FBSModel(m);
 
 #ifndef PY_EXTERNAL
 	py::class_<CPyOutput>(m, "_PyOutput")
@@ -243,7 +284,6 @@ PY_MODULE_TYPE(fbs, m)
 		.def("write", &CPyOutput::write)
 		.def("flush", &CPyOutput::flush);
 
-	init_FBSModel(m);
 
 	py::class_<PyModelList>(m, "ModelRegistry")
 		.def("__len__", &PyModelList::size)
@@ -257,17 +297,31 @@ PY_MODULE_TYPE(fbs, m)
 	m.def("active_model", &GetActiveModel, "Returns the active Model instance.", py::return_value_policy::reference);
 	m.def("active_post_model", &GetActivePostModel, "Returns the active post::PostModel instance.", py::return_value_policy::reference);
 
-	m.attr("models") = py::cast(PyModelList());
+	m.attr("models") = py::cast(&PyModelList::Instance(), py::return_value_policy::reference);
 	m.attr("post_models") = py::cast(&PyPostModelList::Instance(), py::return_value_policy::reference);
 
 #else
+	py::class_<PyModelList>(m, "ModelRegistry")
+		.def("__len__", &PyModelList::size)
+		.def("__getitem__", &PyModelList::get)
+		.def("add", &PyModelList::add, py::return_value_policy::reference, "Adds a new model with the given name.")
+		;
+
 	py::class_<PyPostModelList>(m, "PostModelRegistry")
 		.def("__len__", &PyPostModelList::size)
 		.def("__getitem__", &PyPostModelList::get)
 		.def("open", &PyPostModelList::open, py::return_value_policy::reference, "Opens a plot file and returns a post::PostModel object.")
 		;
 
+	m.attr("models") = py::cast(&PyModelList::Instance(), py::return_value_policy::reference);
 	m.attr("post_models") = py::cast(&PyPostModelList::Instance(), py::return_value_policy::reference);
+
+	// Eventually, I want to use all FEBio modules, but for now, I will just use FECore and FEBioMech
+//	febio::InitLibrary();
+	FECore::InitModule();
+	FEBioMech::InitModule();
+
+	InitGeomLib();
 #endif
 }
 

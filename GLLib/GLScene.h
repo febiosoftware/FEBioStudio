@@ -101,7 +101,7 @@ public:
 	// Render the 3D scene
 	virtual void Render(GLRenderEngine& engine, GLContext& rc);
 
-	virtual BOX GetBoundingBox() { return BOX(); }
+	virtual BoundingBox GetBoundingBox() { return BoundingBox(); }
 
 	GLCamera& GetCamera() { return m_cam; }
 
@@ -163,7 +163,7 @@ public:
 protected:
 	GLCamera m_cam;	//!< camera
 	GLGrid	m_grid;	//!< the grid object
-	BOX m_box;
+	BoundingBox m_box;
 
 	unsigned int m_envtex;	// enironment texture ID
 	CRGBAImage m_envMap; // the texture to use

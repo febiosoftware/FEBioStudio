@@ -38,7 +38,7 @@ public:
 	void build(int levels)
 	{
 		// get the bounding box of the entire mesh
-		BOX bbox;
+		BoundingBox bbox;
 		for (int i = 0; i < mesh.Nodes(); ++i)
 		{
 			bbox += mesh.Node(i).pos();
@@ -57,7 +57,7 @@ public:
 		buildNode(bbox, allFaces, levels);
 	}
 
-	void buildNode(const BOX& box, std::vector<int>& faces, int levels)
+	void buildNode(const BoundingBox& box, std::vector<int>& faces, int levels)
 	{
 		if ((levels == 0) || (faces.size() <= 10)) // base case: create a leaf node
 		{
@@ -76,8 +76,8 @@ public:
 		if ((ylen >= xlen) && (ylen >= zlen)) axis = 1;
 		if ((zlen >= xlen) && (zlen >= ylen)) axis = 2;
 		double mid = 0.5 * (box.r0()(axis) + box.r1()(axis));
-		BOX leftBox = box;
-		BOX rightBox = box;
+		BoundingBox leftBox = box;
+		BoundingBox rightBox = box;
 		const double eps = 1e-6;
 		switch (axis)
 		{
@@ -94,7 +94,7 @@ public:
 		if (!rightFaces.empty()) buildNode(rightBox, rightFaces, levels - 1);
 	}
 
-	std::vector<int> getElementsInBox(const BOX& box, const std::vector<int>& faces)
+	std::vector<int> getElementsInBox(const BoundingBox& box, const std::vector<int>& faces)
 	{
 		std::vector<int> result;
 		for (int faceIndex : faces)

@@ -851,7 +851,7 @@ QVariant CImageModelProperties::GetPropertyValue(int i)
 	CImageModel* imgModel = m_pobj;
 	if (imgModel == nullptr) return QVariant();
 
-    BOX box = imgModel->GetBoundingBox();
+	BoundingBox box = imgModel->GetBoundingBox();
 
     switch (i)
     {
@@ -903,7 +903,7 @@ void CImageModelProperties::SetPropertyValue(int i, const QVariant& v)
 	CImageModel* imgModel = m_pobj;
 	if (imgModel == nullptr) return;
 
-    BOX box = imgModel->GetBoundingBox();
+	BoundingBox box = imgModel->GetBoundingBox();
 
     switch (i)
     {

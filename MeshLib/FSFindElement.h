@@ -36,7 +36,7 @@ public:
 	class OCTREE_BOX
 	{
 	public:
-		BOX					m_box;
+		BoundingBox					m_box;
 		std::vector<OCTREE_BOX*>	m_child;
 		int					m_elem;
 		int					m_level;
@@ -51,7 +51,7 @@ public:
 
 		bool IsInside(const vec3f& r) const { return m_box.IsInside(to_vec3d(r)); }
 
-		void Add(BOX& b, int nelem);
+		void Add(BoundingBox& b, int nelem);
 	};
 
 public:
@@ -62,7 +62,7 @@ public:
 
 	bool FindElement(const vec3f& x, int& nelem, double r[3]);
 
-	BOX BoundingBox() const { return m_bound.m_box; }
+	BoundingBox GetBoundingBox() const { return m_bound.m_box; }
 
 private:
 	void InitReferenceFrame(std::vector<bool>& flags);

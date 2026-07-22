@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/geomlib.h>
 #include <MeshLib/MeshTools.h>
 #include <MeshLib/FSMeshBuilder.h>
+#include <FECore/mortar.h>
 
 //-----------------------------------------------------------------------------
 FEMortarProjection::FEMortarProjection()

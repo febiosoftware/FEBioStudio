@@ -132,7 +132,7 @@ void GLVolumeFlowPlot::CreateSlices(std::vector<Slice>& slice, const vec3d& norm
 	FSMeshBase& mesh = *mdl.GetActiveMesh();
 
 	// get the largest dimension
-	BOX box = m_box;
+	BoundingBox box = m_box;
 	vec3d r0 = box.r0();
 	vec3d r1 = box.r1();
 	double R = (r1 - r0).norm();
@@ -190,7 +190,7 @@ void GLVolumeFlowPlot::UpdateBoundingBox()
 	FSMesh* pm = mdl->GetActiveMesh();
 
 	// only count enabled parts
-	BOX box;
+	BoundingBox box;
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
 		FSElement_& el = pm->ElementRef(i);

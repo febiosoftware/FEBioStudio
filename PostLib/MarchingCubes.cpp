@@ -226,7 +226,7 @@ void CMarchingCubes::CreateSurface()
 	if (im.Get3DImage() == nullptr) return;
 	C3DImage& im3d = *m_8bitImage;
 
-	BOX b = im.GetBoundingBox();
+	BoundingBox b = im.GetBoundingBox();
 	m_box = b;
 	double W = b.Width();
 	double H = b.Height();

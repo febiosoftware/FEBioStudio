@@ -79,9 +79,9 @@ public:
     void AddImageAnalysis(CImageAnalysis* analysis) { m_analyses.Add(analysis); }
 	void RemoveAnalysis(CImageAnalysis* analysis);
 
-	BOX GetBoundingBox();
+	BoundingBox GetBoundingBox();
 
-	void SetBoundingBox(BOX b);
+	void SetBoundingBox(BoundingBox b);
 
 	mat3d GetOrientation();
 

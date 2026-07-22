@@ -284,7 +284,7 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 	};
 
 	// get the bounding box
-	BOX box = img.GetBoundingBox();
+	BoundingBox box = img.GetBoundingBox();
 	vec3d r0 = box.r0();
 	vec3d dr = box.r1() - box.r0();
 
@@ -339,7 +339,7 @@ void CVolumeRenderer::RenderSlices(GLRenderEngine& re, const vec3d& view)
 	vec3f normal = to_vec3f(view);
 
 	// get the bounding box corners
-	BOX box = img.GetBoundingBox();
+	BoundingBox box = img.GetBoundingBox();
 	double W = box.Width();
 	double H = box.Height();
 	double D = box.Depth();

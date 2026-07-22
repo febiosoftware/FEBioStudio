@@ -33,7 +33,7 @@ SOFTWARE.*/
 class C3DGradientMap
 {
 public:
-	C3DGradientMap(C3DImage& im, BOX box);
+	C3DGradientMap(C3DImage& im, BoundingBox box);
 	~C3DGradientMap();
 
 	// get a vector value
@@ -45,6 +45,6 @@ private:
 
 private:
 	C3DImage&	m_im;
-	BOX	m_box;
+	BoundingBox	m_box;
 };
 

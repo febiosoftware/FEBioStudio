@@ -152,9 +152,9 @@ CGLModelScene::CGLModelScene(CModelDocument* doc) : m_doc(doc)
 	m_buildScene = true;
 }
 
-BOX CGLModelScene::GetBoundingBox()
+BoundingBox CGLModelScene::GetBoundingBox()
 {
-	BOX box;
+	BoundingBox box;
 	if (m_doc) box = m_doc->GetModelBox();
 	return box;
 }
@@ -324,7 +324,7 @@ void CGLModelScene::UpdateRenderTransforms(GLContext& rc)
 			if (po && po->IsVisible() && po->IsValid())
 			{
 				double v = n++;
-				BOX bo = po->GetGlobalBox();
+				BoundingBox bo = po->GetGlobalBox();
 				vec3d c = bo.Center();
 				double r = 0;
 				switch (view.m_explode_direction)
@@ -360,7 +360,7 @@ void CGLModelScene::UpdateRenderTransforms(GLContext& rc)
 			GObject* po = item->GetGObject();
 			double vi = obj[i].second;
 
-			BOX bo = po->GetGlobalBox();
+			BoundingBox bo = po->GetGlobalBox();
 
 			vec3d n(0, 0, 0);
 			double r = 0;
@@ -904,7 +904,7 @@ void CGLModelScene::Update()
 	GLScene::Update();
 }
 
-void GLPlaneCutItem::RenderBoxCut(GLRenderEngine& re, const BOX& box)
+void GLPlaneCutItem::RenderBoxCut(GLRenderEngine& re, const BoundingBox& box)
 {
 	vec3d a = box.r0();
 	vec3d b = box.r1();
@@ -1069,7 +1069,7 @@ void GLPlaneCutItem::render(GLRenderEngine& re, GLContext& rc)
 {
 	if (rc.m_settings.m_showPlaneCut)
 	{
-		BOX box = m_scene->GetBoundingBox();
+		BoundingBox box = m_scene->GetBoundingBox();
 		glx::renderBox(re, box, GLColor(200, 0, 200), false);
 
 		// render the plane cut first
@@ -2574,7 +2574,7 @@ void GLPhysicsItem::RenderRigidBodies(GLRenderEngine& re, GLContext& rc) const
 void GLPhysicsItem::RenderRigidWalls(GLRenderEngine& re) const
 {
 	FSModel* ps = m_scene->GetFSModel();
-	BOX box = ps->GetModel().GetBoundingBox();
+	BoundingBox box = ps->GetModel().GetBoundingBox();
 	double R = box.GetMaxExtent();
 	vec3d c = box.Center();
 
@@ -2874,7 +2874,7 @@ void GLPhysicsItem::BuildAxesMesh(GLContext& rc)
 	FEElementRef rel;
 
 	GLViewSettings& view = rc.m_settings;
-	BOX box = model.GetBoundingBox();
+	BoundingBox box = model.GetBoundingBox();
 	double h = 0.05 * box.GetMaxExtent() * view.m_fiber_scale;
 
 	GLColor rgb[3] = { GLColor::Red(), GLColor::Green(), GLColor::Blue() };
@@ -2965,7 +2965,7 @@ void GLFiberVizItem::render(GLRenderEngine& re, GLContext& rc)
 		FSModel* ps = m_scene->GetFSModel();
 		GModel& model = ps->GetModel();
 
-		BOX box = model.GetBoundingBox();
+		BoundingBox box = model.GetBoundingBox();
 		double h = 0.05 * box.GetMaxExtent();
 
 		GLViewSettings& vs = rc.m_settings;

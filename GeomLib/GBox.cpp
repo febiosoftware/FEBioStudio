@@ -46,7 +46,7 @@ public:
 		const int LUT[8] = {6, 7, 4, 5, 2, 3, 0, 1};
 		r[1] = m_box.Node(LUT[m])->Position();
 
-		BOX box;
+		BoundingBox box;
 		for (int i = 0; i < 2; ++i)
 		{
 			vec3d ri = m_box.GetTransform().GlobalToLocal(r[i]);

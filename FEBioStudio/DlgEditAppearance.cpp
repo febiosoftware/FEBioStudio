@@ -42,7 +42,7 @@ public:
 	EditMaterialScene();
 	void Render(GLRenderEngine& re, GLContext& rc);
 
-	BOX GetBoundingBox() override { return BOX(-1, -1, -1, 1, 1, 1); }
+	BoundingBox GetBoundingBox() override { return BoundingBox(-1, -1, -1, 1, 1, 1); }
 
 public:
 	GLMaterial mat;

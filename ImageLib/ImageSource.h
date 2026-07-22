@@ -84,7 +84,7 @@ protected:
 class CRawImageSource : public CImageSource
 {
 public:
-    CRawImageSource(CImageModel* imgModel, const std::string& filename, int imgType, int nx, int ny, int nz, BOX box, bool byteSwap);
+    CRawImageSource(CImageModel* imgModel, const std::string& filename, int imgType, int nx, int ny, int nz, BoundingBox box, bool byteSwap);
     CRawImageSource(CImageModel* imgModel);
 
 	void SetFileName(const std::string& filename);
@@ -101,6 +101,6 @@ private:
     std::string m_filename;
 	int m_type;
     int m_nx, m_ny, m_nz;
-    BOX m_box;
+    BoundingBox m_box;
     bool m_byteSwap;
 };

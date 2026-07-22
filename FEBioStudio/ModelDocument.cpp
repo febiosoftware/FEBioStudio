@@ -216,9 +216,9 @@ GObject* CModelDocument::GetActiveObject()
 }
 
 //-----------------------------------------------------------------------------
-BOX CModelDocument::GetModelBox() 
+BoundingBox CModelDocument::GetModelBox()
 { 
-	BOX box = m_Project.GetFSModel().GetModel().GetBoundingBox(); 
+	BoundingBox box = m_Project.GetFSModel().GetModel().GetBoundingBox();
 
 	// add any image models
 	for (int i = 0; i < ImageModels(); ++i)
@@ -1368,9 +1368,9 @@ void CModelDocument::ToggleActiveParts()
 	}
 }
 
-BOX CModelDocument::GetBoundingBox()
+BoundingBox CModelDocument::GetBoundingBox()
 {
-	BOX box;
+	BoundingBox box;
 	if (GetGModel()) box = GetGModel()->GetBoundingBox();
 	return box;
 }

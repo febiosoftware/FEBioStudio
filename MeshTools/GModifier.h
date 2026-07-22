@@ -89,7 +89,7 @@ protected:
 	void Apply(vec3d& r);
 
 protected:
-	BOX		m_box;
+	BoundingBox		m_box;
 	vec3d	m_rc;
 	vec3d	m_pvt;
 	quatd	m_q;

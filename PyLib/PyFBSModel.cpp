@@ -30,9 +30,12 @@ SOFTWARE.*/
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
+
+#ifndef PY_EXTERNAL
 #include <FEBioStudio/ModelDocument.h>
 #include <FEBioStudio/MainWindow.h>
 #include <FEBioStudio/PropertyList.h>
+#endif
 #include <FEBioLink/FEBioClass.h>
 #include <FEMLib/FSModel.h>
 #include <FEMLib/FEInterface.h>
@@ -174,7 +177,10 @@ public:
 	GMaterial* add(const std::string& name, const std::string& type, py::kwargs kwargs)
 	{
 		GMaterial* gmat = m_model->AddMaterial(name, type);
-		if (gmat == nullptr) return nullptr;
+		if (gmat == nullptr)
+		{
+			throw py::type_error("can't create material of type \"" + type + "\"");
+		}
 
 		FSMaterial* mat = gmat->GetMaterialProperties();
 		if (mat) SetDynamicAttributes(*mat, kwargs);
@@ -207,7 +213,10 @@ public:
 		std::unique_ptr<FSObject> obj(fbs.CreateClass(CLASS_OBJECT, type.c_str()));
 
 		GObject* po = dynamic_cast<GObject*>(obj.get());
-		if (po == nullptr) return nullptr;
+		if (po == nullptr)
+		{
+			throw py::type_error("can't create object of type \"" + type + "\"");
+		}
 
 		if (kwargs.empty() == false)
 		{
@@ -244,6 +253,7 @@ public:
 		delete po;
 	}
 
+#ifndef PY_EXTERNAL
 	GObject* import_file(const std::string& fileName)
 	{
 		// TODO: I want to make changes here so I don't need the CModelDocument and CMainWindow classes. 
@@ -272,6 +282,7 @@ public:
 		delete fileReader;
 		return po;
 	}
+#endif
 
 private:
 	GModel* m_geom = nullptr;
@@ -293,6 +304,10 @@ public:
 	FSLoadController* add(const std::string& name, const std::string& type, py::kwargs kwargs)
 	{
 		FSLoadController* lc = m_model->AddLoadController(name, type);
+		if (lc == nullptr)
+		{
+			throw py::type_error("can't create load controller of type \"" + type + "\"");
+		}
 		if (lc) SetDynamicAttributes(*lc, kwargs);
 		return lc;
 	}
@@ -317,11 +332,14 @@ public:
 	FSStep* add(const std::string& name, const std::string& type, py::kwargs kwargs)
 	{
 		FSStep*step = m_model->AddStep(name, type);
-		if (step)
+		if (step == nullptr)
 		{
-			FEBio::InitDefaultProps(step);
-			SetDynamicAttributes(*step, kwargs);
+			throw py::type_error("can't create step of type \"" + type + "\"");
 		}
+
+		FEBio::InitDefaultProps(step);
+		SetDynamicAttributes(*step, kwargs);
+		
 		return step;
 	}
 
@@ -350,7 +368,11 @@ public:
 	FSBoundaryCondition* add(const std::string& name, const std::string& type, py::kwargs kwargs)
 	{
 		FSBoundaryCondition* bc = m_step->AddBC(name, type);
-		if (bc) SetDynamicAttributes(*bc, kwargs);
+		if (bc == nullptr)
+		{
+			throw py::type_error("can't create boundary condition of type \"" + type + "\"");
+		}
+		SetDynamicAttributes(*bc, kwargs);
 		return bc;
 	}
 
@@ -374,21 +396,33 @@ public:
 	FSLoad* addNodalLoad(const std::string& name, const std::string& type, py::kwargs kwargs)
 	{
 		FSLoad* load = m_step->AddNodalLoad(name, type);
-		if (load) SetDynamicAttributes(*load, kwargs);
+		if (load == nullptr)
+		{
+			throw py::type_error("can't create nodal load of type \"" + type + "\"");
+		}
+		SetDynamicAttributes(*load, kwargs);
 		return load;
 	}
 
 	FSLoad* addSurfaceLoad(const std::string& name, const std::string& type, py::kwargs kwargs)
 	{
 		FSLoad* load = m_step->AddSurfaceLoad(name, type);
-		if (load) SetDynamicAttributes(*load, kwargs);
+		if (load == nullptr)
+		{
+			throw py::type_error("can't create surface load of type \"" + type + "\"");
+		}
+		SetDynamicAttributes(*load, kwargs);
 		return load;
 	}
 
 	FSLoad* addBodyLoad(const std::string& name, const std::string& type, py::kwargs kwargs)
 	{
 		FSLoad* load = m_step->AddBodyLoad(name, type);
-		if (load) SetDynamicAttributes(*load, kwargs);
+		if (load == nullptr)
+		{
+			throw py::type_error("can't create body load of type \"" + type + "\"");
+		}
+		SetDynamicAttributes(*load, kwargs);
 		return load;
 	}
 
@@ -412,7 +446,11 @@ public:
 	FSInitialCondition* add(const std::string& name, const std::string& type, py::kwargs kwargs)
 	{
 		FSInitialCondition* ic = m_step->AddIC(name, type);
-		if (ic) SetDynamicAttributes(*ic, kwargs);
+		if (ic == nullptr)
+		{
+			throw py::type_error("can't create initial condition of type \"" + type + "\"");
+		}
+		SetDynamicAttributes(*ic, kwargs);
 		return ic;
 	}
 
@@ -444,7 +482,7 @@ public:
 			throw py::type_error("interface is not a paired interface");
 		}
 
-		if (paired) SetDynamicAttributes(*paired, kwargs);
+		SetDynamicAttributes(*paired, kwargs);
 		return paired;
 	}
 
@@ -468,7 +506,11 @@ public:
 	FSModelConstraint* add(const std::string& name, const std::string& type, py::kwargs kwargs)
 	{
 		FSModelConstraint* constraint = m_step->AddConstraint(name, type);
-		if (constraint) SetDynamicAttributes(*constraint, kwargs);
+		if (constraint == nullptr)
+		{
+			throw py::type_error("can't create constraint of type \"" + type + "\"");
+		}
+		SetDynamicAttributes(*constraint, kwargs);
 		return constraint;
 	}
 
@@ -492,7 +534,11 @@ public:
 	FSMeshAdaptor* add(const std::string& name, const std::string& type, py::kwargs kwargs)
 	{
 		FSMeshAdaptor* adaptor = m_step->AddMeshAdaptor(name, type);
-		if (adaptor) SetDynamicAttributes(*adaptor, kwargs);
+		if (adaptor == nullptr)
+		{
+			throw py::type_error("can't create mesh adaptor of type \"" + type + "\"");
+		}
+		SetDynamicAttributes(*adaptor, kwargs);
 		return adaptor;
 	}
 
@@ -625,7 +671,7 @@ public:
 		else
 		{
 			delete set;
-			return nullptr;
+			throw py::type_error("can't create spring set of type \"" + type + "\"");
 		}
 
 		set->SetName(name);
@@ -654,7 +700,12 @@ public:
 	CPlotVariable* add(const std::string& name)
 	{
 		CPlotDataSettings& plt = m_model->GetPlotDataSettings();
-		return plt.AddPlotVariable(name, true, true, DOMAIN_MESH);
+		CPlotVariable* var = plt.FindVariable(name);
+		if (var == nullptr)
+		{
+			throw py::value_error("plot variable does not exist: " + name);
+		}
+		return var;
 	}
 
 private:
@@ -707,7 +758,9 @@ void init_FBSModel(py::module& m)
 		.def("add_mesh_object", &PyObjectList::addMeshObject, py::return_value_policy::reference, py::arg("name"))
 		.def("add_curve_mesh_object", &PyObjectList::addCurveMeshObject, py::return_value_policy::reference, py::arg("name"))
 		.def("remove", &PyObjectList::remove)
+#ifndef PY_EXTERNAL
 		.def("import_file", &PyObjectList::import_file, py::return_value_policy::reference)
+#endif
 		;
 
 	// collection wrapper for discrete objects

@@ -149,7 +149,7 @@ void GLPointProbe::Update(int ntime, float dt, bool breset)
 	}
 
 	// update the size of the probe
-	BOX box = mdl->GetFSModel()->GetBoundingBox();
+	BoundingBox box = mdl->GetFSModel()->GetBoundingBox();
 	m_R = 0.05*box.GetMaxExtent();
 
 	// see if we need to revaluate the FSFindElement object
@@ -257,7 +257,7 @@ public:
 	void Update()
 	{
 		vec3d r = m_pc->GetInitialPosition();
-		m_box = BOX(r, r);
+		m_box = BoundingBox(r, r);
 		m_pc->Update();
 	}
 

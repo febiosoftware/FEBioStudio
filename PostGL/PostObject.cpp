@@ -44,11 +44,11 @@ CPostObject::~CPostObject()
 	ClearInternalSurfaces();
 }
 
-BOX CPostObject::GetBoundingBox()
+BoundingBox CPostObject::GetBoundingBox()
 {
 	FSMesh* mesh = GetFEMesh();
 	if (mesh) return mesh->GetBoundingBox();
-	else return BOX();
+	else return BoundingBox();
 }
 
 void CPostObject::ClearInternalSurfaces()

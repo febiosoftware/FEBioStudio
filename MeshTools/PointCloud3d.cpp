@@ -77,8 +77,7 @@ vec3d PointCloud3d::Centroid()
     return c;
 }
 
-//-------------------------------------------------------------------------------
-void PointCloud3d::BoundingBox()
+void PointCloud3d::UpdateBoundingBox()
 {
     int n = Points();
     
@@ -117,7 +116,7 @@ bool PointCloud3d::Read(char* szname)
     
     fclose(fp);
     
-    BoundingBox();
+    UpdateBoundingBox();
     
     return true;
 }
@@ -148,7 +147,7 @@ bool PointCloud3d::Write(char* szname)
 void PointCloud3d::ParametricCoordinatesFromXYZ(const int udir, const int vdir)
 {
     // get bounding box
-    BoundingBox();
+    UpdateBoundingBox();
     
     // get surface extents
     vec3d extnt = m_pmax - m_pmin;

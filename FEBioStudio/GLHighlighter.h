@@ -93,7 +93,7 @@ public:
 	// set the color for the picked items
 	static void SetPickColor(GLColor c, int colorMode = 0);
 
-	static BOX GetBoundingBox();
+	static BoundingBox GetBoundingBox();
 
 	static std::vector<Item> GetItems();
 

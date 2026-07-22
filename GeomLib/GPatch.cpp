@@ -47,7 +47,7 @@ public:
 		const int LUT[4] = { 2, 3, 0, 1 };
 		r[1] = m_patch.Node(LUT[m])->Position();
 
-		BOX box;
+		BoundingBox box;
 		for (int i = 0; i < 2; ++i)
 		{
 			vec3d ri = m_patch.GetTransform().GlobalToLocal(r[i]);

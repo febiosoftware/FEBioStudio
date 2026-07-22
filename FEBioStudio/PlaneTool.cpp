@@ -47,7 +47,7 @@ class CPlaneToolUI : public QWidget
 {
 public:
 	FSMeshBase*	m_mesh;		// selected mesh
-	BOX		m_box;			// bounding box of mesh
+	BoundingBox	m_box;			// bounding box of mesh
 	double	m_range[2];		// offset range defined by box and current plane normal
 
 public:
@@ -359,7 +359,7 @@ void CPlaneTool::onPlaneChanged()
 void CPlaneToolUI::UpdatePlaneOffsetRange()
 {
 	// get the nodal values
-	BOX& box = m_box;
+	BoundingBox& box = m_box;
 	vec3d a = box.r0();
 	vec3d b = box.r1();
 	vec3d r[8] = {
@@ -440,7 +440,7 @@ void CPlaneTool::Update()
 		ui->m_mesh = mesh;
 
 		// the mesh returns the local box
-		BOX box = mesh->GetBoundingBox();
+		BoundingBox box = mesh->GetBoundingBox();
 
 		// we want a global box
 		vec3d r0 = mesh->LocalToGlobal(box.r0());
@@ -448,7 +448,7 @@ void CPlaneTool::Update()
 		if (r1.x < r0.x) { double x = r1.x; r1.x = r0.x; r0.x = x; }
 		if (r1.y < r0.y) { double y = r1.y; r1.y = r0.y; r0.y = y; }
 		if (r1.z < r0.z) { double z = r1.z; r1.z = r0.z; r0.z = z; }
-		ui->m_box = BOX(r0, r1);
+		ui->m_box = BoundingBox(r0, r1);
 		ui->UpdatePlaneOffsetRange();
 	}
 

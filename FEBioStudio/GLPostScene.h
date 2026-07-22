@@ -130,7 +130,7 @@ public:
 
 	void Render(GLRenderEngine& engine, GLContext& rc) override;
 
-	BOX GetBoundingBox() override;
+	BoundingBox GetBoundingBox() override;
 
 	void ToggleTrackSelection();
 

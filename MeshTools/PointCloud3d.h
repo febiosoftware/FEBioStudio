@@ -61,7 +61,7 @@ public:
     vec3d Centroid();
     
     // Evaluate bounding box
-    void BoundingBox();
+    void UpdateBoundingBox();
     
     // Generate parametric coordinates from spatial coordinates
     void ParametricCoordinatesFromXYZ(const int udir, const int vdir);

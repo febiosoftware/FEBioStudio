@@ -274,7 +274,7 @@ void CDlgWarpImage::accept()
             img->ExportSITKImage(dir.filePath(currentFilename).toStdString());
         }
 
-        BOX box = img->GetBoundingBox();
+		BoundingBox box = img->GetBoundingBox();
 
         ui->wnd->AddLogEntry(QString("%1\t%2\t%3\t%4\t%5\t%6\t%7\t%8\t%9\t%10\n")
             .arg(currentFilename)

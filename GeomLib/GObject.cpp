@@ -640,15 +640,15 @@ FSNode* GObject::GetFENode(int gid)
 }
 
 //-----------------------------------------------------------------------------
-BOX GObject::GetLocalBox() const
+BoundingBox GObject::GetLocalBox() const
 {
 	if (imp->m_pGMesh) return imp->m_pGMesh->GetBoundingBox();
 
-	BOX b;
+	BoundingBox b;
 	int N = Nodes();
 	if (N > 0)
 	{
-		b = BOX(m_Node[0]->LocalPosition(), m_Node[0]->LocalPosition());
+		b = BoundingBox(m_Node[0]->LocalPosition(), m_Node[0]->LocalPosition());
 		for (int i = 1; i<N; ++i) b += m_Node[i]->LocalPosition();
 	}
 	else if (GetFEMesh())
@@ -661,9 +661,9 @@ BOX GObject::GetLocalBox() const
 
 //-----------------------------------------------------------------------------
 // get the global bounding box
-BOX GObject::GetGlobalBox() const
+BoundingBox GObject::GetGlobalBox() const
 {
-	BOX box = GetLocalBox();
+	BoundingBox box = GetLocalBox();
 	return LocalToGlobalBox(box, GetTransform());
 }
 

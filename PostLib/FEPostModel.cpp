@@ -1295,11 +1295,11 @@ void FEPostModel::UpdateBoundingBox()
 	FSMesh* mesh = GetFEMesh(0);
 	if (mesh == nullptr)
 	{
-		m_bbox = BOX(vec3d(0, 0, 0), vec3d(1, 1, 1));
+		m_bbox = BoundingBox(vec3d(0, 0, 0), vec3d(1, 1, 1));
 		return;
 	}
 
-	BOX box;
+	BoundingBox box;
 	int N = mesh->Nodes();
 	for (int i=0; i<N; i++)
 	{

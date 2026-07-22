@@ -231,7 +231,7 @@ void GTwistModifier::Apply(GObject* po)
 	double ca, sa, a, t;
 	int N = po->Nodes();
 
-	BOX box = po->GetLocalBox();
+	BoundingBox box = po->GetLocalBox();
 	double dx = box.Width(); if (dx == 0) dx = 1;
 	double dy = box.Height(); if (dy == 0) dy = 1;
 	double dz = box.Depth(); if (dz == 0) dz = 1;
@@ -319,7 +319,7 @@ GLMesh* GTwistModifier::BuildGMesh(GObject* po)
 	double ca, sa, a, t;
 	int N = pm->Nodes();
 
-	BOX box = pm->GetBoundingBox();
+	BoundingBox box = pm->GetBoundingBox();
 	double dx = box.Width(); if (dx == 0) dx = 1;
 	double dy = box.Height(); if (dy == 0) dy = 1;
 	double dz = box.Depth(); if (dz == 0) dz = 1;
@@ -411,7 +411,7 @@ FSMesh* GTwistModifier::BuildFEMesh(GObject* po)
 	double ca, sa, a, t;
 	int N = pm->Nodes();
 
-	BOX box = pm->GetBoundingBox();
+	BoundingBox box = pm->GetBoundingBox();
 	double dx = box.Width(); if (dx == 0) dx = 1;
 	double dy = box.Height(); if (dy == 0) dy = 1;
 	double dz = box.Depth(); if (dz == 0) dz = 1;
@@ -498,7 +498,7 @@ GPinchModifier::GPinchModifier(FSModel* ps)
 //-----------------------------------------------------------------------------
 void GPinchModifier::Apply(GObject* po)
 {
-	BOX box = po->GetLocalBox();
+	BoundingBox box = po->GetLocalBox();
 	vec3d c = box.Center();
 	double W = 0.5*box.Width();
 
@@ -532,7 +532,7 @@ GLMesh* GPinchModifier::BuildGMesh(GObject* po)
 {
 	GLMesh* pm = po->GetRenderMesh();
 
-	BOX box = pm->GetBoundingBox();
+	BoundingBox box = pm->GetBoundingBox();
 	vec3d c = box.Center();
 	double W = 0.5*box.Width();
 
@@ -570,7 +570,7 @@ FSMesh* GPinchModifier::BuildFEMesh(GObject* po)
 {
 	FSMesh* pm = po->GetFEMesh();
 
-	BOX box = pm->GetBoundingBox();
+	BoundingBox box = pm->GetBoundingBox();
 	vec3d c = box.Center();
 	double W = 0.5*box.Width();
 
@@ -803,7 +803,7 @@ void GSkewModifier::Apply(GObject* po)
 	double a = GetFloatValue(SKEW);
 
 	// get the bounding box and its dimensions
-	BOX box = po->GetLocalBox();
+	BoundingBox box = po->GetLocalBox();
 	double dx = box.Width(); if (dx == 0) dx = 1;
 	double dy = box.Height(); if (dy == 0) dy = 1;
 	double dz = box.Depth(); if (dz == 0) dz = 1;
@@ -841,7 +841,7 @@ GLMesh* GSkewModifier::BuildGMesh(GObject* po)
 	double a = GetFloatValue(SKEW);
 
 	// get the bounding box and its dimensions
-	BOX box = pm->GetBoundingBox();
+	BoundingBox box = pm->GetBoundingBox();
 	double dx = box.Width(); if (dx == 0) dx = 1;
 	double dy = box.Height(); if (dy == 0) dy = 1;
 	double dz = box.Depth(); if (dz == 0) dz = 1;
@@ -882,7 +882,7 @@ FSMesh* GSkewModifier::BuildFEMesh(GObject* po)
 	double a = GetFloatValue(SKEW);
 
 	// get the bounding box and its dimensions
-	BOX box = pm->GetBoundingBox();
+	BoundingBox box = pm->GetBoundingBox();
 	double dx = box.Width(); if (dx == 0) dx = 1;
 	double dy = box.Height(); if (dy == 0) dy = 1;
 	double dz = box.Depth(); if (dz == 0) dz = 1;

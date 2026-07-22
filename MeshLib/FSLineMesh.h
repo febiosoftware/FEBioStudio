@@ -129,7 +129,7 @@ protected:
 	//! Owning object
 	GObject*	m_pobj;
 	//! Bounding box
-	BOX			m_box;
+	BoundingBox			m_box;
 
 	//! Node list
 	std::vector<FSNode>	m_Node;

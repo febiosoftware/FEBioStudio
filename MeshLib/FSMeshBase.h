@@ -46,7 +46,7 @@ public:
 	virtual ~FSMeshBase();
 
 	//! Get the bounding box of the mesh
-	BOX GetBoundingBox() const { return m_box; }
+	BoundingBox GetBoundingBox() const { return m_box; }
 
 	//! Update the mesh structure (override from FSLineMesh)
 	void UpdateMesh() override;

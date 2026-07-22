@@ -1801,7 +1801,7 @@ bool CMainWindow::ImportImage(const QString& fileName)
 		dlg.setFileName(fi.fileName());
 		if (dlg.exec())
 		{
-			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
+			BoundingBox box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
 
 			CImageModel* imageModel = new CImageModel(nullptr);
 			imageModel->SetImageSource(new CRawImageSource(imageModel, fileName.toStdString(), dlg.m_type, dlg.m_nx, dlg.m_ny, dlg.m_nz, box, dlg.m_swapEndianness));
@@ -1852,7 +1852,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
 			dlg.setFileName(fileTitle);
             if (dlg.exec())
             {
-                BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
+				BoundingBox box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
 
                 CImageModel* imageModel = new CImageModel(nullptr);
                 imageModel->SetImageSource(new CRawImageSource(imageModel, filename.toStdString(), dlg.m_type, dlg.m_nx, dlg.m_ny, dlg.m_nz, box, dlg.m_swapEndianness));

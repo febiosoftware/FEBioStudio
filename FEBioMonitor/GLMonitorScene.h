@@ -58,7 +58,7 @@ public:
 	void RenderTags(GLContext& rc);
 
 	// get the bounding box of the entire scene
-	BOX GetBoundingBox() override;
+	BoundingBox GetBoundingBox() override;
 
 	// get the post model
 	Post::CGLModel* GetGLModel() { return m_glm; }

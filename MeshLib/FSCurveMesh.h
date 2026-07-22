@@ -105,7 +105,7 @@ public:
 	void Attach(const FSCurveMesh& c);
 
 	//! get the bounding box of the mesh
-	BOX BoundingBox() const;
+	BoundingBox GetBoundingBox() const;
 
 	//! returns the total lenght of all edge segments
 	double Length() const;

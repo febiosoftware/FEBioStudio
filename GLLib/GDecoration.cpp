@@ -190,7 +190,7 @@ extern int ET_HEX[12][2];
 
 GPlaneCutDecoration::GPlaneCutDecoration()
 {
-	m_box = BOX(vec3d(0, 0, 0), vec3d(1, 1, 1));
+	m_box = BoundingBox(vec3d(0, 0, 0), vec3d(1, 1, 1));
 	m_a[0] = 0;
 	m_a[1] = 0;
 	m_a[2] = 0;
@@ -202,7 +202,7 @@ GPlaneCutDecoration::~GPlaneCutDecoration()
 
 }
 
-void GPlaneCutDecoration::setBoundingBox(BOX box)
+void GPlaneCutDecoration::setBoundingBox(BoundingBox box)
 {
 	m_box = box;
 }
@@ -218,7 +218,7 @@ void GPlaneCutDecoration::setPlane(double n0, double n1, double n2, double d)
 void GPlaneCutDecoration::render(GLRenderEngine& re)
 {
 	// get the nodal values
-	BOX box = m_box;
+	BoundingBox box = m_box;
 	box.Scale(1.05);
 	vec3d a = box.r0();
 	vec3d b = box.r1();

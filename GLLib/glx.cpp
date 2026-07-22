@@ -897,9 +897,9 @@ void glx::renderRigidWall(GLRenderEngine& re, double R)
 	re.end();
 }
 
-void glx::renderBox(GLRenderEngine& re, const BOX& bbox, GLColor col, bool partial, double scale)
+void glx::renderBox(GLRenderEngine& re, const BoundingBox& bbox, GLColor col, bool partial, double scale)
 {
-	BOX box = bbox;
+	BoundingBox box = bbox;
 	box.Scale(scale);
 
 	re.setMaterial(GLMaterial::CONSTANT, col);

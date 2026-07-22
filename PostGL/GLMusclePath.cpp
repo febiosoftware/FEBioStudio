@@ -432,7 +432,7 @@ protected:
 
 		m_rot = quatd(vec3d(1, 0, 0), t);
 
-		m_box = BOX(r, r); m_box.Inflate(m_R);
+		m_box = BoundingBox(r, r); m_box.Inflate(m_R);
 	}
 
 	int Count() const { return 1; }

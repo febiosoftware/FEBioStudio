@@ -325,7 +325,7 @@ void GPartSelection::Update()
 
 void GPartSelection::UpdateBoundingBox()
 {
-	BOX box;
+	BoundingBox box;
 
 	GModel& model = *GetGModel();
 	for (int k = 0; k < model.Objects(); ++k)
@@ -463,7 +463,7 @@ void GFaceSelection::Update()
 
 void GFaceSelection::UpdateBoundingBox()
 {
-	BOX box;
+	BoundingBox box;
 	for (int k = 0; k < m_faceList.size(); ++k)
 	{
 		GFace* pf = m_faceList[k];
@@ -578,7 +578,7 @@ void GEdgeSelection::UpdateBoundingBox()
 {
 	GModel& model = *GetGModel();
 
-	BOX box;
+	BoundingBox box;
 	for (int k = 0; k < model.Objects(); ++k)
 	{
 		GObject* po = model.Object(k);
@@ -724,7 +724,7 @@ void GNodeSelection::Update()
 
 void GNodeSelection::UpdateBoundingBox()
 {
-	BOX box;
+	BoundingBox box;
 	for (int k = 0; k < Size(); ++k)
 	{
 		GNode* pn = Node(k); assert(pn && pn->IsSelected());
@@ -828,7 +828,7 @@ void GDiscreteSelection::Update()
 
 	const double LARGE = 1e20;
 
-	BOX box;
+	BoundingBox box;
 
 	int N = model.DiscreteObjects();
 	vec3d r;
@@ -953,7 +953,7 @@ void FEElementSelection::Update()
 	int N = mesh.Elements();
 	m_item.reserve(N);
 
-	BOX box;
+	BoundingBox box;
 	for (int i=0; i<N; ++i)
 	{
 		FSElement& el = mesh.Element(i);
@@ -1182,7 +1182,7 @@ void FEFaceSelection::Update()
 	GObject* po = m_pMesh->GetGObject();
 	const Transform& T = po->GetTransform();
 
-	BOX box;
+	BoundingBox box;
 	for (int i=0; i<N; ++i, ++pf)
 	{
 		if (pf->IsSelected())
@@ -1413,7 +1413,7 @@ void FEEdgeSelection::Update()
 	m_items.clear();
 	if (m_pMesh == nullptr) return;
 	FSEdge* pe = m_pMesh->EdgePtr();
-	BOX box;
+	BoundingBox box;
 	int NE = m_pMesh->Edges();
 	for (int i=0; i<NE; ++i, ++pe)
 	{
@@ -1649,7 +1649,7 @@ void FENodeSelection::Update()
 	if (m_pMesh == nullptr) return;
 	int N = m_pMesh->Nodes();
 	FSNode* pn = m_pMesh->NodePtr();
-	BOX box;
+	BoundingBox box;
 	for (int i=0; i<N; ++i, ++pn)
 	{
 		if (pn->IsSelected())

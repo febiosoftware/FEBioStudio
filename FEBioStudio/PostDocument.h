@@ -179,7 +179,7 @@ public:
 	std::string GetFileName();
 
 	// get the model's bounding box
-	BOX GetBoundingBox();
+	BoundingBox GetBoundingBox();
 
 	void SetGLModel(Post::CGLModel* glm);
 

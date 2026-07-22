@@ -361,7 +361,7 @@ public:
 
 	QVariant GetPropertyValue(int i)
 	{
-		BOX box = m_img->GetBoundingBox();
+		BoundingBox box = m_img->GetBoundingBox();
 		switch (i)
 		{
 		case 0: return m_img->ShowBox(); break;
@@ -387,7 +387,7 @@ public:
 
 	void SetPropertyValue(int i, const QVariant& val)
 	{
-		BOX box = m_img->GetBoundingBox();
+		BoundingBox box = m_img->GetBoundingBox();
 		switch (i)
 		{
 		case 0: m_img->ShowBox(val.toBool()); break;

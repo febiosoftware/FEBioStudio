@@ -258,7 +258,7 @@ public:
 
 public:
 	//! Get the bounding box
-	BOX GetBoundingBox() { return m_bbox; }
+	BoundingBox GetBoundingBox() { return m_bbox; }
 
 	//! Update the bounding box
 	void UpdateBoundingBox();
@@ -421,7 +421,7 @@ protected:
 	//! The list of meshes
 	std::vector<std::unique_ptr<FSMesh>>	m_mesh;		// the list of meshes
 	//! Bounding box of mesh
-	BOX						m_bbox;		// bounding box of mesh
+	BoundingBox						m_bbox;		// bounding box of mesh
 
 	// --- M A T E R I A L S ---
 	//! Array of materials

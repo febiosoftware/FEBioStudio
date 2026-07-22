@@ -36,7 +36,7 @@ struct TET
 };
 
 bool tet_overlap(TET& a, TET& b);
-bool box_test(BOX& a, const TET& b);
+bool box_test(BoundingBox& a, const TET& b);
 
 TetOverlap::TetOverlap()
 {
@@ -83,7 +83,7 @@ bool TetOverlap::Apply(FSMesh* mesh, std::vector<pair<int, int> >& tetList)
 	{
 		TET& a = tet[i];
 
-		BOX box;
+		BoundingBox box;
 		for (int k = 0; k < 4; ++k) box += a.r[k];
 		double R = box.GetMaxExtent();
 		box.Inflate(R*0.001);
@@ -165,7 +165,7 @@ bool plane_test_zn(const vec3d& q, const TET& b)
 	return true;
 }
 
-bool box_test(BOX& a, const TET& b)
+bool box_test(BoundingBox& a, const TET& b)
 {
 	if (plane_test_x(a.r1(), b)) return true;
 	if (plane_test_y(a.r1(), b)) return true;
