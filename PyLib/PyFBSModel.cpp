@@ -703,7 +703,25 @@ public:
 		CPlotVariable* var = plt.FindVariable(name);
 		if (var == nullptr)
 		{
-			throw py::value_error("plot variable does not exist: " + name);
+			// see if we can create a new plot variable
+			std::vector<FEBio::FEBioClassInfo> pltClasses = FEBio::FindAllClasses(m_model->GetModule(), FEPLOTDATA_ID);
+			for (auto& cls : pltClasses)
+			{
+				if (std::string(cls.sztype) == name)
+				{
+					DOMAIN_TYPE dom = DOMAIN_MESH;
+					if (cls.baseClassId == FEBio::GetBaseClassIndex("FEPlotSurfaceData")) dom = DOMAIN_SURFACE;
+					if (cls.baseClassId == FEBio::GetBaseClassIndex("FEPlotDomainData")) dom = DOMAIN_PART;
+
+					var = plt.AddPlotVariable(name, true, true, dom);
+					break;
+				}
+			}
+
+			if (var == nullptr)
+			{
+				throw py::value_error("plot variable does not exist: " + name);
+			}
 		}
 		return var;
 	}

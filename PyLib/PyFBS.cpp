@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <GeomLib/geomlib.h>
 #include <FEBioLib/febio.h>
+#include <FEBioLink/FEBioModule.h>
 #include <FECore/FECore.h>
 #include <FEBioMech/FEBioMechModule.h>
 
@@ -151,10 +152,11 @@ public:
 #else
 	int size() const { return (int)m_models.size(); }
 
-	FSModel* add(const std::string& name)
+	FSModel* add(const std::string& name, const std::string& moduleName)
 	{
 		std::unique_ptr<FSModel> model(new FSModel);
 		model->SetName(name);
+		model->SetModule(FEBio::GetModuleId(moduleName));
 		m_models.push_back(std::move(model));
 		return m_models.back().get();
 	}
