@@ -1464,6 +1464,9 @@ void CGLView::captureFrameReady(QImage img)
 	frameCapturesRequested--;
 	if (frameCapturesRequested < 0) frameCapturesRequested = 0;
 
+	if (m_rhi->isYUpInFramebuffer())
+		img.mirror();
+
 	if (m_pframe && m_pframe->visible())
 	{
 		// crop based on the capture frame
@@ -1474,9 +1477,6 @@ void CGLView::captureFrameReady(QImage img)
 	// But that does not appear to be correct and as a result an image with transparency will not be
 	// processed correctly. As a workaround, we modify the format by essentially stripping the alpha
 	// channel. This might be a bug in Qt so should revisit when we update to a newer version. 
-
-	if (m_rhi->isYUpInFramebuffer())
-		img.mirror();
 
 //	correct_premultiplied_image(img);
 
