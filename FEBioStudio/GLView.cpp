@@ -931,7 +931,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 			// there is an object under the cursor
 			if (((abs(m_x0-m_x1)<=DELTA) && (abs(m_y0-m_y1)<=DELTA)) || m_bsel)
 			{
-				if (((abs(m_x0 - m_x1) <= DELTA) && (abs(m_y0 - m_y1) <= DELTA)))
+				if (((abs(m_x0 - m_x1) <= DELTA) && (abs(m_y0 - m_y1) <= DELTA) && (m_pl.size() < 3)))
 				{
 					int xc = (m_x0 + m_x1) / 2;
 					int yc = (m_y0 + m_y1) / 2;
