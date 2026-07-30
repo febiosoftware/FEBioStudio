@@ -43,7 +43,6 @@ class GMaterial;
 class CCreatePanel;
 class CBuildPanel;
 class CRepositoryPanel;
-class CPythonToolsPanel;
 class QMenu;
 class CGraphWindow;
 class CDocManager;
@@ -159,9 +158,6 @@ public:
 
 	// get the database panel
 	CRepositoryPanel* GetDatabasePanel();
-
-	// get the python panel
-//	CPythonToolsPanel* GetPythonToolsPanel();
 
 	// get the febio monitor panel
 	CFEBioMonitorPanel* GetFEBioMonitorPanel();

@@ -1317,12 +1317,7 @@ CModelViewer* CMainWindow::GetModelViewer()
 {
 	return ui->modelViewer;
 }
-/*
-CPythonToolsPanel* CMainWindow::GetPythonToolsPanel()
-{
-	return ui->pythonToolsPanel;
-}
-*/
+
 CMainStatusBar* CMainWindow::GetStatusBar()
 {
 	return ui->statusBar;
