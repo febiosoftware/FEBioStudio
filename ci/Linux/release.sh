@@ -18,6 +18,7 @@ cd $FBS_REPO
 cd $GITHUB_WORKSPACE
 
 rm -rf $RELEASE_DIR
+rm -rf $UPLOAD_DIR
 
 mkdir $RELEASE_DIR
 mkdir $RELEASE_DIR/bin
