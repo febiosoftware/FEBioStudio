@@ -11,6 +11,7 @@ cd $FEBIO_REPO
 sh --login -i -c ci/Windows/create-sdk.sh
 
 # FEBioStudio
+Remove-Item -Path $FBS_REPO\febio4-sdk -Recurse -Force
 New-Item -Path $FBS_REPO\febio4-sdk -ItemType SymbolicLink -Value $FEBIO_REPO\febio4-sdk
 cd $FBS_REPO
 .\ci\Windows\build.bat
