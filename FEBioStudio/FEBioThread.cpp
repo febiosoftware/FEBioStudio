@@ -27,9 +27,11 @@ SOFTWARE.*/
 #include "FEBioThread.h"
 #include "FEBioJob.h"
 #include "MainWindow.h"
-#include <FEBioLink/FEBioClass.h>
+#include "Document.h"
+#include <FEBioRun/FEBioRun.h>
 #include <string>
 #include <QFileInfo>
+#include "FEBioStudy.h"
 using namespace std;
 
 class FEBioThreadOutput : public FEBio::FEBioOutputHandler
@@ -56,42 +58,10 @@ private:
 	CFEBioJob* m_job;
 };
 
-CFEBioThread::CFEBioThread(CMainWindow* wnd, CFEBioJob* job, QObject* parent) : m_wnd(wnd), m_job(job)
+CFEBioThread::CFEBioThread()
 {
 	m_isOutputReady = false;
-
 	QObject::connect(this, SIGNAL(finished()), this, SLOT(QObject::deleteLater()));
-	QObject::connect(this, SIGNAL(resultsReady(int, QProcess::ExitStatus)), parent, SLOT(onRunFinished(int, QProcess::ExitStatus)));
-	QObject::connect(this, SIGNAL(outputReady()), parent, SLOT(onReadyRead()));
-}
-
-void CFEBioThread::run()
-{
-	// get the FEBio job file path
-	string febFile = m_job->GetFEBFileName();
-
-	// get ready ...
-	m_wnd->AddLogEntry(QString("Starting FEBio: %1\n").arg(QString::fromStdString(febFile)));
-
-	// set ...
-	m_job->SetStatus(CFEBioJob::RUNNING);
-	m_job->SetProgress(0.0);
-
-	QString Cmd = QString::fromStdString(m_job->GetCommand());
-
-	// get the job file name (NOTE that we put quotes around it to deal with spaces)
-	QString fileName = QString("\"%1\"").arg(QString::fromStdString(m_job->GetFEBFileName()));
-
-	Cmd.replace("$(Filename)", fileName);
-	string cmd = Cmd.toStdString();
-
-	// go!
-	std::string report;
-	FEBioThreadOutput threadOutput(this);
-	FEBioThreadProgress progressTracker(m_job);
-	int n = FEBio::runModel(cmd, &threadOutput, &progressTracker, m_job);
-
-	emit resultsReady(n, QProcess::ExitStatus::NormalExit);
 }
 
 void CFEBioThread::KillThread()
@@ -130,4 +100,76 @@ QString CFEBioThread::GetOutput()
 	m_isOutputReady = false;
 	m_mutex.unlock();
 	return s;
+}
+
+//=================================================================================================
+CFEBioJobThread::CFEBioJobThread(CMainWindow* wnd, CFEBioJob* job, QObject* parent) : m_job(job)
+{
+	QObject::connect(this, SIGNAL(outputReady()), parent, SLOT(onReadyRead()));
+	QObject::connect(this, SIGNAL(resultsReady(int, QProcess::ExitStatus)), parent, SLOT(onRunFinished(int, QProcess::ExitStatus)));
+}
+
+void CFEBioJobThread::run()
+{
+	// get the FEBio job file path
+	string febFile = m_job->GetFEBFileName();
+
+	// get ready ...
+	std::string msg = "Starting FEBio job: " + m_job->GetName() + "\n";
+	appendLog(msg.c_str());
+
+	// set ...
+	m_job->SetStatus(CFEBioJob::RUNNING);
+	m_job->SetProgress(0.0);
+
+	QString Cmd = QString::fromStdString(m_job->GetCommand());
+
+	// get the job file name (NOTE that we put quotes around it to deal with spaces)
+	QString fileName = QString("\"%1\"").arg(QString::fromStdString(m_job->GetFEBFileName()));
+
+	Cmd.replace("$(Filename)", fileName);
+	string cmd = Cmd.toStdString();
+
+	// go!
+	FEBioThreadOutput threadOutput(this);
+	FEBioThreadProgress progressTracker(m_job);
+	int n = FEBio::runModel(cmd, &threadOutput, &progressTracker, m_job);
+
+	emit resultsReady(n, QProcess::ExitStatus::NormalExit);
+}
+
+//=================================================================================================
+void CFEBioStudyThread::run()
+{
+	// sanity check
+	if (m_doc == nullptr || m_study == nullptr)
+	{
+		emit resultReady(false);
+		return;
+	}
+
+	// get the document's folder
+	std::string filepath = m_doc->GetDocFilePath();
+	QFileInfo fi(QString::fromStdString(filepath));
+	QString dir = fi.absolutePath();
+
+	// set the working directory to this folder
+	QDir::setCurrent(dir);
+
+	// have the study write all required files to the working directory
+	if (!m_study->WriteFiles(dir))
+	{
+		emit resultReady(false);
+		return;
+	}
+
+	std::string febFile = m_study->GetFEBioFileName();
+	std::string opsFile = m_study->GetOptionsFileName();
+
+	string cmd = "-i " + febFile + " -task=\"" + m_study->GetStudyType() + "\" " + opsFile;
+
+	FEBioThreadOutput threadOutput(this);
+	int returnCode = FEBio::runModel(cmd, &threadOutput, nullptr, nullptr);
+
+	emit resultReady(returnCode == 0);
 }

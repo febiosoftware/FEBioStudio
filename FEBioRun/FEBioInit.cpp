@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,41 +23,27 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include <FEBioStudio/Tool.h>
+#include "FEBioInit.h"
+#include <FEBioLib/febio.h>
+#include <FEBioLink/FEBioModule.h>
 
-class CPropertyListForm;
-class QLabel;
+namespace febio {
+	extern void initCreateHandlers(); // in FEBioClass.cpp
+}
 
-// The CPythonTool class creates the UI component that will be added 
-// to the Python panel. It manages a CPythonToolProps that contains the properties of the tool.
-class CPythonTool : public CAbstractTool
+void FEBio::InitFEBioLibrary()
 {
-	Q_OBJECT
+	febio::InitLibrary();
 
-public:
-	CPythonTool(CMainWindow* wnd, const QString& name);
-	~CPythonTool();
+	febio::initCreateHandlers();
 
-	void SetProperties(CCachedPropertyList* props);
-	CCachedPropertyList* GetProperties();
+	// we will process create events
+	FEBio::BlockCreateEvents(false);
+}
 
-	void SetFilePath(const QString& filepath);
-	QString GetFilePath();
-
-	void SetToolInfo(const QString& info);
-
-	QWidget* createUi();
-
-public slots:
-	void onRun();
-
-signals:
-	void runTool(CCachedPropertyList* props);
-
-private:
-	CCachedPropertyList* m_props;
-	QString m_fileName;
-	CPropertyListForm* form;
-	QLabel* label;
-};
+bool FEBio::ConfigureFEBio(const char* szfilename)
+{
+	FEBioConfig config;
+	config.readPlugins = false; // don't read the plugins from the config file
+	return febio::Configure(szfilename, config);
+}

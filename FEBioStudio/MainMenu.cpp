@@ -156,6 +156,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	actionFEBioNext = createAction("Advance FEBio", "actionFEBioNext", "next"); actionFEBioNext->setShortcut(Qt::AltModifier | Qt::Key_F5);
 	QAction* actionFEBioOptimize = createAction("Create optimization Study ...", "actionFEBioOptimize");
 	QAction* actionFEBioTangent = createAction("Generate tangent diagnostic ...", "actionFEBioTangent");
+	QAction* actionFEBioStudy  = createAction("Generate Study ...", "actionFEBioStudy");
 	QAction* actionFEBioInfo = createAction("FEBio Info ...", "actionFEBioInfo");
     actionPluginRepo = createAction("Plugin Repository ...", "actionPluginRepo", "plugin"); actionPluginRepo->setToolTip("Open the FEBio Plugin Repository");
 	QAction* actionCreatePlugin = createAction("Create FEBio plugin ...", "actionCreatePlugin");
@@ -540,6 +541,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuFEBio->addAction(actionFEBioMonitor);
 	menuFEBio->addAction(actionFEBioOptimize);
 	menuFEBio->addAction(actionFEBioTangent);
+	menuFEBio->addAction(actionFEBioStudy);
 	menuFEBio->addAction(actionFEBioInfo);
     menuFEBio->addAction(actionPluginRepo);
 	menuFEBio->addAction(actionCreatePlugin);

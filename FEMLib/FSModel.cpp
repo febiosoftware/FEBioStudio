@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <FECore/units.h>
 #include <FSCore/ParamBlock.h>
-#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
 #include "FEMKernel.h"
 #include <GeomLib/GGroup.h>
@@ -1738,6 +1738,7 @@ void FSModel::LoadMeshDataGenerators(IArchive& ar)
 		case FE_FEBIO_FACEDATA_GENERATOR: pmd = new FEBioFaceDataGenerator(this); break;
 		case FE_FEBIO_ELEMDATA_GENERATOR: pmd = new FEBioElemDataGenerator(this); break;
 		case FE_CONST_FACEDATA_GENERATOR: pmd = new FSConstFaceDataGenerator(this); break;
+		case FE_CONST_ELEMDATA_GENERATOR: pmd = new FSConstElemDataGenerator(this); break;
 		default:
 			assert(false);
 		}

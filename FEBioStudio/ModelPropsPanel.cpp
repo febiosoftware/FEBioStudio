@@ -65,7 +65,6 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <MeshLib/FSElementData.h>
 #include "Commands.h"
-#include "MaterialPropsView.h"
 #include "FEClassPropsView.h"
 #include "CurveEditWidget.h"
 #include "MathEditWidget.h"
@@ -402,7 +401,6 @@ class Ui::CModelPropsPanel
 	enum {
 		PROPS_VIEW,
 		PROPS_FORM,
-//		PROPS_MAT,
 		PROPS_FECLASS,
 		PROPS_PLOT,
 		PROPS_MATH,
@@ -416,7 +414,6 @@ public:
 	CItemListSelectionBox* sel2;
 	::CPropertyListView* props;
 	::CPropertyListForm* form;
-//	CMaterialPropsView*	mat;
 	FEClassEdit*		fec;
 	CCurveEditWidget* plt;
 	CMathEditWidget* math;
@@ -665,7 +662,7 @@ public:
 		{
 			lc->SetExtendMode(plc->GetParam("extend")->GetIntValue());
 			lc->SetInterpolator(plc->GetParam("interpolate")->GetIntValue());
-			plt->SetLoadCurve(lc);
+			plt->SetPointCurve(lc);
 		}
 	}
 
@@ -676,7 +673,7 @@ public:
 		fec->SetFEClass(nullptr, nullptr);
 		propStack->setCurrentIndex(PROPS_MATH);
 		plt->Clear();
-		plt->SetLoadCurve(nullptr);
+		plt->SetPointCurve(nullptr);
 
 		if (plc == nullptr) return;
 
@@ -692,7 +689,7 @@ public:
 		fec->SetFEClass(nullptr, nullptr);
 		propStack->setCurrentIndex(PROPS_MATH_INTERVAL);
 		plt->Clear();
-		plt->SetLoadCurve(nullptr);
+		plt->SetPointCurve(nullptr);
 
 		if (plc == nullptr) return;
 

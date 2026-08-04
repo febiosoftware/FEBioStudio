@@ -26,7 +26,7 @@ SOFTWARE.*/
 #include "TiffReader.h"
 #include <ImageLib/3DImage.h>
 #include "ImageModel.h"
-#include <FEBioXML/XMLReader.h>
+#include <FECore/XMLReader.h>
 #include <stdexcept>
 #include <sstream>
 #include <iostream>

@@ -44,13 +44,14 @@ SOFTWARE.*/
 #include "Command.h"
 #include "DlgFormula.h"
 #include "DlgImportData.h"
+#include "CurvePlotWidget.h"
 
 using namespace std;
 
 class CCmdAddPoint : public CCommand
 {
 public:
-	CCmdAddPoint(LoadCurve* plc, const vec2d& p);
+	CCmdAddPoint(PointCurve* plc, const vec2d& p);
 
 	void Execute() override;
 	void UnExecute() override;
@@ -58,7 +59,7 @@ public:
 	int Index() { return m_index; }
 
 private:
-	LoadCurve* m_lc;
+	PointCurve* m_lc;
 	vec2d		m_pt;
 	int			m_index;
 };
@@ -66,27 +67,27 @@ private:
 class CCmdRemovePoint : public CCommand
 {
 public:
-	CCmdRemovePoint(LoadCurve* plc, const std::vector<int>& index);
+	CCmdRemovePoint(PointCurve* plc, const std::vector<int>& index);
 
 	void Execute() override;
 	void UnExecute() override;
 
 private:
-	LoadCurve* m_lc;
-	LoadCurve		m_copy;
+	PointCurve* m_lc;
+	PointCurve	m_copy;
 	std::vector<int>		m_index;
 };
 
 class CCmdMovePoint : public CCommand
 {
 public:
-	CCmdMovePoint(LoadCurve* plc, int index, vec2d to);
+	CCmdMovePoint(PointCurve* plc, int index, vec2d to);
 
 	void Execute() override;
 	void UnExecute() override;
 
 private:
-	LoadCurve* m_lc;
+	PointCurve* m_lc;
 	vec2d		m_p;
 	int			m_index;
 };
@@ -104,7 +105,7 @@ private:
 };
 
 
-CCmdAddPoint::CCmdAddPoint(LoadCurve* plc, const vec2d& pt) : CCommand("Add point")
+CCmdAddPoint::CCmdAddPoint(PointCurve* plc, const vec2d& pt) : CCommand("Add point")
 {
 	m_lc = plc;
 	m_pt = pt;
@@ -123,7 +124,7 @@ void CCmdAddPoint::UnExecute()
 	m_lc->Update();
 }
 
-CCmdRemovePoint::CCmdRemovePoint(LoadCurve* plc, const vector<int>& index) : CCommand("Remove point")
+CCmdRemovePoint::CCmdRemovePoint(PointCurve* plc, const vector<int>& index) : CCommand("Remove point")
 {
 	m_lc = plc;
 	m_index = index;
@@ -142,7 +143,7 @@ void CCmdRemovePoint::UnExecute()
 	m_lc->Update();
 }
 
-CCmdMovePoint::CCmdMovePoint(LoadCurve* plc, int index, vec2d to) : CCommand("Move point")
+CCmdMovePoint::CCmdMovePoint(PointCurve* plc, int index, vec2d to) : CCommand("Move point")
 {
 	m_lc = plc;
 	m_index = index;
@@ -196,6 +197,7 @@ public:
 	QToolButton* paste;
 	QToolButton* open;
 	QToolButton* save;
+	QToolButton* openCE; // open curve editor
 
 	CCurvePlotWidget* plt;
 
@@ -254,6 +256,11 @@ public:
 		save = new QToolButton; save->setObjectName("save");
 		save->setIcon(QIcon(":/icons/save.png"));
 
+		openCE = new QToolButton; openCE->setObjectName("openCE");
+		openCE->setIcon(QIcon(":/icons/curves.png"));
+		openCE->setToolTip("Open in Curve Editor");
+		openCE->hide(); // hidden by default
+
 		QHBoxLayout* curveLayout = new QHBoxLayout;
 		curveLayout->addWidget(new QLabel("Type:"));
 		curveLayout->addWidget(lineType);
@@ -267,6 +274,7 @@ public:
 		curveLayout->addWidget(open);
 		curveLayout->addWidget(save);
 		curveLayout->addStretch();
+		curveLayout->addWidget(openCE);
 
 		// plot widget
 		plt = new CCurvePlotWidget; plt->setObjectName("plot");
@@ -414,11 +422,11 @@ void CCurveEditWidget::Clear()
 	ui->plt->clearData();
 }
 
-void CCurveEditWidget::SetLoadCurve(LoadCurve* lc)
+void CCurveEditWidget::SetPointCurve(PointCurve* lc)
 {
 	m_cmd.Clear();
 	ui->plt->clear();
-	ui->plt->SetLoadCurve(lc);
+	ui->plt->SetPointCurve(lc);
 
 	if (lc)
 	{
@@ -431,9 +439,20 @@ void CCurveEditWidget::SetXRange(double xmin, double xmax)
 	ui->plt->SetHighlightInterval(xmin, xmax);
 }
 
+void CCurveEditWidget::ShowTimeRange(bool b)
+{
+	ui->plt->m_showHighlightInterval = b;
+	ui->plt->update();
+}
+
+void CCurveEditWidget::ShowOpenCEButton(bool b)
+{
+	ui->openCE->setVisible(b);
+}
+
 void CCurveEditWidget::on_plot_pointClicked(QPointF p, bool shift)
 {
-	LoadCurve* lc = ui->plt->GetLoadCurve();
+	PointCurve* lc = ui->plt->GetPointCurve();
 	if (lc == nullptr) return;
 
 	if ((ui->isAddPointChecked() || shift))
@@ -454,7 +473,7 @@ void CCurveEditWidget::on_plot_pointClicked(QPointF p, bool shift)
 
 void CCurveEditWidget::UpdateSelection()
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr)
 	{
 		ui->enablePointEdit(false);
@@ -477,7 +496,7 @@ void CCurveEditWidget::UpdateSelection()
 
 void CCurveEditWidget::on_plot_pointDragged(QPoint p)
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 
 	vector<CPlotWidget::Selection> sel = ui->plt->selection();
@@ -515,7 +534,7 @@ void CCurveEditWidget::on_plot_pointDragged(QPoint p)
 
 void CCurveEditWidget::on_plot_draggingStart(QPoint p)
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 
 	ui->m_dragPt = ui->plt->ScreenToView(p);
@@ -544,7 +563,7 @@ void CCurveEditWidget::on_plot_draggingStart(QPoint p)
 
 void CCurveEditWidget::on_plot_draggingEnd(QPoint p)
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 
 	vector<CPlotWidget::Selection> sel = ui->plt->selection();
@@ -567,7 +586,7 @@ void CCurveEditWidget::on_plot_draggingEnd(QPoint p)
 
 void CCurveEditWidget::UpdatePlotData()
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 
 	ui->plt->clearSelection();
@@ -618,7 +637,7 @@ void CCurveEditWidget::on_plot_regionSelected(QRect rt)
 
 void CCurveEditWidget::on_xval_textEdited()
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 
 	vector<CPlotWidget::Selection> sel = ui->plt->selection();
@@ -638,7 +657,7 @@ void CCurveEditWidget::on_xval_textEdited()
 
 void CCurveEditWidget::on_yval_textEdited()
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 
 	vector<CPlotWidget::Selection> sel = ui->plt->selection();
@@ -658,7 +677,7 @@ void CCurveEditWidget::on_yval_textEdited()
 
 void CCurveEditWidget::on_deletePoint_clicked()
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 
 	vector<CPlotWidget::Selection> sel = ui->plt->selection();
@@ -669,7 +688,7 @@ void CCurveEditWidget::on_deletePoint_clicked()
 		for (int i = 0; i < sel.size(); ++i) points.push_back(sel[i].npointIndex);
 
 		m_cmd.DoCommand(new CCmdRemovePoint(plc, points));
-		SetLoadCurve(plc);
+		SetPointCurve(plc);
 		ui->enablePointEdit(false);
 
 		emit dataChanged();
@@ -693,7 +712,7 @@ void CCurveEditWidget::on_zoomY_clicked()
 
 void CCurveEditWidget::on_lineType_currentIndexChanged(int n)
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 	plc->SetInterpolator(n);
 	plc->Update();
@@ -703,7 +722,7 @@ void CCurveEditWidget::on_lineType_currentIndexChanged(int n)
 
 void CCurveEditWidget::on_extendMode_currentIndexChanged(int n)
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 	plc->SetExtendMode(n);
 	ui->plt->repaint();
@@ -712,7 +731,7 @@ void CCurveEditWidget::on_extendMode_currentIndexChanged(int n)
 
 void CCurveEditWidget::on_undo_clicked(bool b)
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 
 	if (m_cmd.CanUndo()) m_cmd.UndoCommand();
@@ -729,7 +748,7 @@ void CCurveEditWidget::on_undo_clicked(bool b)
 
 void CCurveEditWidget::on_redo_clicked(bool b)
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 
 	if (m_cmd.CanRedo()) m_cmd.RedoCommand();
@@ -746,12 +765,10 @@ void CCurveEditWidget::on_redo_clicked(bool b)
 
 void CCurveEditWidget::on_math_clicked(bool b)
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 
 	CDlgFormula dlg(this);
-
-	dlg.SetMath(plc->GetName());
 
 	if (dlg.exec())
 	{
@@ -761,7 +778,6 @@ void CCurveEditWidget::on_math_clicked(bool b)
 
 		bool insertMode = dlg.Insert();
 		if (insertMode == false) plc->Clear();
-		plc->SetName(smath.c_str());
 		if (pts.empty() && (insertMode == false))
 		{
 			plc->Add(0, 0);
@@ -775,7 +791,7 @@ void CCurveEditWidget::on_math_clicked(bool b)
 			}
 		}
 
-		SetLoadCurve(plc);
+		SetPointCurve(plc);
 		ui->enablePointEdit(false);
 		emit dataChanged();
 	}
@@ -788,7 +804,7 @@ void CCurveEditWidget::on_copy_clicked(bool b)
 
 void CCurveEditWidget::on_paste_clicked(bool b)
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 
 	QClipboard* clipboard = QApplication::clipboard();
@@ -833,7 +849,7 @@ void CCurveEditWidget::on_paste_clicked(bool b)
 			plc->Add(row[0].toDouble(), row[1].toDouble());
 		}
 
-		SetLoadCurve(plc);
+		SetPointCurve(plc);
 		emit dataChanged();
 	}
 }
@@ -919,7 +935,7 @@ int CDlgImportCurve::m_ndelim = 0;
 int CDlgImportCurve::m_nx = 0;
 int CDlgImportCurve::m_ny = 1;
 
-bool ReadLoadCurve(LoadCurve& lc, const char* szfile, char delim = ' ', int nskip = 0, int xColumnIndex = 0, int yColumnIndex = 1)
+bool ReadLoadCurve(PointCurve& lc, const char* szfile, char delim = ' ', int nskip = 0, int xColumnIndex = 0, int yColumnIndex = 1)
 {
 	// sanity checks
 	if (xColumnIndex < 0) { assert(false); return false; }
@@ -970,7 +986,7 @@ bool ReadLoadCurve(LoadCurve& lc, const char* szfile, char delim = ' ', int nski
 
 void CCurveEditWidget::on_open_clicked(bool b)
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 
 	QString fileName = QFileDialog::getOpenFileName(this, "Open File", "", "All files (*)");
@@ -983,20 +999,20 @@ void CCurveEditWidget::on_open_clicked(bool b)
 			int nskip = dlg.GetSkipLines();
 			int nx = dlg.GetXColumnIndex();
 			int ny = dlg.GetYColumnIndex();
-			LoadCurve lc;
+			PointCurve lc;
 			std::string sfile = fileName.toStdString();
 			const char* szfile = sfile.c_str();
 			if (ReadLoadCurve(lc, szfile, delim, nskip, nx, ny))
 			{
 				*plc = lc;
-				SetLoadCurve(plc);
+				SetPointCurve(plc);
 				emit dataChanged();
 			}
 		}
 	}
 }
 
-bool WriteLoadCurve(LoadCurve& lc, const char* szfile)
+bool WritePointCurve(PointCurve& lc, const char* szfile)
 {
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
@@ -1012,7 +1028,7 @@ bool WriteLoadCurve(LoadCurve& lc, const char* szfile)
 
 void CCurveEditWidget::on_save_clicked(bool b)
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 
 	QString fileName = QFileDialog::getSaveFileName(this, "Open File", "", "All files (*)");
@@ -1020,22 +1036,27 @@ void CCurveEditWidget::on_save_clicked(bool b)
 	{
 		std::string sfile = fileName.toStdString();
 		const char* szfile = sfile.c_str();
-		if (WriteLoadCurve(*plc, szfile) == false)
+		if (WritePointCurve(*plc, szfile) == false)
 		{
 			QMessageBox::critical(this, "Save File", QString("Failed saving curve data to file %1").arg(szfile));
 		}
 	}
 }
 
+void CCurveEditWidget::on_openCE_clicked(bool b)
+{
+	emit openCEButtonClicked();
+}
+
 void CCurveEditWidget::on_clear_clicked()
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
+	PointCurve* plc = ui->plt->GetPointCurve();
 	if (plc == nullptr) return;
 
 	if (QMessageBox::question(this, "Clear Curve", "Are you sure you to clear all points on the curve?") == QMessageBox::Yes)
 	{
 		plc->Clear();
-		SetLoadCurve(plc);
+		SetPointCurve(plc);
 	}
 }
 
@@ -1044,118 +1065,3 @@ void CCurveEditWidget::on_showDeriv_toggled(bool b)
 	ui->plt->ShowDeriv(b);
 }
 
-CCurvePlotWidget::CCurvePlotWidget(QWidget* parent) : CPlotWidget(parent)
-{
-	m_lc = nullptr;
-	m_showDeriv = false;
-	setLineSmoothing(true);
-
-	showLegend(false);
-	showToolTip(false);
-	scaleAxisLabels(false);
-	setFullScreenMode(true);
-	setXAxisLabelAlignment(ALIGN_LABEL_TOP);
-	setYAxisLabelAlignment(ALIGN_LABEL_RIGHT);
-	setBackgroundColor(QColor(48, 48, 48));
-	setGridColor(QColor(128, 128, 128));
-	setXAxisColor(QColor(255, 255, 255));
-	setYAxisColor(QColor(255, 255, 255));
-	setXAxisTickColor(QColor(255, 255, 255));
-	setYAxisTickColor(QColor(255, 255, 255));
-	setSelectionColor(QColor(255, 255, 192));
-}
-
-void CCurvePlotWidget::SetLoadCurve(LoadCurve* lc)
-{
-	m_lc = lc;
-
-	clear();
-
-	if (lc)
-	{
-		CPlotData* data = new CPlotData;
-		for (int i = 0; i < lc->Points(); ++i)
-		{
-			vec2d pt = lc->Point(i);
-			data->addPoint(pt.x(), pt.y());
-		}
-		addPlotData(data);
-
-		data->setLineColor(QColor(92, 255, 164));
-		data->setFillColor(QColor(92, 255, 164));
-		data->setLineWidth(2);
-		data->setMarkerSize(5);
-		repaint();
-	}
-}
-
-void CCurvePlotWidget::ShowDeriv(bool b)
-{
-	m_showDeriv = b;
-	update();
-}
-
-LoadCurve* CCurvePlotWidget::GetLoadCurve()
-{
-	return m_lc;
-}
-
-void CCurvePlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
-{
-	if (m_lc == 0) return;
-	m_lc->Update();
-
-	int N = data.size();
-	QRect rt = ScreenRect();
-
-	// draw derivative
-	if (m_showDeriv)
-	{
-		QColor c = data.lineColor().darker();
-		painter.setPen(QPen(c, data.lineWidth()));
-		QPointF p0, p1;
-		for (int i = rt.left(); i < rt.right(); i += 2)
-		{
-			p1.setX(i);
-			QPointF p = ScreenToView(p1);
-			p.setY(m_lc->derive(p.x()));
-			p1 = ViewToScreen(p);
-
-			if (i != rt.left())
-			{
-				painter.drawLine(p0, p1);
-			}
-			p0 = p1;
-		}
-	}
-
-	// draw the line
-	painter.setPen(QPen(data.lineColor(), data.lineWidth()));
-	QPointF p0, p1;
-	for (int i = rt.left(); i < rt.right(); i += 2)
-	{
-		p1.setX(i);
-		QPointF p = ScreenToView(p1);
-		p.setY(m_lc->Value(p.x()));
-		p1 = ViewToScreen(p);
-
-		if (i != rt.left())
-		{
-			painter.drawLine(p0, p1);
-		}
-
-		p0 = p1;
-	}
-
-	// draw the marks
-	if (data.markerType() > 0)
-	{
-		painter.setBrush(data.fillColor());
-		for (int i = 0; i < N; ++i)
-		{
-			p1 = ViewToScreen(data.Point(i));
-			QRect r(p1.x() - 2, p1.y() - 2, 5, 5);
-			painter.drawRect(r);
-		}
-	}
-}

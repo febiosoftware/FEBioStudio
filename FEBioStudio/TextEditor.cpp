@@ -447,8 +447,11 @@ void CTextEditor::SetDocument(QTextDocument* doc, TextFormat fmt)
 	p.setColor(QPalette::WindowText, Qt::blue); // Foreground was deprecated. Was told to replace with this.
 	setPalette(p);
 
+	setDocument(doc);
+
 	if (doc)
 	{
+		setDisabled(false);
 		SetHighlighter(doc, fmt);
 	}
 	else 
@@ -456,8 +459,6 @@ void CTextEditor::SetDocument(QTextDocument* doc, TextFormat fmt)
 		setDisabled(true);
 		updateLineNumberAreaWidth(0);
 	}
-
-	setDocument(doc);
 
 	setTabStopDistance(40);
 }
@@ -725,7 +726,7 @@ void CTextEditView::deleteLine()
 
 void CTextEditView::setDocument(CDocument* doc)
 {
-	CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(activeDocument());
+	CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(doc);
 	if (txtDoc)
 	{
 		QString title = QString::fromStdString(txtDoc->GetDocTitle());
@@ -740,12 +741,13 @@ void CTextEditView::setDocument(CDocument* doc)
 		return;
 	}
 
-	CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(activeDocument());
+	CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(doc);
 	if (xmlDoc)
 	{
 		m_edit->SetDocument(xmlDoc->GetTextDocument(), CTextEditor::XML);
 		return;
 	}
 
-	m_edit->clear();
+	m_edit->SetDocument(nullptr, CTextEditor::PLAIN);
+//	m_edit->clear();
 }

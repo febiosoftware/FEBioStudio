@@ -59,19 +59,36 @@ bool CImportSpringsTool::OnApply()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return SetErrorString("No document open");
 
-	// get the current object
-	GObject* po = doc->GetActiveObject();
-	if (po == nullptr) return SetErrorString("You need to select the object where the springs will be added.");
-
-	// Make sure it is a GMeshObject
-	GMeshObject* mo = dynamic_cast<GMeshObject*>(po);
-	if (mo == nullptr) return SetErrorString("This tool only works with editable meshes.");
-
 	// read the file
 	if (ReadFile() == false) return SetErrorString("There was a problem reading the file.");
 
 	// check if we have springs
 	if (m_springs.empty()) return SetErrorString("The file did not contain any springs or was not properly formatted.");
+
+	// get the current object
+	GObject* po = doc->GetActiveObject();
+	if (po == nullptr)
+	{
+		if (m_type < 3)
+			return SetErrorString("You need to select the object where the springs will be added.");
+		else
+		{
+			// add a new GMesh Object to the model
+			GModel* gm = doc->GetGModel();
+			GMeshObject* pmo = new GMeshObject(new FSMesh());
+
+			// the name is the file title
+			QString title = QFileInfo(m_fileName).baseName();
+
+			pmo->SetName(title.toStdString());
+			gm->AddObject(pmo);
+			po = pmo;
+		}
+	}
+
+	// Make sure it is a GMeshObject
+	GMeshObject* mo = dynamic_cast<GMeshObject*>(po);
+	if (mo == nullptr) return SetErrorString("This tool only works with editable meshes.");
 
 	// process the springs
 	int newNodes = ProcessSprings(mo);
@@ -252,6 +269,10 @@ int CImportSpringsTool::ProcessSprings(GMeshObject* po)
 			}
 			rt_i.second = n;
 		}
+	}
+	else
+	{
+		for (auto& rt_i : rt) rt_i.second = -1;
 	}
 
 	int newNodes = 0;

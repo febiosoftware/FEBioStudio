@@ -1265,6 +1265,8 @@ FSMesh* FSMesh::ExtractFaces(bool selectedOnly)
 		{
 			FSElement_* pe = pm->ElementPtr(eid++);
 
+			pe->m_gid = face.m_gid;
+
 			int n = face.Nodes();
 			switch (n)
 			{
@@ -1283,6 +1285,7 @@ FSMesh* FSMesh::ExtractFaces(bool selectedOnly)
 			for (int j=0; j<n; ++j) pe->m_node[j] = Node(face.n[j]).m_ntag;
 		}
 	}
+	pm->UpdateElementPartitions();
 
 	// rebuild the mesh
 	pm->RebuildMesh();

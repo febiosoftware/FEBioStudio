@@ -74,7 +74,7 @@ void FSUserMaterial::Save(OArchive &ar)
 			{
 				Param& p = PB[i];
 				int ntype = p.GetParamType();
-				ar.WriteChunk(PARAMNAME, (char*) p.GetLongName());
+				ar.WriteChunk(PARAMNAME, (char*) p.GetShortName());
 				ar.WriteChunk(PARAMTYPE, ntype);
 				ar.BeginChunk(PARAMVALUE);
 				{

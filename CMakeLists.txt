@@ -221,6 +221,12 @@ if(MODEL_REPO)
     endif()
 endif()
 
+set(USE_NEW_FFMPEG "OFF" CACHE BOOL "Enable or disable FFMPEG libraries < 8.0")
+
+if (USE_NEW_FFMPEG)
+   set(USE_FFMPEG "ON")
+endif()
+
 if(USE_FFMPEG)
     set(FFMPEG_LIB_NAMES avformat avcodec avutil swresample swscale)
     
@@ -279,6 +285,9 @@ elseif(APPLE)
     endif()
     add_compile_options(-w)
 
+    # Ensures that macOS properly executes the fbs-test-suite binary
+    set(CMAKE_CROSSCOMPILING_EMULATOR arch -x86_64)
+
 else()
 	add_definitions(-DLINUX)
     add_compile_options(-w -Wall)
@@ -319,6 +328,10 @@ if(USE_FFMPEG)
 	include_directories(${FFMPEG_INC})
 endif()
 
+if (USE_NEW_FFMPEG)
+	add_definitions(-DNEW_FFMPEG)
+endif()
+
 if(USE_PYTHON)
     add_definitions(-DHAS_PYTHON)
     include_directories(${PYBIND11_INC})
@@ -344,7 +357,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib RTLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioMonitor VTKLib PyLib RHILib)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib RTLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioRun FEBioMonitor VTKLib PyLib RHILib)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
@@ -366,6 +379,7 @@ elseif(APPLE)
 	
 	add_executable(FEBioStudio MACOSX_BUNDLE ${FBS_ICON} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
 	set_property(TARGET FEBioStudio PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+	set_target_properties(FEBioStudio PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/ci/MacOS/Info.plist")
 
 else()
 	add_executable(FEBioStudio ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
@@ -432,7 +446,6 @@ if(${SET_DEVCOMMIT} AND EXISTS ${CMAKE_SOURCE_DIR}/.git)
     endif()
 endif()
 
-
 ##### Link Libraries #####
 
 # Link the FEBio libraries
@@ -443,7 +456,8 @@ foreach(name IN LISTS FEBIOSTUDIO_LIBS)
     target_link_libraries(${name} FEBio::FECore)
 endforeach()
 
-target_link_libraries(FEBioLink FEBio::FEBioLib FEBio::FEBioFluid FEBio::FEBioMech FEBio::FEBioMix)
+target_link_libraries(FEBioLink FEBio::FEBioFluid FEBio::FEBioMech FEBio::FEBioMix)
+target_link_libraries(FEBioRun FEBio::FEBioLib FEBio::FEBioFluid FEBio::FEBioMech FEBio::FEBioMix)
 target_link_libraries(ImageLib FEBio::FEBioOpt)
 
 # Link the Qt libraries
@@ -469,7 +483,6 @@ if(WIN32)
 elseif(APPLE)
 else()
     target_link_libraries(FEBioStudio -static-libstdc++ -static-libgcc)
-    
 	target_link_libraries(FEBioStudio -Wl,--allow-shlib-undefined -Wl,--start-group)
 endif()
 
@@ -664,4 +677,53 @@ if(BUILD_UPDATER)
     target_compile_definitions(FEBioStudioUpdater PUBLIC "UPDATER")
 
     target_link_libraries(FEBioStudioUpdater Qt6::Widgets Qt6::Network ${LIBZIP_LIB})
+endif()
+
+##### Test Suite #####
+option(BUILD_TESTS "Build test suite" OFF)
+if(BUILD_TESTS)
+    find_package(GTest CONFIG REQUIRED)
+
+    add_executable(fbs-test-suite
+        tests/fbs-test-suite.cpp
+        tests/primitive_tests.cpp
+        tests/multiblock_tests.cpp
+    )
+
+    if(NOT WIN32 AND NOT APPLE)
+        target_link_libraries(fbs-test-suite PRIVATE -static-libstdc++ -static-libgcc)
+        target_link_libraries(fbs-test-suite PRIVATE -Wl,--allow-shlib-undefined -Wl,--start-group)
+    endif()
+
+    target_link_libraries(fbs-test-suite
+        PRIVATE
+        GTest::gtest
+        FSCore FEMLib FEBioLink GeomLib GLLib MeshLib MeshTools
+        FEBio::FEBioXML FEBio::FEBioPlot FEBio::FEAMR
+    )
+
+    if(UNIX)
+        if(${USE_MKL_OMP})
+            target_link_libraries(fbs-test-suite PRIVATE ${MKL_OMP})
+        else()
+            target_link_libraries(fbs-test-suite PRIVATE ${OpenMP_C_LIBRARIES})
+        endif()
+    endif()
+
+    if(USE_MMG)
+        target_link_libraries(fbs-test-suite PRIVATE ${MMG_LIBS})
+    endif()
+
+    if(USE_TETGEN)
+        target_link_libraries(fbs-test-suite PRIVATE ${TETGEN_LIB})
+    endif()
+
+    if(CAD_FEATURES)
+        target_link_libraries(fbs-test-suite PRIVATE ${NETGEN_LIBS})
+        target_link_libraries(fbs-test-suite PRIVATE ${OCCT_LIBS})
+    endif()
+
+    if(NOT WIN32 AND NOT APPLE)
+        target_link_libraries(fbs-test-suite PRIVATE -Wl,--end-group)
+    endif()
 endif()

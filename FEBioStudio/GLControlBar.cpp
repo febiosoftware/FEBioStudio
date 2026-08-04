@@ -275,6 +275,8 @@ void CGLControlBar::Update()
 
 	GLViewSettings& vs = ui->m_wnd->GetGLView()->GetViewSettings();
 
+	ui->toggleLight->setChecked(vs.m_bLighting);
+
 	ui->showMesh->setChecked(vs.m_bmesh);
 
 	GObject* po = view->GetActiveObject();

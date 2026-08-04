@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <CUILib/PlotWidget.h>
 #include <FSCore/LoadCurve.h>
 #include <FSCore/ParamBlock.h>
-
+#include <memory>
 class CMainWindow;
 class LoadCurve;
 class FSModelComponent;
@@ -55,6 +55,8 @@ public:
 	CCurveEditor(CMainWindow* wnd);
 
 	void Update();
+
+	void SelectObject(FSObject* po);
 
 	void closeEvent(QCloseEvent* ev);
 

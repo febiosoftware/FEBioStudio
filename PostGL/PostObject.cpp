@@ -359,7 +359,9 @@ void CPostObject::BuildFERenderMesh()
 		}
 	}
 
-	gm.AutoEdgePartition();
+	// number of materials in model
+	int nmat = m_glm->GetFSModel()->Materials();
+	gm.AutoEdgePartition(nmat);
 	gm.Update();
 	SetFERenderMesh(&gm);
 }
@@ -396,6 +398,19 @@ void CPostObject::BuildInternalSurfaces()
 						face.m_elem[0].eid = el.m_lid; // store the element ID. This is used for selection ???
 						face.m_elem[1].eid = pen->m_lid;
 						face.m_gid = nsurf + m;
+						m_innerSurface[m]->add(face);
+					}
+				}
+			}
+			else
+			{
+				int index = dom[i];
+				// for shells on top of solids, we need to expose the underlying facet if the shell is hidden. 
+				if (el.IsShell() && (el.m_face[0] >= 0))
+				{
+					FSFace& face = pmesh->Face(el.m_face[0]);
+					if ((face.m_elem[0].eid == index) && (face.m_elem[1].eid >= 0))
+					{
 						m_innerSurface[m]->add(face);
 					}
 				}

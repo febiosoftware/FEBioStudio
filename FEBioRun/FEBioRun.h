@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2026 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,25 +23,54 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "FEBioInterface.h"
-#include <FEBioLib/febio.h>
-#include <FEMLib/FEMaterial.h>
-#include <FECore/FEMaterial.h>
-#include "FEBioClass.h"
+#pragma once
+#include <string>
+#include <vector>
 
-bool FEBio::RunMaterialTest(MaterialTest test, std::vector<pair<double, double> >& out)
-{
-	out.clear();
+class CFEBioJob;
+class FSMaterial;
 
-	FEModel fem;
+namespace FEBio {
 
-	// Create an FEBio material from the FSMaterial
-	FEMaterial* febmat = dynamic_cast<FEMaterial*>(FEBio::CreateFECoreClassFromModelComponent(test.mat, &fem));
+	class FEBioOutputHandler
+	{
+	public:
+		FEBioOutputHandler() {}
+		virtual ~FEBioOutputHandler() {}
+		virtual void write(const char* sztxt) = 0;
+	};
 
-	// run the test
-	bool b = febio::RunMaterialTest(febmat, test.time, test.steps, test.strain, test.testName.c_str(), out);
+	class FEBioProgressTracker
+	{
+	public:
+		FEBioProgressTracker() {}
+		virtual ~FEBioProgressTracker() {};
+		virtual void SetProgress(double pct) = 0;
+	};
 
-	delete febmat;
+	int runModel(const std::string& cmd,
+		FEBioOutputHandler* outputHandler,
+		FEBioProgressTracker* progressTracker,
+		CFEBioJob* job);
 
-	return b;
-}
+	void TerminateRun();
+
+	struct MaterialTest
+	{
+		double		strain = 0.1;	// strain level
+		FSMaterial* mat = nullptr;	// material to test
+
+		std::string	testName;	// name of test
+		std::string	xvalName;	// name of output value for x axis
+		std::string	yvalName;	// name of output value for y axis
+
+		// control parameters
+		double	time = 1.0;
+		int	steps = 20;
+	};
+
+	// run a material test in FEBio. 
+	// returns stress-strain data in out
+	bool RunMaterialTest(MaterialTest test, std::vector<std::pair<double, double> >& out);
+
+} // namespace FEBio

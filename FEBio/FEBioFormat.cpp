@@ -30,8 +30,8 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEDiscreteMaterial.h>
 #include <FEMLib/FSProject.h>
-#include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioModule.h>
+#include <FEBioLink/FEBioClass.h>
 using namespace std;
 
 #ifndef WIN32
@@ -156,12 +156,18 @@ void FEBioFormat::SetSkipGeometryFlag(bool b)
 
 void FEBioFormat::ParseUnknownTag(XMLTag& tag)
 {
-	m_fileReader->ParseUnknownTag(tag);
+	if (m_fileReader)
+		m_fileReader->ParseUnknownTag(tag);
+	else
+		tag.m_preader->SkipTag(tag);
 }
 
 void FEBioFormat::ParseUnknownAttribute(XMLTag& tag, const char* szatt)
 {
-	m_fileReader->ParseUnknownAttribute(tag, szatt);
+	if (m_fileReader)
+		m_fileReader->ParseUnknownAttribute(tag, szatt);
+	else
+		tag.m_preader->SkipTag(tag);
 }
 
 //-----------------------------------------------------------------------------

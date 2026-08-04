@@ -542,7 +542,8 @@ public:
 			if ((prop.type == CProperty::Std_Vector_Double) ||
 				(prop.type == CProperty::Vec2d) ||
 				(prop.type == CProperty::Vec3) ||
-				(prop.type == CProperty::Mat3s))
+				(prop.type == CProperty::Mat3s) ||
+				(prop.type == CProperty::String))
 			{
 				QLineEdit* w = new QLineEdit(parent);
 				QObject::connect(w, SIGNAL(editingFinished()), m_view, SLOT(onDataChanged()));

@@ -43,10 +43,8 @@ SOFTWARE.*/
 #include <QImage>
 #include <QFileDialog>
 #include <QDropEvent>
-#include <QComboBox>
-#include <QLabel>
 #include <QtCore/QMimeData>
-#include <FSCore/LoadCurve.h>
+#include "ChartPainter.h"
 
 using namespace std;
 
@@ -164,152 +162,7 @@ double findScale(double fmin, double fmax)
 	return dd;
 }
 
-//-----------------------------------------------------------------------------
-void drawDiamond(QPainter& painter, const QRect& rt)
-{
-	QPoint c = rt.center();
-	const QPointF points[4] = {
-		QPointF(c.x(), rt.top()),
-		QPointF(rt.left(), c.y()),
-		QPointF(c.x(), rt.bottom()),
-		QPointF(rt.right(), c.y())
-	};
-
-	painter.drawConvexPolygon(points, 4);
-}
-
-//-----------------------------------------------------------------------------
-void drawTriangle(QPainter& painter, const QRect& rt)
-{
-	QPoint c = rt.center();
-	const QPointF points[3] = {
-		QPointF(c.x(), rt.top()),
-		QPointF(rt.left(), rt.bottom()),
-		QPointF(rt.right(), rt.bottom()),
-	};
-
-	painter.drawConvexPolygon(points, 3);
-}
-
-//-----------------------------------------------------------------------------
-void drawCross(QPainter& painter, const QRect& rt)
-{
-	painter.drawLine(rt.topLeft(), rt.bottomRight());
-	painter.drawLine(rt.topRight(), rt.bottomLeft());
-}
-
-//-----------------------------------------------------------------------------
-void drawPlus(QPainter& painter, const QRect& rt)
-{
-	QPoint c = rt.center();
-	painter.drawLine(c.x(), rt.top(), c.x(), rt.bottom());
-	painter.drawLine(rt.left(), c.y(), rt.right(), c.y());
-}
-
-//-----------------------------------------------------------------------------
-void drawMarker(QPainter& painter, const QPointF& pt, int nsize, int type)
-{
-	int n2 = nsize / 2;
-	QRect rect(pt.x() - n2, pt.y() - n2, nsize, nsize);
-	switch (type)
-	{
-	case 0: break;
-	case 1: painter.drawRect(rect); break;
-	case 2: painter.drawEllipse(rect); break;
-	case 3: drawDiamond(painter, rect); break;
-	case 4: drawTriangle(painter, rect); break;
-	case 5: drawCross(painter, rect); break;
-	case 6: drawPlus(painter, rect); break;
-	}
-}
-
 //=============================================================================
-
-CPlotData::CPlotData()
-{
-	m_lineWidth = 2;
-	m_markerSize = 5;
-	m_markerType = 1;
-}
-
-//-----------------------------------------------------------------------------
-CPlotData::~CPlotData()
-{
-}
-
-//-----------------------------------------------------------------------------
-CPlotData::CPlotData(const CPlotData& d)
-{
-	m_data = d.m_data;
-	m_label = d.m_label;
-	m_lineColor = d.m_lineColor;
-	m_fillColor = d.m_fillColor;
-	m_lineWidth = d.m_lineWidth;
-	m_markerSize = d.m_markerSize;
-	m_markerType = d.m_markerType;
-}
-
-//-----------------------------------------------------------------------------
-CPlotData& CPlotData::operator = (const CPlotData& d)
-{
-	m_data = d.m_data;
-	m_label = d.m_label;
-	m_lineColor = d.m_lineColor;
-	m_fillColor = d.m_fillColor;
-	m_lineWidth = d.m_lineWidth;
-	m_markerSize = d.m_markerSize;
-	m_markerType = d.m_markerType;
-	return *this;
-}
-
-//-----------------------------------------------------------------------------
-void CPlotData::clear()
-{ 
-	m_data.clear(); 
-}
-
-//-----------------------------------------------------------------------------
-QRectF CPlotData::boundRect() const
-{
-	if (m_data.empty()) return QRectF(0., 0., 0., 0.);
-
-	QRectF r(m_data[0].x(), m_data[0].y(), 0.0, 0.0);
-	for (int i=1; i<(int)m_data.size(); ++i)
-	{
-		const QPointF& p = m_data[i];
-		if (p.x() < r.left  ()) r.setLeft  (p.x());
-		if (p.x() > r.right ()) r.setRight (p.x());
-		if (p.y() > r.bottom()) r.setBottom(p.y());
-		if (p.y() < r.top   ()) r.setTop   (p.y());
-	}
-	return r;
-}
-
-//-----------------------------------------------------------------------------
-void CPlotData::addPoint(double x, double y)
-{
-	QPointF p(x, y);
-	m_data.push_back(p);
-}
-
-//-----------------------------------------------------------------------------
-int compare(const void* p1, const void* p2)
-{
-	const QPointF& r1 = *((const QPointF*)(p1));
-	const QPointF& r2 = *((const QPointF*)(p2));
-
-	if (r1.x() < r2.x()) return -1;
-	else if (r1.x() > r2.x()) return 1;
-	else return 0;
-}
-
-void CPlotData::sort()
-{
-	if (m_data.size() > 0)
-		qsort(&m_data[0], m_data.size(), sizeof(QPointF), compare);
-}
-
-//-----------------------------------------------------------------------------
 CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 {
 	ColorList::init();
@@ -322,11 +175,7 @@ CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 
 	m_bviewLocked = false;
 	m_bshowPopup = true;
-	m_bscaleAxisLabels = true;
-	m_bfullScreenMode = false;
 	m_bshowToolTip = true;
-
-	m_chartStyle = LINECHART_PLOT;
 
 	// set default colors
 	m_selCol = QColor::fromRgb(255, 255, 0);
@@ -365,7 +214,7 @@ CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 //-----------------------------------------------------------------------------
 void CPlotWidget::setChartStyle(int chartStyle)
 {
-	m_chartStyle = chartStyle;
+	m_data.m_chartStyle = chartStyle;
 }
 
 //-----------------------------------------------------------------------------
@@ -1048,7 +897,7 @@ void CPlotWidget::paintEvent(QPaintEvent* pe)
 		// clear the background
 		p.fillRect(m_screenRect, m_data.m_bgCol);
 
-	if (m_hlrng[1] > m_hlrng[0])
+	if (m_showHighlightInterval && (m_hlrng[1] > m_hlrng[0]))
 	{
 		int x0 = ViewToScreenX(m_hlrng[0]);
 		int x1 = ViewToScreenX(m_hlrng[1]);
@@ -1090,13 +939,13 @@ void CPlotWidget::paintEvent(QPaintEvent* pe)
 
 	// adjust the screen rectangle where the data will be drawn
 	m_plotRect = m_screenRect;
-	if (m_bfullScreenMode == false)
+	if (m_data.m_bfullScreenMode == false)
 	{
 		m_plotRect.setTop(m_titleRect.bottom());
 		m_plotRect.adjust(50, 0, -90, -2*fontHeight - 2);
 
 		double gy = 1;
-		if (m_bscaleAxisLabels)
+		if (m_data.m_bscaleAxisLabels)
 		{
 			int nydiv = (int)log10(m_yscale);
 			if (nydiv != 0)
@@ -1336,7 +1185,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 
 	// determine the y-scale
 	double gy = 1;
-	if (m_bscaleAxisLabels)
+	if (m_data.m_bscaleAxisLabels)
 	{
 		int nydiv = (int)log10(yscale);
 		if (nydiv != 0)
@@ -1347,15 +1196,15 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			p.drawText(x0 - 30, y0 - fm.descent() - 5, QString(sz));
 		}
 	}
-	else if (m_customYAxisLabel.isEmpty() == false)
+	else if (m_data.m_customYAxisLabel.isEmpty() == false)
 	{
 		p.setPen(QPen(m_data.m_yAxisCol));
-		p.drawText(x0 - 30, y0 - fm.height() + fm.descent(), m_customYAxisLabel);
+		p.drawText(x0 - 30, y0 - fm.height() + fm.descent(), m_data.m_customYAxisLabel);
 	}
 
 	// determine the x-scale
 	double gx = 1;
-	if (m_bscaleAxisLabels)
+	if (m_data.m_bscaleAxisLabels)
 	{
 		int nxdiv = (int)log10(xscale);
 		if (nxdiv != 0)
@@ -1366,10 +1215,10 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			p.drawText(x1 + 5, y1, QString(sz));
 		}
 	}
-	else if (m_customXAxisLabel.isEmpty() == false)
+	else if (m_data.m_customXAxisLabel.isEmpty() == false)
 	{
 		p.setPen(QPen(m_data.m_xAxisCol));
-		p.drawText(x1 + 5, y1, m_customXAxisLabel);
+		p.drawText(x1 + 5, y1, m_data.m_customXAxisLabel);
 	}
 
 	// draw the y-labels
@@ -1559,7 +1408,7 @@ void CPlotWidget::drawAllData(QPainter& p)
 
 void CPlotWidget::DrawPlotData(QPainter& p, CPlotData& data)
 {
-	switch (m_chartStyle)
+	switch (m_data.m_chartStyle)
 	{
 	case LINECHART_PLOT: draw_linechart(p, data); break;
 	case BARCHART_PLOT : draw_barchart(p, data); break;

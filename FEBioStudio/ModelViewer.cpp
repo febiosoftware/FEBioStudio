@@ -51,7 +51,7 @@ SOFTWARE.*/
 #include <ImageLib/TiffReader.h>
 #include "DocManager.h"
 #include "DlgAddPhysicsItem.h"
-#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
 #include <ImageLib/FiberODFAnalysis.h>
 #include <QPlainTextEdit>
 #include <QDialogButtonBox>
@@ -406,6 +406,27 @@ void CModelViewer::on_refreshButton_clicked()
 
 void CModelViewer::on_helpButton_clicked()
 {
+	// firs check for plotfile
+	QTreeWidgetItem* it = ui->tree->currentItem();
+	if (it)
+	{
+		QString url;
+		if (it->text(0) == "plotfile")
+		{
+			url = GetPlotHelpURL();
+		}
+		else if (it->text(0) == "logfile")
+		{
+			url = GetLogHelpURL();
+		}
+
+		if (!url.isEmpty())
+		{
+			ShowHelp(url);
+			return;
+		}
+	}
+
 	// make sure we have something selected
 	if (m_currentObject == nullptr)
 	{
@@ -638,8 +659,8 @@ void CModelViewer::on_props_paramChanged(FSCoreBase* pc, Param* p)
 	}
 
 	QString sp;
-	if (po) sp = QString("\"%1.%2\"").arg(QString::fromStdString(po->GetName())).arg(p->GetLongName());
-	else sp = QString("\"%1\"").arg(p->GetLongName());
+	if (po) sp = QString("\"%1.%2\"").arg(QString::fromStdString(po->GetName())).arg(p->GetShortName());
+	else sp = QString("\"%1\"").arg(p->GetShortName());
 
 	QString sv;
 	switch (p->GetParamType())
@@ -1913,7 +1934,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 //		menu.addAction("Export Materials ...", this, SLOT(OnExportAllMaterials()));
 
 		QMenu* sub = new QMenu("Import Materials");
-		QAction* ac = sub->addAction("From FEBio file ...");
+		QAction* ac = sub->addAction("From file ...");
 		ac->setData(-1);
 
 		CDocManager* docMng = wnd->GetDocManager();
@@ -1980,10 +2001,12 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_PROJECT_OUTPUT:
 	case MT_PROJECT_OUTPUT_PLT:
-		menu.addAction("Edit output...", this, SLOT(OnEditOutput()));
+		menu.addAction("Edit Output...", this, SLOT(OnEditOutput()));
+		menu.addAction("View Help ...", this, SLOT(on_helpButton_clicked()));
 		break;
 	case MT_PROJECT_OUTPUT_LOG:
-		menu.addAction("Edit output...", this, SLOT(OnEditOutputLog()));
+		menu.addAction("Edit Output...", this, SLOT(OnEditOutputLog()));
+		menu.addAction("View Help ...", this, SLOT(on_helpButton_clicked()));
 		break;
 	case MT_NAMED_SELECTION:
 		menu.addAction("Remove empty", this, SLOT(OnRemoveEmptySelections()));
@@ -2156,7 +2179,8 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	}
 	break;
 	case MT_STUDY:
-		menu.addAction("Configure ...", this, SLOT(OnConfigureStudy()));
+		if (dynamic_cast<COptimizationStudy*>(data->obj))
+			menu.addAction("Configure ...", this, SLOT(OnConfigureStudy()));
 		menu.addAction("Run ...", this, SLOT(OnRunStudy()));
 		del = true;
 		break;
@@ -2188,7 +2212,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
     if (!url.isEmpty())
     {
         menu.addSeparator();
-        menu.addAction("View Help", [=](){ ShowHelp(url); });
+        menu.addAction("View Help ...", [=](){ ShowHelp(url); });
     }
 
 	if (del) 
@@ -2477,17 +2501,16 @@ void CModelViewer::OnDeleteAllStudies()
 void CModelViewer::OnRunStudy()
 {
 	COptimizationStudy* fbs = dynamic_cast<COptimizationStudy*>(m_currentObject);
-	if (fbs == nullptr) return;
-	CMainWindow* wnd = GetMainWindow();
-	wnd->RunOptimizationStudy(fbs);
-}
-
-void CModelViewer::OnConfigureStudy()
-{
-	COptimizationStudy* fbs = dynamic_cast<COptimizationStudy*>(m_currentObject);
-	if (fbs == nullptr) return;
-	CMainWindow* wnd = GetMainWindow();
-	wnd->ConfigureOptimizationStudy(fbs);
+	if (fbs)
+	{
+		CMainWindow* wnd = GetMainWindow();
+		wnd->RunOptimizationStudy(fbs);
+	}
+	else if (auto study = dynamic_cast<CFEBioStudy*>(m_currentObject))
+	{
+		CMainWindow* wnd = GetMainWindow();
+		wnd->RunFEBioStudy(study);
+	}
 }
 
 void CModelViewer::OnEditMeshData()
@@ -2735,6 +2758,13 @@ QString CModelViewer::HelpURLFromObject(FSObject* po)
 		if (pm)
 		{
 			classID = FEBio::GetClassId(pm->GetSuperClassID(), pm->GetTypeString());
+		}
+	}
+	if (auto ds = dynamic_cast<GDiscreteSpringSet*>(po))
+	{
+		if (auto dm = ds->GetMaterial())
+		{
+			classID = FEBio::GetClassId(dm->GetSuperClassID(), dm->GetTypeString());
 		}
 	}
 	FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(po);

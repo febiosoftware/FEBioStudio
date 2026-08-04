@@ -98,7 +98,7 @@ SOFTWARE.*/
 #include <GLWLib/GLSafeFrame.h>
 #include <GLWLib/GLLegendBar.h>
 #include <FEBioLink/FEBioClass.h>
-#include <FEBioLink/FEBioInit.h>
+#include <FEBioRun/FEBioInit.h>
 #include <qmenu.h>
 #include <GLLib/GLViewSettings.h>
 #include "GLModelScene.h"
@@ -558,9 +558,17 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	{
 		OpenTextFile(fileName);
 	}
+	else if (ext == "febr")
+	{
+		OpenFEBioReportFile(fileName);
+	}
 	else if (ext == "remote")
 	{
 		OpenRemoteFile(fileName);
+	}
+	else if (ext == "opt")
+	{
+		OpenFEBioStudyFile(fileName);
 	}
 	else if (openExternal)
 	{
@@ -1309,12 +1317,7 @@ CModelViewer* CMainWindow::GetModelViewer()
 {
 	return ui->modelViewer;
 }
-/*
-CPythonToolsPanel* CMainWindow::GetPythonToolsPanel()
-{
-	return ui->pythonToolsPanel;
-}
-*/
+
 CMainStatusBar* CMainWindow::GetStatusBar()
 {
 	return ui->statusBar;
@@ -2308,8 +2311,8 @@ void CMainWindow::UpdateToolbar()
 //-----------------------------------------------------------------------------
 void CMainWindow::OpenInCurveEditor(FSObject* po)
 {
-	//	OnToolsCurveEditor(0, 0);
-	//	m_pCurveEdit->Select(po);
+	ui->showCurveEditor();
+	if (ui->curveWnd) ui->curveWnd->SelectObject(po);
 }
 
 //-----------------------------------------------------------------------------
@@ -2997,16 +3000,37 @@ void CMainWindow::onImportMaterials()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Import Materials", "", "FEBio files (*.feb)");
+	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Import Materials", "", "Supported Files (*.feb *.pvm);;FEBio Files (*.feb);;FEBio Studio Material Files (*.pvm)");
 	if (fileNames.isEmpty() == false)
 	{
 		for (int i=0; i<fileNames.size(); ++i)
 		{
 			QString file = fileNames.at(i);
-			if (doc->ImportFEBioMaterials(file.toStdString()) == false)
+			// get the filename extensions to determine the type of file we are importing
+			QFileInfo fi(file);
+			QString ext = fi.suffix().toLower();
+
+			if (ext == "pvm")
 			{
-				QString msg = QString("Failed importing materials from\n%1").arg(file);
+				if (doc->ImportMaterials(file.toStdString()) == false)
+				{
+					QString msg = QString("Failed importing materials from\n%1").arg(file);
+					QMessageBox::critical(this, "Import Materials", msg);
+				}
+			}
+			else if (ext == "feb")
+			{
+				if (doc->ImportFEBioMaterials(file.toStdString()) == false)
+				{
+					QString msg = QString("Failed importing materials from\n%1").arg(file);
+					QMessageBox::critical(this, "Import Materials", msg);
+				}
+			}
+			else
+			{
+				QString msg = QString("Unsupported file type:\n%1").arg(file);
 				QMessageBox::critical(this, "Import Materials", msg);
+				break;
 			}
 		}
 
@@ -3654,4 +3678,75 @@ void CMainWindow::on_planecut_dataChanged()
 		if (v) glview = v->GetGLView();
 	}
 	if (glview) glview->UpdateScene();
+}
+
+
+void CMainWindow::on_htmlview_anchorClicked(QUrl link)
+{
+	QObject* po = sender();
+	QString ref = link.toString();
+	if      (ref == "#new"        ) on_actionNewModel_triggered();
+	else if (ref == "#newproject" ) on_actionNewProject_triggered();
+	else if (ref == "#open"       ) on_actionOpen_triggered();
+	else if (ref == "#openproject") on_actionOpenProject_triggered();
+	else if (ref == "#febio"      ) on_actionFEBioURL_triggered();
+	else if (ref == "#help"       ) on_actionFEBioResources_triggered();
+	else if (ref == "#forum"      ) on_actionFEBioForum_triggered();
+	else if (ref == "#update"     ) on_actionUpdate_triggered();
+	else if (ref.contains("#http"))
+	{
+		QString temp = link.toString().replace("#http", "https://");
+		QDesktopServices::openUrl(QUrl(temp));
+	}
+	else if (ref == "#bugreport") on_actionBugReport_triggered();
+	else
+	{
+		std::string s = ref.toStdString();
+		const char* sz = s.c_str();
+
+		QString fileName;
+		if (strncmp(sz, "#recent_", 8) == 0)
+		{
+			int n = atoi(sz + 8);
+
+			QStringList recentFiles = GetRecentFileList();
+			fileName = recentFiles.at(n);
+		}
+		else if (strncmp(sz, "#recentproject_", 15) == 0)
+		{
+			int n = atoi(sz + 15);
+
+			QStringList recentProjects = GetRecentProjectsList();
+			fileName = recentProjects.at(n);
+		}
+		else
+		{
+			fileName = ref;
+		}
+
+		if (!fileName.isEmpty())
+		{
+			QFileInfo fi(fileName);
+			if (fi.isAbsolute() == false)
+			{
+				// If this is not an absolute path, let's assume it's a relative path to the currently active document's file path
+				QString docPath;
+				CDocument* doc = GetDocument();
+				if (doc)
+				{
+					QString docFile = QString::fromStdString(doc->GetDocFilePath());
+					if (!docFile.isEmpty())
+					{
+						QFileInfo docFi(docFile);
+						docPath = docFi.absolutePath();
+						fileName = QDir(docPath).filePath(fileName);
+						fi.setFile(fileName);
+					}
+				}
+			}
+
+			// out an abundance of safety, we will open the file in a queued connection
+			QMetaObject::invokeMethod(this, [this, fileName]() { OpenFile(fileName, false, false); }, Qt::QueuedConnection);
+		}
+	}
 }

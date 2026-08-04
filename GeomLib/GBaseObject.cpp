@@ -409,10 +409,11 @@ int GBaseObject::AddBezierSection(const std::vector<int>& n)
 // Build a facet from a wire, that is an edge list. It is assumed that the edges
 // are in the proper order, that is that each edge connects to its left and right
 // neigbor and that the wire is closed.
-void GBaseObject::AddFacet(const std::vector<int>& edge, int ntype)
+void GBaseObject::AddFacet(const std::vector<int>& edge, int ntype, vec3d normal)
 {
 	// allocate a new face
 	GFace* f = new GFace(this);
+	f->m_normal = normal;
 
 	f->SetID(GFace::CreateUniqueID());
 	f->SetLocalID(m_Face.size());

@@ -137,7 +137,7 @@ void GDisc::Create()
 		edge[0] = FE[i][0];
 		edge[1] = FE[i][1];
 		edge[2] = FE[i][2];
-		AddFacet(edge, FACE_POLYGON);
+		AddFacet(edge, FACE_POLYGON, vec3d(0,0,1));
 	}
 
 	Update();

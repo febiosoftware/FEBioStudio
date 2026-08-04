@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include "FESurfaceLoad.h"
 #include "FEMKernel.h"
 #include "FEInterface.h"
-#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
 #include "FEModelConstraint.h"
 #include <FSCore/FSObjectList.h>
 using namespace std;
@@ -1301,7 +1301,8 @@ void FSStep::Load(IArchive &ar)
 				ar.CloseChunk();
 			}
 		}
-		break;		case CID_MESH_ADAPTOR_SECTION:
+		break;
+		case CID_MESH_ADAPTOR_SECTION:
 		{
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{

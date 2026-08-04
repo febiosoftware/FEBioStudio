@@ -45,6 +45,8 @@ public:
 
 	virtual void stop();
 
+	virtual QString GetOutput();
+
 protected:
 	void SetErrorString(const QString& s);
 

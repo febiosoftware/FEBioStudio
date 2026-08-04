@@ -34,7 +34,6 @@ SOFTWARE.*/
 #include <FECore/units.h>
 #include "FEDiscreteMaterial.h"
 #include <FEBioLink/FEBioClass.h>
-#include <FEBioLink/FEBioInterface.h>
 
 FSFiberGenerator::FSFiberGenerator(int ntype, FSModel* fem) : FSMaterial(ntype, fem)
 {

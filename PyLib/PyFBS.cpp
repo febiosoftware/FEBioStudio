@@ -43,10 +43,25 @@ SOFTWARE.*/
 
 #ifndef PY_EXTERNAL
 #include "PyFBSModel.h"
-#include "PyFBSUI.h"
+#include <FEBioStudio/FEBioStudio.h>
+#include <FEBioStudio/MainWindow.h>
 #endif
 
 namespace py = pybind11;
+
+#ifndef PY_EXTERNAL
+class CPyOutput
+{
+public:
+	void write(py::str txt)
+	{
+		std::string s = txt;
+		FBS::getMainWindow()->AddPythonLogEntry(QString::fromStdString(s));
+	}
+
+	void flush() {}
+};
+#endif
 
 PY_MODULE_TYPE(fbs, m)
 {
@@ -56,7 +71,11 @@ PY_MODULE_TYPE(fbs, m)
 	init_FBSGeom(m);
 
 #ifndef PY_EXTERNAL
-    init_FBSUI(m);
+	py::class_<CPyOutput>(m, "_PyOutput")
+		.def(py::init())
+		.def("write", &CPyOutput::write)
+		.def("flush", &CPyOutput::flush);
+
     init_FBSModel(m);
 #endif
 }
@@ -84,7 +103,7 @@ void init_fbs_python(std::wstring pythonHome)
 
 	// setup output
 	auto sysm = pybind11::module::import("sys");
-	auto output = pybind11::module::import("fbs").attr("ui").attr("PyOutput");
+	auto output = pybind11::module::import("fbs").attr("_PyOutput");
 	sysm.attr("stdout") = output();
 	sysm.attr("stderr") = output();
 }

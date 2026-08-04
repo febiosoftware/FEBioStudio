@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2026 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,48 +23,60 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <QTreeView>
-#include <QStyledItemDelegate>
-#include <QComboBox>
+#include <QPixmap>
+#include <QPainter>
+#include <CUILib/GraphData.h>
 
-class GMaterial;
-class Param;
-class CMaterialPropsModel;
-
-class CMaterialPropsDelegate : public QStyledItemDelegate
+class ChartBuilder
 {
-	Q_OBJECT
-
 public:
-	explicit CMaterialPropsDelegate(QObject* parent = nullptr);
+	ChartBuilder(size_t w, size_t h);
+	virtual ~ChartBuilder() = default;
 
-	QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+	void SetTitle(const QString& title);
 
-	void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+	void SetXAxisLabel(const QString& label);
 
-	void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
-
-private slots:
-	void OnEditorSignal();
-};
-
-class CMaterialPropsView : public QTreeView
-{
-	Q_OBJECT
-
-public:
-	CMaterialPropsView(QWidget* parent = nullptr);
-
-	void SetMaterial(GMaterial* mat);
+	QPixmap GetPixmap() { Build(); return pix; }
 
 protected:
-	void drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const override;
+	virtual void Build() = 0;
 
-private slots:
-	void onModelDataChanged();
+protected:
+	QPixmap pix;
+	CGraphData data;
+};
+
+class PieChartBuilder : public ChartBuilder
+{
+public:
+	PieChartBuilder(size_t w, size_t h);
+
+	void AddSlice(double span, const QColor& col, const QString& label = "");
 
 private:
-	CMaterialPropsModel*	m_model;
+	void Build() override;
+};
+
+class BarChartBuilder : public ChartBuilder
+{
+public:
+	BarChartBuilder(size_t w, size_t h);
+
+	void AddBar(double val, QColor c);
+
+private:
+	void Build() override;
+};
+
+class LineChartBuilder : public ChartBuilder
+{
+public:
+	LineChartBuilder(size_t w, size_t h);
+
+	void AddLine(const std::vector<QPointF>& points, const QString& label = "", const QPen& pen = QPen(Qt::black));
+
+private:
+	void Build() override;
 };

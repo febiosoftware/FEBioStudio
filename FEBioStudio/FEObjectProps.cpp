@@ -938,7 +938,7 @@ void CImageModelProperties::SetPropertyValue(int i, const QVariant& v)
     }
 }
 
-CFEBioJobProps::CFEBioJobProps(CMainWindow* wnd, CModelViewer* tree) : m_wnd(wnd), m_tree(tree)
+CFEBioJobProps::CFEBioJobProps(CMainWindow* wnd) : m_wnd(wnd)
 {
 }
 
@@ -1005,6 +1005,70 @@ void CFEBioJobProps::SetPropertyValue(int i, const QVariant& v)
 		job->SetLogFileName(newPath.toStdString());
 		break;
 	}
+}
+
+CStudyProps::CStudyProps(CMainWindow* wnd) : m_wnd(wnd)
+{
+}
+
+void CStudyProps::BuildProperties()
+{
+	CStudy* study = m_pobj;
+	if (study == nullptr) return;
+
+	addProperty("FEBio File:"  , CProperty::ExternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
+	addProperty("Options File:", CProperty::ExternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
+	addProperty("Output File:" , CProperty::InternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
+}
+
+QVariant CStudyProps::GetPropertyValue(int i)
+{
+	CStudy* study = m_pobj;
+	if (study == nullptr) return QVariant();
+
+	CDocument* doc = study->GetDocument();
+
+	switch (i)
+	{
+	case 0:
+	{
+		QString febFile = QString::fromStdString(study->GetFEBioFileName());
+		QString febPath = febFile;
+		if (doc) febPath = doc->ToAbsolutePath(febFile);
+
+		QStringList fileNames;
+		fileNames.append(febPath);
+		fileNames.append(febFile);
+		return fileNames;
+	}
+	case 1:
+	{
+		QString optFile = QString::fromStdString(study->GetOptionsFileName());
+		QString optPath = optFile;
+		if (doc) optPath = doc->ToAbsolutePath(optFile);
+
+		QStringList fileNames;
+		fileNames.append(optPath);
+		fileNames.append(optFile);
+		return fileNames;
+	}
+	case 2:
+	{
+		QString outFile = QString::fromStdString(study->GetOutputFileName());
+		QString outPath = outFile;
+		if (doc) outPath = doc->ToAbsolutePath(outFile);
+
+		QStringList fileNames;
+		fileNames.append(outPath);
+		fileNames.append(outFile);
+		return fileNames;
+	}
+	}
+	return QVariant();
+}
+
+void CStudyProps::SetPropertyValue(int i, const QVariant& v)
+{
 }
 
 void CDiscreteObjectProps::BuildProperties()

@@ -874,6 +874,8 @@ void MathPlot::draw(QPainter& p)
 	MVariable* xvar = m.AddVariable("x");
 	m.Create(m_math);
 
+	if (!m.IsValid()) return;
+
 	QRectF vr = m_graph->m_viewRect;
 	QRect sr = m_graph->ScreenRect();
 
@@ -2947,4 +2949,34 @@ void CModelGraphWindow::TrackElementHistory(int nelem, float* pval, int nfield, 
 		fem.EvaluateElement(nelem, n + nmin, nfield, data, val);
 		pval[n] = val;
 	}
+}
+
+//=====================================================================================
+CDynamicDataGraphWindow::CDynamicDataGraphWindow(CMainWindow* wnd, CPostDocument* doc) : CGraphWindow(wnd, doc)
+{
+	m_src = nullptr;
+	AddPlotData(new CPlotData());
+}
+
+void CDynamicDataGraphWindow::Update(bool breset, bool bfit)
+{
+	if (m_src)
+	{
+		CPlotData* plot = dynamic_cast<CPlotData*>(GetPlotData(0));
+		if (plot)
+		{
+			m_src->UpdatePlot(*plot);
+		}
+	}
+	RedrawPlot();
+}
+
+void CDynamicDataGraphWindow::showEvent(QShowEvent* ev)
+{
+	Update(true, true);
+}
+
+void CDynamicDataGraphWindow::closeEvent(QCloseEvent* ev)
+{
+	CGraphWindow::closeEvent(ev);
 }

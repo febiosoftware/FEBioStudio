@@ -435,7 +435,7 @@ find_package(Python3 COMPONENTS Development)
 
 if(WIN32)
 	find_path(PYBIND11_INC pybind11/pybind11.h
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/* C:/sources
 		PATH_SUFFIXES "include" "pybind11/include"
         DOC "pybind11 include directory")
 elseif(APPLE)

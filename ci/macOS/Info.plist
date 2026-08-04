@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>CFBundleDocumentTypes</key>
@@ -343,7 +343,7 @@
 	<key>CFBundleIconFile</key>
 	<string>FEBioStudio.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string></string>
+	<string>org.MRL.FEBio.FBS</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleLongVersionString</key>
@@ -366,18 +366,23 @@
 	<string>NSApplication</string>
 	<key>NSHighResolutionCapable</key>
 	<string>True</string>
-    <key>CFBundleIdentifier</key>
-    <string>org.MRL.FEBio.FBS</string>
-    <key>CFBundleURLTypes</key>
-    <array>
-      <dict>
-        <key>CFBundleURLName</key>
-        <string>FBS</string>
-        <key>CFBundleURLSchemes</key>
-        <array>
-          <string>fbs</string>
-        </array>
-      </dict>
-    </array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>FBS</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fbs</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSEnvironment</key>
+	<dict>
+		<key>DYLD_LIBRARY_PATH</key>
+		<string>$(HOME)/panua-pardiso-20240630-mac_arm64/lib</string>
+		<key>PARDISOLICMESSAGE</key>
+		<string>1</string>
+	</dict>
 </dict>
 </plist>

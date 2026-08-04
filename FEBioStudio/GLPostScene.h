@@ -69,7 +69,6 @@ private:
 	void RenderDiscrete(GLRenderEngine& re, GLContext& rc);
 	void RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc);
 	void RenderDiscreteAsSolid(GLRenderEngine& re);
-	void RenderMinMaxMarkers(GLRenderEngine& re);
 	void RenderDiscreteElement(GLRenderEngine& re, int n);
 	void RenderDiscreteElementAsSolid(GLRenderEngine& re, int n, double W);
 

@@ -362,6 +362,8 @@ public:
 	
 	//! Edges defining face
 	std::vector<EDGE>	m_edge;
+
+	vec3d m_normal;	// normal vector for this face
 };
 
 //! Forward declaration

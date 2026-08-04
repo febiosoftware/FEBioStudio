@@ -1,9 +1,11 @@
 call "%VS2022INSTALLDIR%\VC\Auxiliary\Build\vcvars64.bat"
 
+SET "FBS_DIR=%CD%"
+
 set Qt_Root="c:/usr/local/Qt/6.9.3/msvc2022_64"
 cmake -L . -B cmbuild ^
   -DQt_Root=%Qt_Root% ^
-  -DCMAKE_PREFIX_PATH=febio4-sdk ^
+  -DCMAKE_PREFIX_PATH="febio4-sdk" ^
   -DWINDEPLOYQT_EXECUTABLE="%Qt_Root%\bin\windeployqt.exe" ^
   -DUSE_FFMPEG=ON ^
   -DUSE_TETGEN=ON ^
@@ -15,6 +17,7 @@ cmake -L . -B cmbuild ^
   -DMODEL_REPO=ON ^
   -DUSE_ITK=ON ^
   -DBUILD_UPDATER=ON ^
+  -DBUILD_TESTS=ON ^
   -DUSE_PYTHON=ON ^
   -DMMG_LIB_DIR="C:\usr\local\lib" ^
   -DNETGEN_LIB_DIR="C:\usr\local\lib" ^
@@ -27,6 +30,9 @@ cmake -L . -B cmbuild ^
 cd cmbuild
 msbuild /v:m /P:Configuration=Release  /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS% ALL_BUILD.vcxproj
 if errorlevel 1 exit /b %errorlevel%
-cd ..
+
+SET PATH=%PATH%;C:\usr\local\win64\vc14\bin;C:\usr\local\bin;C:\usr\local\febio\vcpkg_installed\x64-windows\bin;%FBS_DIR%\febio4-sdk\bin\Release
+
+.\bin\Release\fbs-test-suite.exe
 
 exit /b %errorlevel%

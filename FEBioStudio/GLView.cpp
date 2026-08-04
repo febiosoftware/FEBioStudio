@@ -931,7 +931,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 			// there is an object under the cursor
 			if (((abs(m_x0-m_x1)<=DELTA) && (abs(m_y0-m_y1)<=DELTA)) || m_bsel)
 			{
-				if (((abs(m_x0 - m_x1) <= DELTA) && (abs(m_y0 - m_y1) <= DELTA)))
+				if (((abs(m_x0 - m_x1) <= DELTA) && (abs(m_y0 - m_y1) <= DELTA) && (m_pl.size() < 3)))
 				{
 					int xc = (m_x0 + m_x1) / 2;
 					int yc = (m_y0 + m_y1) / 2;
@@ -1407,11 +1407,11 @@ bool CGLView::isTitleVisible() const
 
 void CGLView::showTitle(bool b)
 {
-	if (m_ptitle)
-	{
-		if (b) m_ptitle->show(); else m_ptitle->hide();
-		repaint();
-	}
+	CGLDocument* doc = m_pWnd->GetGLDocument();
+	if (doc == nullptr) return;
+
+	doc->ShowTitle(b);
+	repaint();
 }
 
 bool CGLView::isSubtitleVisible() const
@@ -1421,11 +1421,10 @@ bool CGLView::isSubtitleVisible() const
 
 void CGLView::showSubtitle(bool b)
 {
-	if (m_psubtitle)
-	{
-		if (b) m_psubtitle->show(); else m_psubtitle->hide();
-		repaint();
-	}
+	CGLDocument* doc = m_pWnd->GetGLDocument();
+	if (doc == nullptr) return;
+	doc->ShowSubtitle(b);
+	repaint();
 }
 
 QImage correct_premultiplied_image(const QImage& image)
@@ -1465,6 +1464,9 @@ void CGLView::captureFrameReady(QImage img)
 	frameCapturesRequested--;
 	if (frameCapturesRequested < 0) frameCapturesRequested = 0;
 
+	if (m_rhi->isYUpInFramebuffer())
+		img.mirror();
+
 	if (m_pframe && m_pframe->visible())
 	{
 		// crop based on the capture frame
@@ -1475,9 +1477,6 @@ void CGLView::captureFrameReady(QImage img)
 	// But that does not appear to be correct and as a result an image with transparency will not be
 	// processed correctly. As a workaround, we modify the format by essentially stripping the alpha
 	// channel. This might be a bug in Qt so should revisit when we update to a newer version. 
-
-	if (m_rhi->isYUpInFramebuffer())
-		img.mirror();
 
 //	correct_premultiplied_image(img);
 
@@ -2760,15 +2759,16 @@ void CGLView::RenderTags(QPainter& painter)
 	int H = height();
 
 	double dpr = devicePixelRatio();
+	painter.setPen(QPen(Qt::white, 2));
 	for (int i = 0; i< ntags; i++)
 	{
 		GLTAG& tag = scene->Tag(i);
+		int size = tag.size;
+		if (size <= 0) size = 4;
 		int x = (int)(tag.wx * dpr);
 		int y = (int)(tag.wy * dpr);
-		painter.setBrush(QColor(0,0,0));
-		painter.drawEllipse(QPoint(x, y), 4, 4);
 		painter.setBrush(toQColor(tag.c));
-		painter.drawEllipse(QPoint(x-1, y-1), 4, 4);
+		painter.drawEllipse(QPoint(x, y), size, size);
 	}
 	GLViewSettings& vs = GetViewSettings();
 

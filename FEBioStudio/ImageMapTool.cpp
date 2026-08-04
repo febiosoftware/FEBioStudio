@@ -131,7 +131,7 @@ public:
 
         innerLayout->addWidget(curveEdit = new CCurveEditWidget);
         loadCurve.SetExtendMode(PointCurve::EXTRAPOLATE);
-        curveEdit->SetLoadCurve(&loadCurve);
+        curveEdit->SetPointCurve(&loadCurve);
         curveEdit->hide();
 
         QHBoxLayout* buttonLayout = new QHBoxLayout;

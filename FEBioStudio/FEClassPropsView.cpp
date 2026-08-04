@@ -43,7 +43,6 @@ SOFTWARE.*/
 #include <FEMLib/FSModel.h>
 #include <FEMLib/FEBase.h>
 #include <FEBioLink/FEBioClass.h>
-#include <FEBioLink/FEBioInterface.h>
 #include <QStandardItemModel>
 #include <QSpinBox>
 #include <QMessageBox>
@@ -54,10 +53,31 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include "SelectionBox.h"
 #include "DlgAddPhysicsItem.h"
+#include "MainWindow.h"
 using namespace std;
 
-// in MaterialPropsView.cpp
-QStringList GetEnumValues(FSModel* fem, const char* ch);
+QStringList GetEnumValues(FSModel* fem, const char* ch)
+{
+	QStringList ops;
+	char sz[2048] = { 0 };
+	if (ch[0] == '$')
+	{
+		if (fem)
+		{
+			fem->GetVariableNames(ch, sz);
+			ch = sz;
+		}
+		else ch = 0;
+	}
+
+	while (ch && (*ch))
+	{
+		ops << QString(ch);
+		ch = ch + strlen(ch) + 1;
+	}
+
+	return ops;
+}
 
 //=================================================================================
 CPropertySelector::CPropertySelector(FSProperty* pp, FSCoreBase* pc, int index, FSModel* fem, QWidget* parent) : QComboBox(parent)
@@ -88,7 +108,7 @@ void CPropertySelector::onSelectionChanged(int n)
 // also opening a custom dialog, and that works without any issues (with this object's destructor running
 // after this function exits as expected). 
 #ifndef __APPLE__
-		QString title = QString("Remove %1").arg(QString::fromStdString(m_pp->GetLongName()));
+		QString title = QString("Remove %1").arg(QString::fromStdString(m_pp->GetName()));
 		if (QMessageBox::question(this, title, "Are you sure you want to remove this property?", QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
 		{
 			emit currentDataChanged(n);
@@ -102,7 +122,7 @@ void CPropertySelector::onSelectionChanged(int n)
 	{
 		int superID = m_pp->GetSuperClassID();
 		int baseID = m_pp->GetPropertyType();
-		QString title = QString("Add %1").arg(QString::fromStdString(m_pp->GetLongName()));
+		QString title = QString("Add %1").arg(QString::fromStdString(m_pp->GetName()));
 		CDlgAddPhysicsItem dlg(title, superID, baseID, nullptr, true, false, this);
 		dlg.ShowNameAndCategoryFields(false);
 		if (dlg.exec())
@@ -119,7 +139,7 @@ void CPropertySelector::onSelectionChanged(int n)
 	{
 		int superID = m_pp->GetSuperClassID();
 		int baseID = m_pp->GetPropertyType();
-		QString title = QString("Copy %1").arg(QString::fromStdString(m_pp->GetLongName()));
+		QString title = QString("Copy %1").arg(QString::fromStdString(m_pp->GetName()));
 		FSModelComponent* src = dynamic_cast<FSModelComponent*>(m_pp->GetParent());
 		CDlgCopyPhysicsItem dlg(title, superID, baseID, src, m_fem, this);
 		if (dlg.exec())
@@ -230,8 +250,8 @@ public:
 						QString name;
 						if (m_index == -1)
 						{
-							string sname = p.GetLongName();
-//							string sname = FSCore::beautify_string(p.GetLongName());
+							string sname = p.GetShortName();
+//							string sname = FSCore::beautify_string(p.GetShortName());
 							name = QString::fromStdString(sname);
 						}
 						else
@@ -252,7 +272,10 @@ public:
 					{
 						if (m_index == -1)
 						{
-							QString toolTip = QString("<p><b>parameter:</b> <code>%1</code></p>").arg(p.GetShortName());
+							QString toolTip;
+							if (p.GetLongName())
+								toolTip = QString("<p><b>%1: </b>%2</p>").arg(p.GetShortName()).arg(p.GetLongName());
+
 							if (p.IsVolatile())
 							{
 								if (p.GetLoadCurveID() > 0)
@@ -533,14 +556,14 @@ public:
 					{
 						if ((p.maxSize()==1) || (m_index < 0))
 						{
-							QString s = QString("<b>property:</b> <code>%1</code>").arg(QString::fromStdString(p.GetName()));
+							QString s = QString("<b>%1: </b>%2").arg(QString::fromStdString(p.GetName())).arg(QString::fromStdString(p.GetLongName()));
 							return s;
 						}
 					}
 					else
 					{
-//						string sname = FSCore::beautify_string(p.GetLongName().c_str());
-                        string sname = p.GetLongName().c_str();
+//						string sname = FSCore::beautify_string(p.GetName().c_str());
+                        string sname = p.GetName().c_str();
 						QString s = QString::fromStdString(sname);
 						if (p.maxSize() != 1)
 						{
@@ -1046,7 +1069,7 @@ public:
 			if (paramId >= 0)
 			{
 				Param& p = pc->GetParam(paramId);
-				QString name = p.GetLongName();
+				QString name = p.GetShortName();
 
 				if (name.contains(m_filter, Qt::CaseInsensitive) == false)
 				{
@@ -1097,12 +1120,6 @@ public:
 
 		Item* item = static_cast<Item*>(index.internalPointer());
 
-/*		if (role == Qt::BackgroundRole)
-		{
-			// This color has to match the color in CMaterialPropsView::drawBranches
-			if (item->isProperty()) return QColor(Qt::darkGray);
-		}
-*/
 		if ((role == Qt::FontRole))
 		{
 			QFont font;
@@ -1117,32 +1134,6 @@ public:
 
 			return font;
 		}
-
-	/*	if ((role == Qt::BackgroundRole) && (index.column() == 1) && item->isParameter())
-		{
-			Param* p = item->parameter();
-			if (p && p->IsModified())
-			{
-				QPalette palette = qApp->palette();
-				QColor tc = palette.color(QPalette::WindowText);
-
-				QLinearGradient gradient(0, 0, 100, 0);
-				if (tc.red() == 0)
-				{
-					gradient.setColorAt(0, QColor::fromRgb(220, 255, 255, 0));
-					gradient.setColorAt(0.5, QColor::fromRgb(220, 255, 255, 0));
-					gradient.setColorAt(1, QColor::fromRgb(220, 255, 255, 255));
-				}
-				else
-				{
-					gradient.setColorAt(0, QColor::fromRgb(32, 64, 72, 0));
-					gradient.setColorAt(0.5, QColor::fromRgb(32, 64, 72, 0));
-					gradient.setColorAt(1, QColor::fromRgb(32, 64, 72, 255));
-				}
-				return QBrush(gradient);
-			}
-		}
-		*/
 
 		if ((index.column() == 0) && (role == Qt::DecorationRole))
 		{
@@ -1540,9 +1531,19 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 				}
 				else
 				{
-					CPropertySelector* pc = new CPropertySelector(&prop, pcbi, item->m_index, item->GetFSModel(), parent);
-					QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
-					return pc;
+					if (!prop.IsFixed())
+					{
+						CPropertySelector* pc = new CPropertySelector(&prop, pcbi, item->m_index, item->GetFSModel(), parent);
+						QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
+						return pc;
+					}
+					else
+					{
+						QLineEdit* pw = new QLineEdit(parent);
+						pw->setReadOnly(true);
+						if (pcbi) pw->setText(QString::fromStdString(pcbi->GetTypeString()));
+						return pw;
+					}
 				}
 			}
 		}
@@ -1906,15 +1907,18 @@ public:
 
 	FSMeshSelection* m_pms;
 
+	CMainWindow* m_wnd = nullptr;
+
 public:
 	void setup(CMainWindow* wnd, QWidget* w)
 	{
 		m_pms = nullptr;
+		m_wnd = wnd;
 
 		feprops = new FEClassPropsWidget;
 
 		stack = new QStackedWidget;
-		stack->addWidget(plt  = new CCurveEditWidget);
+		stack->addWidget(plt  = new CCurveEditWidget); plt->ShowOpenCEButton(true);
 		stack->addWidget(math = new CMathEditWidget);
 
 		QVBoxLayout* l = new QVBoxLayout;
@@ -1930,6 +1934,7 @@ public:
 		QObject::connect(feprops, SIGNAL(paramChanged(FSCoreBase*, Param*)), w, SLOT(on_paramChanged(FSCoreBase*, Param*)));
 		QObject::connect(plt, SIGNAL(dataChanged()), w, SLOT(onPlotChanged()));
 		QObject::connect(math, SIGNAL(mathChanged(QString)), w, SLOT(onMathChanged(QString)));
+		QObject::connect(plt, SIGNAL(openCEButtonClicked()), w, SLOT(onOpenCEButtonClicked()));
 	}
 
 	void SetFunction1D(FSFunction1D* pf)
@@ -1941,7 +1946,7 @@ public:
 			{
 				stack->setCurrentIndex(0);
 				LoadCurve* pc = pf->CreateLoadCurve();
-				plt->SetLoadCurve(pc);
+				plt->SetPointCurve(pc);
 				stack->show();
 			}
 			else if (pf && pf->IsType("math"))
@@ -2051,4 +2056,18 @@ void FEClassEdit::onPlotChanged()
 void FEClassEdit::on_paramChanged(FSCoreBase* pc, Param* p)
 {
 	emit paramChanged(pc, p);
+}
+
+void FEClassEdit::onOpenCEButtonClicked()
+{
+	FSProperty* prop = ui->feprops->getSelectedProperty();
+	if (prop && (prop->GetSuperClassID() == FEFUNCTION1D_ID))
+	{
+		FSFunction1D* pf = dynamic_cast<FSFunction1D*>(prop->GetComponent(0));
+		if (pf && pf->IsType("point"))
+		{
+			ui->stack->hide();
+			ui->m_wnd->OpenInCurveEditor(pf);
+		}
+	}
 }

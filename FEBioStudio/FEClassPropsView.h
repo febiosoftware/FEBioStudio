@@ -175,6 +175,7 @@ public slots:
 	void onMathChanged(QString s);
 	void onPlotChanged();
 	void on_paramChanged(FSCoreBase* pc, Param* p);
+	void onOpenCEButtonClicked();
 
 signals:
 	void paramChanged(FSCoreBase* pc, Param* p);

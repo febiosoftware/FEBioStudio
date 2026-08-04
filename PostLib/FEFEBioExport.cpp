@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEFEBioExport.h"
-#include <FEBioXML/XMLWriter.h>
+#include <FECore/XMLWriter.h>
 #include "FEPostModel.h"
 #include <map>
 using namespace Post;

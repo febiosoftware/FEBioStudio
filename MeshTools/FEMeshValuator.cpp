@@ -62,6 +62,8 @@ std::vector< std::string > FEMeshValuator::GetDataFieldNames()
 	names.push_back("Maximum element edge length");
 	names.push_back("1-Principal curvature");
 	names.push_back("2-Principal curvature");
+	names.push_back("Minimal scaled Jacobian");
+	names.push_back("Minimal mean ratio");
 	return names;
 }
 
@@ -308,6 +310,12 @@ double FEMeshValuator::EvaluateElement(int n, int nfield, int* err)
 		{
 			val = 0.0;
 		}
+		break;
+	case MINIMAL_SCALED_JACOBIAN:
+		val = FEMeshMetrics::MinimumScaledJacobian(m_mesh, el);
+		break;
+	case MINIMAL_MEAN_RATIO:
+		val = FEMeshMetrics::MinimumMeanRatio(m_mesh, el);
 		break;
 	default:
 		val = 0.0;

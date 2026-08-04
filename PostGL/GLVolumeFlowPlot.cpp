@@ -64,7 +64,7 @@ GLVolumeFlowPlot::GLVolumeFlowPlot()
 
 	m_alpha = 0.2f;
 	m_gain = 0.5f;
-	m_nfield = 0;
+	m_nfield = -1;
 	m_bsmooth = true;
 	m_nDivs = 10;
 	m_meshDivs = 1;
@@ -230,7 +230,7 @@ void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 		m_rng.resize(NS);
 		m_val.resize(NN);
 	}
-	if (m_nfield == 0) return;
+	if (m_nfield < 0) return;
 
 	// see if we need to update this state
 	if (breset || (m_map.GetTag(ntime) != m_nfield))
@@ -496,7 +496,7 @@ LegendData GLVolumeFlowPlot::GetLegendData() const
 {
 	LegendData l;
 	bool showLegend = GetBoolValue(SHOW_LEGEND);
-	if (m_range.valid && showLegend)
+	if (m_range.valid && showLegend && (m_nfield >= 0))
 	{
 		l.discrete = false;
 		l.ndivs = m_nDivs;

@@ -29,7 +29,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // VERSION INFORMATION
 #define FBS_VERSION			3
-#define FBS_SUBVERSION		1
+#define FBS_SUBVERSION		2
 #define FBS_SUBSUBVERSION	0
 
 //-----------------------------------------------------------------------------
@@ -54,8 +54,9 @@ SOFTWARE.*/
 // 4.2: Node and element IDs are now stored in the fsm file. 
 // 4.3: Storing properties of domain components. Storing edgesets.
 // 5.0: new version starting with FEBio Studio 3.
+// 5.1: Added studies to fsm file.
 #define FBS2_FILE		0x00040000	// first version number used by FBS2. Don't change!
-#define SAVE_VERSION	0x00050000
+#define SAVE_VERSION	0x00050001
 
 // lowest supported version number
 #define MIN_FSM_VERSION	0x0001000D

@@ -227,8 +227,7 @@ void GObject::BuildFERenderMesh()
 	FSMesh* pm = GetFEMesh();
 	if (pm == nullptr) return;
 
-	m.m_glFaceMesh = new GLMesh;
-	GLMesh& gm = *m.m_glFaceMesh;
+	GLMesh& gm = *(new GLMesh);
 	gm.Create(pm->Nodes(), 0, 0);
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
@@ -345,6 +344,8 @@ void GObject::BuildFERenderMesh()
 	}
 
 	gm.Update();
+
+	m.m_glFaceMesh = &gm;
 }
 
 void GObject::UpdateFERenderMesh()

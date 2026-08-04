@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2026 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,27 +24,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <vector>
-#include <string>
-#include "FEBioClass.h"
+#include <CUILib/PlotWidget.h>
 
-struct MaterialTest
+class PointCurve;
+
+class CCurvePlotWidget : public CPlotWidget
 {
-	double		strain = 0.1;	// strain level
-	FSMaterial* mat = nullptr;	// material to test
+	Q_OBJECT
 
-	std::string	testName;	// name of test
-	std::string	xvalName;	// name of output value for x axis
-	std::string	yvalName;	// name of output value for y axis
+public:
+	CCurvePlotWidget(QWidget* parent = nullptr);
 
-	// control parameters
-	double	time = 1.0;
-	int	steps = 20;
+	void DrawPlotData(QPainter& p, CPlotData& data) override;
+
+	void SetPointCurve(PointCurve* lc);
+	PointCurve* GetPointCurve();
+
+	void ShowDeriv(bool b);
+
+private:
+	PointCurve* m_lc;
+	bool	m_showDeriv;
 };
 
-namespace FEBio {
-
-	// run a material test in FEBio. 
-	// returns stress-strain data in out
-	bool RunMaterialTest(MaterialTest test, std::vector<std::pair<double, double> >& out);
-}

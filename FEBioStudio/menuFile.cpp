@@ -125,6 +125,7 @@ SOFTWARE.*/
 #include <GLLib/GLScene.h>
 #include <RTLib/RayTracer.h>
 #include "FEBioBatchDoc.h"
+#include "FEBioStudyReportDoc.h"
 #include "DlgBatchRun.h"
 
 // register file reader classes
@@ -500,6 +501,7 @@ void CMainWindow::OpenFEBioFile(const QString& fileName)
 	if (xml->ReadFromFile(fileName) == false)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Failed to open file:\n" + fileName);
+		delete xml;
 		return;
 	}
 
@@ -514,6 +516,7 @@ void CMainWindow::OpenTextFile(const QString& fileName)
 	if (txt->ReadFromFile(fileName) == false)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Failed to open file:\n" + fileName);
+		delete txt;
 		return;
 	}
 	txt->SetDocFilePath(fileName.toStdString());
@@ -529,6 +532,42 @@ bool CMainWindow::OpenFEBioLogFile(const QString& fileName)
 		return false;
 	}
 	AddDocument(doc);
+	return true;
+}
+
+bool CMainWindow::OpenFEBioReportFile(const QString& fileName)
+{
+	CFEBioStudyReportDoc* doc = new CFEBioStudyReportDoc(this);
+	if (doc->OpenReportFile(fileName) == false)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Failed to open report file:\n" + fileName);
+		delete doc;
+		return false;
+	}
+	AddDocument(doc);
+	return true;
+}
+
+bool CMainWindow::OpenFEBioStudyFile(const QString& fileName)
+{
+	// make sure we have an active model document
+	CModelDocument* modelDoc = GetModelDocument();
+	if (modelDoc == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "No active model document.");
+		return false;
+	}
+
+	// add the study file to the model document
+	CFEBioStudy* study = modelDoc->OpenStudyFile(fileName.toStdString());
+	if (study == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Failed to open study file:\n" + fileName);
+		return false;
+	}
+
+	UpdateModel(study);
+
 	return true;
 }
 

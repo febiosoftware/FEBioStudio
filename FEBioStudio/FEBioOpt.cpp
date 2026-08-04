@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioOpt.h"
-#include <FEBioXML/XMLWriter.h>
+#include <FECore/XMLWriter.h>
 
 bool GenerateFEBioOptimizationFile(const std::string& fileName, FEBioOpt& opt)
 {
@@ -52,6 +52,7 @@ bool GenerateFEBioOptimizationFile(const std::string& fileName, FEBioOpt& opt)
 		xml.add_leaf("f_diff_scale", opt.m_f_diff_scale);
 		xml.add_leaf("log_level", szlog[opt.m_outLevel]);
 		xml.add_leaf("print_level", szprt[opt.m_printLevel]);
+		xml.add_leaf("write_report", opt.m_report);
 	}
 	xml.close_branch();
 

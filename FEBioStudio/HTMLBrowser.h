@@ -36,9 +36,6 @@ public:
 
 	void setDocument(CDocument* doc) override;
 
-private slots:
-	void on_htmlview_anchorClicked(const QUrl& link);
-
 private:
 	QTextBrowser* m_txt;
 };
