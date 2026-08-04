@@ -21,6 +21,8 @@ cd $FBS_REPO
 .\ci\Windows\build.bat
 
 cd $env:GITHUB_WORKSPACE
+rm -rf release
+rm -rf upload
 mkdir release
 mkdir release\bin
 
