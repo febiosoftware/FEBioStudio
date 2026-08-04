@@ -21,8 +21,8 @@ cd $FBS_REPO
 .\ci\Windows\build.bat
 
 cd $env:GITHUB_WORKSPACE
-Remove-Item -LiteralPath "release" -Recurse -Force
-Remove-Item -LiteralPath "upload" -Recurse -Force
+Remove-Item -LiteralPath "release" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -LiteralPath "upload" -Recurse -Force -ErrorAction SilentlyContinue
 mkdir release
 mkdir release\bin
 
