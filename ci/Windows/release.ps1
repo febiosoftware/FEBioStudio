@@ -192,7 +192,7 @@ cd $env:GITHUB_WORKSPACE
 $env:FEBIO_REPO = $FEBIO_REPO
 $env:FBS_REPO = $FBS_REPO
 $env:RELEASE_DIR = $env:GITHUB_WORKSPACE + '\release'
-builder-cli.exe build $FBS_REPO\ci\installBuilder.xml windows --license $env:GITHUB_WORKSPACE\license.xml --setvars outputDirectory="upload\installer"
+builder-cli.exe build $FBS_REPO\ci\installBuilder.xml windows --license $env:GITHUB_WORKSPACE\license.xml --setvars project.outputDirectory="upload\installer"
 
 # make sdk visible to plugins
 "FEBIO_SDK=$env:GITHUB_WORKSPACE/FEBio/febio4-sdk" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
