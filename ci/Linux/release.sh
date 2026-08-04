@@ -17,6 +17,8 @@ cd $FBS_REPO
 
 cd $GITHUB_WORKSPACE
 
+rm -rf $RELEASE_DIR
+
 mkdir $RELEASE_DIR
 mkdir $RELEASE_DIR/bin
 mkdir $RELEASE_DIR/lib
@@ -149,7 +151,7 @@ libs=(
     /usr/local/lib/libswscale.so.7
 
     # FFTW
-    /usr/local/lib/x86_64-linux-gnu/libfftw3.so.3
+    /lib/x86_64-linux-gnu/libfftw3.so.3
 
     # Python
     /home/ubuntu/.pyenv/versions/3.13.1/lib/libpython3.13.so.1.0
