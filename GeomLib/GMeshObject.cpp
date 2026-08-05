@@ -642,7 +642,7 @@ void GMeshObject::UpdateNodes()
 		else
 		{
 			GNode* gnode = new GNode(this);
-			GObject::AddNode(gnode);
+			GBaseObject::AddNode(gnode);
 			tag[i] = n++;
 		}
 	}
@@ -756,7 +756,7 @@ int GMeshObject::MakeGNode(int n)
 //-----------------------------------------------------------------------------
 // This function adds a node to the GMeshObject and to the FSMesh
 
-int GMeshObject::AddNode(vec3d r)
+int GMeshObject::AddGNode(vec3d r)
 {
 	// convert from global to local
 	r = GetTransform().GlobalToLocal(r);

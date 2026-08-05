@@ -713,7 +713,7 @@ void GObject::BuildGMesh()
 // get the mesh of an edge curve
 FSCurveMesh* GObject::GetFECurveMesh(int edgeId)
 {
-	FSMesh* mesh = GetFEMesh();
+	FSLineMesh* mesh = GetEditableLineMesh();
 	if (mesh == 0) return 0;
 
 	mesh->TagAllNodes(-1);
