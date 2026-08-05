@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include "FETetGenMesher.h"
 
-//-----------------------------------------------------------------------------
 GExtrudeModifier::GExtrudeModifier()
 {
 	SetName("Extrude");
@@ -37,8 +36,7 @@ GExtrudeModifier::GExtrudeModifier()
 	AddIntParam(1, "segments");
 }
 
-//-----------------------------------------------------------------------------
-void GExtrudeModifier::Apply(GObject* po)
+bool GExtrudeModifier::Apply(GObject* po)
 {
 	vec3d t(0,0,1);
 	double D = GetFloatValue(DIST);
@@ -89,7 +87,7 @@ void GExtrudeModifier::Apply(GObject* po)
 				}
 				break;
 			default:
-				assert(false);
+				return false;
 			}
 		}
 	}
@@ -236,16 +234,16 @@ void GExtrudeModifier::Apply(GObject* po)
 
 	// find all vertices
 	po->UpdateNodeTypes();
+
+	return true;
 }
 
-//-----------------------------------------------------------------------------
 GLMesh* GExtrudeModifier::BuildGMesh(GObject* po)
 {
 	po->GObject::BuildGMesh();
 	return 0;
 }
 
-//-----------------------------------------------------------------------------
 FSMesh* GExtrudeModifier::BuildFEMesh(GObject* po)
 {
 	FETetGenMesher tet(*po);

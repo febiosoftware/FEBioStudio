@@ -40,7 +40,7 @@ GRevolveModifier::GRevolveModifier()
 
 //-----------------------------------------------------------------------------
 //! For now we assume that the axis of revolution is the y-axis
-void GRevolveModifier::Apply(GObject* po)
+bool GRevolveModifier::Apply(GObject* po)
 {
 	const double tol = 1.e-6;
 
@@ -74,13 +74,11 @@ void GRevolveModifier::Apply(GObject* po)
 	// one side of the y-axis
 	if ((nl == 0) && (nr == 0))
 	{
-		assert(false);
-		return;
+		return false;
 	}
 	if ((nl != 0) && (nr != 0))
 	{
-		assert(false);
-		return;
+		return false;
 	}
 
 	// create all the new nodes
@@ -157,10 +155,11 @@ void GRevolveModifier::Apply(GObject* po)
 					n.push_back(n0);
 					for (int k = 0; k < e.m_cnode.size(); ++k) n.push_back(nn[e.m_cnode[k]] + (i + 1) * N);
 					n.push_back(n1);
-					ne[(i + 1) * E + j] = po->AddBezierSection(n); break;
+					ne[(i + 1) * E + j] = po->AddBezierSection(n);
+					break;
 				}
 				default:
-					assert(false);
+					return false;
 				}
 			}
 			else ne[(i + 1)*E + j] = j;
@@ -314,6 +313,8 @@ void GRevolveModifier::Apply(GObject* po)
 
 	// find all vertices
 	po->UpdateNodeTypes();
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------

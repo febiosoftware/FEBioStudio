@@ -32,7 +32,6 @@ SOFTWARE.*/
 #include <MeshLib/MeshTools.h>
 using namespace std;
 
-//-----------------------------------------------------------------------------
 GWrapModifier::GWrapModifier()
 {
 	m_po = 0;
@@ -41,11 +40,10 @@ GWrapModifier::GWrapModifier()
 	AddIntParam(1, "steps", "steps");
 }
 
-//-----------------------------------------------------------------------------
-void GWrapModifier::Apply(GObject* po)
+bool GWrapModifier::Apply(GObject* po)
 {
 	// make sure there is a target
-	if (m_po == 0) return;
+	if (m_po == 0) return false;
 
 	FSMesh* pm = po->GetFEMesh();
 
@@ -58,7 +56,7 @@ void GWrapModifier::Apply(GObject* po)
 	if (m_po == 0) 
 	{
 		SetIntValue(TRG_ID, -1);
-		return;
+		return false;
 	}
 
 	// create the displacement vector
@@ -87,7 +85,7 @@ void GWrapModifier::Apply(GObject* po)
 	case 1:	// closest point
 		ClosestPoint(po, DS, tag); break;
 	default:
-		assert(false);
+		return false;
 	}
 
 	// see if there are any exterior nodes
@@ -149,9 +147,10 @@ void GWrapModifier::Apply(GObject* po)
 
 	// update the mesh
 	pm->BuildMesh();
+
+	return true;
 }
 
-//-----------------------------------------------------------------------------
 void GWrapModifier::ClosestPoint(GObject *ps, vector<vec3d>& DS, vector<int>& tag)
 {
 	// get the target mesh
@@ -210,7 +209,6 @@ void GWrapModifier::ClosestPoint(GObject *ps, vector<vec3d>& DS, vector<int>& ta
 */
 }
 
-//-----------------------------------------------------------------------------
 void GWrapModifier::NormalProjection(GObject* ps, vector<vec3d>& DS, vector<int>& tag, int nsteps)
 {
 	int i, j;
