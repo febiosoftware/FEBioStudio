@@ -21,6 +21,8 @@ cd $FBS_REPO
 .\ci\Windows\build.bat
 
 cd $env:GITHUB_WORKSPACE
+Remove-Item -LiteralPath "release" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -LiteralPath "upload" -Recurse -Force -ErrorAction SilentlyContinue
 mkdir release
 mkdir release\bin
 
@@ -185,14 +187,12 @@ Compress-Archive -Path release\sdk\* -DestinationPath upload\sdk.zip
 (Get-Content $FBS_REPO\ci\installBuilder.xml).Replace('FBS_VER', $env:FBS_VER) | Set-Content $FBS_REPO\ci\installBuilder.xml
 
 # Create installer
+mkdir upload\installer
 cd $env:GITHUB_WORKSPACE
 $env:FEBIO_REPO = $FEBIO_REPO
 $env:FBS_REPO = $FBS_REPO
 $env:RELEASE_DIR = $env:GITHUB_WORKSPACE + '\release'
-builder-cli.exe build $FBS_REPO\ci\installBuilder.xml windows --license $env:GITHUB_WORKSPACE\license.xml
-
-mkdir upload\installer
-cp C:\Users\Administrator\Documents\InstallBuilder\output\* upload\installer
+builder-cli.exe build $FBS_REPO\ci\installBuilder.xml windows --license $env:GITHUB_WORKSPACE\license.xml --setvars project.outputDirectory="upload\installer"
 
 # make sdk visible to plugins
 "FEBIO_SDK=$env:GITHUB_WORKSPACE/FEBio/febio4-sdk" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
