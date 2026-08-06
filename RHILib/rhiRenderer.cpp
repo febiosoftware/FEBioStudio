@@ -380,25 +380,24 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 		{
 			rhi::Mesh* rm = currentVolumePass->addGLMesh(mesh, cacheMesh);
 			if (rm) pm = currentVolumePass->getSubMesh(*rm, -1);
+			if (pm) currentVolumePass->addRenderItem(pm, m_currentMat, m_clipEnabled, modelViewMatrix());
 		}
 	}
 	else if (m_currentMat.type == GLMaterial::OVERLAY)
 	{
 		rhi::Mesh* rm = m_solidOverlayPass->addGLMesh(mesh, cacheMesh);
 		if (rm) pm = m_solidOverlayPass->getSubMesh(*rm, -1);
+		if (pm) m_solidOverlayPass->addRenderItem(pm, m_currentMat, m_clipEnabled, modelViewMatrix());
 	}
 	else
 	{
 		rhi::Mesh* rm = m_solidPass->addGLMesh(mesh, cacheMesh);
 		if (rm) pm = m_solidPass->getSubMesh(*rm, -1);
+		if (pm) m_solidPass->addRenderItem(pm, m_currentMat, m_clipEnabled, modelViewMatrix(), m_frontFace == FrontFace::CLOCKWISE);
 	}
 
 	if (pm)
 	{
-		pm->SetMaterial(m_currentMat);
-		pm->SetModelView(modelViewMatrix());
-		pm->doClipping = m_clipEnabled;
-
 		m_stats.triangles += (pm->vertexCount / 3); // 3 vertices per triangle
 	}
 }
@@ -412,19 +411,17 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 	{
 		rhi::Mesh* rm = m_solidOverlayPass->addGLMesh(mesh, cacheMesh);
 		if (rm) pm = m_solidOverlayPass->getSubMesh(*rm, surfId);
+		if (pm) m_solidOverlayPass->addRenderItem(pm, m_currentMat, m_clipEnabled, modelViewMatrix(), m_frontFace == FrontFace::CLOCKWISE);
 	}
 	else
 	{
 		rhi::Mesh* rm = m_solidPass->addGLMesh(mesh, cacheMesh);
 		if (rm) pm = m_solidPass->getSubMesh(*rm, surfId);
+		if (pm) m_solidPass->addRenderItem(pm, m_currentMat, m_clipEnabled, modelViewMatrix(), m_frontFace == FrontFace::CLOCKWISE);
 	}
 
 	if (pm)
 	{
-		pm->SetMaterial(m_currentMat);
-		pm->SetModelView(modelViewMatrix());
-		pm->doClipping = m_clipEnabled;
-
 		m_stats.triangles += (pm->vertexCount / 3); // 3 vertices per triangle
 	}
 }
@@ -438,19 +435,17 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 	{
 		rhi::Mesh* rm = m_lineOverlayPass->addGLMesh(mesh, cacheMesh);
 		if (rm) lineMesh = m_lineOverlayPass->getSubMesh(*rm, -1);
+		if (lineMesh) m_lineOverlayPass->addRenderItem(lineMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
 	}
 	else
 	{
 		rhi::Mesh* rm = m_linePass->addGLMesh(mesh, cacheMesh);
 		if (rm) lineMesh = m_linePass->getSubMesh(*rm, -1);
+		if (lineMesh) m_linePass->addRenderItem(lineMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
 	}
 
 	if (lineMesh)
 	{
-		lineMesh->SetMaterial(m_currentMat);
-		lineMesh->SetModelView(modelViewMatrix());
-		lineMesh->doClipping = m_clipEnabled;
-
 		m_stats.lines += (lineMesh->vertexCount / 2); // 2 vertices per edge
 	}
 }
@@ -464,19 +459,17 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cache
 	{
 		rhi::Mesh* rm = m_lineOverlayPass->addGLMesh(mesh, cacheMesh);
 		if (rm) lineMesh = m_lineOverlayPass->getSubMesh(*rm, partition);
+		if (lineMesh) m_lineOverlayPass->addRenderItem(lineMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
 	}
 	else
 	{
 		rhi::Mesh* rm = m_linePass->addGLMesh(mesh, cacheMesh);
 		if (rm) lineMesh = m_linePass->getSubMesh(*rm, partition);
+		if (lineMesh) m_linePass->addRenderItem(lineMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
 	}
 
 	if (lineMesh)
 	{
-		lineMesh->SetMaterial(m_currentMat);
-		lineMesh->SetModelView(modelViewMatrix());
-		lineMesh->doClipping = m_clipEnabled;
-
 		m_stats.lines += (lineMesh->vertexCount / 2); // 2 vertices per edge
 	}
 }
@@ -490,19 +483,17 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 	{
 		rhi::Mesh* rm = m_pointOverlayPass->addGLMesh(mesh, cacheMesh);
 		if (rm) pointMesh = m_pointOverlayPass->getSubMesh(*rm, -1);
+		if (pointMesh) m_pointOverlayPass->addRenderItem(pointMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
 	}
 	else
 	{
 		rhi::Mesh* rm = m_pointPass->addGLMesh(mesh, cacheMesh);
 		if (rm) pointMesh = m_pointPass->getSubMesh(*rm, -1);
+		if (pointMesh) m_pointPass->addRenderItem(pointMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
 	}
 
 	if (pointMesh)
 	{
-		pointMesh->SetMaterial(m_currentMat);
-		pointMesh->SetModelView(modelViewMatrix());
-		pointMesh->DoClipping(m_clipEnabled);
-
 		m_stats.points += pointMesh->vertexCount;
 	}
 }

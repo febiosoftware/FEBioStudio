@@ -146,6 +146,9 @@ public:
 
 	void setCaptureNextFrame(bool b) { captureNextFrame = b; }
 
+	FrontFace frontFace() override { return m_frontFace; }
+	void setFrontFace(FrontFace f) override { m_frontFace = f; }
+
 public:
 	unsigned int SetEnvironmentMap(const CRGBAImage& img) override;
 	void ActivateEnvironmentMap(unsigned int mapid) override;
@@ -224,4 +227,5 @@ private:
 	bool m_clipEnabled = false;
 	float clipPlane[4];
 	bool useEnvMap = false;
+	FrontFace m_frontFace = FrontFace::COUNTER_CLOCKWISE;
 };

@@ -27,6 +27,9 @@ SOFTWARE.*/
 
 void rhi::MeshRenderPass::reset()
 {
+	m_renderItems.clear();
+	m_srSize = 0;
+
 	for (auto& it : m_meshList)
 	{
 		it.mesh->setActive(false);
@@ -105,17 +108,24 @@ rhi::SubMesh* rhi::MeshRenderPass::getSubMesh(rhi::Mesh& mesh, int subMeshIndex)
 	rhi::SubMesh* subMesh = mesh.getSubMesh(subMeshIndex + 1); assert(subMesh);
 	if (subMesh)
 	{
-		// make sure the submesh has a shader resource
-		if (subMesh->sr == nullptr)
-		{
-			subMesh->sr.reset(createShaderResource());
-		}
-
 		// mark the submesh as active
 		subMesh->isActive = true;
 	}
 
 	return subMesh;
+}
+
+rhi::MeshRenderItem* rhi::MeshRenderPass::addRenderItem(rhi::SubMesh* subMesh, const GLMaterial& mat, bool doClipping, const QMatrix4x4& mvMatrix, bool invertFaces)
+{
+	MeshShaderResource* sr = nullptr;
+
+	if (m_srSize == m_sr.size())
+		m_sr.emplace_back(createShaderResource());
+
+	sr = m_sr[m_srSize++].get();
+
+	m_renderItems.push_back({ subMesh, mat, doClipping, mvMatrix, sr, invertFaces });
+	return &m_renderItems.back();
 }
 
 void rhi::MeshRenderPass::update(QRhiResourceUpdateBatch* u)
@@ -126,19 +136,44 @@ void rhi::MeshRenderPass::update(QRhiResourceUpdateBatch* u)
 		if (m.isActive())
 			m.Update(u);
 	}
+
+	for (auto& it : m_renderItems)
+	{
+		if (it.subMesh && it.sr)
+		{
+			it.sr->setData(it);
+			it.sr->update(u);
+		}
+	}
 }
 
 void rhi::MeshRenderPass::draw(QRhiCommandBuffer* cb)
 {
-	if (!m_meshList.empty())
+	if (!m_renderItems.empty())
 	{
 		cb->setGraphicsPipeline(m_pl.get());
 		cb->setShaderResources();
-		for (auto& it : m_meshList)
+
+		drawMeshItems(cb);
+	}
+}
+
+void rhi::MeshRenderPass::drawMeshItems(QRhiCommandBuffer* cb)
+{
+	Mesh* currentMesh = nullptr;
+	for (auto& it : m_renderItems)
+	{
+		if (it.subMesh && it.sr)
 		{
-			rhi::Mesh& m = *it.mesh;
-			if (m.isActive())
-				m.Draw(cb);
+			rhi::SubMesh* sm = it.subMesh;
+			if (currentMesh != it.subMesh->mesh)
+			{
+				currentMesh = it.subMesh->mesh;
+				currentMesh->BindVertexBuffer(cb);
+			}
+
+			cb->setShaderResources(it.sr->get());
+			cb->draw(sm->vertexCount, 1, sm->vertexStart);
 		}
 	}
 }

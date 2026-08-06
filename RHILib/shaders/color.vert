@@ -41,6 +41,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     int useLighting;
     int frontOnly;
     int useFrontLight;
+    int invertFaces;
 } mesh;
 
 // texture sampler

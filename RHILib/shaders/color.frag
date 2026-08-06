@@ -38,6 +38,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     int useLighting;
     int frontOnly;
     int useFrontLight;
+    int invertFaces;
 } mesh;
 
 // texture sampler
@@ -104,9 +105,13 @@ void main()
         // ambient value
         f_col = glob.ambient*mesh.ambient;
 
-        if (gl_FrontFacing || (mesh.frontOnly == 0)) {
+        bool frontFacing = gl_FrontFacing;
+        if (mesh.invertFaces > 0)
+            frontFacing = !frontFacing;
 
-            if (!gl_FrontFacing)
+        if (frontFacing || (mesh.frontOnly == 0)) {
+
+            if (!frontFacing)
                 N = -N;
 
             // front-lit
