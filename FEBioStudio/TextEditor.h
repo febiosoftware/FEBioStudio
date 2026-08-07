@@ -12,7 +12,8 @@ public:
 		XML,
 		CODE,
 		CMAKE,
-		PYTHON
+		PYTHON,
+		FEBCODE
 	};
 
 public:

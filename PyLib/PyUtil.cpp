@@ -54,7 +54,7 @@ py::tuple Vec2iToPython(const vec2i& v)
 
 py::tuple Vec2dToPython(const vec2d& v)
 {
-	return py::make_tuple(v.x(), v.y());
+	return py::make_tuple(v.x, v.y);
 }
 
 py::list Vec2dVectorToPython(const std::vector<vec2d>& v)

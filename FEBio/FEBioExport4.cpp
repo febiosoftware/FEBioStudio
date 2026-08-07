@@ -817,6 +817,15 @@ bool FEBioExport4::Write(const char* szfile)
 				m_xml.close_branch(); // LoadData
 			}
 
+			if (m_fem.Scripts() > 0)
+			{
+				m_xml.add_branch("Scripts");
+				{
+					WriteScriptsSection();
+				}
+				m_xml.close_branch(); // Scripts
+			}
+
 			// Output data
 			if (WriteSection(FEBIO_OUTPUT))
 			{
@@ -2217,7 +2226,7 @@ void FEBioExport4::WriteGeometryDiscreteSets()
 					el.add_attribute("name", pds->GetName().c_str());
 					m_xml.add_branch(el);
 					{
-						int N = springNodes.size();
+						int N = (int)springNodes.size();
 						for (int n = 0; n < N; ++n)
 						{
 							int m[2] = { springNodes[n].first, springNodes[n].second };
@@ -3289,7 +3298,23 @@ void FEBioExport4::WriteGlobalsSection()
 	}
 }
 
-//-----------------------------------------------------------------------------
+void FEBioExport4::WriteScriptsSection()
+{
+	FSModel& fem = m_fem;
+	for (int i = 0; i < fem.Scripts(); ++i)
+	{
+		FEBCodeScript* ps = fem.GetScript(i);
+		XMLElement el;
+		el.name("script");
+		el.add_attribute("name", ps->GetName());
+		string script = ps->GetCode();
+
+		script = "<![CDATA[\n" + script + "\n]]>";
+
+		el.value(script);
+		m_xml.add_leaf(el);
+	}
+}
 
 void FEBioExport4::WriteLoadDataSection()
 {

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2026 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,47 +23,39 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "rhiMesh.h"
+#pragma once
+#include <string>
+#include <FSCore/FSObject.h>
+#include <FECore/FEScriptedBehavior.h>
 
-size_t rhi::Mesh::uploadedBytes = 0;
-
-void rhi::MeshShaderResource::update(QRhiResourceUpdateBatch* u)
+class FEBCodeScript : public FSObject
 {
-	if (ubuf)
-		u->updateDynamicBuffer(ubuf.get(), 0, m_data.size(), m_data.data());
-}
+public:
+	FEBCodeScript(const std::string& name, const std::string& code);
 
-rhi::Mesh::~Mesh()
-{
-	if (vertexData)
-	{
-		delete[] vertexData;
-		vertexData = nullptr;
-	}
-}
+	void SetScriptContext(const ScriptContext& c) { context = c; }
+	ScriptContext GetScriptContext() const { return context; }
 
-void rhi::Mesh::create(unsigned int vertices, unsigned int sizeOfVertex, const void* data)
-{
-	vbufSize = vertices * sizeOfVertex;
-	vertexData = new unsigned char[vbufSize];
-	memcpy(vertexData, data, vbufSize);
-	vbuf.reset(m_rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::VertexBuffer, vbufSize));
-	vbuf->create();
-}
+	void SetID(int n) { id = n; }
+	int GetID() const { return id; }
 
-void rhi::Mesh::Update(QRhiResourceUpdateBatch* u)
-{
-	if (vertexData)
-	{
-		u->uploadStaticBuffer(vbuf.get(), vertexData);
-		delete[] vertexData;
-		vertexData = nullptr;
-		uploadedBytes += vbufSize;
-	}
-}
+	void SetCode(const std::string& s) { code = s; }
+	std::string GetCode() const { return code; }
 
-void rhi::Mesh::BindVertexBuffer(QRhiCommandBuffer* cb)
-{
-	const QRhiCommandBuffer::VertexInput vbufBinding(vbuf.get(), 0);
-	cb->setVertexInput(0, 1, &vbufBinding);
-}
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
+public:
+	// reference counting for keeping track of how many components are using this script
+	void ResetRefCount() { m_refs = 0; }
+	void IncRef() { m_refs++; }
+	void DecRef() { if (m_refs > 0) m_refs--; }
+	int GetRefCount() const { return m_refs; }
+
+private:
+	int id; // unique ID for the script, assigned by the model when the script is added to the model
+	std::string code;
+	ScriptContext context;
+
+	int m_refs = 0;
+};

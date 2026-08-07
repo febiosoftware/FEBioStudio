@@ -3752,3 +3752,66 @@ void CMainWindow::on_htmlview_anchorClicked(QUrl link)
 		}
 	}
 }
+
+void CMainWindow::OpenCodeEditor(const QString& scriptName)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	FSModel* fem = doc->GetFSModel();
+	if (fem == nullptr) return;
+
+	FEBCodeScript* script = fem->GetScript(scriptName.toStdString());
+	if (script == nullptr)
+	{
+		QMessageBox::critical(this, "Code Editor", "Failed to open script " + scriptName + ".");
+		return;
+	}
+
+	OpenCodeEditor(script);
+}
+
+void CMainWindow::OpenCodeEditor(int scriptID)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	FSModel* fem = doc->GetFSModel();
+	if (fem == nullptr) return;
+
+	FEBCodeScript* script = fem->GetScriptFromID(scriptID);
+	if (script == nullptr)
+	{
+		QMessageBox::critical(this, "Code Editor", "Failed to open script with ID " + QString::number(scriptID) + ".");
+		return;
+	}
+
+	OpenCodeEditor(script);
+}
+
+void CMainWindow::OpenCodeEditor(FEBCodeScript* script)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	if (script == nullptr) return;
+	if (ui->codeEditor == nullptr) ui->codeEditor = new ::CCodeEditor(this);
+	ui->codeEditor->show();
+	ui->codeEditor->raise();
+	ui->codeEditor->activateWindow();
+	ui->codeEditor->SetScript(doc, script);
+}
+
+void CMainWindow::onClosingCodeEditor(FEBCodeScript* script)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	FSModel* fem = doc->GetFSModel();
+	if (fem == nullptr) return;
+
+	// update all script dependencies
+	fem->UpdateScriptDependencies(script);
+
+	UpdateModel();
+}

@@ -192,7 +192,7 @@ void CPythonEditor::on_actionOpen_triggered()
 	if (!filePath.isEmpty()) openScript(filePath);
 }
 
-static bool SaveScript(const QString& filePath, const QString& fileText)
+bool SaveScript(const QString& filePath, const QString& fileText)
 {
 	if (filePath.isEmpty()) return false;
 

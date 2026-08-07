@@ -86,6 +86,7 @@ private:
 	// fps indicator
 	CanvasUniformBlock m_fpsub;
 	std::unique_ptr<FPSMesh> m_fpsMesh;
+	std::unique_ptr<rhi::MeshShaderResource> m_fpsSr;
 	rhi::Texture m_fpsTex;
 	double m_fps = 1;
 	double m_fpsMin = 1;

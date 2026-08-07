@@ -34,14 +34,14 @@ typedef unsigned char byte;
 using namespace Post;
 
 //-----------------------------------------------------------------------------
-extern int ET_HEX[12][2];
-extern int ET_HEX20[12][3];
-extern int ET_TET[6][2];
-extern int ET_PENTA[9][2];
-extern int ET_PENTA15[9][3];
-extern int ET_TET10[6][3];
-extern int ET_PYRA5[8][2];
-extern int ET_PYRA13[8][3];
+extern int EL_HEX[12][2];
+extern int EL_HEX20[12][3];
+extern int EL_TET[6][2];
+extern int EL_PENTA[9][2];
+extern int EL_PENTA15[9][3];
+extern int EL_TET10[6][3];
+extern int EL_PYRA5[8][2];
+extern int EL_PYRA13[8][3];
 
 //-----------------------------------------------------------------------------
 // constructor

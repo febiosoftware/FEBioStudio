@@ -64,6 +64,9 @@ public: // node interface
 	//! Get a const pointer to a node by index
 	const FSNode* NodePtr(int n = 0) const { return ((n >= 0) && (n<(int)m_Node.size()) ? &m_Node[n] : 0); }
 
+	// find a node from its GID
+	FSNode* FindNodeFromID(int gid);
+
 	//! Tag all nodes with the specified tag value
 	void TagAllNodes(int ntag);
 

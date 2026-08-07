@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include <FSCore/FSObjectList.h>
 #include <unordered_set>
 #include <memory>
+#include "FEBCodeScript.h"
 
 class GModel;
 class FSReactionMaterial;
@@ -256,6 +257,38 @@ public:
 	const char* GetVariableName(const char* szvar, int n, bool longName = true);
 
 public:
+	void ForAllComponents(std::function<void(FSModelComponent*)> func);
+	void ForAllProperties(FSModelComponent* pc, std::function<void(FSModelComponent*)> func);
+
+public:
+	FEBCodeScript* CreateScript(const std::string& name, const std::string& code = "return 0.0;");
+
+	FEBCodeScript* AddNewScript(const std::string& name, ScriptContext context);
+	FEBCodeScript* AddNewScript(const std::string& name, const std::string& code);
+	void AddScript(FEBCodeScript* ps);
+	void RemoveScript(FEBCodeScript* ps);
+
+	FEBCodeScript* GetScript(const std::string& name);
+
+	FEBCodeScript* GetScriptFromID(int id);
+
+	FEBCodeScript* GetScript(size_t n);
+
+	size_t Scripts() const;
+
+	int GetNextScriptID() const;
+
+	void UpdateScriptDependencies(FEBCodeScript* script);
+
+	void UpdateScriptDependency(FSScriptedComponent* component, FEBCodeScript* script);
+
+	std::vector<FEBCodeScript*> GetMatchingScripts(const ScriptContext& ctx);
+
+	bool ValidateScript(const std::string& code, const ScriptContext& context, std::string& err);
+
+	void UpdateScriptReferenceCounts();
+
+public:
 	// These functions deal with enums
 	// Enums are identified via:
 	// - Key  : The string name of an option (there is a long and short key)
@@ -409,6 +442,8 @@ protected:
 	void LoadLoadControllers   (IArchive& ar);
 	//! Load mesh data generators from archive
 	void LoadMeshDataGenerators(IArchive& ar);
+	//! Load the scripts
+	void LoadScripts(IArchive& ar);
 
 protected:
 	//! Build material lookup table
@@ -445,6 +480,10 @@ protected:
 	std::vector<GMaterial*>	m_MLT;
 	//! Material lookup table offset
 	int m_MLT_offset;
+
+	// scripts
+	FSObjectList<FEBCodeScript> m_scripts;
+	int m_nextScriptID = 1;
 
 	//! Skip geometry section when loading file
 	bool m_skipGeometry;

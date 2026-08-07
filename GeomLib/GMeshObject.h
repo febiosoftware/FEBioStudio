@@ -61,10 +61,10 @@ public:
 	bool Update(bool b = true) override;
 
 	//! Make a geometry node from mesh node index
-	int MakeGNode(int n);
+	int MakeGNode(int n) override;
 
 	//! Add a new node at the specified position
-	int AddNode(vec3d r);
+	int AddGNode(vec3d r) override;
 
 	//! Build the finite element mesh
 	virtual FSMesh* BuildMesh() override;

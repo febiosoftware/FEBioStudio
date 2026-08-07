@@ -399,7 +399,7 @@ void init_FBSGeom(py::module& m)
         ;
 
 	py::class_<GMeshObject, GObject, std::unique_ptr<GMeshObject, py::nodelete>>(geom, "MeshObject", DOC(GMeshObject))
-		.def("add_node", static_cast<int (GMeshObject::*)(vec3d)>(&GMeshObject::AddNode), DOC(GMeshObject, AddNode))
+		.def("add_node", static_cast<int (GMeshObject::*)(vec3d)>(&GMeshObject::AddGNode), DOC(GMeshObject, AddNode))
 		.def("get_or_create_geometry_node", &GMeshObject::MakeGNode, DOC(GMeshObject, MakeGNode))
 		;
 

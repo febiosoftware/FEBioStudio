@@ -398,6 +398,29 @@ public:
 		return catID;
 	}
 
+	int LicenseIDFromName(std::string name)
+	{
+		char** table;
+		int rows, cols;
+
+		std::string query("SELECT ID FROM licenses WHERE name = '");
+
+		query += name;
+		query += "'";
+
+		interface->getTable(query, &table, &rows, &cols);
+
+		int catID = -1;
+		if (rows == 1)
+		{
+			catID = std::stoi(table[1]);
+		}
+
+		interface->freeTable(table);
+
+		return catID;
+	}
+
 	bool isValidUpload(QString& projectName, QString& category)
 	{
 		char **table;
@@ -565,7 +588,7 @@ void CModelDatabaseHandler::GetProjectFiles(int ID)
 
 void CModelDatabaseHandler::GetProjectData(int ID)
 {
-	std::string query("SELECT name, description, username FROM projects JOIN users on users.id = projects.owner WHERE projects.id = ");
+	std::string query("SELECT projects.name, description, username, licenses.name FROM projects JOIN users on users.id = projects.owner LEFT JOIN licenses on licenses.ID=projects.license WHERE projects.id = ");
 	query += std::to_string(ID);
 
 	interface.execute(query, setProjectDataCallback, imp->dbPanel);
@@ -602,6 +625,26 @@ void CModelDatabaseHandler::GetCategoryMap(std::map<int, std::string>& categoryM
 		int rowStart = row*cols;
 
 		categoryMap[std::stoi(table[rowStart])] = std::string(table[rowStart + 1]);
+	}
+
+	interface.freeTable(table);
+}
+
+void CModelDatabaseHandler::GetLicenseMap(std::map<int, std::string>& licenseMap)
+{
+	char** table;
+	int rows, cols;
+
+	std::string query = "SELECT * FROM licenses";
+
+	interface.getTable(query, &table, &rows, &cols);
+
+	// Extract information about each project
+	for (int row = 1; row <= rows; row++)
+	{
+		int rowStart = row * cols;
+
+		licenseMap[std::stoi(table[rowStart])] = std::string(table[rowStart + 1]);
 	}
 
 	interface.freeTable(table);
@@ -989,6 +1032,11 @@ int CModelDatabaseHandler::ProjectIDFromFileID(int ID)
 int CModelDatabaseHandler::CategoryIDFromName(std::string name)
 {
 	return imp->CategoryIDFromName(name);
+}
+
+int CModelDatabaseHandler::LicenseIDFromName(std::string name)
+{
+	return imp->LicenseIDFromName(name);
 }
 
 bool CModelDatabaseHandler::isValidUpload(QString& projectName, QString& category)

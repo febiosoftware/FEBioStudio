@@ -41,6 +41,13 @@ CDocObserver::~CDocObserver()
 	if (m_doc) m_doc->RemoveObserver(this);
 }
 
+void CDocObserver::SetDocument(CDocument* doc)
+{
+	if (m_doc) m_doc->RemoveObserver(this);
+	m_doc = doc;
+	if (m_doc) m_doc->AddObserver(this);
+}
+
 void CDocObserver::DocumentDelete()
 {
 	m_doc = nullptr;

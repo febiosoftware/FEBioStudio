@@ -144,6 +144,8 @@ private:
 
     QStringList GetCategories();
 
+	QStringList GetLicenses();
+
 private:
 	CMainWindow*		m_wnd;
 	QDockWidget* dock;

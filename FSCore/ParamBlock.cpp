@@ -39,7 +39,7 @@ Param::Param()
 	m_nsize = 0;
 	m_pd = 0;
 	m_lc = -1; 
-	m_szbrev = m_szname = m_szenum = 0; 
+	m_szenum = 0; 
 	m_szunit = 0; 
 	m_nstate = Param_ALLFLAGS; 
 	m_szindx = 0;
@@ -289,6 +289,8 @@ void Param::clear()
 
 void Param::SetParamType(Param_Type t)
 {
+	if (t == m_ntype) return;
+
 	clear();
 	m_ntype = t;
 	switch (t)
@@ -376,8 +378,8 @@ Param::Param(const Param& p)
 	m_nID = p.m_nID;
 	m_ntype = p.m_ntype;
 	m_nsize = p.m_nsize;
-	m_szbrev = p.m_szbrev;
-	m_szname = p.m_szname;
+	m_brev = p.m_brev;
+	m_name = p.m_name;
 	m_szunit = p.m_szunit;
 	m_nstate = p.m_nstate;
     m_szindx = p.m_szindx;
@@ -486,8 +488,8 @@ Param::Param(int n, Param_Type ntype, const char* szb, const char* szn)
 	assert((ntype == Param_INT) || (ntype == Param_CHOICE));
 	m_ntype = ntype;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -515,8 +517,8 @@ Param::Param(int n, const char* szb, const char* szn)
 	m_pd = pi;
 	m_ntype = Param_INT;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -544,8 +546,8 @@ Param::Param(double d, const char* szb, const char* szn)
 	m_pd = pd;
 	m_ntype = Param_FLOAT;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -573,8 +575,8 @@ Param::Param(double d, const char* szunit, const char* szb, const char* szn)
 	m_pd = pd;
 	m_ntype = Param_FLOAT;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = szunit;
 	m_nstate = Param_ALLFLAGS;
@@ -602,8 +604,8 @@ Param::Param(bool b, const char* szb, const char* szn)
 	m_pd = pb;
 	m_ntype = Param_BOOL;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -631,8 +633,8 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	m_pd = pv;
 	m_ntype = Param_VEC3D;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -661,8 +663,8 @@ Param::Param(vec2i v, const char* szb, const char* szn)
 	m_pd = pv;
 	m_ntype = Param_VEC2I;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -690,8 +692,8 @@ Param::Param(vec2d v, const char* szb, const char* szn)
 	m_pd = pv;
 	m_ntype = Param_VEC2D;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -712,7 +714,33 @@ Param::Param(vec2d v, const char* szb, const char* szn)
 	m_watch = nullptr;
 }
 
-//-----------------------------------------------------------------------------
+Param::Param(mat2d v, const char* szb, const char* szn)
+{
+	mat2d* pv = new mat2d(v);
+	m_pd = pv;
+	m_ntype = Param_MAT2D;
+	m_nsize = 0;
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
+	m_szenum = 0;
+	m_szunit = 0;
+	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
+	m_szindx = 0;
+	m_nindx = -1;
+	m_lc = -1;
+	m_bcopy = false;
+	m_offset = 0;
+	m_varType = Param_UNDEF;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
+	m_checkable = false;
+	m_checked = false;
+	m_paramGroup = -1;
+	m_watch = nullptr;
+}
+
 Param::Param(mat3d v, const char* szb, const char* szn)
 {
 	mat3d* pv = new mat3d;
@@ -720,8 +748,8 @@ Param::Param(mat3d v, const char* szb, const char* szn)
 	m_pd = pv;
 	m_ntype = Param_MAT3D;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -749,8 +777,8 @@ Param::Param(mat3ds v, const char* szb, const char* szn)
 	m_pd = pv;
 	m_ntype = Param_MAT3DS;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -777,8 +805,8 @@ Param::Param(GLColor c, const char* szb, const char* szn)
 	m_pd = pc;
 	m_ntype = Param_COLOR;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -805,8 +833,8 @@ Param::Param(const std::vector<int>& v, const char* szb, const char* szn)
 	m_pd = pc;
 	m_ntype = Param_STD_VECTOR_INT;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -832,8 +860,8 @@ Param::Param(const std::vector<double>& v, const char* szb, const char* szn)
 	m_pd = pc;
 	m_ntype = Param_STD_VECTOR_DOUBLE;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -859,8 +887,8 @@ Param::Param(const std::vector<vec2d>& v, const char* szb, const char* szn)
 	m_pd = pc;
 	m_ntype = Param_STD_VECTOR_VEC2D;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -887,8 +915,8 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	m_pd = pv;
 	m_ntype = Param_STRING;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -918,8 +946,8 @@ Param::Param(const int* v, int nsize, const char* szb, const char* szn)
 	m_pd = pc;
 	m_ntype = Param_ARRAY_INT;
 	m_nsize = nsize;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -949,8 +977,8 @@ Param::Param(const double* v, int nsize, const char* szb, const char* szn)
 	m_pd = pc;
 	m_ntype = Param_ARRAY_DOUBLE;
 	m_nsize = nsize;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
@@ -978,8 +1006,8 @@ Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
 	m_pd = pi;
 	m_ntype = Param_INT;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szindx = szi;
     m_nindx = idx;
@@ -1007,8 +1035,8 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
 	m_pd = pd;
 	m_ntype = Param_FLOAT;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szindx = szi;
     m_nindx = idx;
@@ -1036,8 +1064,8 @@ Param::Param(double d, const char* szi, int idx, const char* szunit, const char*
 	*pd = d;
 	m_ntype = Param_FLOAT;
 	m_nsize = 0;
-	m_szbrev = szb;
-	m_szname = (szn == 0 ? szb : szn);
+	m_brev = szb;
+	m_name = (szn == 0 ? szb : szn);
 	m_szenum = 0;
 	m_szindx = szi;
     m_nindx = idx;
@@ -1063,7 +1091,7 @@ void Param::SetArrayIntValue(const std::vector<int>& v)
 	auto& d = val<std::vector<int> >();
 	if (d.empty()) { d = v; return; }
 	assert(d.size() == v.size());
-	int n = MIN(d.size(), v.size());
+	int n = (int)(MIN(d.size(), v.size()));
 	for (int i = 0; i < n; ++i) d[i] = v[i];
 }
 
@@ -1072,7 +1100,7 @@ void Param::SetArrayIntValue(int* pd, int nsize)
 	assert(m_ntype == Param_ARRAY_INT);
 	auto& d = val<std::vector<int> >();
 	assert(d.size() == nsize);
-	int n = MIN(d.size(), nsize);
+	int n = (int)(MIN(d.size(), nsize));
 	for (int i = 0; i < n; ++i) d[i] = pd[i];
 }
 
@@ -1080,9 +1108,9 @@ void Param::SetArrayDoubleValue(const std::vector<double>& v)
 {
 	assert(m_ntype == Param_ARRAY_DOUBLE);
 	auto& d = val<std::vector<double> >();
-	if (d.empty()) { d = v; m_nsize = v.size(); return; }
+	if (d.empty()) { d = v; m_nsize = (int)v.size(); return; }
 	assert(d.size() == v.size());
-	int n = MIN(d.size(), v.size());
+	int n = (int)(MIN(d.size(), v.size()));
 	for (int i = 0; i < n; ++i) d[i] = v[i];
 }
 
@@ -1189,7 +1217,7 @@ int ParamBlock::SetActiveGroup(const char* szgroup)
 		{
 			if (strcmp(m_pg[i], szgroup) == 0)
 			{
-				m_currentGroup = i;
+				m_currentGroup = (int)i;
 			}
 		}
 		if (m_currentGroup == -1)
@@ -1226,6 +1254,20 @@ const char* ParamBlock::GetParameterGroupName(int i)
 	return m_pg[i];
 }
 
+bool ParamBlock::RemoveParameter(Param* p)
+{
+	for (size_t i = 0; i < m_Param.size(); ++i)
+	{
+		if (m_Param[i] == p)
+		{
+			m_Param.erase(m_Param.begin() + i);
+			delete p;
+			return true;
+		}
+	}
+	return false;
+}
+
 //-----------------------------------------------------------------------------
 
 void ParamContainer::Save(OArchive& ar)
@@ -1254,6 +1296,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	ar.WriteChunk(CID_PARAM_NAME, p.GetShortName());
 	ar.WriteChunk(CID_PARAM_LC, p.GetLoadCurveID());
 	ar.WriteChunk(CID_PARAM_STATE, p.GetState());
+	ar.WriteChunk(CID_PARAM_FLAGS, p.GetFlags());
 
 	switch (ntype)
 	{
@@ -1305,6 +1348,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 	int ntype = -1;
 	int lcid = -1;
 	int state = 0;
+	unsigned int flags = 0;
 	string paramName;
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -1316,6 +1360,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 		case CID_PARAM_NAME: ar.read(paramName); break;
 		case CID_PARAM_LC: ar.read(lcid); p.SetLoadCurveID(lcid); break;
 		case CID_PARAM_STATE: ar.read(state); break;
+		case CID_PARAM_FLAGS: ar.read(flags); break;
 		case CID_PARAM_TYPE: 
 			ar.read(ntype); 
 			switch (ntype)
@@ -1462,9 +1507,25 @@ void ParamContainer::LoadParam(IArchive& ar)
 				}
 			}
 		}
+		else if ((flags & FS_PARAM_USER) && AllowUserParams())
+		{
+			// This is a user parameter (probably from a script), so let's add it to the container.
+			switch (p.GetParamType())
+			{
+			case Param_BOOL : param = AddBoolParam  (p.GetBoolValue (), paramName.c_str()); param->SetFlags(param->GetFlags() | FS_PARAM_USER); break;
+			case Param_INT  : param = AddIntParam   (p.GetIntValue  (), paramName.c_str()); param->SetFlags(param->GetFlags() | FS_PARAM_USER); break;
+			case Param_FLOAT: param = AddDoubleParam(p.GetFloatValue(), paramName.c_str()); param->SetFlags(param->GetFlags() | FS_PARAM_USER | FS_PARAM_VOLATILE); break;
+			case Param_VEC3D: param = AddVecParam   (p.GetVec3dValue(), paramName.c_str()); param->SetFlags(param->GetFlags() | FS_PARAM_USER | FS_PARAM_VOLATILE); break;
+			case Param_MAT3D: param = AddMat3dParam (p.GetMat3dValue(), paramName.c_str()); param->SetFlags(param->GetFlags() | FS_PARAM_USER | FS_PARAM_VOLATILE); break;
+			default:
+				assert(false);
+				break;
+			}
+
+			if (param && lcid >= 0 && param->IsVolatile()) param->SetLoadCurveID(lcid);
+		}
 		else
 		{
-			// TODO: print some type of error message that parameters are mismatched
 			const char* szname = (paramName.empty() ? "(unknown)" : paramName.c_str());
 			ar.log("Failed to map parameter: %s (%s)", szname, CCallStack::GetCurrentCall().c_str());
 		}

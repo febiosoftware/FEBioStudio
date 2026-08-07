@@ -178,6 +178,45 @@ void FSModelComponent::LoadProperties(IArchive& ar)
 	}
 }
 
+void FSModelComponent::Save(OArchive& ar)
+{
+	// save the name if there is one
+	string name = GetName();
+	if (name.empty() == false)
+	{
+		ar.WriteChunk(CID_FEOBJ_NAME, name);
+	}
+	string info = GetInfo();
+	if (info.empty() == false)
+	{
+		ar.WriteChunk(CID_FEOBJ_INFO, info);
+	}
+
+	// save parameters
+	ar.BeginChunk(CID_FEOBJ_PARAMS);
+	{
+		ParamContainer::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FSModelComponent::Load(IArchive& ar)
+{
+	TRACE("FSModelComponent::Load");
+	string tmp;
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEOBJ_NAME: { ar.read(tmp); SetName(tmp); break; }
+		case CID_FEOBJ_INFO: { ar.read(tmp); SetInfo(tmp); break; }
+		case CID_FEOBJ_PARAMS: ParamContainer::Load(ar); break;
+		}
+		ar.CloseChunk();
+	}
+}
+
 //==============================================================================
 void SaveClassMetaData(FSModelComponent* pc, OArchive& ar)
 {
@@ -522,4 +561,157 @@ mat3d FSMat3dValuator::GetMatAxis(const FEElementRef& el) const
 	// we have to cast away the const
 	FSMat3dValuator* This = const_cast<FSMat3dValuator*>(this);
 	return FEBio::GetMaterialAxis(This->GetFEBioClass(), el.center());
+}
+
+//=================================================================================================
+
+void SaveScriptInfo(FSScriptedComponent* pc, OArchive& ar)
+{
+	ar.WriteChunk(CID_SCRIPT_ID, pc->scriptID);
+	ar.BeginChunk(CID_SCRIPT_CONTEXT);
+	{
+		ar.WriteChunk(CID_SCRIPT_RETURN_TYPE, (int)pc->context.returnType);
+		for (const auto& var : pc->context.variables)
+		{
+			ar.BeginChunk(CID_SCRIPT_VARIABLE);
+			{
+				ar.WriteChunk(CID_SCRIPT_VAR_NAME, var.name);
+				ar.WriteChunk(CID_SCRIPT_VAR_TYPE, (int)var.type);
+				ar.WriteChunk(CID_SCRIPT_VAR_DIFF, var.differentiable);
+			}
+			ar.EndChunk();
+		}
+	}
+	ar.EndChunk();
+}
+
+void LoadScriptInfo(FSScriptedComponent* pc, IArchive& ar)
+{
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_SCRIPT_ID: ar.read(pc->scriptID); break;
+		case CID_SCRIPT_CONTEXT:
+		{
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				int nid = ar.GetChunkID();
+				switch (nid)
+				{
+				case CID_SCRIPT_RETURN_TYPE:
+				{
+					int retType;
+					ar.read(retType);
+					pc->context.returnType = (FEValueType)retType;
+				}
+				break;
+				case CID_SCRIPT_VARIABLE:
+				{
+					string varName;
+					int varType = 0;
+					bool varDiff = false;
+					while (IArchive::IO_OK == ar.OpenChunk())
+					{
+						int nid = ar.GetChunkID();
+						switch (nid)
+						{
+						case CID_SCRIPT_VAR_NAME: ar.read(varName); break;
+						case CID_SCRIPT_VAR_TYPE: ar.read(varType); break;
+						case CID_SCRIPT_VAR_DIFF: ar.read(varDiff); break;
+						default:
+							assert(false);
+						}
+						ar.CloseChunk();
+					}
+					pc->context.addVariable(varName, (FEValueType)varType, varDiff);
+				}
+				break;
+				default:
+					assert(false);
+				}
+				ar.CloseChunk();
+			}
+		}
+		break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}
+
+FSScriptedComponent::FSScriptedComponent(FSModel* fem) : FSModelComponent(fem) 
+{
+	SetTypeString("script");
+}
+
+FSScriptedComponent::~FSScriptedComponent() {}
+
+void FSScriptedComponent::AssignScript(FEBCodeScript* script)
+{
+	if (script)
+	{
+		scriptID = script->GetID();
+		SetName(script->GetName());
+	}
+	else
+	{
+		scriptID = -1;
+		SetName("");
+	}
+	GetFSModel()->UpdateScriptDependency(this, script);
+}
+
+void FSScriptedComponent::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FSModelComponent::Save(ar);
+	}
+	ar.EndChunk();
+
+	if (Properties() > 0)
+	{
+		ar.BeginChunk(CID_PROPERTY_LIST);
+		{
+			SaveFEBioProperties(this, ar);
+		}
+		ar.EndChunk();
+	}
+
+	ar.BeginChunk(CID_SCRIPT_INFO);
+	{
+		SaveScriptInfo(this, ar);
+	}
+	ar.EndChunk();
+}
+
+void FSScriptedComponent::Load(IArchive& ar)
+{
+	TRACE("FSScriptedComponent::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FSModelComponent::Load(ar); break;
+		case CID_PROPERTY_LIST  : LoadFEBioProperties(this, ar); break;
+		case CID_SCRIPT_INFO    : LoadScriptInfo(this, ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+
+	// map parameters to FEBio class
+	UpdateData(true);
 }

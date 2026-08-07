@@ -4061,3 +4061,56 @@ void CCmdSwapMaterialProps::UnExecute()
 {
 	Execute();
 }
+
+CCmdAddScript::CCmdAddScript(FSModel* fem, FEBCodeScript* script) : CCommand("Add script"), m_fem(fem)
+{
+	m_script = script;
+	m_del = false;
+}
+
+CCmdAddScript::~CCmdAddScript()
+{
+	if (m_script && m_del) delete m_script;
+}
+
+void CCmdAddScript::Execute()
+{
+	if (m_script) m_fem->AddScript(m_script);
+	m_del = false;
+}
+
+void CCmdAddScript::UnExecute()
+{
+    m_fem->RemoveScript(m_script);
+	m_del = true;
+}
+
+CCmdAttachScriptToComponent::CCmdAttachScriptToComponent(FSScriptedComponent* component, FEBCodeScript* script) : CCommand("Attach script")
+{
+	assert(script);
+	assert(component);
+
+	m_comp = component;
+	m_script = script;
+}
+
+void CCmdAttachScriptToComponent::Execute()
+{
+	m_oldID = m_comp->scriptID;
+	m_oldContext = m_comp->context;
+	if (m_script)
+	{
+		m_comp->scriptID = m_script->GetID();
+		m_comp->context = m_script->GetScriptContext();
+	}
+	else
+	{
+		m_comp->scriptID = - 1;
+	}
+}
+
+void CCmdAttachScriptToComponent::UnExecute()
+{
+	m_comp->scriptID = m_oldID;
+	m_comp->context = m_oldContext;
+}

@@ -1967,7 +1967,7 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 				for (int i = 0; i < n; ++i)
 				{
 					vec2d p = plc->Point(i);
-					double d[2] = { p.x(), p.y() };
+					double d[2] = { p.x, p.y };
 					m_xml.add_leaf("pt", d, 2);
 				}
 				m_xml.close_branch();

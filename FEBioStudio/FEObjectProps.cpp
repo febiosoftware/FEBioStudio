@@ -44,6 +44,9 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include "Commands.h"
 #include "FEBioJob.h"
+#include "FEBioStudio.h"
+#include "MainWindow.h"
+
 using namespace std;
 
 //=======================================================================================
@@ -1154,4 +1157,25 @@ void FSGlobalsProps::SetFSObject(FSObject* po)
 {
 	Clear();
 	BuildParamList(m_fem);
+}
+
+void CScriptSettings::BuildProperties()
+{
+	Clear();
+	addProperty("script:", CProperty::Action, "Edit ...")->setFlags(CProperty::Editable | CProperty::Visible);
+}
+
+QVariant CScriptSettings::GetPropertyValue(int i)
+{
+	return QVariant();
+}
+
+void CScriptSettings::SetPropertyValue(int i, const QVariant& v)
+{
+	FEBCodeScript* script = dynamic_cast<FEBCodeScript*>(m_pobj);
+	if (script && (i == 0))
+	{
+		CMainWindow* wnd = FBS::getMainWindow();
+		wnd->OpenCodeEditor(QString::fromStdString(script->GetName()));
+	}
 }

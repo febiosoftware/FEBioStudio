@@ -486,7 +486,7 @@ void CCurveEditWidget::UpdateSelection()
 	{
 		ui->enablePointEdit(true);
 		vec2d pt = plc->Point(sel[0].npointIndex);
-		ui->setPointValues(pt.x(), pt.y());
+		ui->setPointValues(pt.x, pt.y);
 	}
 	else
 	{
@@ -548,10 +548,10 @@ void CCurveEditWidget::on_plot_draggingStart(QPoint p)
 		for (int i = 0; i < sel.size(); ++i)
 		{
 			vec2d pt = plc->Point(sel[i].npointIndex);
-			ui->m_p0[i].setX(pt.x());
-			ui->m_p0[i].setY(pt.y());
+			ui->m_p0[i].setX(pt.x);
+			ui->m_p0[i].setY(pt.y);
 
-			QPointF pf(pt.x(), pt.y());
+			QPointF pf(pt.x, pt.y);
 			QPointF pi = ui->plt->ViewToScreen(pf);
 
 			double dx = fabs(pi.x() - p.x());
@@ -596,7 +596,7 @@ void CCurveEditWidget::UpdatePlotData()
 	for (int i = 0; i < plc->Points(); ++i)
 	{
 		vec2d pi = plc->Point(i);
-		data.addPoint(pi.x(), pi.y());
+		data.addPoint(pi.x, pi.y);
 	}
 	ui->plt->repaint();
 }
@@ -1020,7 +1020,7 @@ bool WritePointCurve(PointCurve& lc, const char* szfile)
 	for (int i = 0; i < lc.Points(); ++i)
 	{
 		vec2d pt = lc.Point(i);
-		fprintf(fp, "%lg %lg\n", pt.x(), pt.y());
+		fprintf(fp, "%lg %lg\n", pt.x, pt.y);
 	}
 	fclose(fp);
 	return true;

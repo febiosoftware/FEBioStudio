@@ -74,6 +74,7 @@ SOFTWARE.*/
 #include "FiberODFWidget.h"
 #include <ImageLib/FiberODFAnalysis.h>
 #include "IconProvider.h"
+#include "FEBioStudio.h"
 
 //=============================================================================
 CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
@@ -247,6 +248,11 @@ void CBCObjectPropsPanel::setActiveState(bool b)
 void CBCObjectPropsPanel::on_state_toggled(bool b)
 {
 	emit stateChanged(b);
+}
+
+void CBCObjectPropsPanel::on_editScript_clicked()
+{
+	emit editScriptClicked(m_script->text());
 }
 
 //=============================================================================
@@ -504,7 +510,7 @@ public:
 		tool->addTool("Info", data);
 		tool->addTool("Mesh Info", mesh);
 		tool->addTool("Mesh Info", part);
-		tool->addTool("Properties", propStack);
+		tool->addTool("Parameters", propStack);
 		tool->addTool("Selection", sel1);
 		tool->addTool("Selection", sel2);
 		tool->addTool("3D Image", imageTab);
@@ -919,8 +925,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			else if (dynamic_cast<FSStepComponent*>(po))
 			{
 				FSStepComponent* pc = dynamic_cast<FSStepComponent*>(po);
-
-				ui->showObjectInfo(false, false, false, nameEditable);
+				ui->showObjectInfo(false, false, false, nameEditable, GLMaterial(), false, false);
 
 				ui->setBCName(name);
 				ui->setBCType(type);
@@ -1824,6 +1829,13 @@ void CModelPropsPanel::on_bcobject_stateChanged(bool isActive)
 	pc->Activate(isActive);
 
 	emit dataChanged(false);
+}
+
+void CModelPropsPanel::on_bcobject_editScriptClicked(QString scriptName)
+{
+	if (m_isUpdating) return;
+	CMainWindow* wnd = FBS::getMainWindow();
+	wnd->OpenCodeEditor(scriptName);
 }
 
 void CModelPropsPanel::on_object_statusChanged(bool b)

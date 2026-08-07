@@ -23,7 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #include "stdafx.h"
 #include "ModelViewer.h"
 #include "ui_modelviewer.h"
@@ -62,6 +61,8 @@ SOFTWARE.*/
 #include "GLHighlighter.h"
 #include "Command.h"
 #include "HelpFeature.h"
+#include "FEBioStudio.h"
+#include "MainWindow.h"
 using namespace std;
 
 class CDlgWarnings : public QDialog
@@ -139,6 +140,7 @@ void CModelViewer::Update(bool breset)
 	// update the model
 	FSModel* fem = doc->GetFSModel();
 	fem->UpdateLoadControllerReferenceCounts();
+	fem->UpdateScriptReferenceCounts();
 
 	// rebuild the model tree
 	ui->setWarningCount(0);
@@ -673,6 +675,7 @@ void CModelViewer::on_props_paramChanged(FSCoreBase* pc, Param* p)
 	case Param_STRING: sv = QString("\"%1\"").arg(QString::fromStdString(p->GetStringValue())); break;
 	case Param_MATH  : sv = QString("\"%1\"").arg(QString::fromStdString(p->GetMathString())); break;
 	case Param_COLOR : break;
+	case Param_MAT2D : sv = QString::fromStdString(Mat2dToString(p->GetMat2dValue())); break;
 	case Param_MAT3D : sv = QString::fromStdString(Mat3dToString(p->GetMat3dValue())); break;
 	case Param_MAT3DS: sv = QString::fromStdString(Mat3dsToString(p->GetMat3dsValue())); break;
 	case Param_VEC2I : sv = QString::fromStdString(Vec2iToString(p->GetVec2iValue())); break;
@@ -2179,6 +2182,16 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllStudies()));
 	}
 	break;
+	case MT_SCRIPT_LIST:
+	{
+	}
+	break;
+	case MT_SCRIPT:
+	{
+		menu.addAction("Edit ...", this, SLOT(OnEditScript()));
+		del = true;
+		break;
+	}
 	case MT_STUDY:
 		if (dynamic_cast<COptimizationStudy*>(data->obj))
 			menu.addAction("Configure ...", this, SLOT(OnConfigureStudy()));
@@ -2775,4 +2788,13 @@ QString CModelViewer::HelpURLFromObject(FSObject* po)
 	}
     
     return ClassIDToURL(classID);
+}
+
+void CModelViewer::OnEditScript()
+{
+	FEBCodeScript* script = dynamic_cast<FEBCodeScript*>(m_currentObject);
+	if (script == nullptr) return;
+
+	CMainWindow* wnd = GetMainWindow();
+	wnd->OpenCodeEditor(script);
 }

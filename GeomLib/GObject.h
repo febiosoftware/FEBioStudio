@@ -308,6 +308,10 @@ public:
 	//! Check if this is the active object
 	bool IsActiveObject() const;
 
+public:
+	virtual int AddGNode(vec3d r) { return -1; }
+	virtual int MakeGNode(int n) { return -1; }
+
 private:
 	//! Internal implementation pointer
 	Imp*	imp;

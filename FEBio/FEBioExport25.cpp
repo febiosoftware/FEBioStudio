@@ -1844,8 +1844,8 @@ void FEBioExport25::WritePointCurve(FS1DPointFunction* f1d, XMLElement& el)
 		for (int i = 0; i < n; ++i)
 		{
 			vec2d pi = plc->Point(i);
-			double d[2] = { pi.x(), pi.y()};
-			m_xml.add_leaf("pt", d, 2);
+			double d[2] = { pi.x, pi.y };
+			m_xml.add_leaf("pt", d, 2);	
 		}
 
 		m_xml.close_branch();

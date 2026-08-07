@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,47 +23,46 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "rhiMesh.h"
+#pragma once
+#include <QMainWindow>
+#include "Document.h"
+#include <vector>
 
-size_t rhi::Mesh::uploadedBytes = 0;
-
-void rhi::MeshShaderResource::update(QRhiResourceUpdateBatch* u)
-{
-	if (ubuf)
-		u->updateDynamicBuffer(ubuf.get(), 0, m_data.size(), m_data.data());
+namespace Ui {
+	class CCodeEditor;
 }
 
-rhi::Mesh::~Mesh()
-{
-	if (vertexData)
-	{
-		delete[] vertexData;
-		vertexData = nullptr;
-	}
-}
+class CDocument;
+class CMainWindow;
+class FEBCodeScript;
 
-void rhi::Mesh::create(unsigned int vertices, unsigned int sizeOfVertex, const void* data)
+class CCodeEditor : public QMainWindow, public CDocObserver
 {
-	vbufSize = vertices * sizeOfVertex;
-	vertexData = new unsigned char[vbufSize];
-	memcpy(vertexData, data, vbufSize);
-	vbuf.reset(m_rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::VertexBuffer, vbufSize));
-	vbuf->create();
-}
+	Q_OBJECT
 
-void rhi::Mesh::Update(QRhiResourceUpdateBatch* u)
-{
-	if (vertexData)
-	{
-		u->uploadStaticBuffer(vbuf.get(), vertexData);
-		delete[] vertexData;
-		vertexData = nullptr;
-		uploadedBytes += vbufSize;
-	}
-}
+public:
+	CCodeEditor(CMainWindow* wnd);
 
-void rhi::Mesh::BindVertexBuffer(QRhiCommandBuffer* cb)
-{
-	const QRhiCommandBuffer::VertexInput vbufBinding(vbuf.get(), 0);
-	cb->setVertexInput(0, 1, &vbufBinding);
-}
+	void closeEvent(QCloseEvent* event) override;
+
+	void SetScript(CDocument* doc, FEBCodeScript* script);
+
+public:
+	void DocumentDelete() override;
+
+signals:
+	void ClosingEditor(FEBCodeScript* script);
+
+private slots:
+	void on_actionOpen_triggered();
+	void on_actionSave_triggered();
+	void on_actionCheck_triggered();
+	void on_edit_textChanged();
+
+private:
+	void updateWindowTitle();
+
+private:
+	Ui::CCodeEditor* ui;
+	CMainWindow* mainWnd;
+};

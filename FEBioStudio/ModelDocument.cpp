@@ -365,6 +365,16 @@ void CModelDocument::DeleteObject(FSObject* po)
 			else
 				DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)), po->GetName());
 		}
+		else if (dynamic_cast<FEBCodeScript*>(po))
+		{
+			FEBCodeScript* psc = dynamic_cast<FEBCodeScript*>(po);
+			if (psc->GetRefCount() > 0)
+			{
+				QMessageBox::warning(m_wnd, "FEBio Studio", "This script cannot be deleted since other model components are using it.");
+				return;
+			}
+			DoCommand(new CCmdDeleteFSObject(psc), po->GetName());
+		}
 		else if (dynamic_cast<FSModelComponent*>(po))
 			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)), po->GetName());
 		else if (dynamic_cast<GMaterial*>(po))

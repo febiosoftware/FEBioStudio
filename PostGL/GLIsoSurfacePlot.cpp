@@ -33,7 +33,7 @@ SOFTWARE.*/
 using namespace Post;
 
 extern int LUT[256][15];
-extern int ET_HEX[12][2];
+extern int EL_HEX[12][2];
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -239,8 +239,8 @@ void CGLIsoSurfacePlot::UpdateSlice(GLMesh& mesh, float ref, GLColor col)
 				vec3f r[3], vn[3];
 				for (int k=0; k<3; k++)
 				{
-					int n1 = ET_HEX[pf[k]][0];
-					int n2 = ET_HEX[pf[k]][1];
+					int n1 = EL_HEX[pf[k]][0];
+					int n2 = EL_HEX[pf[k]][1];
 
 					float w = (ref - ev[n1]) / (ev[n2] - ev[n1]);
 
@@ -252,8 +252,8 @@ void CGLIsoSurfacePlot::UpdateSlice(GLMesh& mesh, float ref, GLColor col)
 				{
 					for (int k=0; k<3; k++)
 					{
-						int n1 = ET_HEX[pf[k]][0];
-						int n2 = ET_HEX[pf[k]][1];
+						int n1 = EL_HEX[pf[k]][0];
+						int n2 = EL_HEX[pf[k]][1];
 
 						float w = (ref - ev[n1]) / (ev[n2] - ev[n1]);
 

@@ -514,6 +514,42 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		}
 	}
 
+	// copy scripts
+	for (const auto& [name, code] : m_febio->m_scripts)
+	{
+		fem.AddNewScript(name, code);
+	}
+
+	// assign scripts to components
+	for (const auto& [name, componentList] : m_febio->m_scriptedComponents)
+	{
+		FEBCodeScript* script = fem.GetScript(name);
+		ScriptContext expectedContext = script->GetScriptContext();
+		if (script)
+		{
+			for (const auto& component : componentList)
+			{
+				// initially, the script's context will be empty. 
+				// We currently check this by seeing of the return type is valid.
+				if (expectedContext.returnType == FEValueType::Invalid)
+				{
+					// ok, assign the component's context
+					expectedContext = component->context;
+					script->SetScriptContext(component->context);
+				}
+				else if (component->context != expectedContext)
+				{
+					AddLogEntry("Failed to assign script %s to component %s. Script context does not match component context.", name.c_str(), component->GetName().c_str());
+					continue;
+				}
+
+				component->scriptID = script->GetID();
+			}
+		}
+		else
+			AddLogEntry("Could not find script named %s", name.c_str());
+	}
+
 	if (m_nversion < 0x0400)
 	{
 		// older formats need to be converted

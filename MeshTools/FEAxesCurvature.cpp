@@ -296,7 +296,7 @@ void FEAxesCurvature::Curvature(FSMesh* pm)
                     vec2d kappa;
                     vec3d theta[2];
                     vec3d faceNorm = pm->FaceNormal(fdata[i]);
-                    spline.SurfaceCurvature(uv.x(), uv.y(), faceNorm, kappa, theta);
+                    spline.SurfaceCurvature(uv.x, uv.y, faceNorm, kappa, theta);
                     vec3d xn = (theta[0] ^ theta[1]).Normalize();
                     mat3d X(theta[0].x, theta[1].x, xn.x,
                             theta[0].y, theta[1].y, xn.y,

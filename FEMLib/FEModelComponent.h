@@ -1,6 +1,7 @@
 #pragma once
 #include "FEBase.h"
 #include <string>
+#include <FECore/FEScriptedBehavior.h>
 
 class FSModel;
 class FSLoadController;
@@ -21,6 +22,10 @@ public:
 	void SetSuperClassID(int superClassID);
 
 	FSModel* GetFSModel();
+
+public:
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 
 public:
 	// helper function for retrieving the load controller assigned to a parameter
@@ -88,4 +93,25 @@ public:
 private:
 	int		m_naopt;
 	int		m_n[3];
+};
+
+class FEBCodeScript;
+
+class FSScriptedComponent : public FSModelComponent
+{
+public:
+	FSScriptedComponent(FSModel* fem);
+	~FSScriptedComponent();
+
+	bool AllowUserParams() const override { return true; }
+
+	void AssignScript(FEBCodeScript* script);
+
+public:
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
+public:
+	int scriptID = -1;
+	ScriptContext context;
 };

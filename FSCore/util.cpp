@@ -82,6 +82,24 @@ vec3f StringToVec3f(const std::string& s)
 	return r;
 }
 
+mat2d StringToMat2d(const std::string& s)
+{
+	const char* sz = s.c_str();
+	double a[4] = { 0 };
+	int n = 0;
+	if (sz[0] == '{')
+	{
+		n = sscanf(sz, "{{%lg,%lg},{%lg,%lg}}", a, a + 1, a + 2, a + 3);
+	}
+	else
+	{
+		n = sscanf(sz, "%lg,%lg,%lg,%lg", a, a + 1, a + 2, a + 3);
+	}
+
+	if (n == 1) return mat2d(a[0]);
+	else return mat2d(a[0], a[1], a[2], a[3]);
+}
+
 mat3d StringToMat3d(const std::string& s)
 {
 	const char* sz = s.c_str();
@@ -172,7 +190,7 @@ std::vector<double> StringToVectorDouble(const std::string& s)
 
 std::string Vec2dToString(const vec2d& r)
 {
-	return "{" + std::to_string(r.x()) + "," + std::to_string(r.y()) + "}";
+	return "{" + std::to_string(r.x) + "," + std::to_string(r.y) + "}";
 }
 
 std::string Vec3dToString(const vec3d& r)
@@ -188,6 +206,25 @@ std::string Vec3fToString(const vec3f& r)
 std::string Vec2iToString(const vec2i& r)
 {
 	return "{" + std::to_string(r.x) + "," + std::to_string(r.y) + "}";
+}
+
+std::string Mat2dToString(const mat2d& a)
+{
+	std::string s;
+	s += "{";
+	for (int i = 0; i < 2; ++i)
+	{
+		s += "{";
+		for (int j = 0; j < 2; ++j)
+		{
+			s += std::to_string(a(i, j));
+			if (j != 1) s += ",";
+		}
+		s += "}";
+		if (i != 1) s += ",";
+	}
+	s += "}";
+	return s;
 }
 
 std::string Mat3dToString(const mat3d& a)

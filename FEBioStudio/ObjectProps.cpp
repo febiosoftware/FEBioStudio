@@ -59,6 +59,7 @@ void CObjectProps::AddParameter(Param& p)
 	}
 	break;
 	case Param_VEC3D : prop = addProperty(paramName, CProperty::Vec3); break;
+	case Param_MAT2D : prop = addProperty(paramName, CProperty::Mat2); break;
 	case Param_MAT3D : prop = addProperty(paramName, CProperty::Mat3); break;
 	case Param_MAT3DS: prop = addProperty(paramName, CProperty::Mat3s); break;
 	case Param_STRING: 
@@ -266,6 +267,13 @@ QVariant CObjectProps::GetPropertyValue(Param& p)
 		return t;
 	}
 	break;
+	case Param_MAT2D:
+	{
+		mat2d m = p.GetMat2dValue();
+		QString t = QString::fromStdString(Mat2dToString(m));
+		return t;
+	}
+	break;
 	case Param_MAT3D:
 	{
 		mat3d m = p.GetMat3dValue();
@@ -363,6 +371,13 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 		QString t = v.toString();
 		vec2d r = StringToVec2d(t.toStdString());
 		p.SetVec2dValue(r);
+	}
+	break;
+	case Param_MAT2D:
+	{
+		QString t = v.toString();
+		mat2d m = StringToMat2d(t.toStdString());
+		p.SetMat2dValue(m);
 	}
 	break;
 	case Param_MAT3D:

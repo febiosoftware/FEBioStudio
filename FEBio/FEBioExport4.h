@@ -251,6 +251,7 @@ protected:
 	void WriteGlobalsSection();
 	void WriteLoadDataSection();
 	void WriteOutputSection();
+	void WriteScriptsSection();
 	void WriteStepSection();
 	void WriteConstraintSection(FSStep& s);
 

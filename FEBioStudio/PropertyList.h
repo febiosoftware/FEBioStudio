@@ -50,6 +50,7 @@ public:
 		MathString,
 		ColorMap,
 		Vec3,
+		Mat2,
 		Mat3,
 		Mat3s,
 		Vec2i,
@@ -177,6 +178,7 @@ public:
 	CProperty* addExternalLinkProperty (QStringList* pd, const QString& name);
 	CProperty* addVec3Property     (vec3d* pd, const QString& name);
 	CProperty* addVec2iProperty    (vec2i* pd, const QString& name);
+	CProperty* addMat2Property     (mat2d* pd, const QString& name);
 	CProperty* addMat3Property     (mat3d* pd, const QString& name);
 
 	QVariant GetPropertyValue(int i);
@@ -203,6 +205,7 @@ public:
 	CProperty* addExternalLinkProperty(QStringList pd, const QString& name);
 	CProperty* addVec3Property(vec3d pd, const QString& name);
 	CProperty* addVec2iProperty(vec2i pd, const QString& name);
+	CProperty* addMat2Property(mat2d pd, const QString& name);
 	CProperty* addMat3Property(mat3d pd, const QString& name);
 
 	QVariant GetPropertyValue(int i);

@@ -1450,17 +1450,6 @@ void FSCoreMesh::FindNodesFromPart(int gid, vector<int>& node)
 }
 
 //-------------------------------------------------------------------------------------------------
-FSNode* FSCoreMesh::FindNodeFromID(int gid)
-{
-	for (int i = 0; i < Nodes(); ++i)
-	{
-		FSNode& node = Node(i);
-		if (node.m_gid == gid) return &node;
-	}
-	return nullptr;
-}
-
-//-------------------------------------------------------------------------------------------------
 void FSCoreMesh::ShowAllElements()
 {
 	for (int i = 0; i<Nodes(); ++i) Node(i).Show();
