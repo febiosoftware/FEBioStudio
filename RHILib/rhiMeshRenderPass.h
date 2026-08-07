@@ -91,9 +91,13 @@ namespace rhi {
 
 		rhi::SubMesh* getSubMesh(rhi::Mesh& mesh, int subMeshIndex = -1);
 
+		MeshRenderItem* addRenderItem(rhi::SubMesh* subMesh, const GLMaterial& mat, bool doClipping, const QMatrix4x4& mvMatrix, bool invertFaces = false);
+
 		void update(QRhiResourceUpdateBatch* u) override;
 
 		void draw(QRhiCommandBuffer* cb) override;
+
+		void drawMeshItems(QRhiCommandBuffer* cb);
 
 	public:
 		virtual rhi::Mesh* newMesh(const GLMesh* mesh) = 0;
@@ -103,5 +107,9 @@ namespace rhi {
 	protected:
 		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
 		rhi::MeshList m_meshList;
+
+		std::vector<MeshRenderItem> m_renderItems;
+		std::vector<std::unique_ptr<MeshShaderResource>> m_sr; // shader resource pool
+		size_t m_srSize = 0; // size of the shader resource pool
 	};
 }

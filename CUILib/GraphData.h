@@ -58,11 +58,27 @@ enum MarkerType
 	PLUS_MARKER
 };
 
+enum ChartStyle
+{
+	LINECHART_PLOT,
+	BARCHART_PLOT,
+	PIECHART_PLOT,
+	DENSITY_PLOT
+};
+
 //-----------------------------------------------------------------------------
 // Manages a set of (x,y) value pairs
 // Derived classes must implement drawing function.
 class CPlotData
 {
+public:
+	struct DataPoint
+	{
+		QPointF pos;
+		QColor color;
+		QString label;
+	};
+
 public:
 	CPlotData();
 	CPlotData(const CPlotData& d);
@@ -76,12 +92,16 @@ public:
 	// add a point to the data
 	void addPoint(double x, double y);
 
+	void addPoint(const QPointF& pos, const QColor& col = Qt::black, const QString& label = "");
+
 	// number of points
 	int size() const { return (int)m_data.size(); }
 
 	// get a data point
-	QPointF& Point(int i) { return m_data[i]; }
-	QPointF Point(int i) const { return m_data[i]; }
+	QPointF& Point(int i) { return m_data[i].pos; }
+	QPointF Point(int i) const { return m_data[i].pos; }
+
+	const DataPoint& Data(int i) const { return m_data[i]; }
 
 	// get the bounding rectangle
 	QRectF boundRect() const;
@@ -110,7 +130,7 @@ public:
 	int markerType() const { return m_markerType; }
 
 protected:
-	std::vector<QPointF>	m_data;
+	std::vector<DataPoint> m_data;
 	QString			m_label;
 
 protected:
@@ -175,6 +195,8 @@ public:
 
 	void AddPlotData(CPlotData* plot);
 
+	CPlotData* GetPlotData(int i) { return m_data[i]; }
+
 public:
 	QString				m_title;
 	std::vector<CPlotData*>	m_data;
@@ -185,6 +207,14 @@ public:
 	bool				m_bdrawGrid;
 	bool				m_bdrawTitle;
 	bool				m_bdrawAxesLabels;
+
+	int		m_chartStyle = LINECHART_PLOT;
+
+	bool	m_bfullScreenMode = false;
+	bool	m_bscaleAxisLabels = true;
+
+	QString		m_customXAxisLabel;
+	QString		m_customYAxisLabel;
 
 	int		m_titleFontSize;
 	int		m_legendFontSize;

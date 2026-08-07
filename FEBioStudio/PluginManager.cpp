@@ -437,9 +437,9 @@ void CPluginManager::OnHTMLError(QString& message, int pluginID)
     emit HTMLError(message);
 }
 
-void CPluginManager::SumbitPlugin(QByteArray& pluginInfo)
+void CPluginManager::SubmitPlugin(QByteArray& pluginInfo)
 {
-    imp->m_repo.sumbitPlugin(pluginInfo);
+    imp->m_repo.submitPlugin(pluginInfo);
 }
 
 void CPluginManager::UploadImage(QByteArray& token, QString& filename)
@@ -469,7 +469,10 @@ void CPluginManager::WriteConfigFile(const std::string& fileName)
 
 void CPluginManager::AddRepoPlugin(char** argv)
 {
-    int id = std::stoi(argv[0]);
+    int authorized = std::stoi(argv[0]);
+    if(!authorized) return;
+
+    int id = std::stoi(argv[1]);
 
     Plugin plugin;
     
@@ -479,12 +482,12 @@ void CPluginManager::AddRepoPlugin(char** argv)
     }    
 
     plugin.id = id;
-    plugin.name = argv[1];
-    plugin.repoName = argv[2];
-    plugin.owner = argv[3];
-    plugin.description = argv[4];
-    plugin.imageData = argv[5];
-    plugin.downloads = std::stoi(argv[6]);
+    plugin.name = argv[2];
+    plugin.repoName = argv[3];
+    plugin.owner = argv[4];
+    plugin.description = argv[5];
+    plugin.imageData = argv[6];
+    plugin.downloads = std::stoi(argv[7]);
 
     imp->m_plugins[id] = plugin;
 }

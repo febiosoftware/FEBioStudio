@@ -53,6 +53,9 @@ public:
 
 	void ClearMesh();
 
+	//! Add a new node at the specified position
+	int AddGNode(vec3d r) override;
+
 private:
 	FSCurveMesh*	m_curve;
 };

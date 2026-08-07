@@ -43,7 +43,6 @@ class GMaterial;
 class CCreatePanel;
 class CBuildPanel;
 class CRepositoryPanel;
-class CPythonToolsPanel;
 class QMenu;
 class CGraphWindow;
 class CDocManager;
@@ -65,6 +64,7 @@ class CMainStatusBar;
 class CPluginManager;
 struct ProgressTracker; // in FEBio/FEBioExport4
 class COptimizationStudy;
+class CFEBioStudy;
 class CAbstractTool;
 class FEBCodeScript;
 
@@ -165,9 +165,6 @@ public:
 
 	// get the database panel
 	CRepositoryPanel* GetDatabasePanel();
-
-	// get the python panel
-//	CPythonToolsPanel* GetPythonToolsPanel();
 
 	// get the febio monitor panel
 	CFEBioMonitorPanel* GetFEBioMonitorPanel();
@@ -366,6 +363,8 @@ private:
 	void OpenFEBioFile(const QString& fileName);
 	void OpenTextFile(const QString& fileName);
 	bool OpenFEBioLogFile(const QString& fileName);
+	bool OpenFEBioReportFile(const QString& fileName);
+	bool OpenFEBioStudyFile(const QString& fileName);
 
 	bool SaveDocument(CDocument* doc, const QString& fileName);
 
@@ -435,7 +434,9 @@ public:
 
 public:
 	bool ConfigureOptimizationStudy(COptimizationStudy* study);
+	bool ConfigureFEBioStudy(CFEBioStudy* study);
 	void RunOptimizationStudy(COptimizationStudy* study);
+	void RunFEBioStudy(CFEBioStudy* study);
 
 public slots:
 	void AddLogEntrySlot(const QString& txt);
@@ -568,6 +569,7 @@ public slots:
 	void on_actionFEBioCheck_triggered();
 	void on_actionFEBioOptimize_triggered();
 	void on_actionFEBioTangent_triggered();
+	void on_actionFEBioStudy_triggered();
 	void on_actionFEBioInfo_triggered();
     void on_actionPluginRepo_triggered();
 	void on_actionCreatePlugin_triggered();
@@ -709,6 +711,7 @@ public slots:
 	// signals from documents
 	void on_doCommand(QString msg);
 	void on_selectionChanged();
+	void on_htmlview_anchorClicked(QUrl link);
 
 	// Font toolbar
 	void on_fontStyle_currentFontChanged(const QFont& font);

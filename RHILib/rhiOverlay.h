@@ -90,4 +90,6 @@ private:
 	// triad rendering
 	std::unique_ptr<rhi::Mesh> triadMesh;
 	std::unique_ptr<TriadRenderPass> m_triadPass;
+	std::unique_ptr<rhi::MeshShaderResource> m_triadSR;
+	GLMaterial m_triadMat;
 };

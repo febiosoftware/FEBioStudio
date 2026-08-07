@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "PyFBSUI.h"
+#include "PyFBSGeom.h"
 
 #ifdef HAS_PYTHON
 #include <pybind11/pybind11.h>
@@ -68,7 +68,7 @@ void init_FBSGeom(py::module& m)
         ;
 
 	py::class_<GMeshObject, GObject, std::unique_ptr<GMeshObject, py::nodelete>>(geom, "GMeshObject", DOC(GMeshObject))
-		.def("AddNode", static_cast<int (GMeshObject::*)(vec3d)>(&GMeshObject::AddNode), DOC(GMeshObject, AddNode))
+		.def("AddNode", static_cast<int (GMeshObject::*)(vec3d)>(&GMeshObject::AddGNode), DOC(GMeshObject, AddNode))
 		.def("MakeGNode", &GMeshObject::MakeGNode, DOC(GMeshObject, MakeGNode))
 		;
 

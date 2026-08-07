@@ -176,7 +176,7 @@ public:
 
 	void UpdateSize()
 	{
-		int currentSize = 0;
+		qint64 currentSize = 0;
 
 		for(int index = 0; index < childCount(); index++)
 		{
@@ -683,6 +683,7 @@ public:
 	QLabel* projectName;
 	MultiLineLabel* projectDesc;
 	QLabel* projectOwner;
+	QLabel* projectLicense;
 	TagLabel* projectTags;
 
 	QFormLayout* fileInfoForm;
@@ -917,6 +918,7 @@ public:
 		projectInfoForm = new QFormLayout;
 		projectInfoForm->setHorizontalSpacing(10);
 		projectInfoForm->addRow("Owner:", projectOwner = new QLabel);
+		projectInfoForm->addRow("License:", projectLicense = new QLabel);
 
 		modelInfoLayout->addLayout(projectInfoForm);
 

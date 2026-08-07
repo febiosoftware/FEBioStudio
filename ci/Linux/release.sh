@@ -17,6 +17,9 @@ cd $FBS_REPO
 
 cd $GITHUB_WORKSPACE
 
+rm -rf $RELEASE_DIR
+rm -rf $UPLOAD_DIR
+
 mkdir $RELEASE_DIR
 mkdir $RELEASE_DIR/bin
 mkdir $RELEASE_DIR/lib
@@ -48,6 +51,8 @@ febioLibs=(
     $FEBIO_REPO/cmbuild/lib/libfeimglib.so
     $FEBIO_REPO/cmbuild/lib/libfebiomix.so
     $FEBIO_REPO/cmbuild/lib/libfebiomech.so
+    $FEBIO_REPO/cmbuild/lib/libfebioxml.so
+    $FEBIO_REPO/cmbuild/lib/libfebioplot.so
 )
 
 libs=(
@@ -147,10 +152,10 @@ libs=(
     /usr/local/lib/libswscale.so.7
 
     # FFTW
-    /usr/local/lib/x86_64-linux-gnu/libfftw3.so.3
+    /lib/x86_64-linux-gnu/libfftw3.so.3
 
     # Python
-    /home/ubuntu/.pyenv/versions/3.13.1/lib/libpython3.13.so.1.0
+    /home/mherron/.pyenv/versions/3.13.1/lib/libpython3.13.so.1.0
 
     # Required for libQt6XcbQpa.so
     /lib/x86_64-linux-gnu/libxcb-cursor.so.0
@@ -201,7 +206,7 @@ Plugins = ../lib" > $RELEASE_DIR/bin/qt.conf
 
 # Get Python home dir
 mkdir -p $RELEASE_DIR/lib/python/lib
-cp -r /home/ubuntu/.pyenv/versions/3.13.1/lib/python3.13 $RELEASE_DIR/lib/python/lib/
+cp -r /home/mherron/.pyenv/versions/3.13.1/lib/python3.13 $RELEASE_DIR/lib/python/lib/
 rm -r $RELEASE_DIR/lib/python/lib/python3.13/test
 
 # Create docs

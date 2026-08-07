@@ -63,6 +63,8 @@ public:
 	void GetFileTags(int ID);
 
 	void GetCategoryMap(std::map<int, std::string>& categoryMap);
+	
+	void GetLicenseMap(std::map<int, std::string>& licenseMap);
 
 	QList<QList<QVariant>> GetProjectFileInfo(int projID);
 
@@ -77,6 +79,7 @@ public:
 	QString CategoryFromID(int ID);
 	int ProjectIDFromFileID(int ID);
 	int CategoryIDFromName(std::string name);
+	int LicenseIDFromName(std::string name);
 
 	bool isValidUpload(QString& projectName, QString& category);
 	qint64 currentProjectsSize(QString username);

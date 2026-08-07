@@ -50,6 +50,7 @@ private slots:
 	void threadFinished(bool b);
 	void checkProgress();
 	void cancel();
+	void onReadyRead();
 
 private:
 	CDlgStartThreadUI*	ui;

@@ -115,5 +115,5 @@ private:
 	FSNodeEdgeList		m_NEL;
 
 	bool m_optimize;
-	bool m_insertNodes;
+	bool m_insertNodes;	
 };

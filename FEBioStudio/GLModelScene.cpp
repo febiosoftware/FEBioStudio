@@ -3732,15 +3732,11 @@ void CGLModelScene::ColorizeMesh(GObject* po)
 			{
 				if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
 				{
-					int fnl[FSElement::MAX_NODES];
-					int nn = el.GetLocalFaceIndices(face.m_elem[0].lid, fnl);
-					assert(nn == face.Nodes());
-
-					int nf = face.Nodes();
-					for (int j = 0; j < nf; ++j)
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j)
 					{
-						double vj = data.GetElementValue(face.m_elem[0].eid, fnl[j]);
-						val[face.n[j]] = vj;
+						double vj = data.GetElementValue(face.m_elem[0].eid, j);
+						val[el.m_node[j]] = vj;
 					}
 
 					for (int j = 0; j < 3; ++j)

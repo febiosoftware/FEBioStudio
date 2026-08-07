@@ -42,6 +42,12 @@ SOFTWARE.*/
 #include "DlgStartThread.h"
 #include <FEBio/FEBioExport4.h> // for ProgressTracker
 #include <QDebug>
+#include "DlgAddPhysicsItem.h"
+#include <FEBioLink/FEBioClass.h>
+#include <FEBioRun/FEBioRun.h>
+#include "FEBioThread.h"
+#include "FEBioStudyReportDoc.h"
+
 
 void CMainWindow::on_actionFEBioRun_triggered()
 {
@@ -544,22 +550,6 @@ void CMainWindow::on_actionFEBioCheck_triggered()
 	if (modelDoc) DoModelCheck(modelDoc, false);
 }
 
-class RunStudyThread : public CustomThread
-{
-public:
-	RunStudyThread(CFEBioStudy* study) : m_study(study) {}
-
-	void run() Q_DECL_OVERRIDE
-	{
-		bool b = false;
-		if (m_study) b = m_study->Run();
-		emit resultReady(b);
-	}
-
-private:
-	CFEBioStudy* m_study;
-};
-
 void CMainWindow::RunOptimizationStudy(COptimizationStudy* study)
 {
 	// let's do some sanity checks
@@ -590,13 +580,13 @@ void CMainWindow::RunOptimizationStudy(COptimizationStudy* study)
 	}
 
 	// run the study
-	CDlgStartThread dlg(this, new RunStudyThread(study));
+	CDlgStartThread dlg(this, new CFEBioStudyThread(modelDoc, study));
 	if (dlg.exec())
 	{
 		QString msg = QString("The study \"%1\" completed successfully.").arg(name);
 		QMessageBox::information(this, "FEBio Studio", msg);
 
-		QString outfile = study->GetOutputFileName();
+		QString outfile = QString::fromStdString(study->GetOutputFileName());
 		if (!outfile.isEmpty())
 		{
 			OpenFile(outfile);
@@ -627,15 +617,73 @@ void CMainWindow::on_actionFEBioOptimize_triggered()
 	if (doc == nullptr) return;
 
 	COptimizationStudy* study = new COptimizationStudy(doc);
-	QString Name = QString("Study%1").arg(doc->FEBioStudies() + 1);
+	QString Name = QString("Study%1").arg(doc->Studies() + 1);
 	study->SetName(Name.toStdString());
 
 	if (ConfigureOptimizationStudy(study))
 	{
-		doc->AddFEBioStudy(study);
+		doc->AddStudy(study);
 		UpdateModel(study);
 	}
 	else delete study;
+}
+
+bool CMainWindow::ConfigureFEBioStudy(CFEBioStudy* study)
+{
+	if (study == nullptr) return false;
+
+	QMessageBox::information(this, "FEBio Study", "The FEBio Study dialog is currently under development. Please check back in a future release.");
+
+	return true;
+}
+
+void CMainWindow::RunFEBioStudy(CFEBioStudy* study)
+{
+	// let's do some sanity checks
+	if (study == nullptr) return;
+	CModelDocument* modelDoc = GetModelDocument();
+	if (modelDoc == nullptr) return;
+	assert(study->GetDocument() == modelDoc);
+
+	std::string filepath = modelDoc->GetDocFilePath();
+	if (filepath.empty())
+	{
+		QMessageBox::warning(this, "FEBio Studio", "You must save the model first before you can run the study.");
+		return;
+	}
+
+	QString name = QString::fromStdString(study->GetName());
+	if (name.isEmpty())
+	{
+		QMessageBox::warning(this, "FEBio Studio", "Please give the study a valid name.");
+		return;
+	}
+
+	QFileInfo fi(QString::fromStdString(filepath));
+	if (!fi.exists() || !fi.isFile())
+	{
+		QMessageBox::warning(this, "FEBio Studio", "The model's file path is not valid. Please save the model in accessible location.");
+		return;
+	}
+
+	// clear output for next job
+	ClearOutput();
+	ShowLogPanel();
+	ui->logPanel->ShowLog(CLogPanel::FEBIO_LOG);
+
+	// run the study
+	CDlgStartThread dlg(this, new CFEBioStudyThread(modelDoc, study));
+	if (dlg.exec())
+	{
+		QString msg = QString("The study \"%1\" completed successfully.").arg(name);
+		QMessageBox::information(this, "FEBio Studio", msg);
+
+		QString outfile = QString::fromStdString(study->GetOutputFileName());
+		if (!outfile.isEmpty())
+		{
+			OpenFEBioReportFile(outfile);
+		}
+	}
 }
 
 void CMainWindow::on_actionFEBioInfo_triggered()
@@ -686,6 +734,46 @@ void CMainWindow::on_actionFEBioTangent_triggered()
 			{
 				QMessageBox::critical(this, "Generate FEBio Tangent Diagnostic", "Exception detection. Diagnostic file might be incorrect.");
 			}
+		}
+	}
+}
+
+void CMainWindow::on_actionFEBioStudy_triggered()
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	FSModel* fem = doc->GetFSModel();
+	if (fem == nullptr) return;
+
+	CDlgAddPhysicsItem dlg("Select Study", FETASK_ID, FEBio::GetBaseClassIndex("FECoreStudy"), fem, true, false, this);
+	if (dlg.exec())
+	{
+		int id = dlg.GetClassID();
+		if (id == -1) return;
+
+		FSCoreStudy* study = FEBio::CreateFEBioClass<FSCoreStudy>(id, fem); assert(study);
+		if (study)
+		{
+			FEBio::InitDefaultProps(study);
+
+			std::string name = dlg.GetName();
+			if (name.empty())
+			{
+				std::string base = (study->GetTypeString() ? study->GetTypeString() : "Study");
+				int n = 1;
+				do
+				{
+					std::stringstream ss; ss << base << n++;
+					name = ss.str();
+				} while (doc->FindStudyFromName(name) != nullptr);
+			}
+
+			CFEBioStudy* studyWrapper = new CFEBioStudy(doc, study);
+			studyWrapper->SetName(name);
+
+			doc->AddStudy(studyWrapper);
+			UpdateModel(studyWrapper);
 		}
 	}
 }

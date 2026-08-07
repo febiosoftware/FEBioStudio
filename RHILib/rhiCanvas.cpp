@@ -59,11 +59,10 @@ void CanvasRenderPass::create(QRhiSwapChain* sc)
 	m_pl->create();
 
 	// create the mesh
-	rhi::MeshShaderResource* sr = shader.createShaderResource(m_rhi, m_fpsTex, m_fpsub.get());
+	m_fpsSr.reset(shader.createShaderResource(m_rhi, m_fpsTex, m_fpsub.get()));
 
 	m_fpsMesh.reset(new FPSMesh(m_rhi));
 	m_fpsMesh->create(size);
-	m_fpsMesh->setShaderResource(sr);
 	m_fpsMesh->getSubMesh(0)->SetActive(true);
 }
 
@@ -103,8 +102,11 @@ void CanvasRenderPass::update(QRhiResourceUpdateBatch* u)
 void CanvasRenderPass::draw(QRhiCommandBuffer* cb)
 {
 	cb->setGraphicsPipeline(m_pl.get());
-	cb->setShaderResources();
-	m_fpsMesh->Draw(cb);
+	cb->setShaderResources(m_fpsSr->get());
+
+	m_fpsMesh->BindVertexBuffer(cb);
+	rhi::SubMesh* sm = m_fpsMesh->getSubMesh(0);
+	cb->draw(sm->vertexCount, 1, sm->vertexStart);
 }
 
 FPSMesh::FPSMesh(QRhi* rhi) : rhi::Mesh(rhi)

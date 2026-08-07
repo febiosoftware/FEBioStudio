@@ -564,6 +564,9 @@ void CRepositoryPanel::on_actionUpload_triggered()
 		QStringList categories = GetCategories();
 		dlg.setCategories(categories);
 
+		QStringList licenses = GetLicenses();
+		dlg.setLicenses(licenses);
+
 		QStringList tags = dbHandler->GetTags();
 		dlg.setTagCompleter(tags);
 
@@ -578,6 +581,7 @@ void CRepositoryPanel::on_actionUpload_triggered()
 			projectInfo.insert("name", dlg.getName());
 			projectInfo.insert("description", dlg.getDescription());
 			projectInfo.insert("category", dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()));
+			projectInfo.insert("license", dbHandler->LicenseIDFromName(dlg.getLicense().toStdString()));
 
 			QList<QVariant> tags;
 			for(QString tag : dlg.getTags())
@@ -708,6 +712,10 @@ void CRepositoryPanel::on_actionModify_triggered()
 		CWzdUpload dlg(this, repoHandler->getUploadPermission(), dbHandler, repoHandler, projID);
 		dlg.setName(ui->projectName->text());
 		dlg.setOwner(repoHandler->getUsername());
+
+		QStringList licenses = GetLicenses();
+		dlg.setLicenses(licenses);
+		dlg.setLicense(ui->projectLicense->text());
 
 		QStringList categories = GetCategories();
 		dlg.setCategories(categories);
@@ -1618,10 +1626,30 @@ QStringList CRepositoryPanel::GetCategories()
 	return categories;
 }
 
+QStringList CRepositoryPanel::GetLicenses()
+{
+	int permission = repoHandler->getUploadPermission();
+
+	map<int, string> licenseMap;
+
+	dbHandler->GetLicenseMap(licenseMap);
+
+	QStringList licenses;
+
+	for (auto it : licenseMap)
+	{
+		licenses.append(it.second.c_str());
+	}
+
+	return licenses;
+}
+
+
 void CRepositoryPanel::SetProjectData(char **data)
 {
 	ui->projectName->setText(data[0]);
 	ui->projectOwner->setText(data[2]);
+	ui->projectLicense->setText(data[3] == nullptr ? "(unspecified)" : data[3]);
 
 	// Fix new lines
 	QString desc(data[1]);

@@ -98,7 +98,7 @@ void CPluginRepoConnectionHandler::getTables()
 
 }
 
-void CPluginRepoConnectionHandler::sumbitPlugin(QByteArray& pluginInfo)
+void CPluginRepoConnectionHandler::submitPlugin(QByteArray& pluginInfo)
 {
     QUrl myurl;
 	myurl.setScheme(ServerSettings::Scheme());

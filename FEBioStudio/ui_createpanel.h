@@ -409,7 +409,11 @@ FSObject* CGeoModifierPane::Create()
 		newObject->Copy(activeObject);
 	}
 
-	m_mod->Apply(newObject);
+	if (!m_mod->Apply(newObject))
+	{
+		delete newObject;
+		return nullptr;
+	}
 
 	stringstream ss;
 	ss << m_mod->GetName() << n;

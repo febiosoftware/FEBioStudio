@@ -82,26 +82,27 @@ vec3d CalculateCOM(FSMesh& mesh)
 vec3d CalculateAreaCOM(FSMesh& mesh)
 {
     int selectedFaces = mesh.CountSelectedFaces();
-    vec3d c = vec3d(0, 0, 0);
+
+    vec3d c(0,0,0);
     double Atotal = 0.0;
-    
-    // loop over all elements
+
     for (int i = 0; i < mesh.Faces(); ++i)
     {
         FSFace& face = mesh.Face(i);
         if ((selectedFaces == 0) || face.IsSelected())
         {
             double Ai = mesh.FaceArea(face);
-            vec3d ci = mesh.FaceCenter(face);
-            
+
+            vec3d ci_local  = mesh.FaceCenter(face);
+            vec3d ci_global = mesh.LocalToGlobal(ci_local);
+
             Atotal += Ai;
-            c += ci * Ai;
+            c += ci_global * Ai;
         }
     }
-    if (Atotal != 0.0)
-        c /= Atotal;
 
-    return mesh.LocalToGlobal(c);
+    if (Atotal != 0.0) c /= Atotal;
+    return c;
 }
 
 mat3d CalculateMOI(FSMesh& mesh)

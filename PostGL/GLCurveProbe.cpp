@@ -182,7 +182,6 @@ double GLCurveProbe::GetPointValue(int i, int nstep)
 	Post::CGLColorMap* cmap = mdl->GetColorMap();
 	if (cmap == nullptr) return val;
 	int nfield = cmap->GetEvalField();
-	if (nfield == 0) return val;
 
 	vec3f r0 = to_vec3f(m_path[i])* m_scale;
 	Post::NODEDATA data;

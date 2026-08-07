@@ -513,7 +513,7 @@ public:
             "This allows you to easily load these plugins into FEBio when launched from the command line by "
             "referencing the config file.");
 
-        buttonBar->addWidget(submitPluginButton = new QPushButton("Sumbit a Plugin to the Repository"));
+        buttonBar->addWidget(submitPluginButton = new QPushButton("Submit a Plugin to the Repository"));
         submitPluginButton->setFocusPolicy(Qt::NoFocus);
 
         QWidget* spacer = new QWidget();

@@ -80,7 +80,6 @@ SOFTWARE.*/
 #include "GLViewer.h"
 #include "DlgPartViewer.h"
 #include "DlgScreenCapture.h"
-#include <PyLib/PythonToolsPanel.h>
 #include "DlgPartViewer.h"
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <FEBioMonitor/FEBioMonitorPanel.h>
@@ -274,7 +273,6 @@ public:
 	::CPostPanel* postPanel;
 	::CInfoPanel* infoPanel;
 	::CRepositoryPanel* databasePanel;
-//    ::CPythonToolsPanel*	pythonToolsPanel;
 	::CTimelinePanel* timePanel;
 	::CImageSettingsPanel* imageSettingsPanel;
 	CFEBioMonitorPanel* febioMonitor;
