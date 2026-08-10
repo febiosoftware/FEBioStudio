@@ -1,8 +1,8 @@
 #!/bin/bash
-set -e
+# set -e
 RUN_POST_BUILD=${RUN_POST_BUILD:=true}
 
-security unlock-keychain -p "$MACOS_KEYCHAIN_PASSWORD" "$MACOS_KEYCHAIN"
+security unlock-keychain -P "$MACOS_KEYCHAIN_PASSWORD" "$MACOS_KEYCHAIN"
 
 security import certificate.p12 \
   -k "$MACOS_KEYCHAIN" \
