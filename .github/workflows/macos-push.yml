@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   call_workflow:
-    uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable.yml@develop
+    uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable.yml@certTest
     with:
       package-name: febio-studio
       requires-sdk: true
