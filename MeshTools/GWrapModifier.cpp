@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include <MeshLib/FSNodeFaceList.h>
 #include <MeshLib/FSNodeNodeList.h>
 #include <MeshLib/MeshTools.h>
+#include <MeshTools/GPLCObject.h>
+#include <memory>
 using namespace std;
 
 GWrapModifier::GWrapModifier()
@@ -40,10 +42,13 @@ GWrapModifier::GWrapModifier()
 	AddIntParam(1, "steps", "steps");
 }
 
-bool GWrapModifier::Apply(GObject* po)
+GObject* GWrapModifier::Apply(GObject* obj)
 {
+	std::unique_ptr<GObject> po = std::make_unique<GPLCObject>();
+	po->Copy(obj);
+
 	// make sure there is a target
-	if (m_po == 0) return false;
+	if (m_po == 0) return nullptr;
 
 	FSMesh* pm = po->GetFEMesh();
 
@@ -56,7 +61,7 @@ bool GWrapModifier::Apply(GObject* po)
 	if (m_po == 0) 
 	{
 		SetIntValue(TRG_ID, -1);
-		return false;
+		return nullptr;
 	}
 
 	// create the displacement vector
@@ -81,11 +86,11 @@ bool GWrapModifier::Apply(GObject* po)
 	switch (ntype)
 	{
 	case 0: // normal projection
-		NormalProjection(po, DS, tag, nsteps); break;
+		NormalProjection(po.get(), DS, tag, nsteps); break;
 	case 1:	// closest point
-		ClosestPoint(po, DS, tag); break;
+		ClosestPoint(po.get(), DS, tag); break;
 	default:
-		return false;
+		return nullptr;
 	}
 
 	// see if there are any exterior nodes
@@ -148,7 +153,7 @@ bool GWrapModifier::Apply(GObject* po)
 	// update the mesh
 	pm->BuildMesh();
 
-	return true;
+	return po.release();
 }
 
 void GWrapModifier::ClosestPoint(GObject *ps, vector<vec3d>& DS, vector<int>& tag)

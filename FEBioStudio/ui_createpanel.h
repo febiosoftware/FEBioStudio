@@ -402,18 +402,8 @@ FSObject* CGeoModifierPane::Create()
 	if (m_mod == nullptr) return nullptr;
 
 	// create a clone of this object
-	GObject* newObject = nullptr;
-	if (dynamic_cast<GCurveObject*>(activeObject)) newObject = activeObject->Clone();
-	else {
-		newObject = new GPLCObject;
-		newObject->Copy(activeObject);
-	}
-
-	if (!m_mod->Apply(newObject))
-	{
-		delete newObject;
-		return nullptr;
-	}
+	GObject* newObject = m_mod->Apply(activeObject);
+	if (newObject == nullptr) return nullptr;
 
 	stringstream ss;
 	ss << m_mod->GetName() << n;

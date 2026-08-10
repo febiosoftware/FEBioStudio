@@ -29,6 +29,8 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshLib/FSMesh.h>
 #include <GLLib/GLMesh.h>
+#include <MeshTools/GPLCObject.h>
+#include <memory>
 using std::list;
 
 GModifier::GModifier(void)
@@ -205,8 +207,11 @@ GTwistModifier::GTwistModifier(FSModel* ps)
 	AddDoubleParam(1, "max", "max");
 }
 
-bool GTwistModifier::Apply(GObject* po)
+GObject* GTwistModifier::Apply(GObject* obj)
 {
+	std::unique_ptr<GObject> po = std::make_unique<GPLCObject>();
+	po->Copy(obj);
+
 	int m = GetIntValue(ORIENT);
 	double w = GetFloatValue(TWIST);
 	double h = GetFloatValue(SCALE);
@@ -286,10 +291,10 @@ bool GTwistModifier::Apply(GObject* po)
 		}
 		break;
 	default:
-		return false;
+		return nullptr;
 	}
 
-	return true;
+	return po.release();
 }
 
 GLMesh* GTwistModifier::BuildGMesh(GObject* po)
@@ -483,8 +488,11 @@ GPinchModifier::GPinchModifier(FSModel* ps)
 	AddIntParam(0, "orientation", "orientation")->SetEnumNames("X\0Y\0Z\0");
 }
 
-bool GPinchModifier::Apply(GObject* po)
+GObject* GPinchModifier::Apply(GObject* obj)
 {
+	std::unique_ptr<GObject> po = std::make_unique<GPLCObject>();
+	po->Copy(obj);
+
 	BoundingBox box = po->GetLocalBox();
 	vec3d c = box.Center();
 	double W = 0.5*box.Width();
@@ -513,7 +521,7 @@ bool GPinchModifier::Apply(GObject* po)
 		node.LocalPosition() = c + r;
 	}
 
-	return true;
+	return po.release();
 }
 
 GLMesh* GPinchModifier::BuildGMesh(GObject* po)
@@ -660,8 +668,11 @@ void GBendModifier::UpdateParams()
 	m_R0 = m_L / m_a;
 }
 
-bool GBendModifier::Apply(GObject *po)
+GObject* GBendModifier::Apply(GObject *obj)
 {
+	std::unique_ptr<GObject> po = std::make_unique<GPLCObject>();
+	po->Copy(obj);
+
 	// set the bounding box
 	m_box = po->GetLocalBox();
 
@@ -681,7 +692,7 @@ bool GBendModifier::Apply(GObject *po)
 	vec3d dr = m_box.Center() - m_rc;
 	for (int i = 0; i<N; ++i) po->Node(i)->LocalPosition() -= dr;
 
-	return true;
+	return po.release();
 }
 
 GLMesh* GBendModifier::BuildGMesh(GObject *po)
@@ -777,8 +788,11 @@ GSkewModifier::GSkewModifier(FSModel* ps)
 	AddDoubleParam(0, "distance", "Skew distance");
 }
 
-bool GSkewModifier::Apply(GObject* po)
+GObject* GSkewModifier::Apply(GObject* obj)
 {
+	std::unique_ptr<GObject> po = std::make_unique<GPLCObject>();
+	po->Copy(obj);
+
 	// get parameters
 	int m = GetIntValue(ORIENT);
 	double a = GetFloatValue(SKEW);
@@ -811,7 +825,7 @@ bool GSkewModifier::Apply(GObject* po)
 		node.LocalPosition() = r + rc;
 	}
 
-	return true;
+	return po.release();
 }
 
 GLMesh* GSkewModifier::BuildGMesh(GObject* po)

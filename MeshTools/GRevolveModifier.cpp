@@ -28,6 +28,10 @@ SOFTWARE.*/
 #include "GModifier.h"
 #include <GeomLib/GObject.h>
 #include "FETetGenMesher.h"
+#include <MeshTools/GPLCObject.h>
+#include <GeomLib/GCurveObject.h>
+#include <memory>
+
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -40,8 +44,15 @@ GRevolveModifier::GRevolveModifier()
 
 //-----------------------------------------------------------------------------
 //! For now we assume that the axis of revolution is the y-axis
-bool GRevolveModifier::Apply(GObject* po)
+GObject* GRevolveModifier::Apply(GObject* obj)
 {
+	std::unique_ptr<GObject> po;
+	if (dynamic_cast<GCurveObject*>(obj)) po.reset(obj->Clone());
+	else {
+		po = std::make_unique<GPLCObject>();
+		po->Copy(obj);
+	}
+
 	const double tol = 1.e-6;
 
 	// figure out the divisions
@@ -74,11 +85,11 @@ bool GRevolveModifier::Apply(GObject* po)
 	// one side of the y-axis
 	if ((nl == 0) && (nr == 0))
 	{
-		return false;
+		return nullptr;
 	}
 	if ((nl != 0) && (nr != 0))
 	{
-		return false;
+		return nullptr;
 	}
 
 	// create all the new nodes
@@ -159,7 +170,7 @@ bool GRevolveModifier::Apply(GObject* po)
 					break;
 				}
 				default:
-					return false;
+					return nullptr;
 				}
 			}
 			else ne[(i + 1)*E + j] = j;
@@ -314,14 +325,14 @@ bool GRevolveModifier::Apply(GObject* po)
 	// find all vertices
 	po->UpdateNodeTypes();
 
-	return true;
+	return po.release();
 }
 
 //-----------------------------------------------------------------------------
 GLMesh* GRevolveModifier::BuildGMesh(GObject* po)
 {
 	po->GObject::BuildGMesh();
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

@@ -27,7 +27,13 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GModifier.h"
 #include <GeomLib/GObject.h>
+#include <MeshTools/GPLCObject.h>
+#include <GeomLib/GCurveMeshObject.h>
+#include <GeomLib/GSurfaceMeshObject.h>
+#include <MeshLib/FSCurveMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #include "FETetGenMesher.h"
+#include <memory>
 
 GExtrudeModifier::GExtrudeModifier()
 {
@@ -36,8 +42,79 @@ GExtrudeModifier::GExtrudeModifier()
 	AddIntParam(1, "segments");
 }
 
-bool GExtrudeModifier::Apply(GObject* po)
+GObject* GExtrudeModifier::Apply(GObject* obj)
 {
+	std::unique_ptr<GObject> po;
+	if (dynamic_cast<GCurveMeshObject*>(obj))
+	{
+		return ExtrudeCurveObject(obj);
+	}
+	else
+	{
+		return ExtrudePLCObject(obj);
+	}
+}
+
+GObject* GExtrudeModifier::ExtrudeCurveObject(GObject* obj) 
+{
+	GCurveMeshObject* curveObj = dynamic_cast<GCurveMeshObject*>(obj);
+	if (curveObj == nullptr) return nullptr;
+
+	// we first extrude the FECurveMesh into an FESurfaceMesh and from that construct a new GSurfaceMeshObject.
+	FSCurveMesh* curveMesh = curveObj->GetCurveMesh();
+
+	std::unique_ptr<FSSurfaceMesh> surfMesh = std::make_unique<FSSurfaceMesh>();
+
+	vec3d t(0, 0, 1);
+	double D = GetFloatValue(DIST);
+	int NDIV = GetIntValue(NDIVS);
+	if (NDIV < 1) NDIV = 1;
+
+	int NV = curveMesh->Nodes();
+	int NE = curveMesh->Edges();
+	surfMesh->Create(NV * (NDIV + 1), 0, NE * NDIV);
+
+	// create nodes
+	for (int j = 0; j <= NDIV; ++j)
+	{
+		double d = (j * D) / NDIV;
+		for (int i = 0; i < NV; ++i)
+		{
+			FSNode& n = curveMesh->Node(i);
+			surfMesh->Node(j * NV + i).r = n.r + t * d;
+		}
+	}
+
+	// create faces
+	int c = 0;
+	for (int j = 1; j <= NDIV; ++j)
+	{
+		for (int i = 0; i < NE; ++i)
+		{
+			FSEdge& e = curveMesh->Edge(i);
+			int n0 = e.n[0];
+			int n1 = e.n[1];
+
+			FSFace& f = surfMesh->Face(c++);
+			f.SetType(FE_FACE_QUAD4);
+			f.m_gid = 0;
+			int* n = f.n;
+			n[0] = n0 + (j - 1) * NV;
+			n[1] = n1 + (j - 1) * NV;
+			n[2] = n1 + j * NV;
+			n[3] = n0 + j * NV;
+		}
+	}
+	surfMesh->RebuildMesh();
+
+	return new GSurfaceMeshObject(surfMesh.release());
+}
+
+GObject* GExtrudeModifier::ExtrudePLCObject(GObject* obj)
+{
+	std::unique_ptr<GObject> po = std::make_unique<GPLCObject>();
+	po->Copy(obj);
+
 	vec3d t(0,0,1);
 	double D = GetFloatValue(DIST);
 	int NDIV = GetIntValue(NDIVS);
@@ -77,7 +154,7 @@ bool GExtrudeModifier::Apply(GObject* po)
 				break;
 			case EDGE_BEZIER:
 				{
-					GEdge* newEdge = new GEdge(po);
+					GEdge* newEdge = new GEdge(po.get());
 					newEdge->m_ntype = EDGE_BEZIER;
 					newEdge->m_node[0] = e.m_node[0] + j * N;
 					newEdge->m_node[1] = e.m_node[1] + j * N;
@@ -87,7 +164,7 @@ bool GExtrudeModifier::Apply(GObject* po)
 				}
 				break;
 			default:
-				return false;
+				return nullptr;
 			}
 		}
 	}
@@ -235,7 +312,7 @@ bool GExtrudeModifier::Apply(GObject* po)
 	// find all vertices
 	po->UpdateNodeTypes();
 
-	return true;
+	return po.release();
 }
 
 GLMesh* GExtrudeModifier::BuildGMesh(GObject* po)

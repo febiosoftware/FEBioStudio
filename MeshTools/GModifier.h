@@ -42,7 +42,7 @@ public:
 	GModifier(void);
 	virtual ~GModifier(void);
 
-	virtual bool Apply(GObject* po) = 0;
+	virtual GObject* Apply(GObject* po) = 0;
 	virtual GLMesh* BuildGMesh(GObject* po) = 0;
 	virtual FSMesh* BuildFEMesh(GObject* po) = 0; 
 };
@@ -53,7 +53,7 @@ public:
 	enum { ORIENT, TWIST, SCALE, SMIN, SMAX };
 public:
 	GTwistModifier(FSModel* ps = 0);
-	bool Apply(GObject* po) override;
+	GObject* Apply(GObject* po) override;
 	GLMesh* BuildGMesh(GObject* po) override;
 	FSMesh* BuildFEMesh(GObject* po) override;
 };
@@ -65,7 +65,7 @@ public:
 
 public:
 	GPinchModifier(FSModel* ps = 0);
-	bool Apply(GObject* po) override;
+	GObject* Apply(GObject* po) override;
 	GLMesh* BuildGMesh(GObject* po) override;
 	FSMesh* BuildFEMesh(GObject* po) override;
 };
@@ -78,7 +78,7 @@ public:
 
 public:
 	GBendModifier();
-	bool Apply(GObject* po) override;
+	GObject* Apply(GObject* po) override;
 	GLMesh* BuildGMesh(GObject* po) override;
 	FSMesh* BuildFEMesh(GObject* po) override;
 
@@ -102,7 +102,7 @@ public:
 
 public:
 	GSkewModifier(FSModel* ps = 0);
-	bool Apply(GObject* po) override;
+	GObject* Apply(GObject* po) override;
 	GLMesh* BuildGMesh(GObject* po) override;
 	FSMesh* BuildFEMesh(GObject* po) override;
 };
@@ -113,7 +113,7 @@ public:
 	enum { TRG_ID, METHOD, NSTEPS };
 public:
 	GWrapModifier();
-	bool Apply(GObject* po) override;
+	GObject* Apply(GObject* po) override;
 	GLMesh* BuildGMesh(GObject* po) override { return 0; }
 	FSMesh* BuildFEMesh(GObject* po) override { return 0; }
 	void SetTarget(GObject* ptrg) { m_po = ptrg; }
@@ -133,9 +133,13 @@ public:
 
 public:
 	GExtrudeModifier();
-	bool Apply(GObject* po) override;
+	GObject* Apply(GObject* po) override;
 	GLMesh* BuildGMesh(GObject* po) override;
 	FSMesh* BuildFEMesh(GObject* po) override;
+
+private:
+	GObject* ExtrudePLCObject(GObject* po);
+	GObject* ExtrudeCurveObject(GObject* po);
 };
 
 class GRevolveModifier : public GModifier
@@ -145,7 +149,7 @@ public:
 
 public:
 	GRevolveModifier();
-	bool Apply(GObject* po) override;
+	GObject* Apply(GObject* po) override;
 	GLMesh* BuildGMesh(GObject* po) override;
 	FSMesh* BuildFEMesh(GObject* po) override;
 };
