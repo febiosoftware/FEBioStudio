@@ -4,16 +4,20 @@ RUN_POST_BUILD=${RUN_POST_BUILD:=true}
 
 security unlock-keychain -p "$MACOS_KEYCHAIN_PASSWORD" "$MACOS_KEYCHAIN"
 
-security import certificate.p12 \
-  -k "$MACOS_KEYCHAIN" \
-  -P "$P12_PASSWORD" \
-  -T /usr/bin/codesign
+cp /bin/echo ./tmp/sign-test
 
-security set-key-partition-list \
-  -S apple-tool:,apple:,codesign: \
-  -s \
-  -k "$MACOS_KEYCHAIN_PASSWORD" \
-  "$MACOS_KEYCHAIN"
+codesign --force --verbose=4 --sign $MACOS_SIGN ./tmp/sign-test
+
+# security import certificate.p12 \
+#   -k "$MACOS_KEYCHAIN" \
+#   -P "$P12_PASSWORD" \
+#   -T /usr/bin/codesign
+
+# security set-key-partition-list \
+#   -S apple-tool:,apple:,codesign: \
+#   -s \
+#   -k "$MACOS_KEYCHAIN_PASSWORD" \
+#   "$MACOS_KEYCHAIN"
 
 # . $(dirname $0)/cmake.sh
 
