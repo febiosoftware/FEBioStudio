@@ -6,7 +6,7 @@ security unlock-keychain -p "$MACOS_KEYCHAIN_PASSWORD" "$MACOS_KEYCHAIN"
 
 cp /bin/echo ./sign-test
 
-codesign --force --verbose=4 --sign $MACOS_SIGN ./sign-test
+codesign --force --verbose=4 --sign "$MACOS_SIGN" ./sign-test
 
 # security import certificate.p12 \
 #   -k "$MACOS_KEYCHAIN" \
