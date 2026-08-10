@@ -4,9 +4,9 @@ RUN_POST_BUILD=${RUN_POST_BUILD:=true}
 
 security unlock-keychain -p "$MACOS_KEYCHAIN_PASSWORD" "$MACOS_KEYCHAIN"
 
-cp /bin/echo ./tmp/sign-test
+cp /bin/echo ./sign-test
 
-codesign --force --verbose=4 --sign $MACOS_SIGN ./tmp/sign-test
+codesign --force --verbose=4 --sign $MACOS_SIGN ./sign-test
 
 # security import certificate.p12 \
 #   -k "$MACOS_KEYCHAIN" \
