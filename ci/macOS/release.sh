@@ -116,26 +116,26 @@ while IFS='' read -r a; do
 done < $FBS_REPO/ci/installBuilder.xml > $FBS_REPO/ci/installBuilder.xml.t
 mv $FBS_REPO/ci/installBuilder.xml{.t,}
 
-# Create installer
-rm -rf /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/*
-arch -x86_64 /Applications/InstallBuilder\ Enterprise\ 23.11.0/bin/Builder.app/Contents/MacOS/osx-x86_64 build $FBS_REPO/ci/installBuilder.xml --license $GITHUB_WORKSPACE/license.xml
+# # Create installer
+# rm -rf /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/*
+# arch -x86_64 /Applications/InstallBuilder\ Enterprise\ 23.11.0/bin/Builder.app/Contents/MacOS/osx-x86_64 build $FBS_REPO/ci/installBuilder.xml --license $GITHUB_WORKSPACE/license.xml
 
-INSTALLER_NAME=$(ls /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/)
+# INSTALLER_NAME=$(ls /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/)
 
-mkdir $UPLOAD_DIR/installer
-cp -r /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/$INSTALLER_NAME $UPLOAD_DIR/installer
-rm -rf /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/*
+# mkdir $UPLOAD_DIR/installer
+# cp -r /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/$INSTALLER_NAME $UPLOAD_DIR/installer
+# rm -rf /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/*
 
-# Notarize installer
-cd $UPLOAD_DIR/installer
-codesign --force --deep --timestamp --options runtime --entitlements $FBS_REPO/ci/macOS/entitlements.plist --sign $MACOS_SIGN $INSTALLER_NAME
-zip -r $INSTALLER_NAME.zip $INSTALLER_NAME
-xcrun notarytool submit $INSTALLER_NAME.zip --keychain-profile test-profile --wait
-xcrun stapler staple $INSTALLER_NAME
-rm $INSTALLER_NAME.zip
-zip -r $INSTALLER_NAME.zip $INSTALLER_NAME
-rm -r $INSTALLER_NAME
-cd $GITHUB_WORKSPACE
+# # Notarize installer
+# cd $UPLOAD_DIR/installer
+# codesign --force --deep --timestamp --options runtime --entitlements $FBS_REPO/ci/macOS/entitlements.plist --sign $MACOS_SIGN $INSTALLER_NAME
+# zip -r $INSTALLER_NAME.zip $INSTALLER_NAME
+# xcrun notarytool submit $INSTALLER_NAME.zip --keychain-profile test-profile --wait
+# xcrun stapler staple $INSTALLER_NAME
+# rm $INSTALLER_NAME.zip
+# zip -r $INSTALLER_NAME.zip $INSTALLER_NAME
+# rm -r $INSTALLER_NAME
+# cd $GITHUB_WORKSPACE
 
 # make sdk visible to plugins
 echo "FEBIO_SDK=$GITHUB_WORKSPACE/FEBio/febio4-sdk" >> $GITHUB_ENV 
