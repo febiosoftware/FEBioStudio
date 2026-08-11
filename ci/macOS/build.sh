@@ -30,7 +30,7 @@ security find-certificate \
 
 security verify-cert \
   -c /tmp/developer-id.cer \
-  -p codesigning
+  -p codeSign
 
 
 # cp /bin/echo ./sign-test
