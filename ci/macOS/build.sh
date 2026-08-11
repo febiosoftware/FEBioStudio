@@ -4,8 +4,13 @@ RUN_POST_BUILD=${RUN_POST_BUILD:=true}
 
 security unlock-keychain -p "$MACOS_KEYCHAIN_PASSWORD" "$MACOS_KEYCHAIN"
 
+echo "List of keychains:"
 security list-keychains -d user
+
+echo -e "\n\nDefault keychain:"
 security default-keychain -d user
+
+echo -e "\n\nDev ID Cert Auth:"
 security find-certificate -a -c "Developer ID Certification Authority" -Z
 
 
