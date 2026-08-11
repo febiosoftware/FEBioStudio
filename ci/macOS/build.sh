@@ -18,6 +18,11 @@ security find-certificate -a \
   -c "Apple Root CA" \
   -Z
 
+echo -e "\n\nSystem root store:"
+security find-certificate \
+  -c "Apple Root CA" \
+  -Z \
+  /System/Library/Keychains/SystemRootCertificates.keychain || true
 
 
 # cp /bin/echo ./sign-test
