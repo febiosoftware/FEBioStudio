@@ -13,6 +13,11 @@ security default-keychain -d user
 echo -e "\n\nDev ID Cert Auth:"
 security find-certificate -a -c "Developer ID Certification Authority" -Z
 
+echo -e "\n\nApple root:"
+security find-certificate -a \
+  -c "Apple Root CA" \
+  -Z
+
 
 
 # cp /bin/echo ./sign-test
