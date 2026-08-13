@@ -26,8 +26,10 @@ SOFTWARE.*/
 
 #include "GMeshObject.h"
 #include "GSurfaceMeshObject.h"
+#include "GCurveMeshObject.h"
 #include <MeshLib/FSSurfaceMesh.h>
 #include <MeshLib/FSMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include <MeshLib/FSMeshBuilder.h>
 #include <MeshLib/FSElementData.h>
 #include <GLLib/GLMesh.h>
@@ -67,6 +69,18 @@ GMeshObject::GMeshObject(FSSurfaceMesh* pm) : GObject(GMESH_OBJECT)
 		if (pm->Nodes()) Update();
 	}
 }
+
+// Constructor for creating a GMeshObject from a naked mesh. 
+GMeshObject::GMeshObject(FSLineMesh* pm) : GObject(GMESH_OBJECT)
+{
+	// update the object
+	if (pm)
+	{
+		SetFEMesh(MeshTools::ConvertLineToMesh(pm));
+		if (pm->Nodes()) Update();
+	}
+}
+
 
 //-----------------------------------------------------------------------------
 // This function creates a new GMeshObject from an existing GObject
@@ -1360,7 +1374,18 @@ GMeshObject* ConvertToEditableMesh(GObject* po)
 			// create a new gmeshobject
 			pnew = new GMeshObject(surfaceMesh);
 		}
-		else return nullptr;
+		else if (dynamic_cast<GCurveMeshObject*>(po))
+		{
+			// get the curve mesh
+			FSLineMesh* curveMesh = dynamic_cast<GCurveMeshObject*>(po)->GetCurveMesh();
+
+			// create a new gmeshobject
+			pnew = new GMeshObject(curveMesh);
+		}
+		else
+		{
+			return nullptr;
+		}
 	}
 	else
 	{

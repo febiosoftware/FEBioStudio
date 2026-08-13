@@ -54,6 +54,10 @@ public:
 	//! (this creates a shell mesh)
 	GMeshObject(FSSurfaceMesh* pm);
 
+	//! Constructor for creating a GMeshObject from a "naked" line mesh 
+	//! (this creates a beam/truss element mesh)
+	GMeshObject(FSLineMesh* pm);
+
 	//! Constructor for converting a GObject to a GMeshObject
 	GMeshObject(GObject* po);
 

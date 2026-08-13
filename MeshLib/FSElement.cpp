@@ -58,6 +58,7 @@ FSElement_::FSElement_()
 // Set the element type. This also sets some other type related data
 void FSElement_::SetType(int ntype)
 {
+	assert(ntype != 0);
 	m_traits = FSElementLibrary::GetTraits(ntype);
 	assert(m_traits);
 }
