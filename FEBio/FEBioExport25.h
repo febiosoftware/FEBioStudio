@@ -28,7 +28,7 @@ SOFTWARE.*/
 
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEBodyLoad.h>
-#include <FEMLib/FSProject.h>
+#include <FEMLib/FSModel.h>
 #include "FEBioExport.h"
 
 //-----------------------------------------------------------------------------
@@ -121,7 +121,7 @@ private:
 	};
 
 public:
-	FEBioExport25(FSProject& prj);
+	FEBioExport25(FSModel& fem);
 	virtual ~FEBioExport25();
 
 	void Clear() override;
@@ -134,10 +134,10 @@ public: // set export attributes
 	void SetWriteNotesFlag(bool b) { m_writeNotes = b; }
 
 protected:
-	bool PrepareExport(FSProject& prj) override;
-	void BuildNodeSetList(FSProject& prj);
-	void BuildSurfaceList(FSProject& prj);
-	void BuildElemSetList(FSProject& prj);
+	bool PrepareExport() override;
+	void BuildNodeSetList();
+	void BuildSurfaceList();
+	void BuildElemSetList();
 
 	void WriteModuleSection    (FSAnalysisStep* pstep);
 	void WriteControlSection   (FSAnalysisStep* pstep);
@@ -252,8 +252,6 @@ protected:
 	void WritePointCurve(FS1DPointFunction* f1d, XMLElement& el);
 
 protected:
-	FSModel*		m_pfem;
-
 	bool	m_useReactionMaterial2;
 	bool	m_writeNotes;
 

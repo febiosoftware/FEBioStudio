@@ -25,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <QtCore/QObject>
-#include <FEBioStudio/PropertyList.h>
-
 // This singleton class is used to interact with Python.
 // This class is stored in a separate thread so the best way to interact with it is through signal/slot
 // The only exception is calling the interrupt member, which is supposed to interrupt a long python call.
@@ -48,8 +46,6 @@ public:
 	static CPythonRunner* GetInstance();
 
 public slots:
-	void runFile(QString fileName);
-	void runTool(CCachedPropertyList* tool);
 	void runScript(QString script);
 
 signals:

@@ -145,7 +145,7 @@ void GLRuler::Update(int ntime, float dt, bool breset)
 	Post::FEPostModel& fem = *mdl->GetFSModel();
 
 	// update the size of the probe
-	BOX box = fem.GetBoundingBox();
+	BoundingBox box = fem.GetBoundingBox();
 	m_R = 0.05 * box.GetMaxExtent();
 
 	m_rt[0] = to_vec3d(fem.NodePosition(m_node[0]-1, ntime));

@@ -49,7 +49,7 @@ void CopyTo3DImage(C3DImage* img, sitk::Image sitkImg)
     // set physical dimensions and orientation
     std::vector<double> origin = sitkImg.GetOrigin();
     std::vector<double> spacing = sitkImg.GetSpacing();
-    BOX box(origin[0],origin[1],origin[2],spacing[0]*nx+origin[0],spacing[1]*ny+origin[1],spacing[2]*nz+origin[2]);
+    BoundingBox box(origin[0],origin[1],origin[2],spacing[0]*nx+origin[0],spacing[1]*ny+origin[1],spacing[2]*nz+origin[2]);
     img->SetBoundingBox(box);
 
     std::vector<double> sitkOrientation = sitkImg.GetDirection();
@@ -60,7 +60,7 @@ void CopyTo3DImage(C3DImage* img, sitk::Image sitkImg)
 
 sitk::Image SITKImageFrom3DImage(C3DImage* img)
 {
-    BOX box = img->GetBoundingBox();
+    BoundingBox box = img->GetBoundingBox();
     unsigned int nx = img->Width();
     unsigned int ny = img->Height();
     unsigned int nz = img->Depth();

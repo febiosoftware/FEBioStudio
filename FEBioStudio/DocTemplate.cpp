@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "DocTemplate.h"
 #include "ModelDocument.h"
 #include <QtCore/QDir>
-#include <FEBioXML/XMLReader.h>
+#include <FECore/XMLReader.h>
 #include <FEMLib/FSProject.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>
@@ -79,12 +79,11 @@ DocTemplateUniAxialStrain::DocTemplateUniAxialStrain()
 bool DocTemplateUniAxialStrain::Load(CModelDocument* doc)
 {
 	// First, set the correct module
-	FSProject& prj = doc->GetProject();
-	prj.SetModule(FEBio::GetModuleId("solid"));
+	FSModel& fem = *doc->GetFSModel();
+	fem.SetModule(FEBio::GetModuleId("solid"));
 
 	// get the models
-	FSModel& fsm = prj.GetFSModel();
-	GModel& gm = fsm.GetModel();
+	GModel& gm = fem.GetModel();
 
 	// add a box
 	GBox* po = new GBox;
@@ -110,31 +109,31 @@ bool DocTemplateUniAxialStrain::Load(CModelDocument* doc)
 	GFaceList* znl = new GFaceList(&gm, zn); gm.AddFaceList(znl); znl->SetName("Bottom");
 
 	// add a step
-	FSStep* step = FEBio::CreateStep("solid", &fsm);
+	FSStep* step = FEBio::CreateStep("solid", &fem);
 	step->SetName("Step1");
 	FEBio::InitDefaultProps(step);
-	fsm.AddStep(step);
+	fem.AddStep(step);
 
 	// add boundary conditions
-	FSBoundaryCondition* bcx = FEBio::CreateBoundaryCondition("zero displacement", &fsm);
+	FSBoundaryCondition* bcx = FEBio::CreateBoundaryCondition("zero displacement", &fem);
 	bcx->SetName("fix-x");
 	bcx->SetParamBool("x_dof", true);
 	bcx->SetItemList(xnl);
 	step->AddBC(bcx);
 
-	FSBoundaryCondition* bcy = FEBio::CreateBoundaryCondition("zero displacement", &fsm);
+	FSBoundaryCondition* bcy = FEBio::CreateBoundaryCondition("zero displacement", &fem);
 	bcy->SetName("fix-y");
 	bcy->SetParamBool("y_dof", true);
 	bcy->SetItemList(ynl);
 	step->AddBC(bcy);
 
-	FSBoundaryCondition* bcz = FEBio::CreateBoundaryCondition("zero displacement", &fsm);
+	FSBoundaryCondition* bcz = FEBio::CreateBoundaryCondition("zero displacement", &fem);
 	bcz->SetName("fix-z");
 	bcz->SetParamBool("z_dof", true);
 	bcz->SetItemList(znl);
 	step->AddBC(bcz);
 
-	FSBoundaryCondition* dcx = FEBio::CreateBoundaryCondition("prescribed displacement", &fsm);
+	FSBoundaryCondition* dcx = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
 	dcx->SetName("displace");
 	dcx->SetParamInt("dof", 0);
 	dcx->SetParamFloat("value", 1.0);
@@ -146,7 +145,7 @@ bool DocTemplateUniAxialStrain::Load(CModelDocument* doc)
 	lc.Clear();
 	lc.Add(0, 0);
 	lc.Add(1, 1);
-	FSLoadController* plc = fsm.AddLoadCurve(lc);
+	FSLoadController* plc = fem.AddLoadCurve(lc);
 	dcx->GetParam("value")->SetLoadCurveID(plc->GetID());
 
 	return true;

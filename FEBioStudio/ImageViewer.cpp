@@ -197,7 +197,7 @@ void CImageViewer::UpdatePath()
 		int NX = im3d.Width();
 		int NY = im3d.Height();
 
-		BOX b = ui->m_img->GetBoundingBox();
+		BoundingBox b = ui->m_img->GetBoundingBox();
 		int slice = ui->m_slider->value();
 		int NZ = im3d.Depth();
 		if (NZ == 1) NZ = 2;

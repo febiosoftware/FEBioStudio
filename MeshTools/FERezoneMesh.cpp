@@ -103,7 +103,7 @@ FSMesh* FERezoneMesh::Apply(FSMesh* pm)
 		}
 	}
 
-	BOX box = pm->GetBoundingBox();
+	BoundingBox box = pm->GetBoundingBox();
 	double R = box.GetMaxExtent();
 
 	double w = GetFloatValue(0);

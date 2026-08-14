@@ -29,7 +29,10 @@ SOFTWARE.*/
 class GMeshExport : public FSFileExport
 {
 public:
-	GMeshExport(FSProject& prj);
+	GMeshExport(FSModel& fem);
 
 	bool Write(const char* szfile) override;
+
+private:
+	FSModel& m_fem;
 };

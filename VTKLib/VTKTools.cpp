@@ -347,6 +347,21 @@ bool VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, std::vector
 		}
 	}
 
+	// partition based on labels if defined
+	for (int i=0; i<vtkMesh.m_cellData.size(); ++i)
+	{
+		const VTK::vtkDataArray& cd = vtkMesh.m_cellData[i];
+		if ((cd.m_name == "labels") && (cd.m_type == VTK::vtkDataArray::INT32) && (cd.m_numComps == 1) && (cd.size() == vtkMesh.Cells()))
+		{
+			for (int j = 0; j < elems; ++j)
+			{
+				int pid = vtkMesh.m_cellData[i].m_values_int[j];
+				pm->Element(j).m_gid = pid;
+			}
+			break;
+		}
+	}
+
 	pm->RebuildMesh();
 
 	// invert the node map

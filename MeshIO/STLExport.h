@@ -35,7 +35,7 @@ class FSSurface;
 class STLExport : public FSFileExport
 {
 public:
-	STLExport(FSProject& prj);
+	STLExport(FSModel& fem);
 	~STLExport(void);
 
 	bool Write(const char* szfile) override;
@@ -45,4 +45,7 @@ public:
 	bool Write(const char* szfile, FSMesh* pm);
 
 	bool Write(const char* szfile, FSSurface* pm);
+
+private:
+	FSModel& m_fem;
 };

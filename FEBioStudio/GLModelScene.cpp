@@ -45,9 +45,9 @@ const int PYR_NT[8] = { 0, 1, 2, 3, 4, 4, 4, 4 };
 
 // in MeshTools\lut.cpp
 extern int LUT[256][15];
-extern int ET_HEX[12][2];
-extern int ET_TET[6][2];
-extern int ET_PYR[8][2];
+extern int EL_HEX[12][2];
+extern int EL_TET[6][2];
+extern int EL_PYR[8][2];
 
 const int MAX_FIBER_COLORS = 16;
 static GLColor fiberColorPalette[MAX_FIBER_COLORS] = {
@@ -152,9 +152,9 @@ CGLModelScene::CGLModelScene(CModelDocument* doc) : m_doc(doc)
 	m_buildScene = true;
 }
 
-BOX CGLModelScene::GetBoundingBox()
+BoundingBox CGLModelScene::GetBoundingBox()
 {
-	BOX box;
+	BoundingBox box;
 	if (m_doc) box = m_doc->GetModelBox();
 	return box;
 }
@@ -324,7 +324,7 @@ void CGLModelScene::UpdateRenderTransforms(GLContext& rc)
 			if (po && po->IsVisible() && po->IsValid())
 			{
 				double v = n++;
-				BOX bo = po->GetGlobalBox();
+				BoundingBox bo = po->GetGlobalBox();
 				vec3d c = bo.Center();
 				double r = 0;
 				switch (view.m_explode_direction)
@@ -360,7 +360,7 @@ void CGLModelScene::UpdateRenderTransforms(GLContext& rc)
 			GObject* po = item->GetGObject();
 			double vi = obj[i].second;
 
-			BOX bo = po->GetGlobalBox();
+			BoundingBox bo = po->GetGlobalBox();
 
 			vec3d n(0, 0, 0);
 			double r = 0;
@@ -904,7 +904,7 @@ void CGLModelScene::Update()
 	GLScene::Update();
 }
 
-void GLPlaneCutItem::RenderBoxCut(GLRenderEngine& re, const BOX& box)
+void GLPlaneCutItem::RenderBoxCut(GLRenderEngine& re, const BoundingBox& box)
 {
 	vec3d a = box.r0();
 	vec3d b = box.r1();
@@ -938,8 +938,8 @@ void GLPlaneCutItem::RenderBoxCut(GLRenderEngine& re, const BOX& box)
 			float w1, w2, w;
 			for (int k = 0; k < 3; k++)
 			{
-				int n1 = ET_HEX[pf[k]][0];
-				int n2 = ET_HEX[pf[k]][1];
+				int n1 = EL_HEX[pf[k]][0];
+				int n2 = EL_HEX[pf[k]][1];
 
 				w1 = norm * ex[n1];
 				w2 = norm * ex[n2];
@@ -998,161 +998,6 @@ void GLPlaneCutItem::RenderBoxCut(GLRenderEngine& re, const BOX& box)
 		re.setMaterial(GLMaterial::CONSTANT, GLColor(255, 64, 255));
 		re.renderGMeshEdges(plane, false);
 	}
-}
-
-bool BuildSelectionMesh(FESelection* sel, GLMesh& mesh)
-{
-	mesh.Clear();
-	if (sel == nullptr) return false;
-
-	FEElementSelection* esel = dynamic_cast<FEElementSelection*>(sel);
-	if (esel && esel->Count())
-	{
-		mesh.NewSurfacePartition();
-		FSMesh* pm = esel->GetMesh();
-		int NE = esel->Count();
-		int n[FSFace::MAX_NODES];
-		for (int i = 0; i < NE; ++i)
-		{
-			FSElement_& el = *esel->Element(i); assert(el.IsSelected());
-			if (el.IsSolid())
-			{
-				int nf = el.Faces();
-				for (int j = 0; j < nf; ++j)
-				{
-					int nj = el.m_nbr[j];
-					FSElement_* pej = pm->ElementPtr(nj);
-					if ((pej == nullptr) || (!pej->IsSelected()))
-					{
-						FSFace f = el.GetFace(j);
-						for (int k = 0; k < f.Nodes(); ++k)
-						{
-							FSNode& nodek = pm->Node(f.n[k]);
-							vec3f r = to_vec3f(nodek.r);
-							n[k] = mesh.AddNode(r);
-							nodek.m_ntag = n[k];
-						}
-						mesh.AddFace(n, f.Nodes(), 0, -1, true, -1, i);
-
-						for (int k = 0; k < f.Edges(); ++k)
-						{
-							int en[FSEdge::MAX_NODES];
-							FSEdge edge = f.GetEdge(k);
-							for (int l = 0; l < edge.Nodes(); ++l)
-								en[l] = pm->Node(edge.n[l]).m_ntag;
-							mesh.AddEdge(en, edge.Nodes());
-						}
-					}
-				}
-			}
-			else if (el.IsShell())
-			{
-				// add shells
-				for (int k = 0; k < el.Nodes(); ++k)
-				{
-					FSNode& nodek = pm->Node(el.m_node[k]);
-					vec3f r = to_vec3f(nodek.r);
-					n[k] = mesh.AddNode(r);
-					nodek.m_ntag = n[k];
-				}
-				mesh.AddFace(n, el.Nodes(), 0, -1, true, -1, i);
-
-				for (int k = 0; k < el.Edges(); ++k)
-				{
-					int en[FSEdge::MAX_NODES];
-					FSEdge edge = el.GetEdge(k);
-					for (int l = 0; l < edge.Nodes(); ++l)
-						en[l] = pm->Node(edge.n[l]).m_ntag;
-					mesh.AddEdge(en, edge.Nodes());
-				}
-			}
-			else if (el.IsBeam())
-			{
-				for (int k = 0; k < el.Nodes(); ++k)
-				{
-					FSNode& nodek = pm->Node(el.m_node[k]);
-					vec3f r = to_vec3f(nodek.r);
-					n[k] = mesh.AddNode(r);
-					nodek.m_ntag = n[k];
-				}
-				mesh.AddEdge(n, el.Nodes());
-			}
-		}
-		mesh.Update();
-	}
-
-	FEFaceSelection* fsel = dynamic_cast<FEFaceSelection*>(sel);
-	if (fsel && fsel->Count())
-	{
-		mesh.NewSurfacePartition();
-		FSMeshBase* pm = fsel->GetMesh();
-		int NF = fsel->Count();
-		int n[FSFace::MAX_NODES];
-		for (int i = 0; i < NF; ++i)
-		{
-			FSFace& face = *fsel->Face(i); assert(face.IsSelected());
-			for (int k = 0; k < face.Nodes(); ++k)
-			{
-				FSNode& nodek = pm->Node(face.n[k]);
-				vec3f r = to_vec3f(nodek.r);
-				n[k] = mesh.AddNode(r);
-				nodek.m_ntag = n[k];
-			}
-			mesh.AddFace(n, face.Nodes(), 0, -1, true, i, -1);
-
-			for (int k = 0; k < face.Edges(); ++k)
-			{
-				FSFace* pf = pm->FacePtr(face.m_nbr[k]);
-				if ((pf == nullptr) || !pf->IsSelected() || !pf->IsVisible() || (face.GetID() < pf->GetID()))
-				{
-					int en[FSEdge::MAX_NODES];
-					FSEdge edge = face.GetEdge(k);
-					for (int l = 0; l < edge.Nodes(); ++l)
-						en[l] = pm->Node(edge.n[l]).m_ntag;
-
-					mesh.AddEdge(en, edge.Nodes());
-				}
-			}
-		}
-		mesh.Update();
-	}
-
-	FEEdgeSelection* csel = dynamic_cast<FEEdgeSelection*>(sel);
-	if (csel)
-	{
-		FSLineMesh* pm = csel->GetMesh();
-		int NE = csel->Count();
-		int n[FSEdge::MAX_NODES];
-		for (int i = 0; i < NE; ++i)
-		{
-			FSEdge* edge = csel->Edge(i); assert(edge->IsSelected());
-			for (int l = 0; l < edge->Nodes(); ++l)
-			{
-				vec3f r = to_vec3f(pm->Node(edge->n[l]).r);
-				n[l] = mesh.AddNode(r);
-			}
-			mesh.AddEdge(n, edge->Nodes());
-		}
-		mesh.Update();
-	}
-
-	FENodeSelection* nsel = dynamic_cast<FENodeSelection*>(sel);
-	if (nsel)
-	{
-		FSLineMesh* pm = nsel->GetMesh();
-		int NN = nsel->Count();
-		for (int i = 0; i < NN; ++i)
-		{
-			FSNode* node = nsel->Node(i); assert(node->IsSelected());
-			vec3f r = to_vec3f(node->r);
-			mesh.AddNode(r);
-		}
-		mesh.Update();
-	}
-
-	mesh.setModified(true);
-
-	return true;
 }
 
 int CGLModelScene::GetSelectionMode() const
@@ -1224,7 +1069,7 @@ void GLPlaneCutItem::render(GLRenderEngine& re, GLContext& rc)
 {
 	if (rc.m_settings.m_showPlaneCut)
 	{
-		BOX box = m_scene->GetBoundingBox();
+		BoundingBox box = m_scene->GetBoundingBox();
 		glx::renderBox(re, box, GLColor(200, 0, 200), false);
 
 		// render the plane cut first
@@ -2729,7 +2574,7 @@ void GLPhysicsItem::RenderRigidBodies(GLRenderEngine& re, GLContext& rc) const
 void GLPhysicsItem::RenderRigidWalls(GLRenderEngine& re) const
 {
 	FSModel* ps = m_scene->GetFSModel();
-	BOX box = ps->GetModel().GetBoundingBox();
+	BoundingBox box = ps->GetModel().GetBoundingBox();
 	double R = box.GetMaxExtent();
 	vec3d c = box.Center();
 
@@ -3029,7 +2874,7 @@ void GLPhysicsItem::BuildAxesMesh(GLContext& rc)
 	FEElementRef rel;
 
 	GLViewSettings& view = rc.m_settings;
-	BOX box = model.GetBoundingBox();
+	BoundingBox box = model.GetBoundingBox();
 	double h = 0.05 * box.GetMaxExtent() * view.m_fiber_scale;
 
 	GLColor rgb[3] = { GLColor::Red(), GLColor::Green(), GLColor::Blue() };
@@ -3120,7 +2965,7 @@ void GLFiberVizItem::render(GLRenderEngine& re, GLContext& rc)
 		FSModel* ps = m_scene->GetFSModel();
 		GModel& model = ps->GetModel();
 
-		BOX box = model.GetBoundingBox();
+		BoundingBox box = model.GetBoundingBox();
 		double h = 0.05 * box.GetMaxExtent();
 
 		GLViewSettings& vs = rc.m_settings;
@@ -3732,15 +3577,11 @@ void CGLModelScene::ColorizeMesh(GObject* po)
 			{
 				if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
 				{
-					int fnl[FSElement::MAX_NODES];
-					int nn = el.GetLocalFaceIndices(face.m_elem[0].lid, fnl);
-					assert(nn == face.Nodes());
-
-					int nf = face.Nodes();
-					for (int j = 0; j < nf; ++j)
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j)
 					{
-						double vj = data.GetElementValue(face.m_elem[0].eid, fnl[j]);
-						val[face.n[j]] = vj;
+						double vj = data.GetElementValue(face.m_elem[0].eid, j);
+						val[el.m_node[j]] = vj;
 					}
 
 					for (int j = 0; j < 3; ++j)

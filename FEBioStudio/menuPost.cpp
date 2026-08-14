@@ -373,7 +373,7 @@ void CMainWindow::on_actionAddProbe_triggered()
 	FESelection* sel = doc->GetCurrentSelection();
 	if (sel && sel->Size())
 	{
-		BOX box = sel->GetBoundingBox();
+		BoundingBox box = sel->GetBoundingBox();
 		c = box.Center();
 	}
 

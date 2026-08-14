@@ -80,6 +80,7 @@ public:
 	QLabel* owner;
 	QLabel* categoryLabel;
 	QComboBox* categoryBox;
+	QComboBox* licenseBox;
 
     ::TagWidget* tags;
 	::CPublicationWidgetView* pubs;
@@ -148,6 +149,9 @@ public:
 		}
 
 		leftLayout->addRow("Owner: ", owner = new QLabel);
+
+		leftLayout->addRow("License: ", licenseBox = new QComboBox);
+		if (modify) licenseBox->setDisabled(true); // can't change license when modifying a project
 
 		infoLayout->addLayout(leftLayout);
 
@@ -624,6 +628,13 @@ void CWzdUpload::setCategories(QStringList& categories)
 	}
 }
 
+void CWzdUpload::setLicenses(QStringList& licenses)
+{
+	ui->licenseBox->addItems(licenses);
+	ui->licenseBox->setCurrentIndex(-1); // don't select a license by default
+	ui->licenseBox->setPlaceholderText("<select a license>");
+}
+
 void CWzdUpload::setCategory(QString category)
 {
 	if(ui->categoryLabel)
@@ -646,6 +657,15 @@ void CWzdUpload::setCategory(QString category)
 void CWzdUpload::setOwner(QString owner)
 {
 	ui->owner->setText(owner);
+}
+
+void CWzdUpload::setLicense(QString license)
+{
+	int index = ui->licenseBox->findText(license);
+	if (index != -1)
+	{
+		ui->licenseBox->setCurrentIndex(index);
+	}
 }
 
 void CWzdUpload::setTags(QStringList& tags)
@@ -705,6 +725,11 @@ QString CWzdUpload::getCategory()
 	{
 		return ui->categoryBox->currentText();
 	}
+}
+
+QString CWzdUpload::getLicense()
+{
+	return ui->licenseBox->currentText();
 }
 
 QString CWzdUpload::getOwner()
@@ -863,6 +888,18 @@ void CWzdUpload::accept()
 		QMessageBox::critical(this, "Upload", "Please enter a description for your project.");
 
 		while(currentId() != 0)
+		{
+			back();
+		}
+
+		return;
+	}
+
+	if (ui->licenseBox->currentIndex() == -1)
+	{
+		QMessageBox::critical(this, "Upload", "Please select a valid license for your project.");
+
+		while (currentId() != 0)
 		{
 			back();
 		}

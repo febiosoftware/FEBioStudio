@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // Class that describes a bounding box structure
-class BOX
+class BoundingBox
 {
 public:
 	double x0, y0, z0;	
@@ -39,13 +39,13 @@ public:
 
 public:
 	// default constructor
-	BOX();
+	BoundingBox();
 
 	// constructor from coordinates
-	BOX(double X0, double Y0, double Z0, double X1, double Y1, double Z1);
+	BoundingBox(double X0, double Y0, double Z0, double X1, double Y1, double Z1);
 
 	// constructor from vectors
-	BOX(const vec3d& r0, const vec3d& r1);
+	BoundingBox(const vec3d& r0, const vec3d& r1);
 
 	// is the box valid
 	bool IsValid() const { return m_valid; }
@@ -69,16 +69,16 @@ public:
 	void Range(vec3d& n, vec3d& r0, vec3d& r1);
 
 	// box operations
-	BOX operator + (const BOX& b);
+	BoundingBox operator + (const BoundingBox& b);
 
 	// box operations
-	BOX& operator += (const BOX& b);
+	BoundingBox& operator += (const BoundingBox& b);
 
 	// see if a point is inside the box
 	bool IsInside(const vec3d& r) const;
 
 	// see if this box intersects another box
-	bool Intersects(const BOX& b) const;
+	bool Intersects(const BoundingBox& b) const;
 
 	// add a point to the box
 	void operator += (const vec3d& r);
@@ -93,20 +93,20 @@ public:
 	vec3d r0() const;
 	vec3d r1() const;
 
-	bool operator == (const BOX& b) const
+	bool operator == (const BoundingBox& b) const
 	{
 		return (m_valid == b.m_valid) &&
 			   (x0 == b.x0) && (y0 == b.y0) && (z0 == b.z0) &&
 			   (x1 == b.x1) && (y1 == b.y1) && (z1 == b.z1);
 	}
 
-	bool operator != (const BOX& b) const
+	bool operator != (const BoundingBox& b) const
 	{
 		return !(*this == b);
 	}
 };
 
-inline bool BOX::Intersects(const BOX& b) const
+inline bool BoundingBox::Intersects(const BoundingBox& b) const
 {
 	if ((b.x0 > x1) || (b.x1 < x0)) return false;
 	if ((b.y0 > y1) || (b.y1 < y0)) return false;
@@ -114,4 +114,4 @@ inline bool BOX::Intersects(const BOX& b) const
 	return true;
 }
 
-BOX LocalToGlobalBox(const BOX& box, const Transform& T);
+BoundingBox LocalToGlobalBox(const BoundingBox& box, const Transform& T);

@@ -83,6 +83,15 @@ public:
 	//! Find a part by name
 	GPart* FindPartFromName(const char* szname);
 
+	//! Find a face by name
+	GFace* FindFaceFromName(const char* szname);
+
+	//! Find an edge by name
+	GEdge* FindEdgeFromName(const char* szname);
+
+	//! Find a node by name
+	GNode* FindNodeFromName(const char* szname);
+
 	// --- C O N S T R U C T I O N ---
 
 	//! Add a node to the object

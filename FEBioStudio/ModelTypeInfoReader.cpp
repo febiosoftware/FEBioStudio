@@ -175,7 +175,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
                 case FE_STEP_THERMO_FLUID      : module = "thermo-fluid"; break;
 				case FE_STEP_FEBIO_ANALYSIS    :
                 {
-                    int mod = prj.GetModule();
+                    int mod = fsModel.GetModule();
                     module = FEBio::GetModuleName(mod);
 
                     break;

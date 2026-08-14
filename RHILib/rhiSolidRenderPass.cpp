@@ -89,21 +89,13 @@ void TwoPassSolidRenderPass::draw(QRhiCommandBuffer* cb)
 	cb->setGraphicsPipeline(m_backPass->pipeline());
 	cb->setShaderResources();
 
-	for (auto& it : m_meshList)
-	{
-		if (it.mesh->isActive())
-			it.mesh->Draw(cb);
-	}
+	drawMeshItems(cb);
 
 	// render front faces next
 	cb->setGraphicsPipeline(m_frontPass->pipeline());
 	cb->setShaderResources();
 
-	for (auto& it : m_meshList)
-	{
-		if (it.mesh->isActive())
-			it.mesh->Draw(cb);
-	}
+	drawMeshItems(cb);
 }
 
 rhi::Mesh* TwoPassSolidRenderPass::newMesh(const GLMesh* mesh)

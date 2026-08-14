@@ -192,7 +192,7 @@ void CGLMonitorScene::InitScene(FEModel* fem)
 	BuildMesh();
 	BuildGLModel();
 	UpdateStateData();
-	BOX box = GetBoundingBox();
+	BoundingBox box = GetBoundingBox();
 	if (box.IsValid())
 	{
 		double f = box.GetMaxExtent();
@@ -870,7 +870,7 @@ void CGLMonitorScene::UpdateSurfaceData(FEPlotData* pd, Post::FEMeshData& meshDa
 	}
 }
 
-BOX CGLMonitorScene::GetBoundingBox()
+BoundingBox CGLMonitorScene::GetBoundingBox()
 {
 	return m_postModel->GetBoundingBox();
 }

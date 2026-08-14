@@ -49,8 +49,8 @@ public:
     int BPS() const { return m_bps; }
     bool IsRGB() const;
 
-    virtual BOX GetBoundingBox() { return m_box; }
-    virtual void SetBoundingBox(BOX& box) { m_box = box; }
+    virtual BoundingBox GetBoundingBox() { return m_box; }
+    virtual void SetBoundingBox(BoundingBox& box) { m_box = box; }
 
     virtual mat3d GetOrientation() { return m_orientation; }
     virtual void SetOrientation(mat3d& orientation) { m_orientation = orientation; }
@@ -115,7 +115,7 @@ protected:
 
     double m_minValue, m_maxValue;
 
-    BOX     m_box; // physical bounds
+    BoundingBox     m_box; // physical bounds
     mat3d m_orientation; // rotation matrix
 };
 

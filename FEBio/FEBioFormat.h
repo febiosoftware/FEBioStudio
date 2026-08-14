@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <FEBioXML/XMLReader.h>
+#include <FECore/XMLReader.h>
 #include <FEMLib/FSProject.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEMultiMaterial.h>
@@ -55,7 +55,7 @@ protected:
 	void ParseUnknownTag(XMLTag& tag);
 	void ParseUnknownAttribute(XMLTag& tag, const char* szatt);
 
-	bool ReadParam(ParamContainer& PC, XMLTag& tag);
+	bool ReadParam(ParamContainer& PC, XMLTag& tag, const char* szparamName = nullptr);
 	bool ReadChoiceParam(Param& p, const char* szval);
 	void ReadParameters(ParamContainer& PC, XMLTag& tag);
 
@@ -98,7 +98,9 @@ protected:
 
 	void ParseMappedParameter(XMLTag& tag, Param* param);
 
-protected:
+	void ParseScriptsSection(XMLTag& tag);
+
+public:
 	// NOTE: This is only used by FEBioFormat4 and FEBioFormat3.
 	//       Do not use in older file readers. 
 	void ParseModelComponent(FSModelComponent* pmc, XMLTag& tag);

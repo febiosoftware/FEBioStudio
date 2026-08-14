@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include "DataFieldSelector.h"
 #include "PropertyListView.h"
 #include "units.h"
+#include <FSCore/util.h>
 
 //=================================================================================================
 
@@ -412,29 +413,6 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 		break;
 	case CProperty::String:
 	case CProperty::MathString:
-		{
-			if (pi.values.empty() == false)
-			{
-				QComboBox* box = new QComboBox();
-				box->setSizePolicy(QSizePolicy::Expanding, sizePolicy().verticalPolicy());
-				QStringList enumValues = pi.values;
-				box->addItems(enumValues);
-				QString s = v.toString();
-				int n = box->findText(s);
-				box->setCurrentIndex(n);
-				QObject::connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(onDataChanged()));
-				return box;
-			}
-			else
-			{
-				QLineEdit* edit = new QLineEdit;
-				edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-				edit->setText(v.toString());
-				connect(edit, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
-				return edit;
-			}
-		}
-		break;
 	case CProperty::Resource:
 			{
 				CResourceEdit* edit = new CResourceEdit;
@@ -521,6 +499,15 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 			return edit;
 		}
 		break;
+	case CProperty::Mat2:
+	{
+		QLineEdit* edit = new QLineEdit;
+		edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+		edit->setText(v.toString());
+		connect(edit, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
+		return edit;
+	}
+	break;
 	case CProperty::Mat3:
 		{
 			QLineEdit* edit = new QLineEdit;
@@ -542,7 +529,7 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 			}
 			else
 			{
-				std::vector<int> l = StringToVectorInt(v.toString());
+				std::vector<int> l = StringToVectorInt(v.toString().toStdString());
 				QListWidget* pw = new QListWidget;
 				for (int i = 0; i < pi.values.size(); ++i)
 				{
@@ -866,6 +853,12 @@ void CPropertyListForm::onDataChanged()
             }
             break;
         case CProperty::Vec2i:
+            {
+                QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+                if (edit) m_list->SetPropertyValue(propIndex, edit->text());
+            }
+            break;
+        case CProperty::Mat2:
             {
                 QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
                 if (edit) m_list->SetPropertyValue(propIndex, edit->text());

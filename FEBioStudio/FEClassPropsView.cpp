@@ -34,6 +34,8 @@ SOFTWARE.*/
 #include <QApplication>
 #include <QLabel>
 #include <QToolButton>
+#include <QInputDialog>
+#include <QPointer>
 #include "EditVariableParam.h"
 #include "units.h"
 #include "PropertyList.h"
@@ -51,9 +53,11 @@ SOFTWARE.*/
 #include <FEMLib/FEMaterial.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
+#include <FSCore/util.h>
 #include "SelectionBox.h"
 #include "DlgAddPhysicsItem.h"
 #include "MainWindow.h"
+#include "FEBioStudio.h"
 using namespace std;
 
 QStringList GetEnumValues(FSModel* fem, const char* ch)
@@ -192,6 +196,26 @@ void CMeshItemPropertySelector::onSelectionChanged(int n)
 }
 
 //=================================================================================
+CScriptPropertySelector::CScriptPropertySelector(FSModel* fem, FSScriptedComponent* ps, QWidget* parent) : QComboBox(parent)
+{
+	m_fem = fem;
+	m_ps = ps;
+
+	int index = -1;
+	std::vector<FEBCodeScript*> scripts = m_fem->GetMatchingScripts(m_ps->context);
+
+	int n = 0;
+	for (auto s : scripts)
+	{
+		addItem(QString::fromStdString(s->GetName()), s->GetID());
+		if (s->GetID() == m_ps->scriptID) index = n;
+		n++;
+	}
+	addItem("<new...>", -1);
+	setCurrentIndex(index);
+}
+
+//=================================================================================
 class FEClassPropsModel : public QAbstractItemModel
 {
 public:
@@ -242,6 +266,8 @@ public:
 		{
 			if (m_paramId >= 0)
 			{
+				if ((m_paramId < 0) || (m_paramId >= m_pc->Parameters())) return QVariant();
+
 				Param& p = m_pc->GetParam(m_paramId);
 				if (column == 0)
 				{
@@ -345,7 +371,7 @@ public:
 					break;
 					case Param_VEC3D:
 					{
-						QString v = Vec3dToString(p.val<vec3d>());
+						QString v = QString::fromStdString(Vec3dToString(p.val<vec3d>()));
 						const char* szunit = p.GetUnit();
 						if (szunit)
 						{
@@ -362,11 +388,24 @@ public:
 						return (b ? "Yes" : "No");
 					}
 					break;
-					case Param_VEC2I: return Vec2iToString(p.val<vec2i>()); break;
-					case Param_VEC2D: return Vec2dToString(p.val<vec2d>()); break;
+					case Param_MAT2D:
+					{
+						QString v = QString::fromStdString(Mat2dToString(p.val<mat2d>()));
+						const char* szunit = p.GetUnit();
+						if (szunit)
+						{
+							QString unitString = Units::GetUnitString(szunit);
+							if (unitString.isEmpty() == false)
+								v += QString(" %1").arg(unitString);
+						}
+						return v;
+					}
+					break;
+					case Param_VEC2I: return QString::fromStdString(Vec2iToString(p.val<vec2i>())); break;
+					case Param_VEC2D: return QString::fromStdString(Vec2dToString(p.val<vec2d>())); break;
 					case Param_MAT3D:
 					{
-						QString v = Mat3dToString(p.val<mat3d>());
+						QString v = QString::fromStdString(Mat3dToString(p.val<mat3d>()));
 						const char* szunit = p.GetUnit();
 						if (szunit)
 						{
@@ -379,7 +418,7 @@ public:
 					break;
 					case Param_MAT3DS:
 					{
-						QString v = Mat3dsToString(p.val<mat3ds>());
+						QString v = QString::fromStdString(Mat3dsToString(p.val<mat3ds>()));
 						const char* szunit = p.GetUnit();
 						if (szunit)
 						{
@@ -462,14 +501,14 @@ public:
 					case Param_ARRAY_INT:
 					{
 						std::vector<int> v = p.val<std::vector<int> >();
-						QString s = VectorIntToString(v);
+						QString s = QString::fromStdString(VectorIntToString(v));
 						return s;
 					}
 					break;
 					case Param_ARRAY_DOUBLE:
 					{
 						std::vector<double> v = p.val<std::vector<double> >();
-						QString s = VectorDoubleToString(v);
+						QString s = QString::fromStdString(VectorDoubleToString(v));
 						return s;
 					}
 					break;
@@ -482,7 +521,7 @@ public:
 						{
 							assert((m_index >= 0) && (m_index < v.size()));
 							vec2d& r = v[m_index];
-							s = Vec2dToString(r);
+							s = QString::fromStdString(Vec2dToString(r));
 						}
 						return s;
 					}
@@ -506,12 +545,13 @@ public:
 						return n;
 					}
 					break;
-					case Param_VEC3D: return Vec3dToString(p.val<vec3d>()); break;
+					case Param_VEC3D: return QString::fromStdString(Vec3dToString(p.val<vec3d>())); break;
 					case Param_BOOL: return (p.val<bool>() ? 1 : 0); break;
-					case Param_VEC2I:return Vec2iToString(p.val<vec2i>()); break;
-					case Param_VEC2D:return Vec2dToString(p.val<vec2d>()); break;
-					case Param_MAT3D: return Mat3dToString(p.val<mat3d>()); break;
-					case Param_MAT3DS: return Mat3dsToString(p.val<mat3ds>()); break;
+					case Param_VEC2I:return QString::fromStdString(Vec2iToString(p.val<vec2i>())); break;
+					case Param_VEC2D:return QString::fromStdString(Vec2dToString(p.val<vec2d>())); break;
+					case Param_MAT2D: return QString::fromStdString(Mat2dToString(p.val<mat2d>())); break;
+					case Param_MAT3D: return QString::fromStdString(Mat3dToString(p.val<mat3d>())); break;
+					case Param_MAT3DS: return QString::fromStdString(Mat3dsToString(p.val<mat3ds>())); break;
 					case Param_MATH: return QString::fromStdString(p.GetMathString()); break;
 					case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
 					case Param_STD_VECTOR_INT: return -1; break;
@@ -526,19 +566,19 @@ public:
 					{
 						std::vector<vec2d> v = p.GetVectorVec2dValue();
 						if (m_index == -1) return (int) v.size();
-						else return Vec2dToString(v[m_index]);
+						else return QString::fromStdString(Vec2dToString(v[m_index]));
 					}
 					break;
 					case Param_ARRAY_INT:
 					{
 						std::vector<int> v = p.GetArrayIntValue();
-						return VectorIntToString(v);
+						return QString::fromStdString(VectorIntToString(v));
 					}
 					break;
 					case Param_ARRAY_DOUBLE:
 					{
 						std::vector<double> v = p.GetArrayDoubleValue();
-						return VectorDoubleToString(v);
+						return QString::fromStdString(VectorDoubleToString(v));
 					}
 					break;
 					default:
@@ -606,6 +646,20 @@ public:
 							string s = pi->GetName();
 							if (s.empty()) return QString("(unnamed)");
 							else return QString::fromStdString(s);
+						}
+					}
+					else if (prop.GetSuperClassID() == FESCRIPT_ID)
+					{
+						FSScriptedComponent* script = dynamic_cast<FSScriptedComponent*>(prop.GetComponent()); assert(script);
+						if (script)
+						{
+							FEBCodeScript* code = GetFSModel()->GetScriptFromID(script->scriptID);
+							if (code)
+							{
+								return QString::fromStdString(code->GetName());
+							}
+							else
+								return QString("(none)");
 						}
 					}
 					else
@@ -682,14 +736,14 @@ public:
 				}
 				break;
 				case Param_VEC3D: {
-					vec3d v = StringToVec3d(value.toString());
+					vec3d v = StringToVec3d(value.toString().toStdString());
 					if ((v == p.GetVec3dValue()) == false) {
 						p.SetVec3dValue(v);
 						p.SetModified(true);
 					}
 				}break;
 				case Param_VEC2I: {
-					vec2i v = StringToVec2i(value.toString());
+					vec2i v = StringToVec2i(value.toString().toStdString());
 					vec2i s = p.GetVec2iValue();
 					if ((v.x != s.x) || (v.y != s.y)) {
 						p.SetVec2iValue(v);
@@ -697,21 +751,27 @@ public:
 					}
 				}break;
 				case Param_VEC2D: {
-					vec2d v = StringToVec2d(value.toString());
+					vec2d v = StringToVec2d(value.toString().toStdString());
 					vec2d s = p.GetVec2dValue();
-					if ((v.x() != s.x()) || (v.y() != s.y())) {
+					if ((v.x != s.x) || (v.y != s.y)) {
 						p.SetVec2dValue(v);
 						p.SetModified(true);
 					}
 				}break;
+				case Param_MAT2D: {
+					mat2d m = StringToMat2d(value.toString().toStdString());
+					p.SetMat2dValue(m);
+					p.SetModified(true);
+				}
+				break;
 				case Param_MAT3D: {
-					mat3d m = StringToMat3d(value.toString());
+					mat3d m = StringToMat3d(value.toString().toStdString());
 					p.SetMat3dValue(m);
 					p.SetModified(true);
 				}
 				break;
 				case Param_MAT3DS: {
-					mat3ds m = StringToMat3ds(value.toString());
+					mat3ds m = StringToMat3ds(value.toString().toStdString());
 					p.SetMat3dsValue(m);
 					p.SetModified(true);
 				}
@@ -784,7 +844,7 @@ public:
 					}
 					else
 					{
-						vec2d r = StringToVec2d(value.toString());
+						vec2d r = StringToVec2d(value.toString().toStdString());
 						v[m_index] = r;
 						p.SetVectorVec2dValue(v);
 					}
@@ -794,7 +854,7 @@ public:
 				case Param_ARRAY_INT:
 				{
 					QString s = value.toString();
-					std::vector<int> v = StringToVectorInt(s);
+					std::vector<int> v = StringToVectorInt(s.toStdString());
 					p.SetArrayIntValue(v);
 					p.SetModified(true);
 				}
@@ -802,7 +862,7 @@ public:
 				case Param_ARRAY_DOUBLE:
 				{
 					QString s = value.toString();
-					std::vector<double> v = StringToVectorDouble(s);
+					std::vector<double> v = StringToVectorDouble(s.toStdString());
 					p.SetArrayDoubleValue(v);
 					p.SetModified(true);
 				}
@@ -815,9 +875,15 @@ public:
 			}
 			else if (isProperty())
 			{
+				FSProperty& prop = m_pc->GetProperty(m_propId);
+
+				if (prop.GetSuperClassID() == FESCRIPT_ID)
+				{
+					return false;
+				}
+				
 				int classId = value.toInt();
 
-				FSProperty& prop = m_pc->GetProperty(m_propId);
 
 				if (classId == -2)
 				{
@@ -1216,7 +1282,7 @@ public:
 	QVariant headerData(int section, Qt::Orientation orientation, int role) const override
 	{
 		if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-			return (section == 0? "Property" : "Value");
+			return (section == 0? "Parameter" : "Value");
 		return QAbstractItemModel::headerData(section, orientation, role);
 	}
 
@@ -1294,6 +1360,16 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 			if (p->IsVariable())
 			{
 				CEditVariableParam* pw = new CEditVariableParam(parent);
+
+				// We got to use a const_cast here since closeEditor requires the non-const pointer to the delegate
+				// but we're inside a const member.
+				FEClassPropsDelegate* that = const_cast<FEClassPropsDelegate*>(this);
+
+				connect(pw, &CEditVariableParam::requestClose, this, [that, pw]() {
+					emit that->closeEditor(pw, QAbstractItemDelegate::NoHint);
+					});
+
+
 /*				FSModel* fem = item->GetFSModel();
 				if (fem)
 				{
@@ -1349,6 +1425,7 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 					return pw;
 				}
 				break;
+			case Param_MAT2D:
 			case Param_MAT3D:
 				{
 					QLineEdit* pw = new QLineEdit(parent);
@@ -1465,7 +1542,7 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 					{
 						QSpinBox* pw = new QSpinBox(parent);
 						pw->setMinimum(0);
-						pw->setValue(v.size());
+						pw->setValue((int)v.size());
 						return pw;
 					}
 					else
@@ -1482,7 +1559,7 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 					{
 						QSpinBox* pw = new QSpinBox(parent);
 						pw->setMinimum(0);
-						pw->setValue(v.size());
+						pw->setValue((int)v.size());
 						return pw;
 					}
 					else
@@ -1529,11 +1606,35 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 					QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
 					return pc;
 				}
+				else if (nclass == FESCRIPT_ID)
+				{
+					FSModel* fem = item->GetFSModel();
+					FSScriptedComponent* ps = dynamic_cast<FSScriptedComponent*>(pcbi);
+					CScriptPropertySelector* pc = new CScriptPropertySelector(fem, ps, parent);
+
+					FEClassPropsDelegate* that = const_cast<FEClassPropsDelegate*>(this);
+					connect(pc, &QComboBox::activated,
+						that, [that, pc](int index) {
+							emit that->commitData(pc);
+							emit that->closeEditor(pc);
+						});
+					return pc;
+				}
 				else
 				{
-					CPropertySelector* pc = new CPropertySelector(&prop, pcbi, item->m_index, item->GetFSModel(), parent);
-					QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
-					return pc;
+					if (!prop.IsFixed())
+					{
+						CPropertySelector* pc = new CPropertySelector(&prop, pcbi, item->m_index, item->GetFSModel(), parent);
+						QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
+						return pc;
+					}
+					else
+					{
+						QLineEdit* pw = new QLineEdit(parent);
+						pw->setReadOnly(true);
+						if (pcbi) pw->setText(QString::fromStdString(pcbi->GetTypeString()));
+						return pw;
+					}
 				}
 			}
 		}
@@ -1577,6 +1678,69 @@ void FEClassPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* mod
 			model->setData(index, n);
 			return;
 		}
+	}
+	else if (dynamic_cast<CScriptPropertySelector*>(editor))
+	{
+		CScriptPropertySelector* ps = dynamic_cast<CScriptPropertySelector*>(editor);
+
+		int newIndex = ps->currentIndex();
+		int lastIndex = ps->count() - 1;
+
+		// Current value stored in the model
+		QString currentValue = index.data(Qt::EditRole).toString();
+
+		FSModel* fem = ps->m_fem;
+		FSScriptedComponent* sc = ps->m_ps;
+
+		FEClassPropsModel* classModel = dynamic_cast<FEClassPropsModel*>(model);
+
+		if (newIndex == lastIndex) // "<new script...>"
+		{
+			// Revert selection immediately (do NOT commit "<new script...>")
+			int prevIndex = ps->findText(currentValue);
+			if (prevIndex >= 0)
+				ps->setCurrentIndex(prevIndex);
+
+			// Defer dialog
+			QMetaObject::invokeMethod(model, [=]() {
+				if (!model) return;
+
+				QString newScriptName = "Script" + QString::number(fem->GetNextScriptID());
+
+				bool ok = false;
+				QString name = QInputDialog::getText(nullptr,
+					"New Script",
+					"Script name:",
+					QLineEdit::Normal,
+					newScriptName,
+					&ok);
+
+				if (!ok || name.isEmpty()) return;
+
+				FEBCodeScript* script = fem->AddNewScript(name.toStdString(), sc->context);
+				if (script == nullptr)
+				{
+					QMessageBox::critical(nullptr, "Error", "Failed to create script. A script with the same name may already exist.");
+					return;
+				}
+				sc->AssignScript(script);
+
+				classModel->SetClass(dynamic_cast<FSCoreBase*>(sc->GetParent()), fem);
+
+				// we need to update the model tree since a new script was added.
+				// Should probably look for a better way to do this.
+				FBS::getMainWindow()->UpdateModel();
+				
+				}, Qt::QueuedConnection);
+		}
+		else
+		{
+			int scriptID = ps->currentData().toInt();
+			FEBCodeScript* script = fem->GetScriptFromID(scriptID);
+			sc->AssignScript(script);
+			classModel->SetClass(dynamic_cast<FSCoreBase*>(sc->GetParent()), fem);
+		}
+		return;
 	}
 	else if (dynamic_cast<QComboBox*>(editor))
 	{
@@ -1647,6 +1811,20 @@ void FEClassPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* mod
 			int matId = pw->currentData(Qt::UserRole).toInt();
 			model->setData(index, matId);
 			return;
+		}
+	}
+	else if (dynamic_cast<CEditVariableParam*>(editor))
+	{
+		CEditVariableParam* pw = dynamic_cast<CEditVariableParam*>(editor);
+		FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
+		if (item->isParameter())
+		{
+			Param* p = item->parameter();
+			if (p && p->IsVariable())
+			{
+				model->setData(index, pw->text());
+				return;
+			}
 		}
 	}
 	QStyledItemDelegate::setModelData(editor, model, index);

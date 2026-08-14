@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "FSProject.h"
 #include "FEInitialCondition.h"
 #include "FESurfaceLoad.h"
+#include "FEBodyLoad.h"
 #include "FEMKernel.h"
 #include "FEInterface.h"
 #include <FEBioLink/FEBioClass.h>
@@ -145,7 +146,27 @@ int FSStep::ActiveBCs()
 //-----------------------------------------------------------------------------
 FSBoundaryCondition* FSStep::BC(int i) { return imp->m_BC[i]; }
 
-//-----------------------------------------------------------------------------
+FSBoundaryCondition* FSStep::FindBC(const std::string& name)
+{
+	for (int i = 0; i < imp->m_BC.Size(); ++i)
+	{
+		if (imp->m_BC[i]->GetName() == name) return imp->m_BC[i];
+	}
+	return nullptr;
+}
+
+FSBoundaryCondition* FSStep::AddBC(const std::string& name, const std::string& type)
+{
+	FSBoundaryCondition* pbc = FEBio::CreateBoundaryCondition(type, GetFSModel());
+	if (pbc)
+	{
+		pbc->SetName(name);
+		AddBC(pbc);
+		return pbc;
+	}
+	return nullptr;
+}
+
 void FSStep::AddBC(FSBoundaryCondition* pbc)
 { 
 	imp->m_BC.Add(pbc);
@@ -182,6 +203,51 @@ int FSStep::Loads() { return (int)imp->m_FC.Size(); }
 
 //-----------------------------------------------------------------------------
 FSLoad* FSStep::Load(int i) { return imp->m_FC[i]; }
+
+FSLoad* FSStep::FindLoad(const std::string& name)
+{
+	for (int i = 0; i < imp->m_FC.Size(); ++i)
+	{
+		if (imp->m_FC[i]->GetName() == name) return imp->m_FC[i];
+	}
+	return nullptr;
+}
+
+FSLoad* FSStep::AddNodalLoad(const std::string& name, const std::string& type)
+{
+	FSLoad* pfc = FEBio::CreateNodalLoad(type, GetFSModel());
+	if (pfc)
+	{
+		pfc->SetName(name);
+		AddLoad(pfc);
+		return pfc;
+	}
+	return nullptr;
+}
+
+FSLoad* FSStep::AddSurfaceLoad(const std::string& name, const std::string& type)
+{
+	FSLoad* pfc = FEBio::CreateSurfaceLoad(type, GetFSModel());
+	if (pfc)
+	{
+		pfc->SetName(name);
+		AddLoad(pfc);
+		return pfc;
+	}
+	return nullptr;
+}
+
+FSLoad* FSStep::AddBodyLoad(const std::string& name, const std::string& type)
+{
+	FSLoad* pfc = FEBio::CreateBodyLoad(type, GetFSModel());
+	if (pfc)
+	{
+		pfc->SetName(name);
+		AddLoad(pfc);
+		return pfc;
+	}
+	return nullptr;
+}
 
 //-----------------------------------------------------------------------------
 void FSStep::AddLoad(FSLoad* pfc)
@@ -221,6 +287,27 @@ int FSStep::ICs() { return (int)imp->m_IC.Size(); }
 //-----------------------------------------------------------------------------
 FSInitialCondition* FSStep::IC(int i) { return imp->m_IC[i]; }
 
+FSInitialCondition* FSStep::FindIC(const std::string& name)
+{
+	for (int i = 0; i < imp->m_IC.Size(); ++i)
+	{
+		if (imp->m_IC[i]->GetName() == name) return imp->m_IC[i];
+	}
+	return nullptr;
+}
+
+FSInitialCondition* FSStep::AddIC(const std::string& name, const std::string& type)
+{
+	FSInitialCondition* pic = FEBio::CreateInitialCondition(type, GetFSModel());
+	if (pic)
+	{
+		pic->SetName(name);
+		AddIC(pic);
+		return pic;
+	}
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 void FSStep::AddIC(FSInitialCondition* pic)
 {
@@ -251,6 +338,27 @@ int FSStep::Interfaces() { return (int)imp->m_Int.Size(); }
 
 //-----------------------------------------------------------------------------
 FSInterface* FSStep::Interface(int i) { return imp->m_Int[i]; }
+
+FSInterface* FSStep::FindInterface(const std::string& name)
+{
+	for (int i = 0; i < imp->m_Int.Size(); ++i)
+	{
+		if (imp->m_Int[i]->GetName() == name) return imp->m_Int[i];
+	}
+	return nullptr;
+}
+
+FSInterface* FSStep::AddInterface(const std::string& name, const std::string& type)
+{
+	FSInterface* pi = FEBio::CreatePairedInterface(type, GetFSModel());
+	if (pi)
+	{
+		pi->SetName(name);
+		AddInterface(pi);
+		return pi;
+	}
+	return nullptr;
+}
 
 //-----------------------------------------------------------------------------
 void FSStep::AddInterface(FSInterface* pi)
@@ -305,6 +413,26 @@ int FSStep::Constraints(int ntype)
 FSModelConstraint* FSStep::Constraint(int i)
 {
 	return imp->m_NLC[i];
+}
+
+FSModelConstraint* FSStep::FindConstraint(const std::string& name)
+{
+	for (int i = 0; i < imp->m_NLC.Size(); ++i)
+	{
+		if (imp->m_NLC[i]->GetName() == name) return imp->m_NLC[i];
+	}
+	return nullptr;
+}
+
+FSModelConstraint* FSStep::AddConstraint(const std::string& name, const std::string& type)
+{
+	FSModelConstraint* pc = FEBio::CreateModelConstraint(type, GetFSModel());
+	if (pc)
+	{
+		pc->SetName(name);
+		AddConstraint(pc);
+	}
+	return pc;
 }
 
 //-----------------------------------------------------------------------------
@@ -379,7 +507,7 @@ void FSStep::RemoveAllRigidConstraints()
 //-----------------------------------------------------------------------------
 int FSStep::RigidLoads()
 {
-	return imp->m_RL.Size();
+	return (int)imp->m_RL.Size();
 }
 
 int FSStep::RigidLoads(int ntype)
@@ -409,7 +537,7 @@ void FSStep::InsertRigidLoad(int n, FSRigidLoad* prc)
 
 int FSStep::RemoveRigidLoad(FSRigidLoad* prc)
 {
-	return imp->m_RL.Remove(prc);
+	return (int)imp->m_RL.Remove(prc);
 }
 
 void FSStep::RemoveAllRigidLoads()
@@ -420,7 +548,7 @@ void FSStep::RemoveAllRigidLoads()
 //-----------------------------------------------------------------------------
 int FSStep::RigidBCs()
 {
-	return imp->m_RBC.Size();
+	return (int)imp->m_RBC.Size();
 }
 
 int FSStep::RigidBCs(int ntype)
@@ -450,7 +578,7 @@ void FSStep::InsertRigidBC(int n, FSRigidBC* prc)
 
 int FSStep::RemoveRigidBC(FSRigidBC* prc)
 {
-	return imp->m_RBC.Remove(prc);
+	return (int)imp->m_RBC.Remove(prc);
 }
 
 void FSStep::RemoveAllRigidBCs()
@@ -461,7 +589,7 @@ void FSStep::RemoveAllRigidBCs()
 //-----------------------------------------------------------------------------
 int FSStep::RigidICs()
 {
-	return imp->m_RIC.Size();
+	return (int)imp->m_RIC.Size();
 }
 
 int FSStep::RigidICs(int ntype)
@@ -491,7 +619,7 @@ void FSStep::InsertRigidIC(int n, FSRigidIC* prc)
 
 int FSStep::RemoveRigidIC(FSRigidIC* prc)
 {
-	return imp->m_RIC.Remove(prc);
+	return (int)imp->m_RIC.Remove(prc);
 }
 
 void FSStep::RemoveAllRigidICs()
@@ -554,6 +682,26 @@ int FSStep::MeshAdaptors() { return (int)imp->m_MA.Size(); }
 
 //-----------------------------------------------------------------------------
 FSMeshAdaptor* FSStep::MeshAdaptor(int i) { return imp->m_MA[i]; }
+
+FSMeshAdaptor* FSStep::FindMeshAdaptor(const std::string& name)
+{
+	for (int i = 0; i < MeshAdaptors(); ++i)
+	{
+		if (MeshAdaptor(i)->GetName() == name) return MeshAdaptor(i);
+	}
+	return nullptr;
+}
+
+FSMeshAdaptor* FSStep::AddMeshAdaptor(const std::string& name, const std::string& type)
+{
+	FSMeshAdaptor* adaptor = FEBio::CreateMeshAdaptor(type, GetFSModel());
+	if (adaptor)
+	{
+		adaptor->SetName(name);
+		AddMeshAdaptor(adaptor);
+	}
+	return adaptor;
+}
 
 //-----------------------------------------------------------------------------
 void FSStep::AddMeshAdaptor(FSMeshAdaptor* pi)
@@ -1301,7 +1449,8 @@ void FSStep::Load(IArchive &ar)
 				ar.CloseChunk();
 			}
 		}
-		break;		case CID_MESH_ADAPTOR_SECTION:
+		break;
+		case CID_MESH_ADAPTOR_SECTION:
 		{
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{

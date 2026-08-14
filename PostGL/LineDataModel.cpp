@@ -35,7 +35,7 @@ using namespace Post;
 class OctreeBox
 {
 public:
-	OctreeBox(BOX box, int levels) : m_box(box), m_level(levels)
+	OctreeBox(BoundingBox box, int levels) : m_box(box), m_level(levels)
 	{
 		if (levels == 0)
 		{
@@ -59,7 +59,7 @@ public:
 					double xb = x0 + (i + 1.0) * (x1 - x0) * 0.5;
 					double yb = y0 + (j + 1.0) * (y1 - y0) * 0.5;
 					double zb = z0 + (k + 1.0) * (z1 - z0) * 0.5;
-					BOX boxi(xa, ya, za, xb, yb, zb);
+					BoundingBox boxi(xa, ya, za, xb, yb, zb);
 					boxi.Inflate(R * 1e-7);
 					m_child[n++] = new OctreeBox(boxi, levels - 1);
 				}
@@ -102,7 +102,7 @@ public:
 
 private:
 	int			m_level;
-	BOX			m_box;
+	BoundingBox			m_box;
 	OctreeBox* m_child[8];
 	std::vector<int>	m_nodes;
 };
@@ -263,7 +263,7 @@ void LineData::processLines()
 	if (lines == 0) return;
 
 	// find the bounding box
-	BOX box;
+	BoundingBox box;
 	for (int i = 0; i < lines; ++i)
 	{
 		Post::LINESEGMENT& line = Line(i);

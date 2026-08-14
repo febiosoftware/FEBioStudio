@@ -35,6 +35,8 @@ SOFTWARE.*/
 #include "FELoadController.h"
 #include "FEMeshDataGenerator.h"
 #include "GMaterial.h"
+#include "PlotDataSettings.h"
+#include "LogDataSettings.h"
 #include "FEDataVariable.h"
 #include "FESoluteData.h"
 #include "FEDOF.h"
@@ -42,6 +44,7 @@ SOFTWARE.*/
 #include <FSCore/FSObjectList.h>
 #include <unordered_set>
 #include <memory>
+#include "FEBCodeScript.h"
 
 class GModel;
 class FSReactionMaterial;
@@ -127,6 +130,9 @@ public:
 	//! Add a material to the model
 	void AddMaterial(GMaterial* pmat);
 
+	//! add a material from a type string
+	GMaterial* AddMaterial(const std::string& name, const std::string& type);
+
 	//! Replace a material in the model
 	void ReplaceMaterial(GMaterial* pold, GMaterial* pnew);
 
@@ -181,8 +187,13 @@ public:
 	FSStep* GetStep(int i);
 	//! Find an analysis step by ID
 	FSStep* FindStep(int nid);
+	//! Find an analysis step by name
+	FSStep* FindStep(const std::string& name);
 	//! Get the index of the specified analysis step
 	int GetStepIndex(FSStep* ps);
+
+	//! Create an analysis step of the specified type and add it to the model
+	FSStep* AddStep(const std::string& name, const std::string& type);
 
 	//! Add an analysis step to the model
 	void AddStep(FSStep* ps);
@@ -244,6 +255,38 @@ public:
 	
 	//! Get the name of a variable
 	const char* GetVariableName(const char* szvar, int n, bool longName = true);
+
+public:
+	void ForAllComponents(std::function<void(FSModelComponent*)> func);
+	void ForAllProperties(FSModelComponent* pc, std::function<void(FSModelComponent*)> func);
+
+public:
+	FEBCodeScript* CreateScript(const std::string& name, const std::string& code = "return 0.0;");
+
+	FEBCodeScript* AddNewScript(const std::string& name, ScriptContext context);
+	FEBCodeScript* AddNewScript(const std::string& name, const std::string& code);
+	void AddScript(FEBCodeScript* ps);
+	void RemoveScript(FEBCodeScript* ps);
+
+	FEBCodeScript* GetScript(const std::string& name);
+
+	FEBCodeScript* GetScriptFromID(int id);
+
+	FEBCodeScript* GetScript(size_t n);
+
+	size_t Scripts() const;
+
+	int GetNextScriptID() const;
+
+	void UpdateScriptDependencies(FEBCodeScript* script);
+
+	void UpdateScriptDependency(FSScriptedComponent* component, FEBCodeScript* script);
+
+	std::vector<FEBCodeScript*> GetMatchingScripts(const ScriptContext& ctx);
+
+	bool ValidateScript(const std::string& code, const ScriptContext& context, std::string& err);
+
+	void UpdateScriptReferenceCounts();
 
 public:
 	// These functions deal with enums
@@ -315,6 +358,10 @@ public:
 	FSLoadController* GetLoadController(int i);
 	//! Add a load controller to the model
 	void AddLoadController(FSLoadController* plc);
+
+	//! Add a load controller to the model by name and type
+	FSLoadController* AddLoadController(const std::string& name, const std::string& type);
+
 	//! Remove a load controller from the model
 	int RemoveLoadController(FSLoadController* plc);
 
@@ -323,6 +370,9 @@ public:
 
 	//! Get a load controller by ID
 	FSLoadController* GetLoadControllerFromID(int lc);
+
+	//! Find a load controller by name
+	FSLoadController* FindLoadController(const std::string& name);
 
 	//! Update load controller reference counts
 	void UpdateLoadControllerReferenceCounts();
@@ -357,6 +407,25 @@ public:
     //! Get allocator IDs of all in-use plugins
     void GetActivePluginIDs(std::unordered_set<int>& allocatorIDs);
 
+public:
+	CPlotDataSettings& GetPlotDataSettings() { return m_plt; }
+	CLogDataSettings& GetLogDataSettings() { return m_log; }
+
+	void SetUnits(int units);
+	int GetUnits() const;
+
+	void SetTitle(const std::string& title) { m_title = title; }
+
+	const std::string& GetTitle() { return m_title; }
+
+	int GetModule() const { return m_module; }
+	void SetModule(int mod, bool setDefaultPlotVariables = true);
+
+	std::string GetModuleName() const;
+
+	//! set default plot variables
+	void SetDefaultPlotVariables();
+
 protected:
 	// I/O helper functions
 	//! Load data from archive
@@ -373,6 +442,8 @@ protected:
 	void LoadLoadControllers   (IArchive& ar);
 	//! Load mesh data generators from archive
 	void LoadMeshDataGenerators(IArchive& ar);
+	//! Load the scripts
+	void LoadScripts(IArchive& ar);
 
 protected:
 	//! Build material lookup table
@@ -402,13 +473,24 @@ protected:
 	//! Mesh data generators
 	FSObjectList<FSMeshDataGenerator>	m_MD;
 
+	CPlotDataSettings	m_plt;		// plot file settings
+	CLogDataSettings	m_log;		// log file settings
+
 	//! Material look-up table
 	std::vector<GMaterial*>	m_MLT;
 	//! Material lookup table offset
 	int m_MLT_offset;
 
+	// scripts
+	FSObjectList<FEBCodeScript> m_scripts;
+	int m_nextScriptID = 1;
+
 	//! Skip geometry section when loading file
 	bool m_skipGeometry;
+
+	std::string			m_title;	// Model Title
+	int					m_module;	// active module
+	int m_units;	// unit system (read from feb file)
 };
 
 //-----------------------------------------------------------------------------

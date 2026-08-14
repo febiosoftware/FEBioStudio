@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "GCurveMeshObject.h"
 #include <MeshLib/FSCurveMesh.h>
 #include <MeshLib/FSMesh.h>
+#include <sstream>
 
 GCurveMeshObject::GCurveMeshObject(FSCurveMesh* pm) : m_curve(pm), GObject(GCURVEMESH_OBJECT)
 {
@@ -54,14 +55,14 @@ void GCurveMeshObject::ClearMesh()
 	Update();
 }
 
-void GCurveMeshObject::Update()
+bool GCurveMeshObject::Update(bool b)
 {
 	if (m_curve == nullptr)
 	{
 		m_Node.clear();
 		m_Edge.clear();
 		SetRenderMesh(nullptr);
-		return;
+		return true;
 	}
 
 	// get the end points
@@ -143,6 +144,8 @@ void GCurveMeshObject::Update()
 	}
 
 	SetRenderMesh(nullptr);
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -347,4 +350,36 @@ void GCurveMeshObject::Load(IArchive& ar)
 	}
 
 	SetRenderMesh(nullptr);
+}
+
+int GCurveMeshObject::AddGNode(vec3d r)
+{
+	// convert from global to local
+	r = GetTransform().GlobalToLocal(r);
+
+	// get the mesh
+	FSCurveMesh* m = GetCurveMesh();
+	if (m == nullptr) return -1;
+
+	// add the node
+	int nodeId = m->AddNode(r);
+	FSNode& newNode = m->Node(nodeId);
+
+	// create a geometry node for this
+	GNode* gn = new GNode(this);
+	gn->SetID(GNode::CreateUniqueID());
+	gn->SetLocalID((int)m_Node.size());
+	gn->LocalPosition() = r;
+	gn->SetNodeIndex(nodeId);
+	m_Node.push_back(gn);
+	newNode.m_gid = gn->GetLocalID();
+
+	std::stringstream ss;
+	ss << "Node" << gn->GetID();
+	gn->SetName(ss.str());
+
+	SetRenderMesh(nullptr);
+	SetFEMesh(nullptr);
+
+	return gn->GetID();
 }

@@ -36,7 +36,7 @@ using namespace Post;
 
 extern int LUT[256][15];
 extern int LUT2D[16][4];
-extern int ET_HEX[12][2];
+extern int EL_HEX[12][2];
 extern int ET2D[4][2];
 
 const int HEX_NT[8] = {0, 1, 2, 3, 4, 5, 6, 7};
@@ -250,7 +250,7 @@ void CGLPlaneCutPlot::Render(GLRenderEngine& re, GLContext& rc)
 	if (fem == nullptr) return;
 
 	vec3d r = m_T.GetPosition();
-	BOX box = fem->GetBoundingBox();
+	BoundingBox box = fem->GetBoundingBox();
 	m_T.SetPosition(-box.Center());
 	m_T.SetRotation(quatd(0.0, vec3d(1, 0, 0)));
 
@@ -455,8 +455,8 @@ void CGLPlaneCutPlot::UpdateLineMesh()
 				// calculate nodal positions
 				for (int k=0; k<3; k++)
 				{
-					int n1 = ET_HEX[pf[k]][0];
-					int n2 = ET_HEX[pf[k]][1];
+					int n1 = EL_HEX[pf[k]][0];
+					int n2 = EL_HEX[pf[k]][1];
 
 					double w1 = norm*ex[n1];
 					double w2 = norm*ex[n2];
@@ -554,7 +554,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 {
 	// Get the bounding box. We need it for determining the scale
 	CGLModel* mdl = GetModel();
-	BOX box = GetModel()->GetFSModel()->GetBoundingBox();
+	BoundingBox box = GetModel()->GetFSModel()->GetBoundingBox();
 	double R = box.Radius();
 	m_scl = (R == 0.0 ? 1.0 : R);
 
@@ -673,8 +673,8 @@ void CGLPlaneCutPlot::AddDomain(FSMeshPartition& dom)
 					float tex[3], w1, w2, w;
 					for (int k = 0; k < 3; k++)
 					{
-						int n1 = ET_HEX[pf[k]][0];
-						int n2 = ET_HEX[pf[k]][1];
+						int n1 = EL_HEX[pf[k]][0];
+						int n2 = EL_HEX[pf[k]][1];
 
 						w1 = norm * ex[n1];
 						w2 = norm * ex[n2];
@@ -762,8 +762,8 @@ void CGLPlaneCutPlot::AddDomain(FSMeshPartition& dom)
 								float tex[3], w1, w2, w;
 								for (int k = 0; k < 3; k++)
 								{
-									int n1 = ET_HEX[pf[k]][0];
-									int n2 = ET_HEX[pf[k]][1];
+									int n1 = EL_HEX[pf[k]][0];
+									int n2 = EL_HEX[pf[k]][1];
 
 									w1 = norm * x[n1];
 									w2 = norm * x[n2];
@@ -978,8 +978,8 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 				// calculate nodal positions
 				for (int k=0; k<3; k++)
 				{
-					int n1 = ET_HEX[pf[k]][0];
-					int n2 = ET_HEX[pf[k]][1];
+					int n1 = EL_HEX[pf[k]][0];
+					int n2 = EL_HEX[pf[k]][1];
 
 					float w1 = norm*ex[n1];
 					float w2 = norm*ex[n2];
@@ -1179,7 +1179,7 @@ public:
 	void Update() 
 	{
 		vec3d r = m_pc->GetPlanePosition();
-		m_box = BOX(r, r);
+		m_box = BoundingBox(r, r);
 		m_box.Inflate(m_pc->GetOffsetScale());
 
 		m_pc->UpdatePlaneCut();

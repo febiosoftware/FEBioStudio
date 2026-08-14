@@ -25,39 +25,126 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <FSCore/FSThreadedTask.h>
+#include <FEMLib/FSCoreStudy.h>
 #include "FEBioOpt.h"
-#include <QString>
+
+enum StudyType
+{
+	INVALID_STUDY,
+	OPTIMIZATION_STUDY,
+	FEBIO_STUDY,
+};
 
 class CModelDocument;
+class QString;
 
-class CFEBioStudy : public FSThreadedTask
+class CStudy : public FSThreadedTask
 {
 public:
-	CFEBioStudy(CModelDocument* doc);
+	CStudy(CModelDocument* doc, StudyType type);
 
 	CModelDocument* GetDocument() { return m_doc; }
 
-	virtual bool Run() = 0;
+	// write input files for the study.
+	// the dir parameter specifies the directory where the files should be written.
+	virtual bool WriteFiles(const QString& dir) = 0;
 
-	virtual QString GetOutputFileName() const { return QString(); }
+	virtual std::string GetStudyType() const = 0;
+
+	std::string GetFEBioFileName() const { return m_febioFileName; }
+	std::string GetOptionsFileName() const { return m_optionsFileName; }
+	std::string GetOutputFileName() const { return m_outputFile; }
+
+	void SetFEBioFileName(const std::string& fileName) { m_febioFileName = fileName; }
+	void SetOptionsFileName(const std::string& fileName) { m_optionsFileName = fileName; }
+	void SetOutputFileName(const std::string& fileName) { m_outputFile = fileName; }
+
+	StudyType GetType() const { return m_type; }
+
+	virtual FSObject* GetStudyData() { return nullptr; }
+
+protected:
+	std::string m_febioFileName;
+	std::string m_optionsFileName;
+	std::string m_outputFile;
 
 private:
 	CModelDocument* m_doc;
+	StudyType m_type;
 };
 
-class COptimizationStudy : public CFEBioStudy
+class COptimizationStudy : public CStudy
 {
+	// Don't change the order of these fields as they are used for serialization!
+	enum DataField {
+		StudyName,
+		StudyInfo,
+		OutputFileName,
+		OptMethod,
+		ObjTol,
+		FDiffScale,
+		OutputLevel,
+		PrintLevel,
+		Objective,
+		Param,
+		ObjParam,
+		ObjData,
+		TrgVar,
+		EDVar,
+		EDData,
+		NDVar,
+		NDData,
+		ReportFlag,
+		FEBFileName,
+		OptionsFileName,
+	};
+
 public:
 	COptimizationStudy(CModelDocument* doc);
 
 	void SetOptions(FEBioOpt ops) { m_ops = ops; }
 	FEBioOpt& Options() { return m_ops; }
 
-	bool Run() override;
+	bool WriteFiles(const QString& dir) override;
 
-	QString GetOutputFileName() const override { return m_logFileName; }
+	std::string GetStudyType() const override { return "optimize"; };
+
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 private:
 	FEBioOpt m_ops;
-	QString m_logFileName;
+};
+
+class CFEBioStudy : public CStudy
+{
+	// Don't change the order of these fields as they are used for serialization!
+	enum DataField {
+		StudyName,
+		StudyInfo,
+		StudyData,
+		FEBFileName,
+		OptionsFileName,
+		OutputFileName,
+	};
+
+public:
+	CFEBioStudy(CModelDocument* doc, FSCoreStudy* study = nullptr);
+
+	bool WriteFiles(const QString& dir) override;
+
+	std::string GetStudyType() const override;
+
+private:
+	void SetStudy(FSCoreStudy* study);
+
+	FSObject* GetStudyData() override { return m_study; }
+
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
+private:
+	FSCoreStudy* m_study = nullptr;
 };

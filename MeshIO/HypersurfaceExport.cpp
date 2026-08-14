@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <FEMLib/FSProject.h>
 
-HypersurfaceExport::HypersurfaceExport(FSProject& prj) : FSFileExport(prj)
+HypersurfaceExport::HypersurfaceExport(FSModel& fem) : m_fem(fem)
 {
 }
 
@@ -55,8 +55,7 @@ bool HypersurfaceExport::Write(const char* szfile)
 	fprintf(fp, "\t}\n");
 	fprintf(fp, "}\n\n");
 
-	FSModel* ps = &m_prj.GetFSModel();
-	GModel& model = ps->GetModel();
+	GModel& model = m_fem.GetModel();
 
 	// count total nr of faces
 	int faces = 0;

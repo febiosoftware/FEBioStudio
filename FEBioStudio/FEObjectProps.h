@@ -47,8 +47,10 @@ class FSStep;
 class CModelViewer;
 class CMainWindow;
 class CFEBioJob;
+class CStudy;
 class CImageModel;
 class GDiscreteObject;
+class FEBCodeScript;
 
 namespace Post {
 	class CGLModel;
@@ -223,7 +225,7 @@ private:
 class CFEBioJobProps : public CFSObjectProps_T<CFEBioJob>
 {
 public:
-	CFEBioJobProps(CMainWindow* wnd, CModelViewer* tree);
+	CFEBioJobProps(CMainWindow* wnd);
 
 	void BuildProperties() override;
 
@@ -232,8 +234,22 @@ public:
 	void SetPropertyValue(int i, const QVariant& v) override;
 
 private:
-	CModelViewer*	m_tree;
 	CMainWindow*	m_wnd;
+};
+
+class CStudyProps : public CFSObjectProps_T<CStudy>
+{
+public:
+	CStudyProps(CMainWindow* wnd);
+
+	void BuildProperties() override;
+
+	QVariant GetPropertyValue(int i) override;
+
+	void SetPropertyValue(int i, const QVariant& v) override;
+
+private:
+	CMainWindow* m_wnd;
 };
 
 class CPlotfileProperties : public CFSObjectProps
@@ -270,4 +286,16 @@ public:
 	FSGlobalsProps(FSModel* fem) : CFSObjectProps(fem) {}
 
 	void SetFSObject(FSObject* po) override;
+};
+
+class CScriptSettings : public CFSObjectProps_T<FEBCodeScript>
+{
+public:
+	CScriptSettings(FSModel* fem) : CFSObjectProps_T<FEBCodeScript>(fem) {}
+	
+	void BuildProperties() override;
+
+	QVariant GetPropertyValue(int i) override;
+
+	void SetPropertyValue(int i, const QVariant& v) override;
 };

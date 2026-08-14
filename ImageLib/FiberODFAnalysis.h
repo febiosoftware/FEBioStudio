@@ -56,7 +56,7 @@ public:
 	vector<double>	m_remeshODF;
 	vector<vec3d>	m_remeshCoord;
 
-	BOX		m_box;
+	BoundingBox		m_box;
 	bool	m_selected = false;
 	bool	m_active = true;
 

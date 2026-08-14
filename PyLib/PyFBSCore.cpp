@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 #include <FECore/FETransform.h>
 #include "DocHeaders/PyCoreDocs.h"
+#include "PyUtil.h"
 
 namespace py = pybind11;
 
@@ -43,7 +44,7 @@ void init_FBSCore(py::module& m)
 {
     py::module core = m.def_submodule("core", "Module used to interact with the FEBio and FEBio Studio core classes");
 
-	py::class_<GLColor>(core, "color", DOC(GLColor))
+	py::class_<GLColor>(core, "Color", DOC(GLColor))
 		.def(py::init<>(), DOC(GLColor, GLColor))
 		.def(py::init<uint8_t, uint8_t, uint8_t>(), DOC(GLColor, GLColor, 3))
 		.def_readwrite("r", &GLColor::r, DOC(GLColor, r))
@@ -51,7 +52,7 @@ void init_FBSCore(py::module& m)
 		.def_readwrite("b", &GLColor::b, DOC(GLColor, b))
 		.def_readwrite("a", &GLColor::a, DOC(GLColor, a));
 
-	py::class_<vec3d>(core, "vec3d")
+	py::class_<vec3d>(core, "Vec3")
         .def(py::init<>(), DOC(vec3d, vec3d))
         .def(py::init<double, double, double>(), DOC(vec3d, vec3d, 3))
         .def(py::self + py::self, DOC(vec3d, operator_add))
@@ -62,10 +63,10 @@ void init_FBSCore(py::module& m)
         .def(-py::self, DOC(vec3d, operator_sub_2))
         .def(py::self * double(), DOC(vec3d, operator_mul))
         .def(py::self / double(), DOC(vec3d, operator_div))
-        .def("Length", &vec3d::Length, DOC(vec3d, Length))
-        .def("SqrLength", &vec3d::SqrLength, DOC(vec3d, SqrLength))
-        .def("Normalize", &vec3d::Normalize, DOC(vec3d, Normalize))
-        .def("Normalized", &vec3d::Normalized, DOC(vec3d, Normalized))
+        .def("length", &vec3d::Length, DOC(vec3d, Length))
+        .def("sqr_length", &vec3d::SqrLength, DOC(vec3d, SqrLength))
+        .def("normalize", &vec3d::Normalize, DOC(vec3d, Normalize))
+        .def("normalized", &vec3d::Normalized, DOC(vec3d, Normalized))
         .def_readwrite("x", &vec3d::x, DOC(vec3d, x))
         .def_readwrite("y", &vec3d::y, DOC(vec3d, y))
         .def_readwrite("z", &vec3d::z, DOC(vec3d, z))
@@ -74,23 +75,63 @@ void init_FBSCore(py::module& m)
                 return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
             });
 
-	py::class_<quatd>(core, "quatd", DOC(quatd))
+	py::class_<quatd>(core, "Quaternion", DOC(quatd))
 		.def(py::init<>(), DOC(quatd, quatd))
 		.def(py::init<const vec3d&, const vec3d&>(), DOC(quatd, quatd, 4))
 		.def("__repr__",
 			[](const quatd& q) {
 				return "(" + std::to_string(q.x) + ", " + std::to_string(q.y) + ", " + std::to_string(q.z) + ", " + std::to_string(q.w) + ")";
 			})
-		.def("Inverse", &quatd::Inverse, DOC(quatd, Inverse))
+		.def("inverse", &quatd::Inverse, DOC(quatd, Inverse))
 		;
 
 	py::class_<Transform>(core, "Transform", DOC(Transform))
-		.def("Rotate", static_cast<void (Transform::*)(quatd, vec3d)> (&Transform::Rotate), DOC(Transform, Rotate))
-		.def("SetPosition", &Transform::SetPosition, DOC(Transform, SetPosition))
-		.def("SetEulerAngles", static_cast<void (Transform::*)(double, double, double)> (&Transform::SetRotation), DOC(Transform, SetRotation))
+		.def_property(
+			"position",
+			[](Transform& self) { return self.GetPosition(); },
+			[](Transform& self, py::handle value) {
+				self.SetPosition(Vec3dFromPython(value, "position"));
+			}
+		)
+		.def("rotate", py::overload_cast<quatd, vec3d>(&Transform::Rotate), DOC(Transform, Rotate))
+		.def("set_euler_angles_deg", static_cast<void(Transform::*)(double,double,double)>(&Transform::SetRotation))
+		.def("local_to_global", &Transform::LocalToGlobal, DOC(Transform, LocalToGlobal))
+		.def("global_to_local", &Transform::GlobalToLocal, DOC(Transform, GlobalToLocal))
 		;
 
-	py::class_<FSObject, std::unique_ptr<FSObject, py::nodelete>>(core, "FSObject", "Base class for all FEBio Studio objects")
+	py::class_<PyVec2dList>(core, "PointList")
+		.def("__len__", &PyVec2dList::size)
+		.def("__getitem__", &PyVec2dList::get)
+		.def("__iter__", &PyVec2dList::iter)
+		.def("add", py::overload_cast<double, double>(&PyVec2dList::add))
+		.def("add", py::overload_cast<py::handle>(&PyVec2dList::add))
+		.def("clear", &PyVec2dList::clear)
+		;
+
+	py::class_<PyParameter>(core, "Parameter")
+		.def_property("value", &PyParameter::value, &PyParameter::setValue)
+		.def_property("lc_id", &PyParameter::lcID, &PyParameter::setLCID)
+		.def_property("lc", &PyParameter::getLC, &PyParameter::setLC)
+		.def_property_readonly("name", &PyParameter::name)
+		.def_property_readonly("long_name", &PyParameter::longName)
+		.def_property_readonly("unit", &PyParameter::unit);
+
+	py::class_<PyParameterList>(core, "ParameterList")
+		.def("__len__", &PyParameterList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyParameterList::get, py::const_))
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyParameterList::get, py::const_))
+		.def("__iter__", &PyParameterList::iter)
+		.def("__contains__", py::overload_cast<const std::string&>(&PyParameterList::contains, py::const_))
+		;
+
+	// minimal property slot wrapper for model components
+	py::class_<PyPropertySlot>(core, "PropertySlot")
+		.def("create", &PyPropertySlot::create)
+		.def("clear", &PyPropertySlot::clear)
+		.def_property_readonly("is_set", &PyPropertySlot::isSet)
+		.def_property_readonly("type_str", &PyPropertySlot::typeStr);
+
+	py::class_<FSObject, std::unique_ptr<FSObject, py::nodelete>>(core, "Base", "Base class for all FEBio Studio objects")
 		.def_property("name", &FSObject::GetName, &FSObject::SetName, "Get or set the name of the object")
 		;
 

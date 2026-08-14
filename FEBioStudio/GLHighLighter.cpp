@@ -126,9 +126,9 @@ bool GLHighlighter::IsTracking()
 	return This.m_btrack;
 }
 
-BOX GLHighlighter::GetBoundingBox()
+BoundingBox GLHighlighter::GetBoundingBox()
 {
-	BOX box;
+	BoundingBox box;
 	for (Item& item : This.m_item)
 	{
 		FSObject* it = item.item;

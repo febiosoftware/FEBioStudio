@@ -54,7 +54,7 @@ void CGLPlane::Create(int n[3])
 
 		m_rc = (r1 + r2 + r3)/3.0;
 
-		BOX box = m_pfem->GetBoundingBox();
+		BoundingBox box = m_pfem->GetBoundingBox();
 		double R = box.Radius();
 
 		m_e[0] = r1 - r2;

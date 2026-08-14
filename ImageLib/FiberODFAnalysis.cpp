@@ -514,7 +514,7 @@ void CFiberODFAnalysis::GenerateSubVolumes()
 				CODF* odf = new CODF;
 				odf->m_position = vec3d(xDivSizePhys / 2 * (currentX * 2 + 1) - xDivSizePhys * xOverlap * currentX + origin[0], yDivSizePhys / 2 * (currentY * 2 + 1) - yDivSizePhys * yOverlap * currentY + origin[1], zDivSizePhys / 2 * (currentZ * 2 + 1) - zDivSizePhys * zOverlap * currentZ + origin[2]);
 				odf->m_radius = radius;
-				odf->m_box = BOX(-xDivSizePhys / 2.0, -yDivSizePhys / 2.0, -zDivSizePhys / 2.0, xDivSizePhys / 2.0, yDivSizePhys / 2.0, zDivSizePhys / 2.0);
+				odf->m_box = BoundingBox(-xDivSizePhys / 2.0, -yDivSizePhys / 2.0, -zDivSizePhys / 2.0, xDivSizePhys / 2.0, yDivSizePhys / 2.0, zDivSizePhys / 2.0);
 				m_ODFs.push_back(odf);
 			}
 }

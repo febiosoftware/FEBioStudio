@@ -64,6 +64,8 @@ SOFTWARE.*/
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEMeshDataGenerator.h>
 #include <FEMLib/FSProject.h>
+#include <FEMLib/FSCoreStudy.h>
+#include <FECore/FEScriptedBehavior.h>
 #include <sstream>
 using namespace FEBio;
 using namespace std;
@@ -396,10 +398,12 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 	bool includeModuleDependencies = (flags & ClassSearchFlags::IncludeModuleDependencies);
 	bool includeFECoreClasses = includeModuleDependencies;// (flags & ClassSearchFlags::IncludeFECoreClasses);
 
-#ifdef FEBIO_EXPERIMENTAL
+#if defined(FEBIO_EXPERIMENTAL) || !defined(NDEBUG)
 	bool includeExperimentals = true;
 #else
-	bool includeExperimentals = false;
+	// TODO: for now, will include experimental features, 
+	// but need to turn this back off before merging with develop!!
+	bool includeExperimentals = true; 
 #endif
 
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
@@ -622,6 +626,7 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass(fem); break;
 	case FENEWTONSTRATEGY_ID  : pc = new FSGenericClass(fem); break;
 	case FECLASS_ID           : pc = new FSGenericClass(fem); break;
+	case FESCRIPT_ID          : pc = new FSScriptedComponent(fem); break;
 	case FETIMECONTROLLER_ID  : pc = new FSGenericClass(fem); break;
 	case FEVEC3DVALUATOR_ID   : pc = new FSVec3dValuator(fem); break;
 	case FEMAT3DVALUATOR_ID   : pc = new FSMat3dValuator(fem); break;
@@ -647,6 +652,12 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 		pc = pms;
 	}
 	break;
+	case FETASK_ID:
+	{
+		if (baseClassId == FEBio::GetBaseClassIndex("FECoreStudy")) pc = new FSCoreStudy(fem);
+		else assert(false);
+	}
+	break;
 	default:
 		assert(false);
 	}
@@ -660,7 +671,7 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 
 bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int flags)
 {
-	if (po->GetSuperClassID() != FECLASS_ID)
+	if ((po->GetSuperClassID() != FECLASS_ID) && (po->GetSuperClassID() != FESCRIPT_ID))
 	{
 		assert(po->GetSuperClassID() == feb->GetSuperClassID());
 		po->SetTypeString(feb->GetTypeStr());
@@ -886,6 +897,8 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 			fsp->SetFlags(fsp->GetFlags() | FSProperty::PREFERRED);
 		if (prop.IsTopLevel())
 			fsp->SetFlags(fsp->GetFlags() | FSProperty::TOPLEVEL);
+		if (prop.IsFixed())
+			fsp->SetFlags(fsp->GetFlags() | FSProperty::FIXED);
 
 		// set the (optional) default type
 		if (prop.GetDefaultType())
@@ -929,9 +942,9 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 		{
 			FECoreBase* pci = prop.get(0);
 
-			// make sure the property is either a FECLASS_ID, which is not allocated through the kernel
+			// make sure the property is either a FECLASS_ID or a FESCRIPT_ID, which is not allocated through the kernel
 			// or the super IDs match.
-			assert((prop.GetSuperClassID() == FECLASS_ID) || (pci->GetSuperClassID() == prop.GetSuperClassID()));
+			assert((prop.GetSuperClassID() == FECLASS_ID) || (prop.GetSuperClassID() == FESCRIPT_ID) || (pci->GetSuperClassID() == prop.GetSuperClassID()));
 
 			// allocate the model component
 			FSModelComponent* pmi = CreateFSClass(prop.GetSuperClassID(), -1, nullptr); assert(pmi);
@@ -951,6 +964,16 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 		if (feb->FindProperty("surface"))
 		{
 			pbc->SetMeshItemType(FE_FACE_FLAG);
+		}
+	}
+
+	// see if this component requires a script
+	if (auto scriptedComponent = dynamic_cast<FSScriptedComponent*>(po))
+	{
+		FEScriptedBehavior* psb = dynamic_cast<FEScriptedBehavior*>(feb); assert(psb);
+		if (psb)
+		{
+			scriptedComponent->context = psb->GetScriptContext();
 		}
 	}
 
@@ -980,7 +1003,7 @@ vector<FEBio::FEBioModule>	FEBio::GetAllModules()
 	vector<FEBio::FEBioModule> mods;
 	for (int i = 0; i < fecore.Modules(); ++i)
 	{
-#ifndef FEBIO_EXPERIMENTAL
+#if defined(FEBIO_EXPERIMENTAL) || !defined(NDEBUG)
 		if (fecore.GetModuleStatus(i) > 0)
 #endif
 		{
@@ -1433,6 +1456,16 @@ FSGenericClass* FEBio::CreateLinearSolver(const std::string& typeStr, FSModel* f
 	else return CreateModelComponent<FSGenericClass>(FELINEARSOLVER_ID, typeStr, fem);
 }
 
+FSCoreStudy* FEBio::CreateStudy(const std::string& typeStr, FSModel* fem)
+{
+	if (typeStr.empty())
+	{
+		FSCoreStudy* pc = new FSCoreStudy(fem);
+		return pc;
+	}
+	else return CreateModelComponent<FSCoreStudy>(FETASK_ID, typeStr, fem);
+}
+
 FEShellFormulation* FEBio::CreateShellFormulation(const std::string& typeStr, FSModel* fem)
 {
 	return CreateModelComponent<FEShellFormulation>(FESHELLDOMAIN_ID, typeStr, fem);
@@ -1468,7 +1501,8 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	case FEMESHADAPTORCRITERION_ID:
 	{
 		FSGenericClass* pc = new FSGenericClass(fem);
-		BuildModelComponent(superClassID, typeStr, pc, flags);
+		bool b = BuildModelComponent(superClassID, typeStr, pc, flags);
+		if (!b) { delete pc; return nullptr; }
 		return pc;
 	}
 	break;
@@ -1699,6 +1733,6 @@ FSModelComponent* FEBio::CloneModelComponent(FSModelComponent* pmc, FSModel* fem
 void FEBio::SetActiveProject(FSProject* prj)
 {
 	if (prj == nullptr) SetActiveModule(-1);
-	else SetActiveModule(prj->GetModule());
+	else SetActiveModule(prj->GetFSModel().GetModule());
 	activeProject = prj;
 }

@@ -172,7 +172,7 @@ vec3d FEMultiBlockMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 		// create an arc object
 		GM_CIRCLE_ARC ca(c, a, b, e.m_orient);
 		vec2d q = ca.Point(r);
-		p = vec3d(q.x(), q.y(), r1.z);
+		p = vec3d(q.x, q.y, r1.z);
 	}
 	break;
 	case EDGE_3P_CIRC_ARC:

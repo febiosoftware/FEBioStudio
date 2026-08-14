@@ -28,9 +28,9 @@ SOFTWARE.*/
 #include "PLYExport.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
-#include <FEMLib/FSProject.h>
+#include <FEMLib/FSModel.h>
 
-PLYExport::PLYExport(FSProject& prj) : FSFileExport(prj)
+PLYExport::PLYExport(FSModel& fem) : m_fem(fem)
 {
 
 }
@@ -48,7 +48,7 @@ struct PLY_FACE {
 bool PLYExport::Write(const char* szfile)
 {
 	// get the GModel
-	GModel& mdl = m_prj.GetFSModel().GetModel();
+	GModel& mdl = m_fem.GetModel();
 
 	// the vertex and face list
 	std::vector<vec3d> vertices; vertices.reserve(100000);

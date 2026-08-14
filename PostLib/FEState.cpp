@@ -441,7 +441,7 @@ OBJECTDATA& FEState::GetObjectData(int n)
 class OctreeBox
 {
 public:
-	OctreeBox(BOX box, int levels) : m_box(box), m_level(levels)
+	OctreeBox(BoundingBox box, int levels) : m_box(box), m_level(levels)
 	{
 		if (levels == 0)
 		{
@@ -465,7 +465,7 @@ public:
 			double xb = x0 + (i+1.0) * (x1 - x0) * 0.5;
 			double yb = y0 + (j+1.0) * (y1 - y0) * 0.5;
 			double zb = z0 + (k+1.0) * (z1 - z0) * 0.5;
-			BOX boxi(xa, ya, za, xb, yb, zb);
+			BoundingBox boxi(xa, ya, za, xb, yb, zb);
 			boxi.Inflate(R * 1e-7);
 			m_child[n++] = new OctreeBox(boxi, levels - 1);
 		}
@@ -510,7 +510,7 @@ public:
 
 private:
 	int			m_level;
-	BOX			m_box;
+	BoundingBox			m_box;
 	OctreeBox*	m_child[8];
 	vector<int>	m_nodes;
 };
@@ -522,9 +522,9 @@ double Post::IntegrateNodes(FSMesh& mesh, const std::vector<int>& nodeList, Post
 	for (int i = 0; i < N; ++i)
 	{
 		FSNode& node = mesh.Node(nodeList[i]);
-		if (ps->m_NODE[i].m_ntag > 0)
+		if (ps->m_NODE[nodeList[i]].m_ntag > 0)
 		{
-			res += ps->m_NODE[i].m_val;
+			res += ps->m_NODE[nodeList[i]].m_val;
 		}
 	}
 	return res;

@@ -221,6 +221,12 @@ if(MODEL_REPO)
     endif()
 endif()
 
+set(USE_NEW_FFMPEG "OFF" CACHE BOOL "Enable or disable FFMPEG libraries < 8.0")
+
+if (USE_NEW_FFMPEG)
+   set(USE_FFMPEG "ON")
+endif()
+
 if(USE_FFMPEG)
     set(FFMPEG_LIB_NAMES avformat avcodec avutil swresample swscale)
     
@@ -322,6 +328,10 @@ if(USE_FFMPEG)
 	include_directories(${FFMPEG_INC})
 endif()
 
+if (USE_NEW_FFMPEG)
+	add_definitions(-DNEW_FFMPEG)
+endif()
+
 if(USE_PYTHON)
     add_definitions(-DHAS_PYTHON)
     include_directories(${PYBIND11_INC})
@@ -369,6 +379,7 @@ elseif(APPLE)
 	
 	add_executable(FEBioStudio MACOSX_BUNDLE ${FBS_ICON} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
 	set_property(TARGET FEBioStudio PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+	set_target_properties(FEBioStudio PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/ci/MacOS/Info.plist")
 
 else()
 	add_executable(FEBioStudio ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)

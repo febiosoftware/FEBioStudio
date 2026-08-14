@@ -304,7 +304,7 @@ void CImageSlice::Update()
             m_displaySlice.Width(), QImage::Format::Format_Grayscale8);
     }
 
-    BOX box = m_imgModel->GetBoundingBox();
+	BoundingBox box = m_imgModel->GetBoundingBox();
 
     switch (m_sliceDir)
     {

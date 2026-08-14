@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include <vector>
 #include <list>
 #include <FSCore/math3d.h>
+#include <FSCore/box.h>
 #include "GLMesh.h"
 #include <string>
 
@@ -74,7 +75,7 @@ protected:
 	int find_node(const vec3d& r, const double eps = 1e-14);
 	int FindBox(const vec3d& r);
 
-	::BOX BoundingBox();
+	::BoundingBox GetBoundingBox();
 
 private:
 	bool read_ascii(const char* szfile);
@@ -93,7 +94,7 @@ protected:
 	int					m_NB;
 	std::vector<OBOX>	m_BL;		// box lists
 
-	BOX				m_box;		// bounding box
+	BoundingBox				m_box;		// bounding box
 
 	FILE* m_fp = nullptr;
 };

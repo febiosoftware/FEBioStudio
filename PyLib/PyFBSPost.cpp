@@ -28,7 +28,6 @@ SOFTWARE.*/
 #ifdef HAS_PYTHON
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <XPLTLib/xpltFileReader.h>
 #include <PostLib/FEPostModel.h>
 #include <PostLib/FEState.h>
 #include <PostLib/FEDataManager.h>
@@ -38,13 +37,14 @@ SOFTWARE.*/
 #include <PostLib/FEDistanceMap.h>
 #include <PostLib/DataFilter.h>
 #include <PostLib/FEVTKExport.h>
+#include <PostGL/GLModel.h>
 #include "DocHeaders/PyPostDocs.h"
-#include "PyExceptions.h"
+#include "PyFBSMesh.h"
 #ifndef PY_EXTERNAL
 #include <FEBioStudio/PostDocument.h>
 #include "PyRunContext.h"
-#include "PyExceptions.h"
 #endif
+#include "PyUtil.h"
 
 #include <vector>
 #include <string>
@@ -53,42 +53,216 @@ using namespace std;
 using namespace Post;
 namespace py = pybind11;
 
-FEPostModel* ReadPlotFile(std::string filename)
+class PyPostMaterialList : public PyNamedCollection<CGLModel, Post::Material>
 {
-    FEPostModel* model = new FEPostModel;
-    xpltFileReader reader(model);
+public:
+	PyPostMaterialList(CGLModel* model) : PyNamedCollection<CGLModel, Post::Material>
+		(model, [](CGLModel* m) { return m->GetFSModel()->Materials(); },
+			[](CGLModel* m, int i) { return m->GetFSModel()->GetMaterial(i); },
+			[](CGLModel* m, const std::string& name) { return m->GetFSModel()->FindMaterial(name); },
+			"material") {}
+private:
+	CGLModel* m_model = nullptr;
+};
 
-    reader.Load(filename.c_str());
-
-    model->SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, 0, 0));
-
-    return model;
-}
-
-#ifndef PY_EXTERNAL
-
-FEPostModel* GetActivePostModel()
+class PyPostDataFieldList : public PyNamedCollection<CGLModel, Post::ModelDataField>
 {
-	CPostDocument* doc = dynamic_cast<CPostDocument*>(PyRunContext::GetDocument());
-	if (doc == nullptr)
+public:
+	PyPostDataFieldList(CGLModel* model) : PyNamedCollection<CGLModel, Post::ModelDataField>
+		(model, [](CGLModel* m) { return m->GetFSModel()->GetDataManager()->DataFields(); },
+			[](CGLModel* m, int i) { return *m->GetFSModel()->GetDataManager()->DataField(i); },
+			[](CGLModel* m, const std::string& name) { 
+				int index = m->GetFSModel()->GetDataManager()->FindDataField(name); 
+				return (index >= 0) ? *m->GetFSModel()->GetDataManager()->DataField(index) : nullptr; },
+			"data field"), m_model(model) {}
+
+	ModelDataField* add(const std::string& name, const std::string& type, py::kwargs kwargs)
 	{
-		throw pyGenericExcept("There is no active post document.");
-	}
-	return (doc ? doc->GetFSModel() : nullptr);
-}
-#endif
+		FEPostModel* fem = m_model->GetFSModel();
+		ModelDataField* field = CreateStandardDataField(*fem, type);
+		
+		if (field == nullptr)
+		{
+			throw std::runtime_error("Failed to add data field.");
+		}
 
-double PostIntegrateElements(FEPostModel& model, FSElemSet& set, ModelDataField& field, int component, int state)
+		fem->AddDataField(field, name);
+
+		if (!kwargs.empty())
+		{
+			SetDynamicAttributes(*field, kwargs);
+		}
+
+		return field;
+	}
+
+private:
+	CGLModel* m_model = nullptr;
+};
+
+class PyPostFEMeshList : public PyIndexedCollection<CGLModel, FSMesh>
+{
+public:
+	PyPostFEMeshList(CGLModel* model) : PyIndexedCollection<CGLModel, FSMesh>
+		(model, [](CGLModel* m) { return m->GetFSModel()->Meshes(); },
+			[](CGLModel* m, int i) { return m->GetFSModel()->GetFEMesh(i); },
+			"mesh") {}
+private:
+	CGLModel* m_model = nullptr;
+};
+
+class PyPostStateList : public PyIndexedCollection<CGLModel, Post::FEState>
+{
+public:
+	PyPostStateList(CGLModel* model) : PyIndexedCollection<CGLModel, Post::FEState>
+		(model, [](CGLModel* m) { return m->GetFSModel()->GetStates(); },
+			[](CGLModel* m, int i) { return m->GetFSModel()->GetState(i); },
+			"state") {}
+private:
+	CGLModel* m_model = nullptr;
+};
+
+class PyPostPlotList : public PyNamedCollection<CGLModel, Post::CGLPlot>
+{
+public:
+	PyPostPlotList(CGLModel* model) : PyNamedCollection<CGLModel, Post::CGLPlot>
+		(model, [](CGLModel* m) { return m->Plots(); },
+			[](CGLModel* m, int i) { return m->Plot(i); },
+			[](CGLModel* m, const std::string& name) { return m->FindPlot(name); },
+			"plot"), m_model(model) {}
+
+	CGLPlot* add(const std::string& name, const std::string& type, py::kwargs kwargs)
+	{
+		CGLPlot* plot = m_model->AddPlot(name.c_str(), type.c_str());
+		if (plot == nullptr)
+		{
+			throw std::runtime_error("Failed to add plot.");
+		}
+		if (!kwargs.empty())
+		{
+			SetDynamicAttributes(*plot, kwargs);
+		}
+		return plot;
+	}
+
+private:
+	CGLModel* m_model = nullptr;
+};
+
+// helper function for converting a py::handle to a datafield code
+int PyHandleToDataFieldCode(FEPostModel& model, py::handle fieldSpec)
+{
+	FEDataManager* dm = model.GetDataManager();
+
+	std::string fieldName;
+	std::string componentName;
+
+	if (py::isinstance<py::int_>(fieldSpec))
+	{
+		int fieldCode = fieldSpec.cast<int>();
+		return fieldCode;
+	}
+	else
+	if (py::isinstance<py::str>(fieldSpec))
+	{
+		fieldName = fieldSpec.cast<std::string>();
+	}
+	else if (py::isinstance<py::tuple>(fieldSpec))
+	{
+		py::tuple t = py::reinterpret_borrow<py::tuple>(fieldSpec);
+		if (t.size() != 2)
+		{
+			throw py::type_error("field must be a string or a (field, component) tuple");
+		}
+
+		if (!py::isinstance<py::str>(t[0]) || !py::isinstance<py::str>(t[1]))
+		{
+			throw py::type_error("field tuple must contain two strings: (field, component)");
+		}
+
+		fieldName = t[0].cast<std::string>();
+		componentName = t[1].cast<std::string>();
+	}
+	else
+	{
+		throw py::type_error("field must be a string or a (field, component) tuple");
+	}
+
+	int fieldIndex = dm->FindDataField(fieldName);
+	if (fieldIndex < 0)
+	{
+		throw py::value_error("Data field not found: " + fieldName);
+	}
+
+	Post::ModelDataField* field = *dm->DataField(fieldIndex);
+
+	int component = 0;
+	if (!componentName.empty())
+	{
+		component = field->componentCode(componentName, Post::TENSOR_SCALAR);
+		if (component == -1)
+		{
+			throw py::value_error("Invalid component name: " + componentName);
+		}
+	}
+
+	return field->GetFieldID() | component;
+}
+
+std::vector<int> PyHandleToSurfaceSelection(py::handle selection, const std::string& propertyName)
+{
+	if (py::isinstance<FSSurface>(selection))
+	{
+		FSSurface& surface = selection.cast<FSSurface&>();
+		return surface.CopyItems();
+	}
+
+	if (py::isinstance<PyFaceRef>(selection))
+	{
+		PyFaceRef face = selection.cast<PyFaceRef>();
+		return { face.index() };
+	}
+
+	if (py::isinstance<py::sequence>(selection) && !py::isinstance<py::str>(selection))
+	{
+		py::sequence items = py::reinterpret_borrow<py::sequence>(selection);
+		std::vector<int> faceIndices;
+		faceIndices.reserve(items.size());
+
+		for (py::handle item : items)
+		{
+			if (!py::isinstance<PyFaceRef>(item))
+			{
+				throw py::type_error(propertyName + " sequence must contain only FaceRef objects");
+			}
+
+			PyFaceRef face = item.cast<PyFaceRef>();
+			faceIndices.push_back(face.index());
+		}
+
+		return faceIndices;
+	}
+
+	throw py::type_error(propertyName + " must be a FaceRef, a sequence of FaceRef objects, or a FESurface");
+}
+
+double PostIntegrateElements(FEPostModel& model, const std::string& elsetName, int fieldCode, int state)
 {
 	FEState* ps = model.GetState(state);
 	if (ps == nullptr)
 	{
-		throw pyGenericExcept("Invalid state index.");
+		throw py::value_error("Invalid state index.");
 	}
 
-	FSMesh* mesh = set.GetMesh();
+	FSMesh* mesh = ps->GetFEMesh();
 	if (mesh == nullptr) return 0.0;
-	std::vector<int> elemList = set.CopyItems();
+	FSElemSet* set = mesh->FindFEElemSet(elsetName);
+	if (set == nullptr)
+	{
+		throw py::value_error("Invalid element set name.");
+	}
+
+	std::vector<int> elemList = set->CopyItems();
 
 	// update the model's state
 	Post::FEDataManager* DM = model.GetDataManager();
@@ -104,7 +278,7 @@ double PostIntegrateElements(FEPostModel& model, FSElemSet& set, ModelDataField&
 		}
 	}
 
-	if (!model.Evaluate(field.GetFieldID() | component, state))
+	if (!model.Evaluate(fieldCode, state))
 	{
 		return 0.0;
 	}
@@ -112,17 +286,24 @@ double PostIntegrateElements(FEPostModel& model, FSElemSet& set, ModelDataField&
 	return Post::IntegrateElems(*mesh, elemList, ps);
 }
 
-double PostIntegrateFaces(FEPostModel& model, FSSurface& surf, ModelDataField& field, int component, int state)
+double PostIntegrateFaces(FEPostModel& model, const std::string& surfName, int fieldCode, int state)
 {
 	FEState* ps = model.GetState(state);
 	if (ps == nullptr)
 	{
-		throw pyGenericExcept("Invalid state index.");
+		throw py::value_error("Invalid state index.");
 	}
 
-	FSMesh* mesh = surf.GetMesh();
+	FSMesh* mesh = ps->GetFEMesh();
 	if (mesh == nullptr) return 0.0;
-	std::vector<int> elemList = surf.CopyItems();
+
+	FSSurface* surf = mesh->FindFESurface(surfName);
+	if (surf == nullptr)
+	{
+		throw py::value_error("Invalid surface name.");
+	}
+
+	std::vector<int> faceList = surf->CopyItems();
 
 	// update the model's state
 	Post::FEDataManager* DM = model.GetDataManager();
@@ -138,158 +319,203 @@ double PostIntegrateFaces(FEPostModel& model, FSSurface& surf, ModelDataField& f
 		}
 	}
 
-	if (!model.Evaluate(field.GetFieldID() | component, state, true))
+	if (!model.Evaluate(fieldCode, state, true))
 	{
 		return 0.0;
 	}
 
-	return Post::IntegrateFaces(*mesh, elemList, ps);
+	return Post::IntegrateFaces(*mesh, faceList, ps);
 }
 
 void init_FBSPost(py::module& m)
 {
+	InitStandardDataFields();
+
 	py::module post = m.def_submodule("post", "Module used to interact with plot files");
 
-    post.def("ReadPlotFile", &ReadPlotFile, "Reads a plot file and returns a FEPostModel object.");
-#ifndef PY_EXTERNAL
-	post.def("GetActiveModel", &GetActivePostModel, "Returns the active FEPostModel instance.", py::return_value_policy::reference);
-#endif
+	// view wrapper for materials
+	py::class_<PyPostMaterialList>(post, "MaterialList")
+		.def("__len__", &PyPostMaterialList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyPostMaterialList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyPostMaterialList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", [](PyPostMaterialList& self) { return &PyPostMaterialList::iter; })
+	;
 
-	post.def("IntegrateElements", &PostIntegrateElements, "Integrates a data field over an element set.");
-	post.def("IntegrateFaces"   , &PostIntegrateFaces   , "Integrates a data field over a surface.");
+	py::class_<PyPostStateList>(post, "StateList")
+		.def("__len__", &PyPostStateList::size)
+		.def("__getitem__", &PyPostStateList::get, py::return_value_policy::reference)
+		.def("__iter__", [](PyPostStateList& self) { return &PyPostStateList::iter; })
+		;
 
-    InitStandardDataFields();
-    post.def("AddStandardDataField", pybind11::overload_cast<FEPostModel&, const std::string&>(&AddStandardDataField), 
-        "Adds a standard data field to the model.", py::arg("model"), py::arg("dataField"));
+	py::class_<PyPostFEMeshList>(post, "FEMeshList")
+		.def("__len__", &PyPostFEMeshList::size)
+		.def("__getitem__", &PyPostFEMeshList::get, py::return_value_policy::reference)
+		.def("__iter__", [](PyPostFEMeshList& self) { return &PyPostFEMeshList::iter; })
+		;
 
-	post.def("SurfaceNormalProjection", &Post::SurfaceNormalProjection, "Projects the surface normals onto a specified plane.",
-        py::return_value_policy::reference);
+	py::class_<PyPostDataFieldList>(post, "DataFieldList")
+		.def("__len__", &PyPostDataFieldList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyPostDataFieldList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyPostDataFieldList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", [](PyPostDataFieldList& self) { return &PyPostDataFieldList::iter; })
+		.def("add", &PyPostDataFieldList::add, "Adds a new data field to the model.")
+		;
+
+	py::class_<PyPostPlotList>(post, "PlotList")
+		.def("__len__", &PyPostPlotList::size)
+		.def("__getitem__", py::overload_cast<int>(&PyPostPlotList::get, py::const_), py::return_value_policy::reference)
+		.def("__getitem__", py::overload_cast<const std::string&>(&PyPostPlotList::get, py::const_), py::return_value_policy::reference)
+		.def("__iter__", [](PyPostPlotList& self) { return &PyPostPlotList::iter; })
+		.def("add", &PyPostPlotList::add, "Adds a new plot to the model.")
+		;
 
 	py::class_<Material>(post, "Material", "Material class representing a material in the post-processing model.")
 		.def_property("name", &Material::GetName, &Material::SetName, "Name of the material.")
-		.def("SetColor", static_cast<void(Material::*)(uint8_t, uint8_t, uint8_t)>(&Material::setColor), "Sets the color of the material.")
-		.def("Show", &Material::show, "Shows the material.")
-		.def("Hide", &Material::hide, "Hides the material.")
-        .def("Enabled", &Material::enabled, "Checks if the material is enabled.")
-        ;
+
+		.def_readwrite("visible", &Material::bvisible, "Visibility of the material.")
+		.def("show", &Material::show, "Shows the material.")
+		.def("hide", &Material::hide, "Hides the material.")
+
+		.def_readwrite("enabled", &Material::benable, "Enables or disables the material.")
+		.def("enable", &Material::enable, "Enables the material.")
+		.def("disable", &Material::disable, "Disables the material.")
+
+		.def_property("color", [](Material& self) { return self.diffuse; }, py::overload_cast<GLColor>(&Material::setColor))
+		;
 
 	py::class_<FEPostModel::PlotObject>(post, "PlotObject")
-		.def("Name", &FEPostModel::PlotObject::GetName, "Returns the name of the plot object.")
-		.def("GetDataField", &FEPostModel::PlotObject::FindObjectData, "Returns the name of the plot object.")
+		.def_property_readonly("name", &FEPostModel::PlotObject::GetName, "Returns the name of the plot object.")
 		;
 
-	py::class_<FEPostModel>(post, "PostModel", DOC(Post, FEPostModel))
-		.def("Materials", &FEPostModel::Materials, DOC(Post, FEPostModel, Materials))
-		.def("Material", &FEPostModel::GetMaterial, DOC(Post, FEPostModel, GetMaterial), py::return_value_policy::reference)
-        .def("EnableMaterial", &FEPostModel::EnableMaterial, DOC(Post, FEPostModel, EnableMaterial))
-        .def("GetFEMesh", &FEPostModel::GetFEMesh, DOC(Post, FEPostModel, GetFEMesh), py::return_value_policy::reference)
-        .def("States", &FEPostModel::GetStates, DOC(Post, FEPostModel, GetStates))
-        .def("State", &FEPostModel::GetState, DOC(Post, FEPostModel, GetState), py::return_value_policy::reference)
-		.def("DataFields", [](FEPostModel& self) { return self.GetDataManager()->DataFields(); }, "Returns a list of data fields in the model.", py::return_value_policy::reference)
-		.def("DataField", [](FEPostModel& self, int n) { return *self.GetDataManager()->DataField(n); }, py::return_value_policy::reference, "Returns a specific data field from the model.")
-		.def("AddDataField", static_cast<void(FEPostModel::*)(ModelDataField*, const std::string&)>(&FEPostModel::AddDataField), "Adds a data field to the model.")
-		.def("GetDataField", [](FEPostModel& self, const std::string& dataField) {
-				FEDataManager* dm = self.GetDataManager();
-				int index = dm->FindDataField(dataField);
-				return *dm->DataField(index);
-			}, py::return_value_policy::reference, "Returns a specific data field from the model.")
-        .def("GetDataManager", &FEPostModel::GetDataManager, DOC(Post, FEPostModel, GetDataManager), py::return_value_policy::reference)
-        .def("Evaluate", [](FEPostModel& self, ModelDataField& field, int component, int time)
-            {
-                self.Evaluate(field.GetFieldID() | component, time);
-                return self.GetState(time);
-            }, "Evaluates the model at a specific time step. Returns a reference to the state and updates the values stored in the state's member variables.", 
-            py::return_value_policy::reference)
-		.def("GetPlotObject", &FEPostModel::FindPlotObject, py::return_value_policy::reference)
-		.def("EvaluatePlotObject", &FEPostModel::EvaluatePlotObject, py::return_value_policy::reference)
+	py::class_<CGLModel, std::unique_ptr<CGLModel, py::nodelete>>(post, "PostModel")
+
+		// new interface
+		.def_property_readonly("materials"  , [](CGLModel& self) { return PyPostMaterialList (&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly("states"     , [](CGLModel& self) { return PyPostStateList    (&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly("data_fields", [](CGLModel& self) { return PyPostDataFieldList(&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly("plots"      , [](CGLModel& self) { return PyPostPlotList     (&self); }, py::return_value_policy::reference_internal)
+		.def_property_readonly("fe_meshes"  , [](CGLModel& self) { return PyPostFEMeshList   (&self); }, py::return_value_policy::reference_internal)
+
+		.def_property_readonly("colormap", [](CGLModel& self) { return self.GetColorMap(); }, py::return_value_policy::reference)
 		;
 
-	py::enum_<Data_Tensor_Type>(post, "DataTensorType")
-        .value("DATA_SCALAR", Data_Tensor_Type::TENSOR_SCALAR)
-        .value("DATA_VECTOR", Data_Tensor_Type::TENSOR_VECTOR)
-        .value("DATA_TENSOR2", Data_Tensor_Type::TENSOR_TENSOR2);
+	py::class_<CGLColorMap, std::unique_ptr<CGLColorMap, py::nodelete>>(post, "ColorMap")
+		.def_property("data_field", 
+			[](CGLColorMap& self) { return self.GetEvalField(); }, 
+			[](CGLColorMap& self, py::handle fieldRef) { 
+				int field = PyHandleToDataFieldCode(*self.GetModel()->GetFSModel(), fieldRef);
+				self.SetEvalField(field); },
+			py::return_value_policy::reference)
+		.def("__getattr__", [](CGLColorMap& self, const std::string& name) { return GetDynamicAttribute(self, name); })
+		.def("__setattr__", [](CGLColorMap& self, const std::string& name, py::object value)
+			{ 
+				if (name == "data_field")
+				{
+					int field = PyHandleToDataFieldCode(*self.GetModel()->GetFSModel(), value);
+					self.SetEvalField(field);
+					return;
+				}
+				if (name == "gradient")
+				{
+					int cmap = ColorMapManager::FindColorMapFromName(py::cast<std::string>(value));
+					if (cmap == -1)
+					{
+						throw py::value_error("Invalid color gradient name: " + py::cast<std::string>(value));
+					}
+					self.SetColorMap(cmap);
+					return;
+				}
+				SetDynamicAttribute(self, name, value); 
+			})
+		;
 
-	py::class_<FEDataManager>(post, "DataManager", DOC(Post, FEDataManager))
-        .def("DataFields", &FEDataManager::DataFields, DOC(Post, FEDataManager, DataFields))
-        .def("DataField", [](FEDataManager& self, int i){return *self.DataField(i); }, DOC(Post, FEDataManager, DataField), py::return_value_policy::reference)
-        .def("FindDataField", &FEDataManager::FindDataField, DOC(Post, FEDataManager, FindDataField))
-        ;
+	py::class_<CGLPlot, FSObject, std::unique_ptr<CGLPlot, py::nodelete>>(post, "Plot")
+		.def("__getattr__", [](CGLPlot& self, const std::string& name) { return GetDynamicAttribute(self, name); })
+		.def("__setattr__", [](CGLPlot& self, const std::string& name, py::object value) { SetDynamicAttribute(self, name, value); })
+		;
 
 	py::class_<ModelDataField, std::unique_ptr<ModelDataField, py::nodelete>>(post, "ModelDataField", DOC(Post, ModelDataField))
 		.def_property("name", &ModelDataField::GetName, &ModelDataField::SetName, "Name of the data field.")
-		.def("Components", &ModelDataField::components, DOC(Post, ModelDataField, components))
-		.def("ComponentName", &ModelDataField::componentName, DOC(Post, ModelDataField, componentName))
 		;
 
 	py::class_<FEState>(post, "State", DOC(Post, FEState))
-		.def_readonly("nodeData", &FEState::m_NODE, DOC(Post, FEState, m_NODE), py::return_value_policy::reference)
-		.def_readonly("edgeData", &FEState::m_EDGE, DOC(Post, FEState, m_EDGE), py::return_value_policy::reference)
-		.def_readonly("faceData", &FEState::m_FACE, DOC(Post, FEState, m_FACE), py::return_value_policy::reference)
-		.def_readonly("elemData", &FEState::m_ELEM, DOC(Post, FEState, m_ELEM), py::return_value_policy::reference)
-		.def("NodePosition", [](FEState& self, int index) { return to_vec3d(self.NodePosition(index)); }, "Returns the position of a node at the specified index.", py::return_value_policy::reference)
-		.def_readonly("time", &FEState::m_time, DOC(Post, FEState, m_time));
+		.def_readonly("time", &FEState::m_time, DOC(Post, FEState, m_time))
+
+		.def_property_readonly("fe_mesh", &FEState::GetFEMesh, DOC(Post, FEState, GetFEMesh), py::return_value_policy::reference)
+
+		.def("evaluate", [](FEState& self, py::handle fieldRef) -> FEState&
+			{
+				FEPostModel* model = self.GetFSModel();
+				int fieldCode = PyHandleToDataFieldCode(*model, fieldRef);
+				model->Evaluate(fieldCode, self.m_id);
+				return self;
+			}, "Evaluates a specific data field on the state.",
+			py::return_value_policy::reference)
+
+		.def_readonly("node_data", &FEState::m_NODE, DOC(Post, FEState, m_NODE), py::return_value_policy::reference)
+		.def_readonly("edge_data", &FEState::m_EDGE, DOC(Post, FEState, m_EDGE), py::return_value_policy::reference)
+		.def_readonly("face_data", &FEState::m_FACE, DOC(Post, FEState, m_FACE), py::return_value_policy::reference)
+		.def_readonly("elem_data", &FEState::m_ELEM, DOC(Post, FEState, m_ELEM), py::return_value_policy::reference)
+
+		.def("integrate_elements", [](FEState& self, const std::string& elsetName, py::handle fieldRef) {
+			FEPostModel* fem = self.GetFSModel();
+			int fieldCode = PyHandleToDataFieldCode(*fem, fieldRef);
+			return PostIntegrateElements(*fem, elsetName, fieldCode, self.m_id); },
+			py::arg("elset"), py::arg("field"),
+			"Integrates a data field over an element set.")
+	
+		.def("integrate_faces", [](FEState& self, const std::string& surfName, py::handle fieldRef) {
+			FEPostModel* fem = self.GetFSModel();
+			int fieldCode = PyHandleToDataFieldCode(*fem, fieldRef);
+			return PostIntegrateFaces(*fem, surfName, fieldCode, self.m_id); },
+			py::arg("surf"), py::arg("field"),
+			"Integrates a data field over a surface.")
 		;
 
-
-	py::class_<NODEDATA>(post, "NODEDATA", DOC(Post, NODEDATA))
+	py::class_<NODEDATA>(post, "NodeData", DOC(Post, NODEDATA))
         .def("r",  [](NODEDATA& self){return to_vec3d(self.m_rt);}, "Returns the position of the node.")
         .def_readonly("val", &NODEDATA::m_val, DOC(Post, NODEDATA, m_val))
         .def_readonly("tag", &NODEDATA::m_ntag, DOC(Post, NODEDATA, m_ntag));
 
-	py::class_<EDGEDATA>(post, "EDGEDATA", DOC(Post, EDGEDATA))
+	py::class_<EDGEDATA>(post, "EdgeData", DOC(Post, EDGEDATA))
         .def_readonly("val", &EDGEDATA::m_val, DOC(Post, EDGEDATA, m_val))
         .def_readonly("tag", &EDGEDATA::m_ntag, DOC(Post, EDGEDATA, m_ntag))
-        .def_readonly("nodeVals", &EDGEDATA::m_nv, DOC(Post, EDGEDATA, m_nv));
+        .def_readonly("node_values", &EDGEDATA::m_nv, DOC(Post, EDGEDATA, m_nv));
 
-	py::class_<ELEMDATA>(post, "ELEMDATA", DOC(Post, ELEMDATA))
+	py::class_<ELEMDATA>(post, "ElementData", DOC(Post, ELEMDATA))
         .def_readonly("val", &ELEMDATA::m_val, DOC(Post, ELEMDATA, m_val))
         .def_readonly("state", &ELEMDATA::m_state, DOC(Post, ELEMDATA, m_state))
-        .def_readonly("shellThickness", &ELEMDATA::m_h, DOC(Post, ELEMDATA, m_h));
+        .def_readonly("shell_thickness", &ELEMDATA::m_h, DOC(Post, ELEMDATA, m_h));
 
-	py::class_<FACEDATA>(post, "FACEDATA", DOC(Post, FACEDATA))
+	py::class_<FACEDATA>(post, "FaceData", DOC(Post, FACEDATA))
         .def_readonly("val", &FACEDATA::m_val, DOC(Post, FACEDATA, m_val))
         .def_readonly("tag", &FACEDATA::m_ntag, DOC(Post, FACEDATA, m_ntag));
 
-	py::enum_<Data_Mat3ds_Component>(post, "MAT3DS")
-		.value("XX", Data_Mat3ds_Component::MAT3DS_XX)
-		.value("YY", Data_Mat3ds_Component::MAT3DS_YY)
-		.value("ZZ", Data_Mat3ds_Component::MAT3DS_ZZ)
-		.value("XY", Data_Mat3ds_Component::MAT3DS_XY)
-		.value("YZ", Data_Mat3ds_Component::MAT3DS_YZ)
-		.value("XZ", Data_Mat3ds_Component::MAT3DS_XZ)
-		.value("EFFECTIVE", Data_Mat3ds_Component::MAT3DS_EFFECTIVE)
-		.value("P1", Data_Mat3ds_Component::MAT3DS_P1)
-		.value("P2", Data_Mat3ds_Component::MAT3DS_P2)
-		.value("P3", Data_Mat3ds_Component::MAT3DS_P3)
-		.value("DEV_P1", Data_Mat3ds_Component::MAT3DS_DEV_P1)
-		.value("DEV_P2", Data_Mat3ds_Component::MAT3DS_DEV_P2)
-		.value("DEV_P3", Data_Mat3ds_Component::MAT3DS_DEV_P3)
-		.value("MAX_SHEAR", Data_Mat3ds_Component::MAT3DS_MAX_SHEAR)
-		.value("MAGNITUDE", Data_Mat3ds_Component::MAT3DS_MAGNITUDE)
-		.value("I1", Data_Mat3ds_Component::MAT3DS_I1)
-		.value("I2", Data_Mat3ds_Component::MAT3DS_I2)
-		.value("I3", Data_Mat3ds_Component::MAT3DS_I3)
-		;
-
 	py::class_<FEDistanceMap, ModelDataField, std::unique_ptr<FEDistanceMap, py::nodelete>>(post, "DistanceMap")
-		.def(py::init<FEPostModel*, int>())
-        .def("Init", &FEDistanceMap::Init)
-		.def("SetSelection1", &FEDistanceMap::SetSelection1)
-		.def("SetSelection2", &FEDistanceMap::SetSelection2)
-		.def("SetSigned", &FEDistanceMap::SetSigned)
-		.def("FlipPrimary", &FEDistanceMap::FlipPrimary)
-		.def("FlipSecondary", &FEDistanceMap::FlipSecondary)
-		.def("SetMethod", &FEDistanceMap::SetMethod)
-		.def("Apply", &FEDistanceMap::Apply)
-        .def("ApplyState", &FEDistanceMap::ApplyState)
+		.def_property("primary_selection", [](FEDistanceMap& self) { return self.GetSelection1(); }, [](FEDistanceMap& self, py::handle sel) 
+			{
+				std::vector<int> items = PyHandleToSurfaceSelection(sel, "primary_selection");
+				self.SetSelection1(items);
+			})
+		.def_property("secondary_selection", [](FEDistanceMap& self) { return self.GetSelection2(); }, [](FEDistanceMap& self, py::handle sel)
+			{
+				std::vector<int> items = PyHandleToSurfaceSelection(sel, "secondary_selection");
+				self.SetSelection2(items);
+			})
+		.def_property("signed", [](FEDistanceMap& self) { return self.GetSigned(); }, [](FEDistanceMap& self, bool sign) { self.SetSigned(sign); })
+		.def("apply", &FEDistanceMap::Apply)
 		;
 
-	py::class_<FEVTKExport>(post, "vtkExport", "class for exporting post-model to vtk file")
+	py::class_<FEVTKExport>(post, "VTKExport", "class for exporting post-model to vtk file")
 		.def(py::init<>())
-		.def("ExportAllStates", &FEVTKExport::ExportAllStates)
-		.def("ExportSelectedElementsOnly", &FEVTKExport::ExportSelectedElementsOnly)
-		.def("WriteSeriesFile", &FEVTKExport::WriteSeriesFile)
-		.def("Save", &FEVTKExport::Save)
+		.def_readwrite("export_all_states", &FEVTKExport::m_bwriteAllStates)
+		.def_readwrite("export_selected_elements_only", &FEVTKExport::m_bselElemsOnly)
+		.def_readwrite("write_series_file", &FEVTKExport::m_bwriteSeriesFile)
+		.def_readwrite("write_part_ids", &FEVTKExport::m_bwritePartIDs)
+		.def("save", [](FEVTKExport& self, CGLModel& model, const char* szfile) { 
+			bool b = self.Save(*model.GetFSModel(), szfile); 
+			if (!b) throw std::runtime_error("Failed to save VTK file.");
+			})
 		;
 }
 

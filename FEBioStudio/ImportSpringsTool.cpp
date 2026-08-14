@@ -29,6 +29,8 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <GeomLib/GCurveMeshObject.h>
+#include <MeshLib/FSCurveMesh.h>
 #include <GeomLib/GModel.h>
 #include <MeshLib/MeshTools.h>
 #include <MeshLib/FSMeshBuilder.h>
@@ -59,34 +61,52 @@ bool CImportSpringsTool::OnApply()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return SetErrorString("No document open");
 
-	// get the current object
-	GObject* po = doc->GetActiveObject();
-	if (po == nullptr) return SetErrorString("You need to select the object where the springs will be added.");
-
-	// Make sure it is a GMeshObject
-	GMeshObject* mo = dynamic_cast<GMeshObject*>(po);
-	if (mo == nullptr) return SetErrorString("This tool only works with editable meshes.");
-
 	// read the file
 	if (ReadFile() == false) return SetErrorString("There was a problem reading the file.");
 
 	// check if we have springs
 	if (m_springs.empty()) return SetErrorString("The file did not contain any springs or was not properly formatted.");
 
-	// process the springs
-	int newNodes = ProcessSprings(mo);
-	if (newNodes > 0)
+	// get the current object
+	GObject* po = doc->GetActiveObject();
+	if (m_type < 3)
 	{
-		SetErrorString(QString("%1 new vertices were added to the mesh.").arg(newNodes));
-	}
+		if (po == nullptr)
+			return SetErrorString("You need to select the object where the springs will be added.");
 
-	// apply the springs
-	if (mo)
+		// Make sure it is a GMeshObject
+		GMeshObject* mo = dynamic_cast<GMeshObject*>(po);
+		if (mo == nullptr) return SetErrorString("This tool only works with editable meshes.");
+
+		// add the springs to the mesh
+		int newNodes = ProcessSprings(mo);
+		if (newNodes > 0)
+		{
+			SetErrorString(QString("%1 new vertices were added to the mesh.").arg(newNodes));
+		}
+		return AddSprings(doc->GetGModel(), mo);
+	}
+	else
 	{
-		if (m_type < 3)
-			return AddSprings(doc->GetGModel(), mo);
-		else 
-			return AddTrusses(doc->GetGModel(), mo);
+		// add a new GMesh Object to the model
+		GModel* gm = doc->GetGModel();
+		GCurveMeshObject* pco = new GCurveMeshObject(new FSCurveMesh());
+
+		// the name is the file title
+		QString title = QFileInfo(m_fileName).baseName();
+
+		pco->SetName(title.toStdString());
+		gm->AddObject(pco);
+		po = pco;
+
+		int newNodes = ProcessSprings(pco);
+		// process the springs
+		if (newNodes > 0)
+		{
+			SetErrorString(QString("%1 new vertices were added to the mesh.").arg(newNodes));
+		}
+
+		return AddTrusses(doc->GetGModel(), pco);
 	}
 
 	return false;
@@ -167,12 +187,13 @@ bool CImportSpringsTool::ReadTXTFile()
 	return true;
 }
 
-int findNode(GMeshObject* po, const vec3d& r, double tol)
+int findNode(GObject* po, const vec3d& r, double tol)
 {
 	// find closest node
 	int imin = -1;
 	double l2min = 0.0;
 	FSMesh* m = po->GetFEMesh();
+	if (m == nullptr) return -1;
 	int N = m->Nodes();
 	imin = -1;
 	vec3d r_local = m->GlobalToLocal(r);
@@ -214,7 +235,7 @@ int findPoint(const vector<pair<vec3d, int>>& points, const vec3d& r)
 	return n;
 }
 
-int CImportSpringsTool::ProcessSprings(GMeshObject* po)
+int CImportSpringsTool::ProcessSprings(GObject* po)
 {
 	// process intersections first
 	if (m_bintersect)
@@ -253,13 +274,17 @@ int CImportSpringsTool::ProcessSprings(GMeshObject* po)
 			rt_i.second = n;
 		}
 	}
+	else
+	{
+		for (auto& rt_i : rt) rt_i.second = -1;
+	}
 
 	int newNodes = 0;
 	for (auto& rt_i : rt)
 	{
 		if (rt_i.second == -1)
 		{
-			rt_i.second = po->AddNode(rt_i.first); 
+			rt_i.second = po->AddGNode(rt_i.first); 
 			newNodes++; 
 		}
 	}
@@ -316,7 +341,7 @@ bool CImportSpringsTool::AddSprings(GModel* gm, GMeshObject* po)
 	return true;
 }
 
-bool CImportSpringsTool::AddTrusses(GModel* gm, GMeshObject* po)
+bool CImportSpringsTool::AddTrusses(GModel* gm, GCurveMeshObject* po)
 {
 	// set the spring material
 	FSModel* fem = gm->GetFSModel();
@@ -325,38 +350,32 @@ bool CImportSpringsTool::AddTrusses(GModel* gm, GMeshObject* po)
 	QFileInfo file(m_fileName);
 	QString baseName = file.baseName();
 
-	FSMesh& m = *po->GetFEMesh();
+	FSCurveMesh* pm = po->GetCurveMesh();
+	if (pm == nullptr) return false;
+
+	FSCurveMesh& m = *pm;
 
 	// add new elements to the mesh
-	int gid = m.CountElementPartitions();
-	int cid = m.CountEdgePartitions();
-	int NE0 = m.Elements();
-	int NC0 = m.Edges();
-	m.Create(m.Nodes(), NE0 + m_springs.size(), 0, NC0 + m_springs.size());
+	m.Create(m.Nodes(), m_springs.size());
 	for (int i = 0; i < m.Nodes(); ++i) m.Node(i).m_ntag = i;
-	m.Edge(NC0).m_gid = m.CountEdgePartitions();
+	int cid = 0;
 	for (int i = 0; i < m_springs.size(); ++i)
 	{
 		SPRING& spring = m_springs[i];
-		FSElement& el = m.Element(NE0 + i);
-		el.SetType(FE_BEAM2);
-		el.m_gid = gid;
 		int na = po->FindNode(spring.n0)->GetLocalID();
 		int nb = po->FindNode(spring.n1)->GetLocalID();
 		na = m.FindNodeFromID(na)->m_ntag;
 		nb = m.FindNodeFromID(nb)->m_ntag;
-		el.m_node[0] = na;
-		el.m_node[1] = nb;
 
-		FSEdge& ed = m.Edge(NC0 + i);
+		FSEdge& ed = m.Edge(i);
 		ed.SetType(FSEdgeType::FE_EDGE2);
 		ed.SetExterior(true);
 		ed.m_gid = cid++;
 		ed.n[0] = na;
 		ed.n[1] = nb;
 	}
-	po->Update(true);
-	GPart* pg = po->Part(gid);
+	po->Update();
+	GPart* pg = po->AddBeamPart();
 	pg->SetName(baseName.toStdString());
 	GBeamSection* pb = dynamic_cast<GBeamSection*>(pg->GetSection()); assert(pb);
 
@@ -371,7 +390,8 @@ bool CImportSpringsTool::AddTrusses(GModel* gm, GMeshObject* po)
 
 	return true;
 }
-void CImportSpringsTool::Intersect(GMeshObject* po, CImportSpringsTool::SPRING& spring)
+
+void CImportSpringsTool::Intersect(GObject* po, CImportSpringsTool::SPRING& spring)
 {
 	FSMesh* mesh = po->GetFEMesh();
 

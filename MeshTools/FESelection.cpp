@@ -325,7 +325,7 @@ void GPartSelection::Update()
 
 void GPartSelection::UpdateBoundingBox()
 {
-	BOX box;
+	BoundingBox box;
 
 	GModel& model = *GetGModel();
 	for (int k = 0; k < model.Objects(); ++k)
@@ -463,7 +463,7 @@ void GFaceSelection::Update()
 
 void GFaceSelection::UpdateBoundingBox()
 {
-	BOX box;
+	BoundingBox box;
 	for (int k = 0; k < m_faceList.size(); ++k)
 	{
 		GFace* pf = m_faceList[k];
@@ -578,7 +578,7 @@ void GEdgeSelection::UpdateBoundingBox()
 {
 	GModel& model = *GetGModel();
 
-	BOX box;
+	BoundingBox box;
 	for (int k = 0; k < model.Objects(); ++k)
 	{
 		GObject* po = model.Object(k);
@@ -724,7 +724,7 @@ void GNodeSelection::Update()
 
 void GNodeSelection::UpdateBoundingBox()
 {
-	BOX box;
+	BoundingBox box;
 	for (int k = 0; k < Size(); ++k)
 	{
 		GNode* pn = Node(k); assert(pn && pn->IsSelected());
@@ -828,7 +828,7 @@ void GDiscreteSelection::Update()
 
 	const double LARGE = 1e20;
 
-	BOX box;
+	BoundingBox box;
 
 	int N = model.DiscreteObjects();
 	vec3d r;
@@ -953,7 +953,7 @@ void FEElementSelection::Update()
 	int N = mesh.Elements();
 	m_item.reserve(N);
 
-	BOX box;
+	BoundingBox box;
 	for (int i=0; i<N; ++i)
 	{
 		FSElement& el = mesh.Element(i);
@@ -1182,7 +1182,7 @@ void FEFaceSelection::Update()
 	GObject* po = m_pMesh->GetGObject();
 	const Transform& T = po->GetTransform();
 
-	BOX box;
+	BoundingBox box;
 	for (int i=0; i<N; ++i, ++pf)
 	{
 		if (pf->IsSelected())
@@ -1413,7 +1413,7 @@ void FEEdgeSelection::Update()
 	m_items.clear();
 	if (m_pMesh == nullptr) return;
 	FSEdge* pe = m_pMesh->EdgePtr();
-	BOX box;
+	BoundingBox box;
 	int NE = m_pMesh->Edges();
 	for (int i=0; i<NE; ++i, ++pe)
 	{
@@ -1649,7 +1649,7 @@ void FENodeSelection::Update()
 	if (m_pMesh == nullptr) return;
 	int N = m_pMesh->Nodes();
 	FSNode* pn = m_pMesh->NodePtr();
-	BOX box;
+	BoundingBox box;
 	for (int i=0; i<N; ++i, ++pn)
 	{
 		if (pn->IsSelected())
@@ -1781,4 +1781,160 @@ FSItemListBuilder* FENodeSelection::CreateItemList()
 	FSMesh* pm = dynamic_cast<FSMesh*>(GetMesh());
 	if (pm == nullptr) return nullptr;
 	return new FSNodeSet(pm, m_items);
+}
+
+
+bool BuildSelectionMesh(FESelection* sel, GLMesh& mesh)
+{
+	mesh.Clear();
+	if (sel == nullptr) return false;
+
+	FEElementSelection* esel = dynamic_cast<FEElementSelection*>(sel);
+	if (esel && esel->Count())
+	{
+		mesh.NewSurfacePartition();
+		FSMesh* pm = esel->GetMesh();
+		int NE = esel->Count();
+		int n[FSFace::MAX_NODES];
+		for (int i = 0; i < NE; ++i)
+		{
+			FSElement_& el = *esel->Element(i); assert(el.IsSelected());
+			if (el.IsSolid())
+			{
+				int nf = el.Faces();
+				for (int j = 0; j < nf; ++j)
+				{
+					int nj = el.m_nbr[j];
+					FSElement_* pej = pm->ElementPtr(nj);
+					if ((pej == nullptr) || (!pej->IsSelected()))
+					{
+						FSFace f = el.GetFace(j);
+						for (int k = 0; k < f.Nodes(); ++k)
+						{
+							FSNode& nodek = pm->Node(f.n[k]);
+							vec3f r = to_vec3f(nodek.r);
+							n[k] = mesh.AddNode(r);
+							nodek.m_ntag = n[k];
+						}
+						mesh.AddFace(n, f.Nodes(), 0, -1, true, -1, i);
+
+						for (int k = 0; k < f.Edges(); ++k)
+						{
+							int en[FSEdge::MAX_NODES];
+							FSEdge edge = f.GetEdge(k);
+							for (int l = 0; l < edge.Nodes(); ++l)
+								en[l] = pm->Node(edge.n[l]).m_ntag;
+							mesh.AddEdge(en, edge.Nodes());
+						}
+					}
+				}
+			}
+			else if (el.IsShell())
+			{
+				// add shells
+				for (int k = 0; k < el.Nodes(); ++k)
+				{
+					FSNode& nodek = pm->Node(el.m_node[k]);
+					vec3f r = to_vec3f(nodek.r);
+					n[k] = mesh.AddNode(r);
+					nodek.m_ntag = n[k];
+				}
+				mesh.AddFace(n, el.Nodes(), 0, -1, true, -1, i);
+
+				for (int k = 0; k < el.Edges(); ++k)
+				{
+					int en[FSEdge::MAX_NODES];
+					FSEdge edge = el.GetEdge(k);
+					for (int l = 0; l < edge.Nodes(); ++l)
+						en[l] = pm->Node(edge.n[l]).m_ntag;
+					mesh.AddEdge(en, edge.Nodes());
+				}
+			}
+			else if (el.IsBeam())
+			{
+				for (int k = 0; k < el.Nodes(); ++k)
+				{
+					FSNode& nodek = pm->Node(el.m_node[k]);
+					vec3f r = to_vec3f(nodek.r);
+					n[k] = mesh.AddNode(r);
+					nodek.m_ntag = n[k];
+				}
+				mesh.AddEdge(n, el.Nodes());
+			}
+		}
+		mesh.Update();
+	}
+
+	FEFaceSelection* fsel = dynamic_cast<FEFaceSelection*>(sel);
+	if (fsel && fsel->Count())
+	{
+		mesh.NewSurfacePartition();
+		FSMeshBase* pm = fsel->GetMesh();
+		int NF = fsel->Count();
+		int n[FSFace::MAX_NODES];
+		for (int i = 0; i < NF; ++i)
+		{
+			FSFace& face = *fsel->Face(i); assert(face.IsSelected());
+			for (int k = 0; k < face.Nodes(); ++k)
+			{
+				FSNode& nodek = pm->Node(face.n[k]);
+				vec3f r = to_vec3f(nodek.r);
+				n[k] = mesh.AddNode(r);
+				nodek.m_ntag = n[k];
+			}
+			mesh.AddFace(n, face.Nodes(), 0, -1, true, i, -1);
+
+			for (int k = 0; k < face.Edges(); ++k)
+			{
+				FSFace* pf = pm->FacePtr(face.m_nbr[k]);
+				if ((pf == nullptr) || !pf->IsSelected() || !pf->IsVisible() || (face.GetID() < pf->GetID()))
+				{
+					int en[FSEdge::MAX_NODES];
+					FSEdge edge = face.GetEdge(k);
+					for (int l = 0; l < edge.Nodes(); ++l)
+						en[l] = pm->Node(edge.n[l]).m_ntag;
+
+					mesh.AddEdge(en, edge.Nodes());
+				}
+			}
+		}
+		mesh.Update();
+	}
+
+	FEEdgeSelection* csel = dynamic_cast<FEEdgeSelection*>(sel);
+	if (csel)
+	{
+		FSLineMesh* pm = csel->GetMesh();
+		int NE = csel->Count();
+		int n[FSEdge::MAX_NODES];
+		for (int i = 0; i < NE; ++i)
+		{
+			FSEdge* edge = csel->Edge(i); assert(edge->IsSelected());
+			for (int l = 0; l < edge->Nodes(); ++l)
+			{
+				vec3f r = to_vec3f(pm->Node(edge->n[l]).r);
+				n[l] = mesh.AddNode(r);
+			}
+			mesh.AddEdge(n, edge->Nodes());
+		}
+		mesh.Update();
+	}
+
+	FENodeSelection* nsel = dynamic_cast<FENodeSelection*>(sel);
+	if (nsel)
+	{
+		FSLineMesh* pm = nsel->GetMesh();
+		int NN = nsel->Count();
+		for (int i = 0; i < NN; ++i)
+		{
+			FSNode* node = nsel->Node(i); assert(node->IsSelected());
+			vec3f r = to_vec3f(node->r);
+			mesh.AddNode(r);
+		}
+		mesh.Update();
+	}
+
+	mesh.setModified(true);
+
+	return true;
 }

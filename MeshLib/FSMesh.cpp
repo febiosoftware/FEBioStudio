@@ -2577,6 +2577,47 @@ FSMesh* MeshTools::ConvertSurfaceToMesh(FSSurfaceMesh* surfaceMesh)
 	return mesh;
 }
 
+FSMesh* MeshTools::ConvertLineToMesh(FSLineMesh* lineMesh)
+{
+	int nodes = lineMesh->Nodes();
+	int edges = lineMesh->Edges();
+
+	FSMesh* mesh = new FSMesh;
+	mesh->Create(nodes, edges);
+
+	for (int i = 0; i < nodes; ++i)
+	{
+		FSNode& lineNode = lineMesh->Node(i);
+		FSNode& meshNode = mesh->Node(i);
+
+		meshNode = lineNode;
+	}
+
+	for (int i = 0; i < edges; ++i)
+	{
+		FSEdge& edge = lineMesh->Edge(i);
+		FSElement& el = mesh->Element(i);
+
+		el.m_gid = 0;
+
+		int nf = edge.Nodes();
+		switch (edge.Nodes())
+		{
+		case 2: el.SetType(FE_BEAM2); break;
+		default:
+			assert(false);
+			delete mesh;
+			return 0;
+		}
+
+		for (int j = 0; j < nf; ++j) el.m_node[j] = edge.n[j];
+	}
+
+	mesh->RebuildMesh();
+
+	return mesh;
+}
+
 //-----------------------------------------------------------------------------
 int FSMesh::CountSelectedElements() const
 {

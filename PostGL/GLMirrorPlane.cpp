@@ -130,7 +130,7 @@ void CGLMirrorPlane::RenderPlane(GLRenderEngine& re)
 {
 	CGLModel* mdl = GetModel();
 
-	BOX box = mdl->GetFSModel()->GetBoundingBox();
+	BoundingBox box = mdl->GetFSModel()->GetBoundingBox();
 
 	// plane center
 	vec3d rc = box.Center();

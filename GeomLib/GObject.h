@@ -156,10 +156,10 @@ public:
 	GLMesh* GetFERenderMesh();
 
 	//! Get the local bounding box 
-	virtual BOX GetLocalBox() const;
+	virtual BoundingBox GetLocalBox() const;
 
 	//! Get the global bounding box
-	BOX GetGlobalBox() const;
+	BoundingBox GetGlobalBox() const;
 
 public:
 	//! Show elements in the provided list
@@ -307,6 +307,10 @@ public:
 	static GObject* GetActiveObject();
 	//! Check if this is the active object
 	bool IsActiveObject() const;
+
+public:
+	virtual int AddGNode(vec3d r) { return -1; }
+	virtual int MakeGNode(int n) { return -1; }
 
 private:
 	//! Internal implementation pointer

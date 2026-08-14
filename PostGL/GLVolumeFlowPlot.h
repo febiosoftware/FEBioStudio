@@ -89,7 +89,7 @@ private:
 	vector<vec2f>	m_rng;	// value range
 	DataMap<float>	m_map;	// nodal values map
 	vector<float>	m_val;	// current nodal values
-	BOX				m_box;
+	BoundingBox				m_box;
 
 	GLMesh	m_mesh;
 };

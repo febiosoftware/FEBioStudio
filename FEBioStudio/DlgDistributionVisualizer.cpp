@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <GLLib/glx.h>
 #include <GLWLib/GLTriad.h>
+#include <FSCore/util.h>
 
 GLMesh CreateSphere()
 {
@@ -144,16 +145,28 @@ public:
 		engine.renderGMesh(m_renderSphere, !m_recache);
 		m_recache = false;
 
-		BOX box = m_renderSphere.GetBoundingBox();
+		BoundingBox box = m_renderSphere.GetBoundingBox();
 		if (box.Radius() < 1e-9) box = GetBoundingBox();
 
+		vec3d o = box.r0();
+		vec3d ex = o + vec3d(box.Width(), 0, 0);
+		vec3d ey = o + vec3d(0, box.Height(), 0);
+		vec3d ez = o + vec3d(0, 0, box.Depth());
+
 		glx::renderBox(engine, box, GLColor::White(), false);
+
+		engine.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
+		engine.beginShape();
+		engine.setColor(GLColor::Red()); engine.renderLine(o, ex);
+		engine.setColor(GLColor::Green()); engine.renderLine(o, ey);
+		engine.setColor(GLColor::Blue()); engine.renderLine(o, ez);
+		engine.endShape();
 	}
 
 	// get the bounding box of the entire scene
-	BOX GetBoundingBox() override { 
-		BOX b = m_renderSphere.GetBoundingBox();
-		if (b.IsValid() == false) b = BOX(-1, -1, -1, 1, 1, 1);
+	BoundingBox GetBoundingBox() override {
+		BoundingBox b = m_renderSphere.GetBoundingBox();
+		if (b.IsValid() == false) b = BoundingBox(-1, -1, -1, 1, 1, 1);
 		return b;
 	}
 
@@ -185,65 +198,63 @@ public:
 		{
 			FEParam& p = *it;
 			m_param[i] = &p;
-			switch (p.type())
+			if (p.dim() == 1)
 			{
-			case FE_PARAM_INT   : addProperty(p.name(), CProperty::Int  ); break;
-			case FE_PARAM_DOUBLE: 
-			case FE_PARAM_DOUBLE_MAPPED: 
-				addProperty(p.name(), CProperty::Float); break;
-			case FE_PARAM_BOOL  : addProperty(p.name(), CProperty::Bool ); break;
-			case FE_PARAM_VEC3D: addProperty(p.name(), CProperty::Vec3); break;
-			case FE_PARAM_VEC3D_MAPPED: addProperty(p.name(), CProperty::Vec3); break;
-			case FE_PARAM_MAT3DS: addProperty(p.name(), CProperty::Mat3s); break;
-			case FE_PARAM_MAT3DS_MAPPED: addProperty(p.name(), CProperty::Mat3s); break;
-			default:
-				addProperty(p.name(), CProperty::String); break;
+				switch (p.type())
+				{
+				case FE_PARAM_INT: addProperty(p.name(), CProperty::Int); break;
+				case FE_PARAM_DOUBLE:
+				case FE_PARAM_DOUBLE_MAPPED:
+					addProperty(p.name(), CProperty::Float); break;
+				case FE_PARAM_BOOL: addProperty(p.name(), CProperty::Bool); break;
+				case FE_PARAM_VEC3D: addProperty(p.name(), CProperty::Vec3); break;
+				case FE_PARAM_VEC3D_MAPPED: addProperty(p.name(), CProperty::Vec3); break;
+				case FE_PARAM_MAT3DS: addProperty(p.name(), CProperty::Mat3s); break;
+				case FE_PARAM_MAT3DS_MAPPED: addProperty(p.name(), CProperty::Mat3s); break;
+				default:
+					addProperty(p.name(), CProperty::String); break;
+				}
 			}
+			else
+				addProperty(p.name(), CProperty::String); break;
 		}
 	}
 
 	QVariant GetPropertyValue(int i) override
 	{
 		FEParam* p = m_param[i];
-		if (p && (p->type() == FE_PARAM_DOUBLE))
+		if (p == nullptr) return QVariant();
+
+		if (p->dim() == 1)
 		{
-			double val = p->value<double>();
+			switch (p->type())
+			{
+			case FE_PARAM_DOUBLE: return p->value<double>(); break;
+			case FE_PARAM_DOUBLE_MAPPED: return p->value<FEParamDouble>().constValue(); break;
+			case FE_PARAM_INT: return p->value<int>(); break;
+			case FE_PARAM_BOOL: return p->value<bool>(); break;
+			case FE_PARAM_VEC3D: return QString::fromStdString(Vec3dToString(p->value<vec3d>())); break;
+			case FE_PARAM_VEC3D_MAPPED: return QString::fromStdString(Vec3dToString(p->value<FEParamVec3>().constValue())); break;
+			case FE_PARAM_MAT3DS: return QString::fromStdString(Mat3dsToString(p->value<mat3ds>())); break;
+			case FE_PARAM_MAT3DS_MAPPED: return QString::fromStdString(Mat3dsToString(p->value<FEParamMat3ds>().constValue())); break;
+			default: return QString(); break;
+			}
+		}
+		else
+		{
+			QString val;
+			for (int i = 0; i < p->dim(); ++i)
+			{
+				if (i > 0) val += ",";
+
+				switch (p->type())
+				{
+				case FE_PARAM_INT          : val += QString::number(p->value<int>(i)); break;
+				case FE_PARAM_DOUBLE       : val += QString::number(p->value<double>(i)); break;
+				case FE_PARAM_DOUBLE_MAPPED: val += QString::number(p->value<FEParamDouble>(i).constValue()); break;
+				}
+			}
 			return val;
-		}
-		else if (p && (p->type() == FE_PARAM_DOUBLE_MAPPED))
-		{
-			double val = p->value<FEParamDouble>().constValue();
-			return val;
-		}
-		else if (p && (p->type() == FE_PARAM_INT))
-		{
-			int val = p->value<int>();
-			return val;
-		}
-		else if (p && (p->type() == FE_PARAM_BOOL))
-		{
-			bool val = p->value<bool>();
-			return val;
-		}
-		else if (p && p->type() == FE_PARAM_VEC3D)
-		{
-			vec3d val = p->value<vec3d>();
-			return Vec3dToString(val);
-		}
-		else if (p && p->type() == FE_PARAM_VEC3D_MAPPED)
-		{
-			vec3d val = p->value<FEParamVec3>().constValue();
-			return Vec3dToString(val);
-		}
-		else if (p && p->type() == FE_PARAM_MAT3DS)
-		{
-			mat3ds val = p->value<mat3ds>();
-			return Mat3dsToString(val);
-		}
-		else if (p && p->type() == FE_PARAM_MAT3DS_MAPPED)
-		{
-			mat3ds val = p->value<FEParamMat3ds>().constValue();
-			return Mat3dsToString(val);
 		}
 
 		return QVariant();
@@ -252,45 +263,92 @@ public:
 	void SetPropertyValue(int i, const QVariant& v) override
 	{
 		FEParam* p = m_param[i];
-		if (p && (p->type() == FE_PARAM_DOUBLE))
+		if (p == nullptr) return;
+
+		if (p->dim() == 1)
 		{
-			double val = v.toDouble();
-			p->value<double>() = val;
+			switch (p->type())
+			{
+			case FE_PARAM_DOUBLE:
+			{
+				double val = v.toDouble();
+				p->value<double>() = val;
+			}
+			break;
+			case FE_PARAM_DOUBLE_MAPPED:
+			{
+				double val = v.toDouble();
+				p->value<FEParamDouble>().constValue() = val;
+			}
+			break;
+			case FE_PARAM_INT:
+			{
+				int val = v.toInt();
+				p->value<int>() = val;
+			}
+			break;
+			case FE_PARAM_BOOL:
+			{
+				bool val = v.toBool();
+				p->value<bool>() = val;
+			}
+			break;
+			case FE_PARAM_VEC3D:
+			{
+				vec3d val = StringToVec3d(v.toString().toStdString());
+				p->value<vec3d>() = val;
+			}
+			break;
+			case FE_PARAM_VEC3D_MAPPED:
+			{
+				vec3d val = StringToVec3d(v.toString().toStdString());
+				p->value<FEParamVec3>().constValue() = val;
+			}
+			break;
+			case FE_PARAM_MAT3DS:
+			{
+				mat3ds val = StringToMat3ds(v.toString().toStdString());
+				p->value<mat3ds>() = val;
+			}
+			break;
+			case FE_PARAM_MAT3DS_MAPPED:
+			{
+				mat3ds val = StringToMat3ds(v.toString().toStdString());
+				p->value<FEParamMat3ds>().constValue() = val;
+			}
+			break;
+			}
 		}
-		else if (p && (p->type() == FE_PARAM_DOUBLE_MAPPED))
+		else
 		{
-			double val = v.toDouble();
-			p->value<FEParamDouble>().constValue() = val;
-		}
-		else if (p && (p->type() == FE_PARAM_INT))
-		{
-			int val = v.toInt();
-			p->value<int>() = val;
-		}
-		else if (p && (p->type() == FE_PARAM_BOOL))
-		{
-			bool val = v.toBool();
-			p->value<bool>() = val;
-		}
-		else if (p && (p->type() == FE_PARAM_VEC3D))
-		{
-			vec3d val = StringToVec3d(v.toString());
-			p->value<vec3d>() = val;
-		}
-		else if (p && (p->type() == FE_PARAM_VEC3D_MAPPED))
-		{
-			vec3d val = StringToVec3d(v.toString());
-			p->value<FEParamVec3>().constValue() = val;
-		}
-		else if (p && (p->type() == FE_PARAM_MAT3DS))
-		{
-			mat3ds val = StringToMat3ds(v.toString());
-			p->value<mat3ds>() = val;
-		}
-		else if (p && (p->type() == FE_PARAM_MAT3DS_MAPPED))
-		{
-			mat3ds val = StringToMat3ds(v.toString());
-			p->value<FEParamMat3ds>().constValue() = val;
+			QStringList vals = v.toString().split(",");
+			for (int i=0; i<p->dim(); ++i)
+			{
+				if (i < vals.size())
+				{
+					switch (p->type())
+					{
+					case FE_PARAM_INT:
+					{
+						int val = vals[i].toInt();
+						p->value<int>(i) = val;
+					}
+					break;
+					case FE_PARAM_DOUBLE:
+					{
+						double val = vals[i].toDouble();
+						p->value<double>(i) = val;
+					}
+					break;
+					case FE_PARAM_DOUBLE_MAPPED:
+					{
+						double val = vals[i].toDouble();
+						p->value<FEParamDouble>(i).constValue() = val;
+					}
+					break;
+					}
+				}
+			}
 		}
 	}
 

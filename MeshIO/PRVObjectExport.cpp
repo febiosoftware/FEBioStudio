@@ -31,9 +31,9 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <FEMLib/GDiscreteObject.h>
 #include <GeomLib/GModel.h>
-#include <FEMLib/FSProject.h>
+#include <FEMLib/FSModel.h>
 
-PRVObjectExport::PRVObjectExport(FSProject& prj) : FSFileExport(prj)
+PRVObjectExport::PRVObjectExport(FSModel& fem) : m_fem(fem)
 {
 	m_selectedObjectsOnly = true;
 	m_exportDiscrete = true;
@@ -47,7 +47,7 @@ bool PRVObjectExport::Write(const char* szfile)
 	bool ret = true;
 	try
 	{
-		ret = SaveObjects(ar, m_prj);
+		ret = SaveObjects(ar);
 	}
 	catch (...)
 	{
@@ -59,14 +59,14 @@ bool PRVObjectExport::Write(const char* szfile)
 	return ret;
 }
 
-bool PRVObjectExport::SaveObjects(OArchive& ar, FSProject& prj)
+bool PRVObjectExport::SaveObjects(OArchive& ar)
 {
 	// save version info
 	unsigned int version = PVO_VERSION_NUMBER;
 	ar.WriteChunk(PVO_VERSION, version);
 
 	// write objects
-	GModel& model = prj.GetFSModel().GetModel();
+	GModel& model = m_fem.GetModel();
 	int objects = model.Objects();
 	for (int i = 0; i<objects; ++i)
 	{

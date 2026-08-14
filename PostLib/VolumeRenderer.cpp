@@ -114,7 +114,7 @@ void CVolumeRenderer::ReloadTexture()
 }
 
 extern int LUT[256][15];
-extern int ET_HEX[12][2];
+extern int EL_HEX[12][2];
 
 GLColor HSL2RGB(double H, double S, double L)
 {
@@ -284,7 +284,7 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 	};
 
 	// get the bounding box
-	BOX box = img.GetBoundingBox();
+	BoundingBox box = img.GetBoundingBox();
 	vec3d r0 = box.r0();
 	vec3d dr = box.r1() - box.r0();
 
@@ -339,7 +339,7 @@ void CVolumeRenderer::RenderSlices(GLRenderEngine& re, const vec3d& view)
 	vec3f normal = to_vec3f(view);
 
 	// get the bounding box corners
-	BOX box = img.GetBoundingBox();
+	BoundingBox box = img.GetBoundingBox();
 	double W = box.Width();
 	double H = box.Height();
 	double D = box.Depth();
@@ -390,8 +390,8 @@ void CVolumeRenderer::RenderSlices(GLRenderEngine& re, const vec3d& view)
 			// calculate nodal positions
 			for (int k = 0; k < 3; k++)
 			{
-				int n1 = ET_HEX[pf[k]][0];
-				int n2 = ET_HEX[pf[k]][1];
+				int n1 = EL_HEX[pf[k]][0];
+				int n2 = EL_HEX[pf[k]][1];
 
 				double w = (float)((t - nv[n1]) / (nv[n2] - nv[n1]));
 

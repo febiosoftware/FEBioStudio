@@ -105,6 +105,7 @@ public:
 		m_outLevel = 0;
 		m_printLevel = 0;
 		m_objective = Objective::DataFit;
+		m_report = true;
 	}
 
 	void AddParameter(const Param& p)
@@ -127,6 +128,7 @@ public:
 	int		m_outLevel;		// output level
 	int		m_printLevel;		// print level
 	int		m_objective;	// objective option
+	bool	m_report;		// create report
 
 	// parameters to optimize
 	std::vector<Param>		m_params;

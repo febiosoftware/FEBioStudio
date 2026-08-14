@@ -157,7 +157,7 @@ private:
 	std::vector<ENTITY>	m_Ent;
 };
 
-GMeshExport::GMeshExport(FSProject& prj) : FSFileExport(prj)
+GMeshExport::GMeshExport(FSModel& fem) : m_fem(fem)
 {
 
 }
@@ -335,7 +335,7 @@ bool ExportGMeshOut(GMeshOut& gmsh, const char* szfile)
 bool GMeshExport::Write(const char* szfile)
 {
 	// get the GModel
-	GModel& mdl = m_prj.GetFSModel().GetModel();
+	GModel& mdl = m_fem.GetModel();
 	int objs = mdl.Objects();
 
 	// build the gmesh output structure

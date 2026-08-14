@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include "CurveToBeamTool.h"
 #include <ImageLib/FiberODF.h>
 #include "AlignMeshMOI.h"
+#include "FindIntersectionsTool.h"
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CToolsPanel)
 {
@@ -83,6 +84,7 @@ void CToolsPanel::initTools()
 	tools.push_back(new CSurfaceMeshSizeTool(wnd));
 	tools.push_back(new CCurveToBeamTool    (wnd));
 	tools.push_back(new CAlignMeshMOITool   (wnd));
+	tools.push_back(new CFindIntersectionsTool(wnd));
 }
 
 void CToolsPanel::on_buttons_idClicked(int id)

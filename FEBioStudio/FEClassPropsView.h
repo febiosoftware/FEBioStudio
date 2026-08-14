@@ -38,6 +38,7 @@ class Param;
 class FSProperty;
 class CMainWindow;
 class GModel;
+class FSScriptedComponent;
 
 class CPropertySelector : public QComboBox
 {
@@ -77,6 +78,18 @@ private:
 	FSProperty* m_pp;
 	DOMAIN_TYPE m_domainType;
 	std::vector<FSItemListBuilder*> m_itemList;
+};
+
+class CScriptPropertySelector : public QComboBox
+{
+	Q_OBJECT
+
+public:
+	CScriptPropertySelector(FSModel* fem, FSScriptedComponent* ps, QWidget* parent = nullptr);
+
+public:
+	FSModel* m_fem;
+	FSScriptedComponent* m_ps;
 };
 
 class FEClassPropsDelegate : public QStyledItemDelegate

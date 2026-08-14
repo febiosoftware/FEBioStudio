@@ -42,24 +42,22 @@ public:
 	GModifier(void);
 	virtual ~GModifier(void);
 
-	virtual void Apply(GObject* po) = 0;
+	virtual GObject* Apply(GObject* po) = 0;
 	virtual GLMesh* BuildGMesh(GObject* po) = 0;
 	virtual FSMesh* BuildFEMesh(GObject* po) = 0; 
 };
 
-//-----------------------------------------------------------------------------
 class GTwistModifier : public GModifier
 {
 public:
 	enum { ORIENT, TWIST, SCALE, SMIN, SMAX };
 public:
 	GTwistModifier(FSModel* ps = 0);
-	void Apply(GObject* po);
-	virtual GLMesh* BuildGMesh(GObject* po);
-	FSMesh* BuildFEMesh(GObject* po);
+	GObject* Apply(GObject* po) override;
+	GLMesh* BuildGMesh(GObject* po) override;
+	FSMesh* BuildFEMesh(GObject* po) override;
 };
 
-//-----------------------------------------------------------------------------
 class GPinchModifier : public GModifier
 {
 public:
@@ -67,12 +65,12 @@ public:
 
 public:
 	GPinchModifier(FSModel* ps = 0);
-	void Apply(GObject* po);
-	virtual GLMesh* BuildGMesh(GObject* po);
-	FSMesh* BuildFEMesh(GObject* po);
+	GObject* Apply(GObject* po) override;
+	GLMesh* BuildGMesh(GObject* po) override;
+	FSMesh* BuildFEMesh(GObject* po) override;
 };
 
-//-----------------------------------------------------------------------------
+
 class GBendModifier : public GModifier
 {
 public:
@@ -80,16 +78,16 @@ public:
 
 public:
 	GBendModifier();
-	void Apply(GObject* po);
-	virtual GLMesh* BuildGMesh(GObject* po);
-	FSMesh* BuildFEMesh(GObject* po);
+	GObject* Apply(GObject* po) override;
+	GLMesh* BuildGMesh(GObject* po) override;
+	FSMesh* BuildFEMesh(GObject* po) override;
 
 protected:
 	void UpdateParams();
 	void Apply(vec3d& r);
 
 protected:
-	BOX		m_box;
+	BoundingBox		m_box;
 	vec3d	m_rc;
 	vec3d	m_pvt;
 	quatd	m_q;
@@ -97,7 +95,6 @@ protected:
 	double	m_smin, m_smax, m_a;
 };
 
-//-----------------------------------------------------------------------------
 class GSkewModifier : public GModifier
 {
 public:
@@ -105,21 +102,20 @@ public:
 
 public:
 	GSkewModifier(FSModel* ps = 0);
-	void Apply(GObject* po);
-	virtual GLMesh* BuildGMesh(GObject* po);
-	FSMesh* BuildFEMesh(GObject* po);
+	GObject* Apply(GObject* po) override;
+	GLMesh* BuildGMesh(GObject* po) override;
+	FSMesh* BuildFEMesh(GObject* po) override;
 };
 
-//-----------------------------------------------------------------------------
 class GWrapModifier : public GModifier
 {
 public:
 	enum { TRG_ID, METHOD, NSTEPS };
 public:
 	GWrapModifier();
-	void Apply(GObject* po);
-	virtual GLMesh* BuildGMesh(GObject* po) { return 0; }
-	FSMesh* BuildFEMesh(GObject* po) { return 0; }
+	GObject* Apply(GObject* po) override;
+	GLMesh* BuildGMesh(GObject* po) override { return 0; }
+	FSMesh* BuildFEMesh(GObject* po) override { return 0; }
 	void SetTarget(GObject* ptrg) { m_po = ptrg; }
 
 protected:
@@ -130,7 +126,6 @@ protected:
 	GObject*	m_po;	//!< target object
 };
 
-//-----------------------------------------------------------------------------
 class GExtrudeModifier : public GModifier
 {
 public:
@@ -138,13 +133,15 @@ public:
 
 public:
 	GExtrudeModifier();
-	void Apply(GObject* po);
-	GLMesh* BuildGMesh(GObject* po);
-	FSMesh* BuildFEMesh(GObject* po);
+	GObject* Apply(GObject* po) override;
+	GLMesh* BuildGMesh(GObject* po) override;
+	FSMesh* BuildFEMesh(GObject* po) override;
+
+private:
+	GObject* ExtrudePLCObject(GObject* po);
+	GObject* ExtrudeCurveObject(GObject* po);
 };
 
-
-//-----------------------------------------------------------------------------
 class GRevolveModifier : public GModifier
 {
 public:
@@ -152,12 +149,11 @@ public:
 
 public:
 	GRevolveModifier();
-	void Apply(GObject* po);
-	GLMesh* BuildGMesh(GObject* po);
-	FSMesh* BuildFEMesh(GObject* po);
+	GObject* Apply(GObject* po) override;
+	GLMesh* BuildGMesh(GObject* po) override;
+	FSMesh* BuildFEMesh(GObject* po) override;
 };
 
-//-----------------------------------------------------------------------------
 class GModifierStack : public CSerializable
 {
 public:

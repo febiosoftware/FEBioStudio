@@ -213,7 +213,7 @@ vec3d GLCamera::GlobalPosition() const
 	return r;
 }
 
-void GLCamera::ZoomToBox(const BOX& box, bool forceZoom, bool animate)
+void GLCamera::ZoomToBox(const BoundingBox& box, bool forceZoom, bool animate)
 {
 	double f = box.GetMaxExtent();
 	if (f < 1.0e-8) f = 1.0;

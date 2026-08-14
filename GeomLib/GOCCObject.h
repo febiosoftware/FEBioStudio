@@ -96,5 +96,8 @@ private:
 // merge a list of occ objects into a single object
 GOCCObject* MergeOCCObjects(std::vector<GOCCObject*> occlist);
 
+// get the minimum and maximum edge length for an OCC object
+bool MinMaxEdgeLength(GOCCObject* po, double& min, double& max);
+
 // convert a primitive to an OCC object
 GOCCObject* ConvertToOCCObject(GObject* po);

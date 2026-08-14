@@ -46,7 +46,7 @@ public:
 	CODFScene();
 	void Render(GLRenderEngine& engine, GLContext& rc) override;
 
-	BOX GetBoundingBox() override;
+	BoundingBox GetBoundingBox() override;
 
 	void setAnalysis(CFiberODFAnalysis* a) { m_analysis = a; }
 	void setODF(CODF* odf) { m_ODF = odf; }

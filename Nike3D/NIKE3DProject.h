@@ -280,29 +280,29 @@ public:
 public:
 	NIKE3DProject() { Defaults(); }
 
-	bool Create(FSProject& prj);
+	bool Create(FSModel& fem);
 
-	// builds an FSProject from a nike project
-	bool Convert(FSProject& prj);
+	// builds an FSModel from a nike project
+	bool Convert(FSModel& fem);
 
 protected:
-	bool BuildControl        (FSProject& prj);
-	bool BuildMaterials      (FSProject& prj);
-	bool BuildNodes          (FSProject& prj);
-	bool BuildElements       (FSProject& prj);
-	bool BuildRigidNodes     (FSProject& prj);
-	bool BuildDiscrete		 (FSProject& prj);
-	bool BuildInterfaces     (FSProject& prj);
-	bool BuildNodalLoads     (FSProject& prj);
-	bool BuildPressureLoads  (FSProject& prj);
-	bool BuildDisplacements  (FSProject& prj);
-	bool BuildBodyForce      (FSProject& prj);
-	bool BuildNodalVelocities(FSProject& prj);
+	bool BuildControl        (FSModel& fem);
+	bool BuildMaterials      (FSModel& fem);
+	bool BuildNodes          (FSModel& fem);
+	bool BuildElements       (FSModel& fem);
+	bool BuildRigidNodes     (FSModel& fem);
+	bool BuildDiscrete		 (FSModel& fem);
+	bool BuildInterfaces     (FSModel& fem);
+	bool BuildNodalLoads     (FSModel& fem);
+	bool BuildPressureLoads  (FSModel& fem);
+	bool BuildDisplacements  (FSModel& fem);
+	bool BuildBodyForce      (FSModel& fem);
+	bool BuildNodalVelocities(FSModel& fem);
 
 	int AddLoadCurve(LoadCurve& lc);
 
 protected:
-	bool ConvertMaterials(FSProject& prj);
+	bool ConvertMaterials(FSModel& fem);
 	void Defaults();
 
 public:

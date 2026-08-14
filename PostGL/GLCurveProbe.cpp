@@ -118,6 +118,11 @@ bool GLCurveProbe::SetPoints(const std::vector<vec3d>& points)
 	return (m_path.size() > 1);
 }
 
+void GLCurveProbe::Invert()
+{
+	std::reverse(m_path.begin(), m_path.end());
+}
+
 vector<double> GLCurveProbe::SectionLenghts(bool normalized)
 {
 	vector<double> curve(m_path.size(), 0.0);
@@ -177,7 +182,6 @@ double GLCurveProbe::GetPointValue(int i, int nstep)
 	Post::CGLColorMap* cmap = mdl->GetColorMap();
 	if (cmap == nullptr) return val;
 	int nfield = cmap->GetEvalField();
-	if (nfield == 0) return val;
 
 	vec3f r0 = to_vec3f(m_path[i])* m_scale;
 	Post::NODEDATA data;

@@ -89,5 +89,5 @@ void renderContractileForce(GLRenderEngine& re, const vec3d& a, const vec3d& b, 
 void renderRigidWall(GLRenderEngine& re, double R);
 void renderHelicalAxis(GLRenderEngine& re, double R);
 
-void renderBox(GLRenderEngine& re, const BOX& bbox, GLColor col = GLColor::White(), bool partial = true, double scale = 1.0);
+void renderBox(GLRenderEngine& re, const BoundingBox& bbox, GLColor col = GLColor::White(), bool partial = true, double scale = 1.0);
 }

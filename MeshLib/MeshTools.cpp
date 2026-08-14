@@ -1177,7 +1177,7 @@ bool ProjectInsideElement(FSCoreMesh& m, FSElement_& el, const vec3f& p, double 
 bool ProjectToElement(FSElement& el, const vec3f& p, vec3f* x0, vec3f* xt, vec3f& q)
 {
 	int ne = el.Nodes();
-	BOX box;
+	BoundingBox box;
 	for (int i = 0; i < ne; ++i) box += to_vec3d(x0[i]);
 	if (box.IsInside(to_vec3d(p)) == false) return false;
 
@@ -1280,8 +1280,8 @@ bool project_inside_element2d(FSElement_& el, vec3d* x, const vec2d& p, double q
 		el.shape_2d(N, q[0], q[1]);
 		el.shape_deriv_2d(G[0], G[1], q[0], q[1]);
 
-		R[0] = p.x();
-		R[1] = p.y();
+		R[0] = p.x;
+		R[1] = p.y;
 		for (int i = 0; i < ne; ++i)
 		{
 			R[0] -= N[i] * x[i].x;

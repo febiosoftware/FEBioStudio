@@ -81,6 +81,8 @@ enum ModelTreeType
 	MT_STEP_LIST,
 	MT_LOAD_CONTROLLERS,
 	MT_LOAD_CONTROLLER,
+	MT_SCRIPT_LIST,
+	MT_SCRIPT,
 	MT_PROJECT_OUTPUT,
 	MT_PROJECT_OUTPUT_PLT,
 	MT_PROJECT_OUTPUT_LOG,
@@ -107,6 +109,7 @@ enum ModelTreeType
 	MT_JOB,
 	MT_STUDYLIST,
 	MT_STUDY,
+	MT_STUDY_DATA,
 	MT_POST_MODEL,
 	MT_POST_PLOT,
 	MT_3DIMAGE,
@@ -202,6 +205,7 @@ protected:
 	void UpdateMaterials      (QTreeWidgetItem* t1, FSModel& fem);
 	void UpdateDiscrete       (QTreeWidgetItem* t1, FSModel& fem);
 	void UpdateLoadControllers(QTreeWidgetItem* t1, FSModel& fem);
+	void UpdateScripts        (QTreeWidgetItem* t1, FSModel& fem);
 	void UpdateOutput         (QTreeWidgetItem* t1, FSProject& prj);
 	void UpdateJobs           (QTreeWidgetItem* t1, CModelDocument* doc);
 	void UpdateImages         (QTreeWidgetItem* t1, CModelDocument* doc);

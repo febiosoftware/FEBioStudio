@@ -46,7 +46,6 @@ SOFTWARE.*/
 #include <BRepMesh_IncrementalMesh.hxx>
 #include <BRepFilletAPI_MakeFillet.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
-#include <BRepAdaptor_Curve.hxx>
 #include <TopExp_Explorer.hxx>
 #include <BRepTools.hxx>
 #include <BOPAlgo_MakerVolume.hxx>
@@ -61,7 +60,12 @@ SOFTWARE.*/
 #include <TopoDS_Solid.hxx>
 #include <TopoDS_Shell.hxx>
 #include <TopoDS_Face.hxx>
-#endif
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <TopoDS_Shape.hxx>
+#include <GProp_GProps.hxx>
+#include <BRepGProp.hxx>
+
+#endif // HAS_OCC
 
 #ifdef HAS_OCC
 class OCC_Data
@@ -78,7 +82,7 @@ class OCC_Data {
 public:
 	OCC_Data(){}
 };
-#endif
+#endif // HAS_OCC
 
 GOCCObject::GOCCObject(int type) : GObject(type)
 {
@@ -728,5 +732,29 @@ GOCCObject* ConvertToOCCObject(GObject* po)
 	return occ;
 #else
 	return nullptr;
+#endif
+}
+
+bool MinMaxEdgeLength(GOCCObject* po, double& min, double& max)
+{
+#ifdef HAS_OCC
+	double mnedg = 0.0;
+	double mxedg = 0.0;
+	TopoDS_Shape& occ = po->GetShape();
+	TopExp_Explorer anExp(occ, TopAbs_EDGE);
+	for (; anExp.More(); anExp.Next()) {
+		const TopoDS_Edge& anEdge = TopoDS::Edge(anExp.Current());
+		GProp_GProps props;
+		BRepGProp::LinearProperties(anEdge, props);
+		double length = props.Mass();
+		if (mnedg == 0) mnedg = length;
+		else {
+			mnedg = fmin(mnedg, length);
+			mxedg = fmax(mxedg, length);
+		}
+	}
+	return true;
+#else
+	return false;
 #endif
 }

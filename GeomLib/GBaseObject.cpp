@@ -209,6 +209,39 @@ GPart* GBaseObject::FindPartFromName(const char* szname)
 	return nullptr;
 }
 
+GFace* GBaseObject::FindFaceFromName(const char* szname)
+{
+	if (szname == nullptr) return nullptr;
+	for (int i = 0; i < Faces(); ++i)
+	{
+		GFace* fi = Face(i);
+		if (strcmp(szname, fi->GetName().c_str()) == 0) return fi;
+	}
+	return nullptr;
+}
+
+GEdge* GBaseObject::FindEdgeFromName(const char* szname)
+{
+	if (szname == nullptr) return nullptr;
+	for (int i = 0; i < Edges(); ++i)
+	{
+		GEdge* ei = Edge(i);
+		if (strcmp(szname, ei->GetName().c_str()) == 0) return ei;
+	}
+	return nullptr;
+}
+
+GNode* GBaseObject::FindNodeFromName(const char* szname)
+{
+	if (szname == nullptr) return nullptr;
+	for (int i = 0; i < Nodes(); ++i)
+	{
+		GNode* ni = Node(i);
+		if (strcmp(szname, ni->GetName().c_str()) == 0) return ni;
+	}
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 void GBaseObject::AddFace(GFace* f)
 {

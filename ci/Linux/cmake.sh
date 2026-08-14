@@ -14,10 +14,12 @@ run_cmake() {
         -DUSE_PYTHON=ON \
 		-DBUILD_UPDATER=ON \
 		-DBUILD_TESTS=ON \
+		-DUSE_MKL_OMP=ON \
+		-DMKL_OMP=/opt/intel/oneapi/compiler/latest/lib/libiomp5.so \
         -DFFMPEG_INC=/usr/local/include \
         -DFFMPEG_LIB_DIR=/usr/local/lib \
-        -DPython3_ROOT_DIR=/home/ubuntu/.pyenv/versions/3.13.1 \
-        -DPython3_EXECUTABLE=/home/ubuntu/.pyenv/versions/3.13.1/bin/python3 \
-        -DPython3_INCLUDE_DIR=/home/ubuntu/.pyenv/versions/3.13.1/include/python3.13 \
-        -DPython3_LIBRARY=/home/ubuntu/.pyenv/versions/3.13.1/lib/libpython3.13.so 
+        -DPython3_ROOT_DIR=/home/mherron/.pyenv/versions/3.13.1 \
+        -DPython3_EXECUTABLE=/home/mherron/.pyenv/versions/3.13.1/bin/python3 \
+        -DPython3_INCLUDE_DIR=/home/mherron/.pyenv/versions/3.13.1/include/python3.13 \
+        -DPython3_LIBRARY=/home/mherron/.pyenv/versions/3.13.1/lib/libpython3.13.so 
 }

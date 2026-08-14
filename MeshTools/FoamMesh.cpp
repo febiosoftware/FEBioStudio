@@ -34,7 +34,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // declared in lut.cpp
 extern int LUT[256][15];
-extern int ET_HEX[12][2];
+extern int EL_HEX[12][2];
 extern int F2D[16][16];
 extern int ET2D[4][2];
 
@@ -583,8 +583,8 @@ FSMesh* FoamGen::CreateMesh()
 
 			for (int k=0; k<3; k++)
 			{
-				int n1 = e.n[ET_HEX[pf[k]][0]];
-				int n2 = e.n[ET_HEX[pf[k]][1]];
+				int n1 = e.n[EL_HEX[pf[k]][0]];
+				int n2 = e.n[EL_HEX[pf[k]][1]];
 				if (n1 > n2) { n1 ^= n2; n2 ^= n1; n1 ^= n2; }
 
 				int n = FindEdge(n1, n2);

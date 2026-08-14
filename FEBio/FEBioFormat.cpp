@@ -156,12 +156,18 @@ void FEBioFormat::SetSkipGeometryFlag(bool b)
 
 void FEBioFormat::ParseUnknownTag(XMLTag& tag)
 {
-	m_fileReader->ParseUnknownTag(tag);
+	if (m_fileReader)
+		m_fileReader->ParseUnknownTag(tag);
+	else
+		tag.m_preader->SkipTag(tag);
 }
 
 void FEBioFormat::ParseUnknownAttribute(XMLTag& tag, const char* szatt)
 {
-	m_fileReader->ParseUnknownAttribute(tag, szatt);
+	if (m_fileReader)
+		m_fileReader->ParseUnknownAttribute(tag, szatt);
+	else
+		tag.m_preader->SkipTag(tag);
 }
 
 //-----------------------------------------------------------------------------
@@ -317,7 +323,7 @@ vector<string> split_string(string sz)
 
 //-----------------------------------------------------------------------------
 // read a parameter from file
-bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
+bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag, const char* szparamName)
 {
     // check if parameter is indexed by looking for tag attributes other than "lc"
     const char* szi = 0;
@@ -331,9 +337,11 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
     }
 
 	// try to find the parameter
+	if (szparamName == nullptr) szparamName = tag.Name();
+	
     Param* pp = 0;
-    if (szi) pp = PC.GetParam(tag.Name(), szi, idx);
-    if (pp == 0) pp = PC.GetParam(tag.Name());
+    if (szi) pp = PC.GetParam(szparamName, szi, idx);
+    if (pp == 0) pp = PC.GetParam(szparamName);
 
 	if (pp == 0) return false;
 
@@ -390,6 +398,7 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		case Param_VEC3D: { vec3d v; tag.value(v); pp->SetVec3dValue(v); } break;
 		case Param_VEC2I: { vec2i v; tag.value(v); pp->SetVec2iValue(v); } break;
 		case Param_VEC2D: { vec2d v; tag.value(v); pp->SetVec2dValue(v); } break;
+		case Param_MAT2D: { mat2d v; tag.value(v); pp->SetMat2dValue(v); } break;
 		case Param_MAT3D: { mat3d v; tag.value(v); pp->SetMat3dValue(v); } break;
 		case Param_MAT3DS: { mat3ds v; tag.value(v); pp->SetMat3dsValue(v); } break;
 		case Param_FLOAT: { double d; tag.value(d); pp->SetFloatValue(d); } break;
@@ -467,7 +476,6 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		}
 		else FileReader()->AddLogEntry("Cannot assign map to non-variable parameter %s", pp->GetShortName());
 	}
-
 	// NOTE: Is this still used? I think this was an initial attempt
 	//       for creating watched variables.
 	// if parameter is checkable, mark it as checked
@@ -526,7 +534,7 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	{
 		int moduleId = FEBio::GetModuleId("solid");
 		if (moduleId < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", "solid"); }
-		FileReader()->GetProject().SetModule(moduleId, false);
+		fem.SetModule(moduleId, false);
 	}
 
 	// create a new analysis step from these control settings
@@ -2760,6 +2768,13 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 				param->SetMat3dValue(v);
 			}
 			break;
+			case Param_MAT2D:
+			{
+				mat2d v;
+				tag.value(v);
+				param->SetMat2dValue(v);
+			}
+			break;
 			case Param_ARRAY_INT:
 			{
 				std::vector<int> d = param->GetArrayIntValue();
@@ -2789,7 +2804,30 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 	++tag;
 	do
 	{
-		if (ReadParam(*pmc, tag) == false)
+		const char* szparamname = nullptr;
+
+		if ((tag == "add_param") && (pmc->AllowUserParams()))
+		{
+			const char* szname = tag.AttributeValue("name", true);
+			const char* sztype = tag.AttributeValue("data_type", true);
+
+			Param* p = nullptr;
+			if (szname && sztype)
+			{
+				string type = sztype;
+				if      (type == "bool"  ) { bool   b; tag.value(b); p = pmc->AddBoolParam  (b, szname); p->SetFlags(p->GetFlags() | FS_PARAM_USER); }
+				else if (type == "int"   ) { int    n; tag.value(n); p = pmc->AddIntParam   (n, szname); p->SetFlags(p->GetFlags() | FS_PARAM_USER); }
+				else if (type == "double") { double d; tag.value(d); p = pmc->AddDoubleParam(d, szname); p->SetFlags(p->GetFlags() | FS_PARAM_USER | FS_PARAM_VOLATILE); }
+				else if (type == "vec3"  ) { vec3d  v; tag.value(v); p = pmc->AddVecParam   (v, szname); p->SetFlags(p->GetFlags() | FS_PARAM_USER | FS_PARAM_VOLATILE); }
+				else if (type == "mat3"  ) { mat3d  m; tag.value(m); p = pmc->AddMat3dParam (m, szname); p->SetFlags(p->GetFlags() | FS_PARAM_USER | FS_PARAM_VOLATILE); }
+				else ParseUnknownAttribute(tag, sztype);
+			}
+			else ParseUnknownTag(tag);
+
+			if (p)szparamname = p->GetShortName();
+		}
+
+		if (ReadParam(*pmc, tag, szparamname) == false)
 		{
 			if (pmc->Properties() > 0)
 			{
@@ -2824,6 +2862,28 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 						{
 							FSEdgeSet* set = po->FindFEEdgeSet(edgeName);
 							pms->SetItemList(set);
+						}
+					}
+					else if (prop->IsFixed())
+					{
+						// If the property is fixed, it should already be allocated and we just need to read the parameters
+						FSModelComponent* pc = dynamic_cast<FSModelComponent*>(prop->GetComponent());
+						if (pc == nullptr)
+						{
+							ParseUnknownTag(tag);
+							continue;
+						}
+						
+						const char* szname = tag.AttributeValue("name", true);
+						if (szname) pc->SetName(szname);
+
+						ParseModelComponent(pc, tag);
+
+						// if this is a scripted component, we need to attach a script to it. 
+						auto scriptedComponent = dynamic_cast<FSScriptedComponent*>(pc);
+						if (scriptedComponent)
+						{
+							GetFEBioModel().AttachScript(scriptedComponent, pc->GetName());
 						}
 					}
 					else
@@ -2865,4 +2925,26 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 	} while (!tag.isend());
 
 	pmc->UpdateData(true);
+}
+
+void FEBioFormat::ParseScriptsSection(XMLTag& tag)
+{
+	// make sure the section is not empty
+	if (tag.isleaf()) return;
+	++tag;
+	do
+	{
+		if (tag == "script")
+		{
+			const char* szname = tag.AttributeValue("name", true);
+			if (szname)
+			{
+				string code;
+				tag.value(code);
+				GetFEBioModel().AddScript(szname, code);
+			}
+		}
+		else ParseUnknownTag(tag);
+		++tag;
+	} while (!tag.isend());
 }

@@ -80,7 +80,6 @@ SOFTWARE.*/
 #include "GLViewer.h"
 #include "DlgPartViewer.h"
 #include "DlgScreenCapture.h"
-#include <PyLib/PythonToolsPanel.h>
 #include "DlgPartViewer.h"
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <FEBioMonitor/FEBioMonitorPanel.h>
@@ -89,6 +88,7 @@ SOFTWARE.*/
 #include <vector>
 #include "HTMLBrowser.h"
 #include "PythonEditor.h"
+#include "CodeEditor.h"
 #include "MainMenu.h"
 #include "PluginManager.h"
 #include <PyLib/PythonRunner.h>
@@ -273,7 +273,6 @@ public:
 	::CPostPanel* postPanel;
 	::CInfoPanel* infoPanel;
 	::CRepositoryPanel* databasePanel;
-//    ::CPythonToolsPanel*	pythonToolsPanel;
 	::CTimelinePanel* timePanel;
 	::CImageSettingsPanel* imageSettingsPanel;
 	CFEBioMonitorPanel* febioMonitor;
@@ -290,6 +289,7 @@ public:
 	::CMeshInspector* meshWnd = nullptr;
 	::CDlgScreenCapture* imageView = nullptr;
 	::CPythonEditor* pythonEditor = nullptr;
+	::CCodeEditor* codeEditor = nullptr;
 
 	CDlgPartViewer* partViewer = nullptr;
 

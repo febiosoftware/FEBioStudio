@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,10 +23,46 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include <QMainWindow>
+#include "Document.h"
+#include <vector>
 
-namespace pybind11
-{
-    class module_;
+namespace Ui {
+	class CCodeEditor;
 }
 
-void init_FBSUI(pybind11::module_& m);
+class CDocument;
+class CMainWindow;
+class FEBCodeScript;
+
+class CCodeEditor : public QMainWindow, public CDocObserver
+{
+	Q_OBJECT
+
+public:
+	CCodeEditor(CMainWindow* wnd);
+
+	void closeEvent(QCloseEvent* event) override;
+
+	void SetScript(CDocument* doc, FEBCodeScript* script);
+
+public:
+	void DocumentDelete() override;
+
+signals:
+	void ClosingEditor(FEBCodeScript* script);
+
+private slots:
+	void on_actionOpen_triggered();
+	void on_actionSave_triggered();
+	void on_actionCheck_triggered();
+	void on_edit_textChanged();
+
+private:
+	void updateWindowTitle();
+
+private:
+	Ui::CCodeEditor* ui;
+	CMainWindow* mainWnd;
+};

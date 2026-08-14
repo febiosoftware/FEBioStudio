@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <FECore/FESolver.h>
 #include <FECore/LinearSolver.h>
 #include <FECore/FENewtonSolver.h>
+#include <FSCore/util.h>
 #include "FEBioMonitorPanel.h"
 #include "FEBioMonitorView.h"
 #include "GLMonitorScene.h"
@@ -739,10 +740,10 @@ void FEBioMonitorDoc::UpdateWatchVariable(FEBioWatchVariable& var)
 		case FE_PARAM_INT   : { int a = p->value<int>(); val = QString::number(a); } break;
 		case FE_PARAM_BOOL  : { bool a = p->value<bool>(); val = (a ? "True" : "False"); } break;
 		case FE_PARAM_DOUBLE: { double a = p->value<double>(); val = QString::number(a); } break;
-		case FE_PARAM_VEC2D : { vec2d v = p->value<vec2d>(); val = Vec2dToString(v); } break;
-		case FE_PARAM_VEC3D : { vec3d v = p->value<vec3d>(); val = Vec3dToString(v); } break;
-		case FE_PARAM_MAT3D : { mat3d v = p->value<mat3d>(); val = Mat3dToString(v); } break;
-		case FE_PARAM_MAT3DS: { mat3ds v = p->value<mat3ds>(); val = Mat3dsToString(v); } break;
+		case FE_PARAM_VEC2D : { vec2d  v = p->value<vec2d> (); val = QString::fromStdString(Vec2dToString(v)); } break;
+		case FE_PARAM_VEC3D : { vec3d  v = p->value<vec3d> (); val = QString::fromStdString(Vec3dToString(v)); } break;
+		case FE_PARAM_MAT3D : { mat3d  v = p->value<mat3d> (); val = QString::fromStdString(Mat3dToString(v)); } break;
+		case FE_PARAM_MAT3DS: { mat3ds v = p->value<mat3ds>(); val = QString::fromStdString(Mat3dsToString(v)); } break;
 		case FE_PARAM_DOUBLE_MAPPED:
 		{
 			FEParamDouble& v = p->value<FEParamDouble>();
@@ -759,7 +760,7 @@ void FEBioMonitorDoc::UpdateWatchVariable(FEBioWatchVariable& var)
 			if (v.isConst()) 
 			{
 				vec3d a = v.constValue() * v.GetScaleFactor();
-				val = Vec3dToString(a);
+				val = QString::fromStdString(Vec3dToString(a));
 			}
 		}
 		break;
@@ -769,7 +770,7 @@ void FEBioMonitorDoc::UpdateWatchVariable(FEBioWatchVariable& var)
 			if (v.isConst())
 			{
 				mat3d a = v.constValue() * v.GetScaleFactor();
-				val = Mat3dToString(a);
+				val = QString::fromStdString(Mat3dToString(a));
 			}
 		}
 		break;
@@ -779,7 +780,7 @@ void FEBioMonitorDoc::UpdateWatchVariable(FEBioWatchVariable& var)
 			if (v.isConst())
 			{
 				mat3ds a = v.constValue() * v.GetScaleFactor();
-				val = Mat3dsToString(a);
+				val = QString::fromStdString(Mat3dsToString(a));
 			}
 		}
 		break;

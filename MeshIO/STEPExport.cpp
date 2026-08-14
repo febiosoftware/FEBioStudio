@@ -31,7 +31,7 @@
 #include <TopoDS_Solid.hxx>
 #endif
 
-STEPExport::STEPExport(FSProject& prj) : FSFileExport(prj)
+STEPExport::STEPExport(FSModel& fem) : m_fem(fem)
 {
 }
 
@@ -43,7 +43,7 @@ bool STEPExport::Write(const char* szfile)
 {
 #ifdef HAS_OCC
 	// Get the model
-	FSModel& fem = m_prj.GetFSModel();
+	FSModel& fem = m_fem;
 	GModel& model = fem.GetModel();
 	
 	// Get the first OCC geometry that is selected.

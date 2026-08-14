@@ -77,8 +77,7 @@ vec3d PointCloud3d::Centroid()
     return c;
 }
 
-//-------------------------------------------------------------------------------
-void PointCloud3d::BoundingBox()
+void PointCloud3d::UpdateBoundingBox()
 {
     int n = Points();
     
@@ -117,7 +116,7 @@ bool PointCloud3d::Read(char* szname)
     
     fclose(fp);
     
-    BoundingBox();
+    UpdateBoundingBox();
     
     return true;
 }
@@ -148,7 +147,7 @@ bool PointCloud3d::Write(char* szname)
 void PointCloud3d::ParametricCoordinatesFromXYZ(const int udir, const int vdir)
 {
     // get bounding box
-    BoundingBox();
+    UpdateBoundingBox();
     
     // get surface extents
     vec3d extnt = m_pmax - m_pmin;
@@ -208,10 +207,10 @@ void PointCloud3d::ParametricBoundingBox()
     {
         m_umin = m_umax = m_u[0];
         for (int i=1; i<n; ++i) {
-            m_umin.x() = fmin(m_umin.x(), m_u[i].x());
-            m_umax.x() = fmax(m_umax.x(), m_u[i].x());
-            m_umin.y() = fmin(m_umin.y(), m_u[i].y());
-            m_umax.y() = fmax(m_umax.y(), m_u[i].y());
+            m_umin.x = fmin(m_umin.x, m_u[i].x);
+            m_umax.x = fmax(m_umax.x, m_u[i].x);
+            m_umin.y = fmin(m_umin.y, m_u[i].y);
+            m_umax.y = fmax(m_umax.y, m_u[i].y);
         }
     }
 }

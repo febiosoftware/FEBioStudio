@@ -223,7 +223,7 @@ void CITKImageSource::Save(OArchive& ar)
 
 	if (m_originalImage)
 	{
-		BOX box = m_originalImage->GetBoundingBox();
+		BoundingBox box = m_originalImage->GetBoundingBox();
 		ar.WriteChunk(100, box.x0);
 		ar.WriteChunk(101, box.y0);
 		ar.WriteChunk(102, box.z0);
@@ -235,7 +235,7 @@ void CITKImageSource::Save(OArchive& ar)
 
 void CITKImageSource::Load(IArchive& ar)
 {
-    BOX tempBox;
+    BoundingBox tempBox;
     bool foundBox = false;
 
     while (ar.OpenChunk() == IArchive::IO_OK)
@@ -424,7 +424,7 @@ void CITKSeriesImageSource::Save(OArchive& ar)
 
 	if (m_originalImage)
 	{
-		BOX box = m_originalImage->GetBoundingBox();
+		BoundingBox box = m_originalImage->GetBoundingBox();
 		ar.WriteChunk(100, box.x0);
 		ar.WriteChunk(101, box.y0);
 		ar.WriteChunk(102, box.z0);
@@ -436,7 +436,7 @@ void CITKSeriesImageSource::Save(OArchive& ar)
 
 void CITKSeriesImageSource::Load(IArchive& ar)
 {
-    BOX tempBox;
+    BoundingBox tempBox;
     bool foundBox = false;
 
     while (ar.OpenChunk() == IArchive::IO_OK)

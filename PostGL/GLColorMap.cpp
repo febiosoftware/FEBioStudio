@@ -39,7 +39,7 @@ int CGLColorMap::m_defaultRngType = Range_Type::RANGE_DYNAMIC;
 
 CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 {
-	AddIntParam (-1, "data_field", "Data field")->SetEnumNames("@data_scalar");
+	AddIntParam (-1, "datafield", "Data field")->SetEnumNames("@data_scalar");
 	AddBoolParam(true, "gradient_smoothing");
 	AddIntParam (ColorMapManager::JET, "gradient")->SetEnumNames("@color_map");
 	AddBoolParam(true, "nodal_smoothing");

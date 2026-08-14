@@ -77,7 +77,7 @@ public:
 
 	void UpdateSurfaceMeshData();
 
-	BOX GetLocalBox() const override;
+	BoundingBox GetLocalBox() const override;
 
 private:
 	// Move this elsewhere or refactor

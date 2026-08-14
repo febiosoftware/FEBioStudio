@@ -107,6 +107,7 @@ SOFTWARE.*/
 #include "RemoteJob.h"
 #include "DlgRemoteProgress.h"
 #include <FSCore/FSLogger.h>
+#include <FSCore/util.h>
 #include "PropertyList.h"
 #include "FileProcessor.h"
 #include "modelcheck.h"
@@ -558,9 +559,17 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	{
 		OpenTextFile(fileName);
 	}
+	else if (ext == "febr")
+	{
+		OpenFEBioReportFile(fileName);
+	}
 	else if (ext == "remote")
 	{
 		OpenRemoteFile(fileName);
+	}
+	else if (ext == "opt")
+	{
+		OpenFEBioStudyFile(fileName);
 	}
 	else if (openExternal)
 	{
@@ -1309,12 +1318,7 @@ CModelViewer* CMainWindow::GetModelViewer()
 {
 	return ui->modelViewer;
 }
-/*
-CPythonToolsPanel* CMainWindow::GetPythonToolsPanel()
-{
-	return ui->pythonToolsPanel;
-}
-*/
+
 CMainStatusBar* CMainWindow::GetStatusBar()
 {
 	return ui->statusBar;
@@ -1959,7 +1963,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("lighting", vs.m_bLighting);
 		settings.setValue("ambientLight", vs.m_ambient);
 		settings.setValue("diffuseLight", vs.m_diffuse);
-		settings.setValue("lightDirection", Vec3fToString(vs.m_light));
+		settings.setValue("lightDirection", QString::fromStdString(Vec3fToString(vs.m_light)));
 		settings.setValue("environmentMap", fbs.m_envMapFile);
 		settings.setValue("useEnvironmentMap", vs.m_use_environment_map);
 
@@ -2125,7 +2129,7 @@ void CMainWindow::readSettings()
 		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
 		vs.m_ambient = settings.value("ambientLight", vs.m_ambient).toDouble();
 		vs.m_diffuse = settings.value("diffuseLight", vs.m_diffuse).toDouble();
-		vs.m_light = StringToVec3f(settings.value("lightDirection", "{0.5,0.5,1}").toString());
+		vs.m_light = StringToVec3f(settings.value("lightDirection", "{0.5,0.5,1}").toString().toStdString());
 		QString envmap = settings.value("environmentMap").toString();
 		fbs.m_envMapFile = envmap;
 		vs.m_use_environment_map = settings.value("useEnvironmentMap", false).toBool();
@@ -2997,16 +3001,37 @@ void CMainWindow::onImportMaterials()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Import Materials", "", "FEBio files (*.feb)");
+	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Import Materials", "", "Supported Files (*.feb *.pvm);;FEBio Files (*.feb);;FEBio Studio Material Files (*.pvm)");
 	if (fileNames.isEmpty() == false)
 	{
 		for (int i=0; i<fileNames.size(); ++i)
 		{
 			QString file = fileNames.at(i);
-			if (doc->ImportFEBioMaterials(file.toStdString()) == false)
+			// get the filename extensions to determine the type of file we are importing
+			QFileInfo fi(file);
+			QString ext = fi.suffix().toLower();
+
+			if (ext == "pvm")
 			{
-				QString msg = QString("Failed importing materials from\n%1").arg(file);
+				if (doc->ImportMaterials(file.toStdString()) == false)
+				{
+					QString msg = QString("Failed importing materials from\n%1").arg(file);
+					QMessageBox::critical(this, "Import Materials", msg);
+				}
+			}
+			else if (ext == "feb")
+			{
+				if (doc->ImportFEBioMaterials(file.toStdString()) == false)
+				{
+					QString msg = QString("Failed importing materials from\n%1").arg(file);
+					QMessageBox::critical(this, "Import Materials", msg);
+				}
+			}
+			else
+			{
+				QString msg = QString("Unsupported file type:\n%1").arg(file);
 				QMessageBox::critical(this, "Import Materials", msg);
+				break;
 			}
 		}
 
@@ -3245,24 +3270,25 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 	string err;
 
 	// pass the units to the model project
-	doc->GetProject().SetUnits(doc->GetUnitSystem());
+	FSModel& fem = *doc->GetFSModel();
+	fem.SetUnits(doc->GetUnitSystem());
 
 	FEBioExport* writer = nullptr;
 	if (febioFileVersion == 0x0205)
 	{
-		FEBioExport25* feb = new FEBioExport25(doc->GetProject());
+		FEBioExport25* feb = new FEBioExport25(fem);
 		feb->SetExportSelectionsFlag(true);
 		writer = feb;
 	}
 	else if (febioFileVersion == 0x0300)
 	{
-		FEBioExport3* feb = new FEBioExport3(doc->GetProject());
+		FEBioExport3* feb = new FEBioExport3(fem);
 		feb->SetExportSelectionsFlag(true);
 		writer = feb;
 	}
 	else if (febioFileVersion == 0x0400)
 	{
-		FEBioExport4* feb = new FEBioExport4(doc->GetProject());
+		FEBioExport4* feb = new FEBioExport4(fem);
 		feb->SetMixedMeshFlag(allowHybridMesh);
 		feb->SetProgressTracker(prg);
 		writer = feb;
@@ -3654,4 +3680,138 @@ void CMainWindow::on_planecut_dataChanged()
 		if (v) glview = v->GetGLView();
 	}
 	if (glview) glview->UpdateScene();
+}
+
+
+void CMainWindow::on_htmlview_anchorClicked(QUrl link)
+{
+	QObject* po = sender();
+	QString ref = link.toString();
+	if      (ref == "#new"        ) on_actionNewModel_triggered();
+	else if (ref == "#newproject" ) on_actionNewProject_triggered();
+	else if (ref == "#open"       ) on_actionOpen_triggered();
+	else if (ref == "#openproject") on_actionOpenProject_triggered();
+	else if (ref == "#febio"      ) on_actionFEBioURL_triggered();
+	else if (ref == "#help"       ) on_actionFEBioResources_triggered();
+	else if (ref == "#forum"      ) on_actionFEBioForum_triggered();
+	else if (ref == "#update"     ) on_actionUpdate_triggered();
+	else if (ref.contains("#http"))
+	{
+		QString temp = link.toString().replace("#http", "https://");
+		QDesktopServices::openUrl(QUrl(temp));
+	}
+	else if (ref == "#bugreport") on_actionBugReport_triggered();
+	else
+	{
+		std::string s = ref.toStdString();
+		const char* sz = s.c_str();
+
+		QString fileName;
+		if (strncmp(sz, "#recent_", 8) == 0)
+		{
+			int n = atoi(sz + 8);
+
+			QStringList recentFiles = GetRecentFileList();
+			fileName = recentFiles.at(n);
+		}
+		else if (strncmp(sz, "#recentproject_", 15) == 0)
+		{
+			int n = atoi(sz + 15);
+
+			QStringList recentProjects = GetRecentProjectsList();
+			fileName = recentProjects.at(n);
+		}
+		else
+		{
+			fileName = ref;
+		}
+
+		if (!fileName.isEmpty())
+		{
+			QFileInfo fi(fileName);
+			if (fi.isAbsolute() == false)
+			{
+				// If this is not an absolute path, let's assume it's a relative path to the currently active document's file path
+				QString docPath;
+				CDocument* doc = GetDocument();
+				if (doc)
+				{
+					QString docFile = QString::fromStdString(doc->GetDocFilePath());
+					if (!docFile.isEmpty())
+					{
+						QFileInfo docFi(docFile);
+						docPath = docFi.absolutePath();
+						fileName = QDir(docPath).filePath(fileName);
+						fi.setFile(fileName);
+					}
+				}
+			}
+
+			// out an abundance of safety, we will open the file in a queued connection
+			QMetaObject::invokeMethod(this, [this, fileName]() { OpenFile(fileName, false, false); }, Qt::QueuedConnection);
+		}
+	}
+}
+
+void CMainWindow::OpenCodeEditor(const QString& scriptName)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	FSModel* fem = doc->GetFSModel();
+	if (fem == nullptr) return;
+
+	FEBCodeScript* script = fem->GetScript(scriptName.toStdString());
+	if (script == nullptr)
+	{
+		QMessageBox::critical(this, "Code Editor", "Failed to open script " + scriptName + ".");
+		return;
+	}
+
+	OpenCodeEditor(script);
+}
+
+void CMainWindow::OpenCodeEditor(int scriptID)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	FSModel* fem = doc->GetFSModel();
+	if (fem == nullptr) return;
+
+	FEBCodeScript* script = fem->GetScriptFromID(scriptID);
+	if (script == nullptr)
+	{
+		QMessageBox::critical(this, "Code Editor", "Failed to open script with ID " + QString::number(scriptID) + ".");
+		return;
+	}
+
+	OpenCodeEditor(script);
+}
+
+void CMainWindow::OpenCodeEditor(FEBCodeScript* script)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	if (script == nullptr) return;
+	if (ui->codeEditor == nullptr) ui->codeEditor = new ::CCodeEditor(this);
+	ui->codeEditor->show();
+	ui->codeEditor->raise();
+	ui->codeEditor->activateWindow();
+	ui->codeEditor->SetScript(doc, script);
+}
+
+void CMainWindow::onClosingCodeEditor(FEBCodeScript* script)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	FSModel* fem = doc->GetFSModel();
+	if (fem == nullptr) return;
+
+	// update all script dependencies
+	fem->UpdateScriptDependencies(script);
+
+	UpdateModel();
 }

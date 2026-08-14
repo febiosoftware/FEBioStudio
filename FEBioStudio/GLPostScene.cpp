@@ -1157,9 +1157,9 @@ void CGLPostScene::Update()
 	GLScene::Update();
 }
 
-BOX CGLPostScene::GetBoundingBox()
+BoundingBox CGLPostScene::GetBoundingBox()
 {
-	BOX box;
+	BoundingBox box;
 	if (m_doc && m_doc->IsValid())
 	{
 		CGLModel& gm = *m_doc->GetGLModel();
@@ -1588,7 +1588,7 @@ LegendData CGLPostScene::GetLegendData(int n)
 		if (n == 0)
 		{
 			Post::CGLColorMap* pcm = glm->GetColorMap();
-			if (pcm && pcm->IsActive())
+			if (pcm && pcm->IsActive() && pcm->ShowLegend())
 			{
 				float rng[2];
 				pcm->GetRange(rng);

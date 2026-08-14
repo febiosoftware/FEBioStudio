@@ -387,6 +387,9 @@ namespace MeshTools {
 	//! Convert surface mesh to volume mesh
 	FSMesh* ConvertSurfaceToMesh(FSSurfaceMesh* surfaceMesh);
 
+	//! Convert line mesh to volume mesh
+	FSMesh* ConvertLineToMesh(FSLineMesh* lineMesh);
+
 	//! Get connected elements
 	std::vector<int> GetConnectedElements(FSMesh* pm, int startIndex, double fconn, bool bpart, bool exteriorOnly, bool bmax);
 }

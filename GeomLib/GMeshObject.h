@@ -54,6 +54,10 @@ public:
 	//! (this creates a shell mesh)
 	GMeshObject(FSSurfaceMesh* pm);
 
+	//! Constructor for creating a GMeshObject from a "naked" line mesh 
+	//! (this creates a beam/truss element mesh)
+	GMeshObject(FSLineMesh* pm);
+
 	//! Constructor for converting a GObject to a GMeshObject
 	GMeshObject(GObject* po);
 
@@ -61,10 +65,10 @@ public:
 	bool Update(bool b = true) override;
 
 	//! Make a geometry node from mesh node index
-	int MakeGNode(int n);
+	int MakeGNode(int n) override;
 
 	//! Add a new node at the specified position
-	int AddNode(vec3d r);
+	int AddGNode(vec3d r) override;
 
 	//! Build the finite element mesh
 	virtual FSMesh* BuildMesh() override;

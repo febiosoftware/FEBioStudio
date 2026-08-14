@@ -3,7 +3,6 @@
 
 class Param;
 
-//-----------------------------------------------------------------------------
 class CEditVariableParam : public QComboBox
 {
 	Q_OBJECT
@@ -13,14 +12,16 @@ public:
 
 	void setParam(Param* p);
 
+	QString text() const;
+
 public slots:
 	void onCurrentIndexChanged(int index);
-	void onEditTextChanged(const QString& txt);
+	void onTextChanged(const QString& txt);
 
 signals:
 	void typeChanged();
+	void requestClose();
 
 private:
 	Param* m_param;
 };
-

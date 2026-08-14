@@ -29,6 +29,7 @@ SOFTWARE.*/
 
 class GModel;
 class GMeshObject;
+class GCurveMeshObject;
 
 class CImportSpringsTool : public CBasicTool
 {
@@ -48,9 +49,9 @@ public:
 private:
 	bool ReadFile();
 	bool AddSprings(GModel* fem, GMeshObject* po);
-	bool AddTrusses(GModel* fem, GMeshObject* po);
-	void Intersect(GMeshObject* po, SPRING& s);
-	int ProcessSprings(GMeshObject* po);
+	bool AddTrusses(GModel* fem, GCurveMeshObject* po);
+	void Intersect(GObject* po, SPRING& s);
+	int ProcessSprings(GObject* po);
 
 	bool ReadTXTFile();
 	bool ReadVTKFile();

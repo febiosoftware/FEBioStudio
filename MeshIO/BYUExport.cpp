@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
 
-BYUExport::BYUExport(FSProject& prj) : FSFileExport(prj)
+BYUExport::BYUExport(FSModel& fem) : m_fem(fem)
 {
 }
 
@@ -44,8 +44,7 @@ bool BYUExport::Write(const char* szfile)
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
 
-	FSModel* ps = &m_prj.GetFSModel();
-	GModel& model = ps->GetModel();
+	GModel& model = m_fem.GetModel();
 
 	// for now we put everything in one part
 	int parts = 1;

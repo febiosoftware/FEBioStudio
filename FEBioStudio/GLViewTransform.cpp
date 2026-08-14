@@ -162,7 +162,7 @@ QMatrix4x4 GLViewTransform::SetupProjection()
 	GLScene* scene = m_view->GetActiveScene();
 	if (scene == nullptr) return P;
 
-	BOX box = scene->GetBoundingBox();
+	BoundingBox box = scene->GetBoundingBox();
 
 	GLCamera& cam = scene->GetCamera();
 	double ffar = cam.GetFarPlane();

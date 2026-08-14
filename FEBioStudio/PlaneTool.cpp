@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include "GLDocument.h"
 #include <PostGL/GLModel.h>
 #include <GLLib/GLScene.h>
+#include <FSCore/util.h>
 #include "MainWindow.h"
 #include "DragBox.h"
 using namespace Post;
@@ -46,7 +47,7 @@ class CPlaneToolUI : public QWidget
 {
 public:
 	FSMeshBase*	m_mesh;		// selected mesh
-	BOX		m_box;			// bounding box of mesh
+	BoundingBox	m_box;			// bounding box of mesh
 	double	m_range[2];		// offset range defined by box and current plane normal
 
 public:
@@ -192,12 +193,12 @@ public:
 
 	void SetPoint(int i, const vec3d& r)
 	{
-		pt[i]->setText(Vec3dToString(r));
+		pt[i]->setText(QString::fromStdString(Vec3dToString(r)));
 	}
 
 	vec3d GetPoint(int i)
 	{
-		return StringToVec3d(pt[i]->text());
+		return StringToVec3d(pt[i]->text().toStdString());
 	}
 
 	void SetPoints(const vec3d& r1, const vec3d& r2, const vec3d& r3)
@@ -358,7 +359,7 @@ void CPlaneTool::onPlaneChanged()
 void CPlaneToolUI::UpdatePlaneOffsetRange()
 {
 	// get the nodal values
-	BOX& box = m_box;
+	BoundingBox& box = m_box;
 	vec3d a = box.r0();
 	vec3d b = box.r1();
 	vec3d r[8] = {
@@ -410,9 +411,9 @@ void CPlaneTool::onCopy()
 	double d = ui->GetOffset();
 
 	QString s;
-	s += Vec3dToString(r1) + QString("\n");
-	s += Vec3dToString(r2) + QString("\n");
-	s += Vec3dToString(r3) + QString("\n");
+	s += QString::fromStdString(Vec3dToString(r1)) + QString("\n");
+	s += QString::fromStdString(Vec3dToString(r2)) + QString("\n");
+	s += QString::fromStdString(Vec3dToString(r3)) + QString("\n");
 	s += QString("%1, %2, %3, %4\n").arg(N.x).arg(N.y).arg(N.z).arg(d);
 
 	clipboard->setText(s);
@@ -439,7 +440,7 @@ void CPlaneTool::Update()
 		ui->m_mesh = mesh;
 
 		// the mesh returns the local box
-		BOX box = mesh->GetBoundingBox();
+		BoundingBox box = mesh->GetBoundingBox();
 
 		// we want a global box
 		vec3d r0 = mesh->LocalToGlobal(box.r0());
@@ -447,7 +448,7 @@ void CPlaneTool::Update()
 		if (r1.x < r0.x) { double x = r1.x; r1.x = r0.x; r0.x = x; }
 		if (r1.y < r0.y) { double y = r1.y; r1.y = r0.y; r0.y = y; }
 		if (r1.z < r0.z) { double z = r1.z; r1.z = r0.z; r0.z = z; }
-		ui->m_box = BOX(r0, r1);
+		ui->m_box = BoundingBox(r0, r1);
 		ui->UpdatePlaneOffsetRange();
 	}
 

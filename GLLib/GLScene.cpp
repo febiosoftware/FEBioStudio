@@ -73,7 +73,7 @@ void GLScene::Update()
 
 void GLScene::SetupProjection(GLRenderEngine& re)
 {
-	BOX box = GetBoundingBox();
+	BoundingBox box = GetBoundingBox();
 
 	double R = box.Radius();
 

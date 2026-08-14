@@ -50,6 +50,8 @@ febioLibs=(
     $APP_BUNDLE/Contents/Frameworks/libfeimglib.dylib
     $APP_BUNDLE/Contents/Frameworks/libfebiomix.dylib
     $APP_BUNDLE/Contents/Frameworks/libfebiomech.dylib
+    $APP_BUNDLE/Contents/Frameworks/libfebioxml.dylib
+    $APP_BUNDLE/Contents/Frameworks/libfebioplot.dylib
 )
 
 for item in ${bins[@]}; do
@@ -115,14 +117,14 @@ done < $FBS_REPO/ci/installBuilder.xml > $FBS_REPO/ci/installBuilder.xml.t
 mv $FBS_REPO/ci/installBuilder.xml{.t,}
 
 # Create installer
-rm -r /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/*
+rm -rf /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/*
 arch -x86_64 /Applications/InstallBuilder\ Enterprise\ 23.11.0/bin/Builder.app/Contents/MacOS/osx-x86_64 build $FBS_REPO/ci/installBuilder.xml --license $GITHUB_WORKSPACE/license.xml
 
 INSTALLER_NAME=$(ls /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/)
 
 mkdir $UPLOAD_DIR/installer
 cp -r /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/$INSTALLER_NAME $UPLOAD_DIR/installer
-rm -r /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/*
+rm -rf /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/*
 
 # Notarize installer
 cd $UPLOAD_DIR/installer

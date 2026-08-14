@@ -67,7 +67,7 @@ public:
 
 private:
 	void UpdatePlaneCut(GLContext& rc, bool reset);
-	void RenderBoxCut(GLRenderEngine& re, const BOX& box);
+	void RenderBoxCut(GLRenderEngine& re, const BoundingBox& box);
 
 private:
 	GLPlaneCut	m_planeCut;
@@ -295,7 +295,7 @@ public:
 
 	void Render(GLRenderEngine& engine, GLContext& rc) override;
 
-	BOX GetBoundingBox() override;
+	BoundingBox GetBoundingBox() override;
 
 	void SetObjectColorMode(OBJECT_COLOR_MODE colorMode);
 

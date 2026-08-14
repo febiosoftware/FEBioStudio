@@ -186,11 +186,11 @@ void GCompositeDecoration::render(GLRenderEngine& re)
 
 // in MeshTools\lut.cpp
 extern int LUT[256][15];
-extern int ET_HEX[12][2];
+extern int EL_HEX[12][2];
 
 GPlaneCutDecoration::GPlaneCutDecoration()
 {
-	m_box = BOX(vec3d(0, 0, 0), vec3d(1, 1, 1));
+	m_box = BoundingBox(vec3d(0, 0, 0), vec3d(1, 1, 1));
 	m_a[0] = 0;
 	m_a[1] = 0;
 	m_a[2] = 0;
@@ -202,7 +202,7 @@ GPlaneCutDecoration::~GPlaneCutDecoration()
 
 }
 
-void GPlaneCutDecoration::setBoundingBox(BOX box)
+void GPlaneCutDecoration::setBoundingBox(BoundingBox box)
 {
 	m_box = box;
 }
@@ -218,7 +218,7 @@ void GPlaneCutDecoration::setPlane(double n0, double n1, double n2, double d)
 void GPlaneCutDecoration::render(GLRenderEngine& re)
 {
 	// get the nodal values
-	BOX box = m_box;
+	BoundingBox box = m_box;
 	box.Scale(1.05);
 	vec3d a = box.r0();
 	vec3d b = box.r1();
@@ -262,8 +262,8 @@ void GPlaneCutDecoration::render(GLRenderEngine& re)
 		vec3d r[3], vn[3];
 		for (int k = 0; k < 3; k++)
 		{
-			int n1 = ET_HEX[pf[k]][0];
-			int n2 = ET_HEX[pf[k]][1];
+			int n1 = EL_HEX[pf[k]][0];
+			int n2 = EL_HEX[pf[k]][1];
 			double w = (ref - ev[n1]) / (ev[n2] - ev[n1]);
 			r[k] = ex[n1] * (1 - w) + ex[n2] * w;
 		}
@@ -297,8 +297,8 @@ void GPlaneCutDecoration::render(GLRenderEngine& re)
 		vec3d r[3], vn[3];
 		for (int k = 0; k < 3; k++)
 		{
-			int n1 = ET_HEX[pf[k]][0];
-			int n2 = ET_HEX[pf[k]][1];
+			int n1 = EL_HEX[pf[k]][0];
+			int n2 = EL_HEX[pf[k]][1];
 
 			double w = (ref - ev[n1]) / (ev[n2] - ev[n1]);
 

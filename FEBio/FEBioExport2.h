@@ -27,7 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include <FEMLib/FEMultiMaterial.h>
 #include "FEBioExport.h"
-#include <FEMLib/FSProject.h>
 
 //-----------------------------------------------------------------------------
 class GPart;
@@ -37,7 +36,7 @@ class GPart;
 class FEBioExport2 : public FEBioExport
 {
 public:
-	FEBioExport2(FSProject& prj);
+	FEBioExport2(FSModel& fem);
 	virtual ~FEBioExport2();
 
 	void Clear() override;
@@ -45,7 +44,7 @@ public:
 	bool Write(const char* szfile) override;
 
 protected:
-	bool PrepareExport(FSProject& prj) override;
+	bool PrepareExport() override;
 
 	void WriteModuleSection    (FSAnalysisStep* pstep);
 	void WriteControlSection   (FSAnalysisStep* pstep);
@@ -144,9 +143,6 @@ protected:
 
 	void WriteSurfaceSection(FSFaceList& s);
 	void WriteSurface(XMLElement& el, FSItemListBuilder* pl);
-
-protected:
-	FSModel*		m_pfem;
 
 protected:
 	bool HasSurface(FSItemListBuilder* pl);

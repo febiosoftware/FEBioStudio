@@ -86,6 +86,8 @@ public:
 	//! return the name of a component
 	std::string componentName(int ncomp, Data_Tensor_Type ntype);
 
+	int componentCode(const std::string& componentName, Data_Tensor_Type ntype);
+
 	virtual const std::type_info& TypeInfo() { return typeid(ModelDataField); }
 
 	unsigned int Flags() const { return m_flag; }
@@ -169,6 +171,7 @@ bool ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp
 void InitStandardDataFields();
 int StandardDataFields(); 
 std::string GetStandarDataFieldName(int i);
+ModelDataField* CreateStandardDataField(FEPostModel& fem, const std::string& dataField);
 bool AddStandardDataField(FEPostModel& fem, const std::string& dataField);
 bool AddStandardDataField(FEPostModel& fem, const std::string& dataField, std::vector<int> selectionList);
 

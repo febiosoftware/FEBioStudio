@@ -260,7 +260,7 @@ FSMesh* FEFlattenFaces::Apply(FSMesh *pm)
 	// make sure our vector is normal
 	na.Normalize();
 
-	BOX box = m.GetBoundingBox();
+	BoundingBox box = m.GetBoundingBox();
 	double R = box.GetMaxExtent();
 
 	// find the lowest point
@@ -1189,7 +1189,7 @@ FSMesh* FEMirrorMesh::Apply(FSMesh *pm)
 		// for user selection we need to figure out a center and normal
 		FEFaceSelection* sel = new FEFaceSelection(pm);
 		if (sel->Count() == 0) return nullptr;
-		BOX b = sel->GetBoundingBox();
+		BoundingBox b = sel->GetBoundingBox();
 		rc += b.Center();
 
 		for (int i = 0; i < sel->Count(); ++i)

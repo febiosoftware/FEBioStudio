@@ -78,7 +78,7 @@ C3DImage* CImageSource::GetImageToFilter()
         m_img = new C3DImage();
         
         // Set old bounding box and orientaion on new image as default
-        BOX originalBox = m_originalImage->GetBoundingBox();
+        BoundingBox originalBox = m_originalImage->GetBoundingBox();
         mat3d originalOrientation = m_originalImage->GetOrientation();
         m_img->SetBoundingBox(originalBox);
         m_img->SetOrientation(originalOrientation);
@@ -101,7 +101,7 @@ void CImageSource::AssignImage(C3DImage* im)
 
 //========================================================================
 
-CRawImageSource::CRawImageSource(CImageModel* imgModel, const std::string& filename, int imgType, int nx, int ny, int nz, BOX box, bool byteSwap)
+CRawImageSource::CRawImageSource(CImageModel* imgModel, const std::string& filename, int imgType, int nx, int ny, int nz, BoundingBox box, bool byteSwap)
     : CImageSource(CImageSource::RAW, imgModel), m_filename(filename), m_type(imgType), m_nx(nx), 
         m_ny(ny), m_nz(nz), m_box(box), m_byteSwap(byteSwap)
 {
@@ -237,7 +237,7 @@ void CRawImageSource::Save(OArchive& ar)
     ar.WriteChunk(2, m_ny);
     ar.WriteChunk(3, m_nz);
 
-	// TODO: This BOX is not really used. delete?
+	// TODO: This BoundingBox is not really used. delete?
     ar.WriteChunk(4, m_box.x0);
     ar.WriteChunk(5, m_box.y0);
     ar.WriteChunk(6, m_box.z0);
@@ -252,7 +252,7 @@ void CRawImageSource::Save(OArchive& ar)
 	C3DImage* im = m_originalImage;
 	if (im)
 	{
-		BOX box = im->GetBoundingBox();
+		BoundingBox box = im->GetBoundingBox();
 		ar.WriteChunk(100, box.x0);
 		ar.WriteChunk(101, box.y0);
 		ar.WriteChunk(102, box.z0);
@@ -264,7 +264,7 @@ void CRawImageSource::Save(OArchive& ar)
 
 void CRawImageSource::Load(IArchive& ar)
 {
-    BOX tempBox;
+    BoundingBox tempBox;
     bool foundBox = false;
 
     while (ar.OpenChunk() == IArchive::IO_OK)

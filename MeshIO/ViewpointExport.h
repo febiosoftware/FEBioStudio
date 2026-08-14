@@ -31,8 +31,11 @@ SOFTWARE.*/
 class ViewpointExport : public FSFileExport
 {
 public:
-	ViewpointExport(FSProject& prj);
+	ViewpointExport(FSModel& fem);
 	~ViewpointExport(void);
 
 	bool Write(const char* szfile) override;
+
+private:
+	FSModel& m_fem;
 };

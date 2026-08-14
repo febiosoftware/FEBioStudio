@@ -48,7 +48,7 @@ public:
     void getSchema();
 	void getTables();
 
-    void sumbitPlugin(QByteArray& pluginInfo);
+    void submitPlugin(QByteArray& pluginInfo);
     void uploadImage(QByteArray& token, QString& filename);
 
 private:

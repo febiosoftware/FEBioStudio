@@ -33,8 +33,11 @@
 class STEPExport : public FSFileExport
 {
 public:
-	STEPExport(FSProject& prj);
+	STEPExport(FSModel& fem);
 	~STEPExport(void);
 
 	bool Write(const char* szfile) override;
+
+private:
+	FSModel& m_fem;	// FE model data
 };

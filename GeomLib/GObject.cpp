@@ -227,8 +227,7 @@ void GObject::BuildFERenderMesh()
 	FSMesh* pm = GetFEMesh();
 	if (pm == nullptr) return;
 
-	m.m_glFaceMesh = new GLMesh;
-	GLMesh& gm = *m.m_glFaceMesh;
+	GLMesh& gm = *(new GLMesh);
 	gm.Create(pm->Nodes(), 0, 0);
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
@@ -345,6 +344,8 @@ void GObject::BuildFERenderMesh()
 	}
 
 	gm.Update();
+
+	m.m_glFaceMesh = &gm;
 }
 
 void GObject::UpdateFERenderMesh()
@@ -639,15 +640,15 @@ FSNode* GObject::GetFENode(int gid)
 }
 
 //-----------------------------------------------------------------------------
-BOX GObject::GetLocalBox() const
+BoundingBox GObject::GetLocalBox() const
 {
 	if (imp->m_pGMesh) return imp->m_pGMesh->GetBoundingBox();
 
-	BOX b;
+	BoundingBox b;
 	int N = Nodes();
 	if (N > 0)
 	{
-		b = BOX(m_Node[0]->LocalPosition(), m_Node[0]->LocalPosition());
+		b = BoundingBox(m_Node[0]->LocalPosition(), m_Node[0]->LocalPosition());
 		for (int i = 1; i<N; ++i) b += m_Node[i]->LocalPosition();
 	}
 	else if (GetFEMesh())
@@ -660,9 +661,9 @@ BOX GObject::GetLocalBox() const
 
 //-----------------------------------------------------------------------------
 // get the global bounding box
-BOX GObject::GetGlobalBox() const
+BoundingBox GObject::GetGlobalBox() const
 {
-	BOX box = GetLocalBox();
+	BoundingBox box = GetLocalBox();
 	return LocalToGlobalBox(box, GetTransform());
 }
 
@@ -712,7 +713,7 @@ void GObject::BuildGMesh()
 // get the mesh of an edge curve
 FSCurveMesh* GObject::GetFECurveMesh(int edgeId)
 {
-	FSMesh* mesh = GetFEMesh();
+	FSLineMesh* mesh = GetEditableLineMesh();
 	if (mesh == 0) return 0;
 
 	mesh->TagAllNodes(-1);

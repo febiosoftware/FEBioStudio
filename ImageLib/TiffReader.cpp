@@ -26,7 +26,7 @@ SOFTWARE.*/
 #include "TiffReader.h"
 #include <ImageLib/3DImage.h>
 #include "ImageModel.h"
-#include <FEBioXML/XMLReader.h>
+#include <FECore/XMLReader.h>
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
@@ -458,7 +458,7 @@ bool CTiffImageSource::Load()
 	float fy = (float) ny / m->m_img[0].yres;
 	float fz = (zspacing != 0 ? nz * zspacing : nz);
 
-	BOX box(0, 0, 0, fx, fy, fz);
+	BoundingBox box(0, 0, 0, fx, fy, fz);
 	im->SetBoundingBox(box);
 	AssignImage(im);
 
@@ -742,7 +742,7 @@ void CTiffImageSource::Save(OArchive& ar)
 
 	if (m_originalImage)
 	{
-		BOX box = m_originalImage->GetBoundingBox();
+		BoundingBox box = m_originalImage->GetBoundingBox();
 		ar.WriteChunk(100, box.x0);
 		ar.WriteChunk(101, box.y0);
 		ar.WriteChunk(102, box.z0);
@@ -754,7 +754,7 @@ void CTiffImageSource::Save(OArchive& ar)
 
 void CTiffImageSource::Load(IArchive& ar)
 {
-    BOX tempBox;
+    BoundingBox tempBox;
     bool foundBox = false;
 
     while (ar.OpenChunk() == IArchive::IO_OK)

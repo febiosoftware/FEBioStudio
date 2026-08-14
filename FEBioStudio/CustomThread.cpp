@@ -51,6 +51,11 @@ void CustomThread::stop()
 
 }
 
+QString CustomThread::GetOutput()
+{
+	return QString();
+}
+
 QString CustomThread::GetErrorString()
 {
 	m_mutex.lock();

@@ -82,6 +82,7 @@ SOFTWARE.*/
 #include "DlgImportData.h"
 #include <FEMLib/FSProject.h>
 #include <GLLib/GLScene.h>
+#include <list>
 
 //-----------------------------------------------------------------------------
 class CModelProps : public CPropertyList
@@ -360,7 +361,7 @@ public:
 
 	QVariant GetPropertyValue(int i)
 	{
-		BOX box = m_img->GetBoundingBox();
+		BoundingBox box = m_img->GetBoundingBox();
 		switch (i)
 		{
 		case 0: return m_img->ShowBox(); break;
@@ -386,7 +387,7 @@ public:
 
 	void SetPropertyValue(int i, const QVariant& val)
 	{
-		BOX box = m_img->GetBoundingBox();
+		BoundingBox box = m_img->GetBoundingBox();
 		switch (i)
 		{
 		case 0: m_img->ShowBox(val.toBool()); break;
@@ -1290,8 +1291,10 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 			Post::GLCurveProbe* pc = dynamic_cast<Post::GLCurveProbe*>(po);
 			menu.addSeparator();
 			menu.addAction("Import points ...", this, SLOT(OnImportCurveProbePoints()));
+			menu.addAction("From selection...", this, SLOT(OnCreateCurveFromSelection()));
 			if (pc->Points() > 0)
 			{
+				menu.addAction("Invert curve", this, SLOT(OnInvertCurveProbe()));
 				menu.addAction("Plot data ...", this, SLOT(OnCurveProbePlotData()));
 				menu.addAction("Plot time averaged data ...", this, SLOT(OnCurveProbePlotTimeAveragedData()));
 			}
@@ -1424,7 +1427,7 @@ void CPostModelPanel::OnSelectElements()
 	}
 
 	GetMainWindow()->UpdateGLControlBar();
-	GetMainWindow()->RedrawGL();
+	GetMainWindow()->Update(nullptr, false);
 }
 
 void CPostModelPanel::OnHideElements()
@@ -1684,7 +1687,7 @@ void CPostModelPanel::OnExportMCSurface()
 			string filename = fileName.toStdString();
 			FSMesh mesh;
 			mc->GetMesh(mesh);
-			FSProject dummy;
+			FSModel dummy;
 			STLExport stl(dummy);
 
 			bool b = stl.Write(filename.c_str(), &mesh);
@@ -1813,6 +1816,112 @@ void CPostModelPanel::OnImportCurveProbePoints()
 	}
 }
 
+void CPostModelPanel::OnCreateCurveFromSelection()
+{
+	CPostDocument* pdoc = dynamic_cast<CPostDocument*>(GetActiveDocument());
+	if (pdoc == nullptr) return;
+	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
+	if (po == nullptr) return;
+	FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
+	if (mesh == nullptr) return;
+	std::list<FSEdge> edges;
+	for (int i = 0; i < mesh->Edges(); ++i)
+	{
+		FSEdge& edge = mesh->Edge(i);
+		if (edge.IsSelected())
+		{
+			edges.push_back(edge);
+		}
+	}
+	if (edges.empty())
+	{
+		QMessageBox::information(this, "Create curve", "No edges selected.");
+		return;
+	}
+
+	std::vector<int> tag(mesh->Nodes(), 0);
+	for (FSEdge& edge : edges)
+	{
+		tag[edge.n[0]] += 1;
+		tag[edge.n[1]] += 1;
+	}
+
+	// make sure that the selected edges form a curve (i.e. each node is connected to at most two edges)
+	int numEndPoints = 0;
+	for (int i = 0; i < tag.size(); ++i)
+	{
+		if (tag[i] > 2)
+		{
+			QMessageBox::information(this, "Create curve", "Selected edges do not form a simple curve.");
+			return;
+		}
+		if (tag[i] == 1) numEndPoints++;
+	}
+
+	if (numEndPoints != 2)
+	{
+		QMessageBox::information(this, "Create curve", "Selected edges do not form a simple curve.");
+		return;
+	}
+
+	// find the two end-points
+	int nstart = -1, nend = -1;
+	for (int i = 0; i < tag.size(); ++i)
+	{
+		if (tag[i] == 1)
+		{
+			if (nstart == -1) nstart = i;
+			else if (nend == -1) nend = i;
+			else
+			{
+				QMessageBox::information(this, "Create curve", "Selected edges do not form a simple curve.");
+				return;
+			}
+		}
+	}
+
+	std::vector<vec3d> points;
+	while (true)
+	{
+		// find the edge that has nstart as one of its nodes
+		bool found = false;
+		for (auto it = edges.begin(); it != edges.end(); ++it)
+		{
+			FSEdge& edge = *it;
+			if (edge.n[0] == nstart || edge.n[1] == nstart)
+			{
+				points.push_back(mesh->Node(nstart).r);
+				nstart = (edge.n[0] == nstart) ? edge.n[1] : edge.n[0];
+				found = true;
+				edges.erase(it);
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			// add the last point
+			points.push_back(mesh->Node(nstart).r);
+			break;
+		}
+	}
+
+	po->SetPoints(points);
+	Update(true);
+	selectObject(po);
+	GetMainWindow()->RedrawGL();
+}
+
+void CPostModelPanel::OnInvertCurveProbe()
+{
+	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
+	if (po == nullptr) return;
+	po->Invert();
+	Update(true);
+	selectObject(po);
+	GetMainWindow()->RedrawGL();
+}
+
 void CPostModelPanel::OnExportMusclePathData()
 {
 	Post::GLMusclePath* po = dynamic_cast<Post::GLMusclePath*>(ui->currentObject());
@@ -1902,6 +2011,36 @@ void CPostModelPanel::OnSwapMusclePathEndPoints()
 	GetMainWindow()->RedrawGL();
 }
 
+class CCurveProbeData : public CPlotDataSource
+{
+public:
+	CCurveProbeData(Post::GLCurveProbe* po) : m_probe(po) {}
+
+	void UpdatePlot(CPlotData& data) override
+	{
+		int N = (int)m_probe->Points();
+		vector<double> xpoints = m_probe->SectionLenghts(false);
+		vector<double> ypoints(N, 0.0);
+		for (int i = 0; i < N; ++i)
+		{
+			ypoints[i] = m_probe->GetPointValue(i);
+		}
+
+		data.clear();
+		for (int i = 0; i < m_probe->Points(); ++i)
+		{
+			data.addPoint(xpoints[i], ypoints[i]);
+		}
+
+		data.setLabel(QString::fromStdString(m_probe->GetName()));
+		data.setLineColor(toQColor(m_probe->GetColor()));
+		data.setFillColor(toQColor(m_probe->GetColor()));
+	}
+
+private:
+	Post::GLCurveProbe* m_probe;
+};
+
 void CPostModelPanel::OnCurveProbePlotData()
 {
 	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetDocument());
@@ -1910,29 +2049,8 @@ void CPostModelPanel::OnCurveProbePlotData()
 	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
 	if (po)
 	{
-		int N = (int)po->Points();
-		vector<double> xpoints = po->SectionLenghts(false);
-		vector<double> ypoints(N, 0.0);
-#pragma omp parallel for
-		for (int i = 0; i < N; ++i)
-		{
-			ypoints[i] = po->GetPointValue(i);
-		}
-
-		CPlotData* data = new CPlotData;
-		for (int i = 0; i < po->Points(); ++i)
-		{
-			data->addPoint(xpoints[i], ypoints[i]);
-		}
-		data->setLabel(QString::fromStdString(po->GetName()));
-		data->setLineColor(toQColor(po->GetColor()));
-		data->setFillColor(toQColor(po->GetColor()));
-
-		CGraphData* graph = new CGraphData;
-		graph->m_data.push_back(data);
-
-		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), doc);
-		w->SetData(graph);
+		CDynamicDataGraphWindow* w = new CDynamicDataGraphWindow(GetMainWindow(), doc);
+		w->SetDataSource(new CCurveProbeData(po));
 		GetMainWindow()->AddGraph(w);
 		w->setWindowTitle(QString::fromStdString(po->GetName()));
 		w->show();

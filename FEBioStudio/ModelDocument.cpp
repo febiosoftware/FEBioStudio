@@ -47,6 +47,9 @@ SOFTWARE.*/
 #include "DocManager.h"
 #include <ImageLib/ImageModel.h>
 #include "PluginManager.h"
+#include <FECore/XMLReader.h>
+#include <FEBio/FEBioFormat4.h>
+#include <QFileInfo>
 
 class CModelContext
 {
@@ -213,9 +216,9 @@ GObject* CModelDocument::GetActiveObject()
 }
 
 //-----------------------------------------------------------------------------
-BOX CModelDocument::GetModelBox() 
+BoundingBox CModelDocument::GetModelBox()
 { 
-	BOX box = m_Project.GetFSModel().GetModel().GetBoundingBox(); 
+	BoundingBox box = m_Project.GetFSModel().GetModel().GetBoundingBox();
 
 	// add any image models
 	for (int i = 0; i < ImageModels(); ++i)
@@ -362,6 +365,16 @@ void CModelDocument::DeleteObject(FSObject* po)
 			else
 				DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)), po->GetName());
 		}
+		else if (dynamic_cast<FEBCodeScript*>(po))
+		{
+			FEBCodeScript* psc = dynamic_cast<FEBCodeScript*>(po);
+			if (psc->GetRefCount() > 0)
+			{
+				QMessageBox::warning(m_wnd, "FEBio Studio", "This script cannot be deleted since other model components are using it.");
+				return;
+			}
+			DoCommand(new CCmdDeleteFSObject(psc), po->GetName());
+		}
 		else if (dynamic_cast<FSModelComponent*>(po))
 			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)), po->GetName());
 		else if (dynamic_cast<GMaterial*>(po))
@@ -421,20 +434,30 @@ void CModelDocument::DeleteAllJobs()
 	SetModifiedFlag();
 }
 
-int CModelDocument::FEBioStudies() const
+int CModelDocument::Studies() const
 {
 	return (int)m_StudyList.Size();
 }
 
-void CModelDocument::AddFEBioStudy(CFEBioStudy* study)
+void CModelDocument::AddStudy(CStudy* study)
 {
 	m_StudyList.Add(study);
 	SetModifiedFlag();
 }
 
-CFEBioStudy* CModelDocument::GetFEBioStudy(int i)
+CStudy* CModelDocument::GetStudy(int i)
 {
 	return m_StudyList[i];
+}
+
+CStudy* CModelDocument::FindStudyFromName(const std::string& name)
+{
+	for (int i = 0; i < Studies(); ++i)
+	{
+		CStudy* study = m_StudyList[i];
+		if (study->GetName() == name) return study;
+	}
+	return nullptr;
 }
 
 void CModelDocument::DeleteAllStudies()
@@ -524,7 +547,23 @@ void CModelDocument::Save(OArchive& ar)
 			job->Save(ar);
 		}
 		ar.EndChunk();
-	}	
+	}
+
+	// save the study lists
+	for (int i = 0; i < Studies(); ++i)
+	{
+		CStudy* study = GetStudy(i);
+		ar.BeginChunk(CID_FEBIOSTUDY);
+		{
+			ar.WriteChunk(CID_FEBIOSTUDY_TYPE, (int)study->GetType());
+			ar.BeginChunk(CID_FEBIOSTUDY_DATA);
+			{
+				study->Save(ar);
+			}
+			ar.EndChunk();
+		}
+		ar.EndChunk();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -705,6 +744,43 @@ void CModelDocument::Load(IArchive& ar)
 			m_JobList.Add(job);
 			job->Load(ar);
 		}
+		else if (nid == CID_FEBIOSTUDY)
+		{
+			CStudy* study = nullptr;
+			while (ar.OpenChunk() == IArchive::IO_OK)
+			{
+				int nid = ar.GetChunkID();
+				if (nid == CID_FEBIOSTUDY_TYPE)
+				{
+					int ntype = 0;
+					ar.read(ntype);
+
+					switch (ntype)
+					{
+					case StudyType::OPTIMIZATION_STUDY:
+						study = new COptimizationStudy(this);
+						break;
+					case StudyType::FEBIO_STUDY:
+						study = new CFEBioStudy(this);
+						break;
+					default:
+						assert(false);
+						ar.log("Unsupported study type found in file. Study will be ignored.");
+						break;
+					}
+				}
+				else if (nid == CID_FEBIOSTUDY_DATA)
+				{
+					if (study)
+					{
+						m_StudyList.Add(study);
+						study->Load(ar);
+					}
+					study = nullptr;
+				}
+				ar.CloseChunk();
+			}
+		}
 		ar.CloseChunk();
 	}
 
@@ -715,9 +791,9 @@ bool CModelDocument::Initialize()
 {
 	// When called after reading an FEBio, the project's units may be different
 	// than the model's (which is initialized to the default units). 
-	if (m_Project.GetUnits() != 0)
+	if (GetFSModel()->GetUnits() != 0)
 	{
-		SetUnitSystem(m_Project.GetUnits());
+		SetUnitSystem(GetFSModel()->GetUnits());
 
 		if (GetActiveDocument() == this)
 		{
@@ -1302,9 +1378,9 @@ void CModelDocument::ToggleActiveParts()
 	}
 }
 
-BOX CModelDocument::GetBoundingBox()
+BoundingBox CModelDocument::GetBoundingBox()
 {
-	BOX box;
+	BoundingBox box;
 	if (GetGModel()) box = GetGModel()->GetBoundingBox();
 	return box;
 }
@@ -1312,7 +1388,7 @@ BOX CModelDocument::GetBoundingBox()
 CModelDocument* CreateNewModelDocument(CMainWindow* wnd, int moduleID, std::string name, int units)
 {
 	CModelDocument* doc = new CModelDocument(wnd);
-	doc->GetProject().SetModule(moduleID);
+	doc->GetProject().GetFSModel().SetModule(moduleID);
 
 	CDocManager* dm = wnd->GetDocManager();
 
@@ -1352,4 +1428,47 @@ void CModelDocument::AssignColor(GPart* pg, GLColor c)
 		GMaterial* mat = GetFSModel()->GetMaterialFromID(matID);
 		if (mat) mat->SetColor(c);
 	}
+}
+
+CFEBioStudy* CModelDocument::OpenStudyFile(const std::string& fileName)
+{
+	CFEBioStudy* febStudy = nullptr;
+
+	// open the file
+	try {
+		XMLReader xml;
+		if (xml.Open(fileName.c_str()) == false) return nullptr;
+
+		// find the febio_study node
+		XMLTag tag;
+		if (xml.FindTag("febio_study", tag) == false) return nullptr;
+		// get the type attribute
+		const char* sztype = tag.AttributeValue("type");
+		if (sztype == nullptr) return nullptr;
+
+		// try to allocate the correct type of study
+		FSModel& fem = *GetFSModel();
+		std::unique_ptr<FSCoreStudy> study(FEBio::CreateStudy(sztype, &fem));
+		if (study == nullptr) return nullptr;
+
+		FEBioInputModel dummy(fem);
+		FEBioFormat4 fmt(nullptr, dummy);
+		fmt.ParseModelComponent(study.get(), tag);
+
+		febStudy = new CFEBioStudy(this, study.release());
+		febStudy->SetOptionsFileName(fileName);
+
+		QFileInfo fi(QString::fromStdString(fileName));
+		febStudy->SetName(fi.baseName().toStdString());
+
+		AddStudy(febStudy);
+
+		xml.Close();
+	}
+	catch (...)
+	{
+		return nullptr;
+	}
+
+	return febStudy;
 }

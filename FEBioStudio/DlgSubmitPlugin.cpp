@@ -451,7 +451,7 @@ void DlgSubmitPlugin::SubmitPlugin()
     ui->uploadInProgress = true;
 
     QByteArray pluginInfo = GetPluginJSON();
-    m_manager->SumbitPlugin(pluginInfo);
+    m_manager->SubmitPlugin(pluginInfo);
 }
 
 void DlgSubmitPlugin::OnReadyForImageUpload(QByteArray& token)

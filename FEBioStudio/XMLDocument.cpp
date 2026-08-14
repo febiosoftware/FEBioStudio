@@ -30,8 +30,8 @@ SOFTWARE.*/
 #include <QFile>
 #include <QTextStream>
 #include "XMLDocument.h"
-#include <FEBioXML/XMLReader.h>
-#include <FEBioXML/XMLWriter.h>
+#include <FECore/XMLReader.h>
+#include <FECore/XMLWriter.h>
 #include <sstream>
 #include <iostream>
 

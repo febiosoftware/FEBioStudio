@@ -6,6 +6,81 @@
 
 ===========================================================================
 
+ R E L E A S E   3.2   8/4/2026
+
+===========================================================================
+
+New Features:
+- Added "license" field to upload wizard. License is now also shown in project details.
+- Added triad to distribution visualizer so orientation is easier to interpret.
+- Test suite on model repo should now be automatically updated on FBS release [skip ci]
+- Implemented support for new FEBio "studies". Options files for studies can now be generated and imported.
+- Implemented mesh self-intersection algorithm and tool.
+- Added "Remove parameter" button to optimization wizard.
+- Added serialization for optimization studies.
+- Added option to import FBS material files (pvm) from Material context menu.
+- Added graph window that can show dynamic data. This is now used to plot data on a curve probe.
+- Added option to create curve probe from selected edges.
+- Added support to VTK file reader to read appended data with zlib compression.
+- Added fbs test suite to CI runs
+- Implemented "minimal scaled Jacobian" and "minimal mean ratio" element metrics to Mesh Inspector.
+- Added support for correctly reading in degenerate elements from feb file.
+- The export feature of the FEBio Info dialog now also exports the range of parameters.
+- 1D functions can now also be displayed and edited in the curve editor. The 1D function editor now also has a toolbutton to open the corresponding function in the curve editor.
+
+Improvements:
+- Added additional error handling to python runner.
+- If an edge is selected, the Fill Hole tool now only fills that hole.
+- Moved Python output handling out of ui submodule and into main fbs module.
+- Tweaked visualization of markers in charts.
+- Now displaying plugin version numbers in plugin repo.
+- Now using "labels" cell data to partition elements when reading VTK files.
+- Modified FindIntersection tool so that it can be used with both editable meshes and editable surfaces.
+- Open graph windows are now updated when user select elements through the Post model panel. (#233)
+
+Bug Fixes:
+- Made sure that partitions remain when extracting faces and extruding faces.
+- Restored min/max markers.
+- Fixed problem with selection that prevented lasso selection when start and end point are the same.
+- Fixed issue with capturing wrong area during screen capture.
+- Fixed issue with import spring tool when snap option is unchecked. Also, if the user chooses linear trusses, they will be imported even if no geometry object is selected.
+- Fixed bug in the integration of nodal measures, such as reaction forces
+- Fix typo "sumbit" to "submit" in button label and method names.
+- Fixed a bug in the Align Mesh MOI tool
+- The NetGenMesher now also correctly reconstructs edges from the netgen mesh.
+- Fixed issue with face visibility when shells on top of solids are eroded.
+- Fixed potential crash when users enters an invalid equation in the math plot tool of a graph window.
+- Fixed bug in comparing plot data points that caused crash for time-scatter plots.
+- Fixed problem with distro visualizer for parameters that have more than one dim.
+- Fixed issue with curve probe ignoring field with ID 0.
+- Plugin repo no longer shows unauthorized plugins
+- Fixed bug in CGLModelScene::ColorizeMesh where an invalid assumption on nodal-ordering of faces was used.
+- Fixed integer overflow issue when calculating size of item in repo browser.
+- Ensured that the enable lighting tool button gets properly updated.
+- Fixed potential data collusion issue in GObject::BuildFERenderMesh.
+- Better handling for "fixed type" FEBio properties. Some tweaks to report formatting.
+- Fixed some minor things due to recent changes in FEBio.
+- Fixed bug introduced in previous commit.
+- Fixed bug in Linux ci cmake script [skip ci]
+- Fixed potential crash when rendering meshlines on post side when the number of edge partitions doesn't match the number of materials.
+- Fixed some issues with the text editor that could cause crashes.
+- The Show Title and Show Subtitle options off the View item now work correctly. (#267)
+- Fixed bug that Show Legend option on colormap had no effect. (#268)
+- Fixed potential crash when undoing part selection.
+- Fixed problem with merging meshed objects.
+- Installer should no longer ask user to restart on Windows. Both installer and uninstaller will now check to see if FBS is running on Windows. [skip ci]
+- Fixed crashed caused by an unauthorized project matching search terms.
+- Prevented shell primitives from getting merged to multi-blocks since that doesn't work. (#261)
+- Fixed bug that m_nfield with value 0 prevented the volume plot from showing data.
+- Fixed problem with transparency of volume plot (#264)
+- Fixed bug with incorrect initialization of FEBioClassInfo structs.
+
+Documentation:
+- Fixed help feature for discrete materials. Also added help links for plotfile and logfile items in model tree.
+
+
+===========================================================================
+
  R E L E A S E   3.1   2/25/2026
 
 ===========================================================================

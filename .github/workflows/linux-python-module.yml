@@ -15,6 +15,5 @@ jobs:
       package-name: python-module
       python-module: true
       publish: true
-      aws-ami-id: ${{ vars.LINUX_AMI }}
       build-script: buildPython.sh
     secrets: inherit

@@ -178,7 +178,7 @@ public:
 public:
 	GModel*				m_parent;
 	FSModel*			m_ps;	//!< pointer to model
-	BOX					m_box;	//!< bounding box
+	BoundingBox					m_box;	//!< bounding box
 
 	FSObjectList<GObject>	m_Obj;	//!< list of objects
 
@@ -882,7 +882,7 @@ FSSurface* GModel::GetSurfaceFromID(int id)
 
 //-----------------------------------------------------------------------------
 
-BOX GModel::GetBoundingBox()
+BoundingBox GModel::GetBoundingBox()
 {
 	return imp->m_box;
 }
@@ -892,7 +892,7 @@ void GModel::UpdateBoundingBox()
 {
 	if (imp->m_Obj.Size() == 0)
 	{
-		imp->m_box = BOX(-1, -1, -1, 1, 1, 1);
+		imp->m_box = BoundingBox(-1, -1, -1, 1, 1, 1);
 	}
 	else
 	{
@@ -922,6 +922,56 @@ int GModel::CountNamedSelections() const
 	}
 
 	return nsel;
+}
+
+FSItemListBuilder* GModel::NamedSelection(int n)
+{
+	int N = CountNamedSelections();
+	if ((n < 0) || (n >= N)) return 0;
+
+	int index = n;
+
+	// search the GGroups
+	N = PartLists();
+	if (index < N) return PartList(index);
+	index -= N;
+
+	N = FaceLists();
+	if (index < N) return FaceList(index);
+	index -= N;
+
+	N = EdgeLists();
+	if (index < N) return EdgeList(index);
+	index -= N;
+
+	N = NodeLists();
+	if (index < N) return NodeList(index);
+	index -= N;
+
+	// search all objects
+	for (int i = 0; i<Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		FSMesh* pm = po->GetFEMesh();
+
+		N = po->FEElemSets();
+		if (index < N) return po->GetFEElemSet(index);
+		index -= N;
+
+		N = po->FESurfaces();
+		if (index < N) return po->GetFESurface(index);
+		index -= N;
+
+		N = po->FEEdgeSets();
+		if (index < N) return po->GetFEEdgeSet(index);
+		index -= N;
+
+		N = po->FENodeSets();
+		if (index < N) return po->GetFENodeSet(index);
+		index -= N;
+	}
+
+	return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -1100,7 +1150,7 @@ vector<FSItemListBuilder*> GModel::AllNamedSelections(int ntype)
 {
 	vector<FSItemListBuilder*> list;
 
-	if (ntype == DOMAIN_PART)
+	if ((ntype == DOMAIN_PART) || (ntype == 0))
 	{
 		for (int i = 0; i<PartLists(); ++i)
 		{
@@ -1109,7 +1159,7 @@ vector<FSItemListBuilder*> GModel::AllNamedSelections(int ntype)
 		}
 	}
 
-	if (ntype == DOMAIN_SURFACE)
+	if ((ntype == DOMAIN_SURFACE) || (ntype == 0))
 	{
 		for (int i = 0; i<FaceLists(); ++i)
 		{
@@ -1118,7 +1168,7 @@ vector<FSItemListBuilder*> GModel::AllNamedSelections(int ntype)
 		}
 	}
 
-	if (ntype == DOMAIN_EDGE)
+	if ((ntype == DOMAIN_EDGE) || (ntype == 0))
 	{
 		for (int i = 0; i<EdgeLists(); ++i)
 		{
@@ -1127,7 +1177,7 @@ vector<FSItemListBuilder*> GModel::AllNamedSelections(int ntype)
 		}
 	}
 
-	if (ntype == DOMAIN_NODESET)
+	if ((ntype == DOMAIN_NODESET) || (ntype == 0))
 	{
 		for (int i = 0; i<NodeLists(); ++i)
 		{
@@ -1142,7 +1192,7 @@ vector<FSItemListBuilder*> GModel::AllNamedSelections(int ntype)
 		GObject* po = Object(n);
 		FSMesh* pm = po->GetFEMesh();
 
-		if (ntype == DOMAIN_PART)
+		if ((ntype == DOMAIN_PART) || (ntype == 0))
 		{
 			for (int i = 0; i<po->FEElemSets(); ++i)
 			{
@@ -1151,7 +1201,7 @@ vector<FSItemListBuilder*> GModel::AllNamedSelections(int ntype)
 			}
 		}
 
-		if (ntype == DOMAIN_SURFACE)
+		if ((ntype == DOMAIN_SURFACE) || (ntype == 0))
 		{
 			for (int i = 0; i<po->FESurfaces(); ++i)
 			{
@@ -1160,7 +1210,7 @@ vector<FSItemListBuilder*> GModel::AllNamedSelections(int ntype)
 			}
 		}
 
-		if (ntype == DOMAIN_EDGE)
+		if ((ntype == DOMAIN_EDGE) || (ntype == 0))
 		{
 			for (int i = 0; i < po->FEEdgeSets(); ++i)
 			{
@@ -1169,7 +1219,7 @@ vector<FSItemListBuilder*> GModel::AllNamedSelections(int ntype)
 			}
 		}
 
-		if (ntype == DOMAIN_NODESET)
+		if ((ntype == DOMAIN_NODESET) || (ntype == 0))
 		{
 			for (int i = 0; i<po->FENodeSets(); ++i)
 			{

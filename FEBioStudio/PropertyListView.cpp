@@ -55,6 +55,7 @@ CEditVariableProperty::CEditVariableProperty(QWidget* parent) : QComboBox(parent
 	addItem("<constant>");
 	addItem("<math>");
 	addItem("<map>");
+	addItem("<code>");
 
 	setEditable(true);
 	setInsertPolicy(QComboBox::NoInsert);
@@ -171,7 +172,7 @@ public:
 		{
 			switch (section)
 			{
-			case 0: return QString("Property"); break;
+			case 0: return QString("Parameter"); break;
 			case 1: return QString("Value"); break;
 			}
 		}
@@ -542,7 +543,8 @@ public:
 			if ((prop.type == CProperty::Std_Vector_Double) ||
 				(prop.type == CProperty::Vec2d) ||
 				(prop.type == CProperty::Vec3) ||
-				(prop.type == CProperty::Mat3s))
+				(prop.type == CProperty::Mat3s) ||
+				(prop.type == CProperty::String))
 			{
 				QLineEdit* w = new QLineEdit(parent);
 				QObject::connect(w, SIGNAL(editingFinished()), m_view, SLOT(onDataChanged()));

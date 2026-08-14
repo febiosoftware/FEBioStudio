@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "FEBioDiagnostic.h"
 #include "ModelDocument.h"
 #include <FEBio/FEBioExport3.h>
-#include <FEBioXML/XMLWriter.h>
+#include <FECore/XMLWriter.h>
 
 FEBioTangentDiagnostic::FEBioTangentDiagnostic()
 {
@@ -38,7 +38,7 @@ FEBioTangentDiagnostic::FEBioTangentDiagnostic()
 
 bool FEBioTangentDiagnostic::WriteDiagnosticFile(CModelDocument* doc, const std::string& fileName)
 {
-	FEBioExport3 febioExport(doc->GetProject());
+	FEBioExport3 febioExport(*doc->GetFSModel());
 
 	XMLWriter& xml = febioExport.GetXMLWriter();
 
