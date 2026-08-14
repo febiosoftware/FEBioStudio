@@ -56,6 +56,8 @@ public:
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
 
+	bool DeletePart(GPart* pg) override;
+
 protected:
 	void BuildGObject();
 

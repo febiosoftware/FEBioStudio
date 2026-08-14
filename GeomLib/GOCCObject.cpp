@@ -570,8 +570,7 @@ GOCCObject* ConvertToOCCObject(GObject* po)
 		GNode* node = po->Node(i);
 		vec3d r = node->LocalPosition();
 
-		TopoDS_Vertex v;
-		B.MakeVertex(v, gp_Pnt(r.x, r.y, r.z), 1e-7);
+		TopoDS_Vertex v = BRepBuilderAPI_MakeVertex(gp_Pnt(r.x, r.y, r.z));
 
 		vertices.push_back(v);
 	}
@@ -753,6 +752,48 @@ bool MinMaxEdgeLength(GOCCObject* po, double& min, double& max)
 			mxedg = fmax(mxedg, length);
 		}
 	}
+	return true;
+#else
+	return false;
+#endif
+}
+
+bool GOCCObject::DeletePart(GPart* pg)
+{
+#ifdef HAS_OCC
+	if (pg == nullptr) return false;
+
+	BRep_Builder builder;
+	TopoDS_Compound result;
+	builder.MakeCompound(result);
+
+	int i = 0;
+	bool found = false;
+	int count = 0;
+	for (TopExp_Explorer ex(GetShape(), TopAbs_SOLID); ex.More(); ex.Next(), ++i)
+	{
+		if (i != pg->GetLocalID())
+		{
+			TopoDS_Solid solid = TopoDS::Solid(ex.Current());
+			builder.Add(result, solid);
+			count++;
+		}
+		else
+		{
+			found = true;
+		}
+	}
+
+	if (!found || count == 0) return false;
+
+	// check for errors
+	if (result.IsNull())
+	{
+		return false;
+	}
+
+	SetShape(result, true);
+
 	return true;
 #else
 	return false;
