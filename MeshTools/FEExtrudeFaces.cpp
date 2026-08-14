@@ -36,6 +36,7 @@ FEExtrudeFaces::FEExtrudeFaces() : FEModifier("Extrude faces")
 	AddBoolParam(false, "L", "Use local normal");
 	AddDoubleParam(1, "mesh bias");
 	AddBoolParam(false, "symmetric mesh bias");
+    AddBoolParam(false, "smart extrusion");
 
 	m_map = nullptr;
 }
@@ -63,6 +64,11 @@ void FEExtrudeFaces::SetMeshBiasFactor(double g)
 void FEExtrudeFaces::SetSymmetricBias(bool b)
 {
 	SetBoolValue(4, b);
+}
+
+void FEExtrudeFaces::SetSmartExtrude(bool b)
+{
+    SetBoolValue(5, b);
 }
 
 void FEExtrudeFaces::SetNodalMap(FSNodeData* map)
@@ -160,11 +166,34 @@ bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 	}
 
 	double dist = GetFloatValue(0);
+    // by default, the extrusion distance is the same for all nodes
+    variable_dist.assign(nn,dist);
 	int nseg = GetIntValue(1);
 	bool bloc = GetBoolValue(2);
 
 	double gd = GetFloatValue(3);
 	bool bd = GetBoolValue(4);
+    bool se = GetBoolValue(5);
+    
+    // check if smart extrusion is requested
+
+    // create an object with the requisite class for evaluating surface curvatures
+    FEAxesCurvature* ac = new FEAxesCurvature;
+    if (se) {
+        // calculate the surface curvatures
+        ac->Curvature(pm);
+        assert(faceList.size() == ac->eigenvalFace.size());
+        // tag the faces for which the minimum radius of curvature is less than the extrusion distance
+        std::vector<double> fdist;
+        fdist.assign(faceList.size(),dist);
+        for (int i=0; i<faceList.size(); ++i) {
+            vec2d kappa = ac->eigenvalFace[i];
+            if (((dist > 0) && (kappa.x < 0)) || ((dist < 0) && (kappa.x > 0))) {
+                double rc = (kappa.x != 0) ? fabs(1./kappa.x) : std::numeric_limits<double>::max();
+                if (rc <= fabs(dist)) fdist[i] = (dist > 0) ? rc + dist : rc - dist;
+            }
+        }
+    }
 
 	// cache the node IDs for now.
 	vector<int> nodeIDs(n0);
@@ -185,7 +214,7 @@ bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 	{
 		FSFace& face = pm->Face(faceList[i]);
 		int n = face.Nodes();
-		vec3d Nf = pm->FaceNormal(face);
+		vec3d Nf = (se) ? vec3d(ac->eigenvecFace[i](0,2),ac->eigenvecFace[i](1,2),ac->eigenvecFace[i](2,2)) : pm->FaceNormal(face);
 		for (int j = 0; j<n; ++j)
 		{
 			int n1 = pm->Node(face.n[j]).m_ntag;

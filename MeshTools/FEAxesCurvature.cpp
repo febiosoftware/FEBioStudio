@@ -207,7 +207,9 @@ void FEAxesCurvature::Curvature(FSMesh* pm)
                         int numFacesNextNext = pm->Face(surroundingFaces[k]).Edges();
                         for (int l = 0; l<numFacesNextNext; ++l)
                         {
-                            bool isSel = pm->Face(pm->Face(surroundingFaces[k]).m_nbr[l]).IsSelected();
+                            FSFace face = pm->Face(surroundingFaces[k]);
+                            int itmp = face.m_nbr[l];
+                            bool isSel = (itmp != -1) ? pm->Face(itmp).IsSelected() : false;
                             if (isSel)
                             {
                                 surroundingFaces.push_back(pm->Face(surroundingFaces[k]).m_nbr[l]);
@@ -302,12 +304,15 @@ void FEAxesCurvature::Curvature(FSMesh* pm)
                             theta[0].y, theta[1].y, xn.y,
                             theta[0].z, theta[1].z, xn.z);
                     eigenvecFace.push_back(X);
+                    eigenvalFace.push_back(kappa);
                 }
                 else {
                     mat3d X(1, 0, 0,
                             0, 1, 0,
                             0, 0, 1);
                     eigenvecFace.push_back(X);
+                    vec2d k(0,0);
+                    eigenvalFace.push_back(k);
                 }
             }
             break;

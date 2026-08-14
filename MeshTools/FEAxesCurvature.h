@@ -85,5 +85,8 @@ protected:
     
     //For now used only for applying axes
     std::vector<mat3d> eigenvecFace;
-    std::vector<vec3d> eigenvalFace;
+    std::vector<vec2d> eigenvalFace;
+    
+    // declare friend class for smart extrusions
+    friend class FEExtrudeFaces;
 };

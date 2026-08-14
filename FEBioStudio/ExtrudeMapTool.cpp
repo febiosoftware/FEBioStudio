@@ -143,6 +143,7 @@ bool CExtrudeMapTool::OnApply()
 	mod.SetUseNormalLocal(m_useLocalNormal);
 	mod.SetMeshBiasFactor(m_meshBias);
 	mod.SetSymmetricBias(m_symmetricBias);
+    mod.SetSmartExtrude(m_smartExtrude);
 	mod.SetNodalMap(&map);
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());

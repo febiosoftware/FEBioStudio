@@ -41,4 +41,5 @@ private:
 	bool m_useLocalNormal;
 	double m_meshBias;
 	bool m_symmetricBias;
+    bool m_smartExtrude;
 };

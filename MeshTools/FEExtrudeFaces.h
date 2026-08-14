@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "FEModifier.h"
 #include <MeshLib/FSNodeData.h>
+#include "FEAxesCurvature.h"
 
 class FEExtrudeFaces : public FEModifier
 {
@@ -41,6 +42,7 @@ public:
 	void SetUseNormalLocal(bool b);
 	void SetMeshBiasFactor(double g);
 	void SetSymmetricBias(bool b);
+    void SetSmartExtrude(bool b);
 
 	void SetNodalMap(FSNodeData* map);
 
@@ -49,4 +51,5 @@ protected:
 
 private:
 	FSNodeData* m_map;
+    std::vector<double> variable_dist;
 };
