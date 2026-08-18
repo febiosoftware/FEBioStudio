@@ -2644,3 +2644,70 @@ ModelDataField* Post::SurfaceNormalProjection(FEPostModel& fem, ModelDataField* 
 
 	return newField;
 }
+
+extern int EL_HEX20[12][3];
+
+ModelDataField* Post::LinearToQuadric(FEPostModel& fem, ModelDataField* dataField, const std::string& name)
+{
+	if (dataField == nullptr) return nullptr;
+
+	DATA_CLASS nclass = dataField->DataClass();
+	if (nclass != NODE_DATA) return nullptr;
+
+	DATA_TYPE ntype = dataField->Type();
+	DATA_FORMAT nfmt = dataField->Format();
+	int nsrc = dataField->GetFieldID(); nsrc = FIELD_CODE(nsrc);
+
+	FSMesh& mesh = *fem.GetFEMesh(0);
+
+	std::string newname = name;
+	if (newname.empty()) newname = "Normal projection of " + dataField->GetName();
+
+	ModelDataField* newField = nullptr;
+	
+	if (ntype == DATA_SCALAR)
+	{
+		newField = new FEDataField_T<FENodeData<float> >(&fem);
+		fem.AddDataField(newField, newname);
+
+		int ndst = newField->GetFieldID(); ndst = FIELD_CODE(ndst);
+
+		for (int nstep = 0; nstep < fem.GetStates(); ++nstep)
+		{
+			Post::FEMeshData& ms = fem.GetState(nstep)->m_Data[nsrc];
+			Post::FEMeshData& md = fem.GetState(nstep)->m_Data[ndst];
+
+			Post::FENodeData_T<float>& src = dynamic_cast<Post::FENodeData_T<float>&>(ms);
+			Post::FENodeData<float>& dst = dynamic_cast<Post::FENodeData<float>&>(md);
+
+			// start by copying the source field
+			int NN = mesh.Nodes();
+			for (int i = 0; i < NN; ++i)
+			{
+				float val = 0.0;
+				if (src.active(i)) src.eval(i, &val);
+				dst[i] = val;
+			}
+
+			int NE = mesh.Elements();
+			for (int i = 0; i < NE; ++i)
+			{
+				FSElement& el = mesh.Element(i);
+				if (el.Type() == FE_HEX20)
+				{
+					for (int j = 0; j < 12; ++j)
+					{
+						int n[3] = { el.m_node[EL_HEX20[j][0]], el.m_node[EL_HEX20[j][1]], el.m_node[EL_HEX20[j][2]] };
+						float v0 = dst[n[0]];
+						float v1 = dst[n[1]];
+
+						float v2 = (v0 + v1) / 2.f;
+						dst[n[2]] = v2;
+					}
+				}
+			}
+		}
+	}
+
+	return newField;
+}

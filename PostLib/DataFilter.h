@@ -72,4 +72,7 @@ ModelDataField* DataTimeRate(FEPostModel& fem, ModelDataField* dataField, const 
 // For a vector field, this calculates the scalar field N*V. 
 // For a tensor field, this calculates the scalar field N*(S*N)
 ModelDataField* SurfaceNormalProjection(FEPostModel& fem, ModelDataField* dataField, const std::string& name);
+
+// project a linear nodal data field onto a quadratic mesh.
+ModelDataField* LinearToQuadric(FEPostModel& fem, ModelDataField* dataField, const std::string& name);
 }
