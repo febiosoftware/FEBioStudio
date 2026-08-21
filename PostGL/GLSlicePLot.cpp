@@ -35,7 +35,7 @@ SOFTWARE.*/
 using namespace Post;
 
 extern int LUT[256][15];
-extern int ET_HEX[12][2];
+extern int EL_HEX[12][2];
 
 REGISTER_CLASS(CGLSlicePlot, CLASS_PLOT, "slices", 0);
 
@@ -107,8 +107,8 @@ bool CGLSlicePlot::UpdateData(bool bsave)
 		m_slice_range = GetVec2dValue(SLICE_RANGE);
 		m_user_slices = GetParamVectorDouble(USER_SLICES);
 
-		double& x = m_slice_range.x();
-		double& y = m_slice_range.y();
+		double& x = m_slice_range.x;
+		double& y = m_slice_range.y;
 		if (x < 0) x = 0;
 		if (y > 1) y = 1;
 		if (x > y) { double tmp = x; x = y; y = tmp; }
@@ -269,7 +269,7 @@ void CGLSlicePlot::UpdateBoundingBox()
 	FSMesh* pm = mdl->GetActiveMesh();
 
 	// only count enabled parts
-	BOX box;
+	BoundingBox box;
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
 		FSElement_& el = pm->ElementRef(i);
@@ -462,8 +462,8 @@ void CGLSlicePlot::UpdateMesh()
 			float tex[3];
 			for (int k = 0; k < 3; k++)
 			{
-				int n1 = ET_HEX[pf[k]][0];
-				int n2 = ET_HEX[pf[k]][1];
+				int n1 = EL_HEX[pf[k]][0];
+				int n2 = EL_HEX[pf[k]][1];
 
 				double w = 0.5;
 				if (ex[n2] != ex[n1])
@@ -496,8 +496,8 @@ int CGLSlicePlot::CountFaces(std::vector<std::pair<int, float> >& activeElements
 	}
 
 	float frange = fmax - fmin;
-	fmax = fmin + frange * m_slice_range.y();
-	fmin = fmin + frange * m_slice_range.x();
+	fmax = fmin + frange * m_slice_range.y;
+	fmin = fmin + frange * m_slice_range.x;
 
 	int faceCount = 0;
 	if (m_nslices == 1)

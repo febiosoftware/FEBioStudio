@@ -91,7 +91,7 @@ bool CDICOMImageSource::Load()
         throw std::runtime_error("Unsupported pixel type.");
     }
 
-    BOX box(nx, ny, nz, nx+tempImage->getWidthHeightRatio(), ny+tempImage->getHeightWidthRatio(), nz+1.0);
+    BoundingBox box(nx, ny, nz, nx+tempImage->getWidthHeightRatio(), ny+tempImage->getHeightWidthRatio(), nz+1.0);
     GetImageModel()->SetBoundingBox(box);
 
     size_t size = nx*ny*nz*bps;

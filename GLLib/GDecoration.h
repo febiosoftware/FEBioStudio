@@ -174,12 +174,12 @@ public:
 	GPlaneCutDecoration();
 	~GPlaneCutDecoration();
 
-	void setBoundingBox(BOX box);
+	void setBoundingBox(BoundingBox box);
 	void setPlane(double n0, double n1, double n2, double d);
 
 	void render(GLRenderEngine& re) override;
 
 private:
-	BOX		m_box;
+	BoundingBox		m_box;
 	double	m_a[4];
 };

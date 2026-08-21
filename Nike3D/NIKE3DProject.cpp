@@ -43,21 +43,21 @@ using std::unique_ptr;
 // NIKE3DProject
 //-----------------------------------------------------------------------------
 
-bool NIKE3DProject::Create(FSProject &prj)
+bool NIKE3DProject::Create(FSModel &fem)
 {
 	// build the data structures
-	if (BuildControl        (prj) == false) return false;
-	if (BuildMaterials      (prj) == false) return false;
-	if (BuildNodes          (prj) == false) return false;
-	if (BuildElements       (prj) == false) return false;
-	if (BuildRigidNodes     (prj) == false) return false;
-	if (BuildDiscrete		(prj) == false) return false;
-	if (BuildInterfaces     (prj) == false) return false;
-	if (BuildNodalLoads     (prj) == false) return false;
-	if (BuildPressureLoads  (prj) == false) return false;
-	if (BuildDisplacements  (prj) == false) return false;
-	if (BuildBodyForce      (prj) == false) return false;
-	if (BuildNodalVelocities(prj) == false) return false;
+	if (BuildControl        (fem) == false) return false;
+	if (BuildMaterials      (fem) == false) return false;
+	if (BuildNodes          (fem) == false) return false;
+	if (BuildElements       (fem) == false) return false;
+	if (BuildRigidNodes     (fem) == false) return false;
+	if (BuildDiscrete		(fem) == false) return false;
+	if (BuildInterfaces     (fem) == false) return false;
+	if (BuildNodalLoads     (fem) == false) return false;
+	if (BuildPressureLoads  (fem) == false) return false;
+	if (BuildDisplacements  (fem) == false) return false;
+	if (BuildBodyForce      (fem) == false) return false;
+	if (BuildNodalVelocities(fem) == false) return false;
 
 	return true;
 }
@@ -210,10 +210,9 @@ void NIKE3DProject::Defaults()
 // Only the default parameters are intialized here. The rest of the control 
 // parameters are filled out when the corresponding data becomes available
 //
-bool NIKE3DProject::BuildControl(FSProject& prj)
+bool NIKE3DProject::BuildControl(FSModel& fem)
 {
 	CONTROL& c = m_Ctrl;
-	FSModel& fem = prj.GetFSModel();
 
 	STEP_SETTINGS set;
 	FSAnalysisStep* pstep = 0;
@@ -241,7 +240,9 @@ bool NIKE3DProject::BuildControl(FSProject& prj)
 	Defaults();
 
 	// set the project title
-	sprintf(c.sztitle, "%-40s", prj.GetTitle().c_str());
+	char* sztitle = "";
+	if (!fem.GetTitle().empty()) sztitle = (char*)fem.GetTitle().c_str();
+	sprintf(c.sztitle, "%-40s", sztitle);
 
 	// time settings
 	c.ntime = set.ntime;
@@ -270,11 +271,10 @@ bool NIKE3DProject::BuildControl(FSProject& prj)
 
 //-----------------------------------------------------------------------------
 
-bool NIKE3DProject::BuildMaterials(FSProject& prj)
+bool NIKE3DProject::BuildMaterials(FSModel& fem)
 {
 	int i, j, k;
 
-	FSModel& fem = prj.GetFSModel();
 	FSStep& step = *fem.GetStep(0);
 	int nmat = fem.Materials();
 
@@ -502,9 +502,8 @@ bool NIKE3DProject::BuildMaterials(FSProject& prj)
 
 //-----------------------------------------------------------------------------
 
-bool NIKE3DProject::BuildNodes(FSProject& prj)
+bool NIKE3DProject::BuildNodes(FSModel& fem)
 {
-	FSModel& fem = prj.GetFSModel();
 	GModel& model = fem.GetModel();
 	FSStep& s = *fem.GetStep(0);
 
@@ -585,9 +584,8 @@ bool NIKE3DProject::BuildNodes(FSProject& prj)
 
 //-----------------------------------------------------------------------------
 
-bool NIKE3DProject::BuildElements(FSProject &prj)
+bool NIKE3DProject::BuildElements(FSModel& fem)
 {
-	FSModel& fem = prj.GetFSModel();
 	GModel& model = fem.GetModel();
 
 	int i, j, nmat = 0;
@@ -747,9 +745,8 @@ bool NIKE3DProject::BuildElements(FSProject &prj)
 
 //-----------------------------------------------------------------------------
 
-bool NIKE3DProject::BuildRigidNodes(FSProject &prj)
+bool NIKE3DProject::BuildRigidNodes(FSModel& fem)
 {
-	FSModel& fem = prj.GetFSModel();
 	FSStep& s = *fem.GetStep(0);
 
 	for (int i=0; i<s.Interfaces(); ++i)
@@ -792,11 +789,8 @@ bool NIKE3DProject::BuildRigidNodes(FSProject &prj)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-
-bool NIKE3DProject::BuildDiscrete(FSProject& prj)
+bool NIKE3DProject::BuildDiscrete(FSModel& fem)
 {
-	FSModel& fem = prj.GetFSModel();
 	GModel& m = fem.GetModel();
 
 	int n = 1;
@@ -839,13 +833,10 @@ bool NIKE3DProject::BuildDiscrete(FSProject& prj)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-
-bool NIKE3DProject::BuildInterfaces(FSProject &prj)
+bool NIKE3DProject::BuildInterfaces(FSModel& fem)
 {
 	int i, k, n;
 
-	FSModel& fem = prj.GetFSModel();
 	FSStep& s = *fem.GetStep(0);
 
 	// first we export all control data
@@ -1019,9 +1010,8 @@ bool NIKE3DProject::BuildInterfaces(FSProject &prj)
 
 //-----------------------------------------------------------------------------
 
-bool NIKE3DProject::BuildNodalLoads(FSProject& prj)
+bool NIKE3DProject::BuildNodalLoads(FSModel& fem)
 {
-	FSModel& fem = prj.GetFSModel();
 	FSStep& s = *fem.GetStep(0);
 
 	int i, k;
@@ -1114,9 +1104,8 @@ bool NIKE3DProject::BuildNodalLoads(FSProject& prj)
 
 //-----------------------------------------------------------------------------
 
-bool NIKE3DProject::BuildPressureLoads(FSProject &prj)
+bool NIKE3DProject::BuildPressureLoads(FSModel& fem)
 {
-	FSModel& fem = prj.GetFSModel();
 	FSStep& s = *fem.GetStep(0);
 
 	int i;
@@ -1162,11 +1151,8 @@ bool NIKE3DProject::BuildPressureLoads(FSProject &prj)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-
-bool NIKE3DProject::BuildDisplacements(FSProject &prj)
+bool NIKE3DProject::BuildDisplacements(FSModel& fem)
 {
-	FSModel& fem = prj.GetFSModel();
 	FSStep& s = *fem.GetStep(0);
 
 	NODAL_DISPLACEMENT nd;
@@ -1205,11 +1191,8 @@ bool NIKE3DProject::BuildDisplacements(FSProject &prj)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-
-bool NIKE3DProject::BuildBodyForce(FSProject& prj)
+bool NIKE3DProject::BuildBodyForce(FSModel& fem)
 {
-	FSModel& fem = prj.GetFSModel();
 	FSStep& s = *fem.GetStep(0);
 
 	for (int i=0; i<s.Loads(); ++i)
@@ -1240,11 +1223,8 @@ bool NIKE3DProject::BuildBodyForce(FSProject& prj)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-
-bool NIKE3DProject::BuildNodalVelocities(FSProject &prj)
+bool NIKE3DProject::BuildNodalVelocities(FSModel& fem)
 {
-	FSModel& fem = prj.GetFSModel();
 	FSStep& s = *fem.GetStep(0);
 
 	m_Vel.resize(m_Ctrl.numnp);
@@ -1277,12 +1257,9 @@ bool NIKE3DProject::BuildNodalVelocities(FSProject &prj)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 // convert project settings
-//
-bool NIKE3DProject::Convert(FSProject &prj)
+bool NIKE3DProject::Convert(FSModel& fem)
 {
-	FSModel& fem = prj.GetFSModel();
 	FSNonLinearMechanics* pstep = dynamic_cast<FSNonLinearMechanics*>(fem.GetStep(1));
 	if (pstep == 0) return false;
 

@@ -48,6 +48,7 @@ SOFTWARE.*/
 #include <QJsonArray>
 #include "PropertyList.h"
 #include <FECore/FEModelParam.h>
+#include <FSCore/util.h>
 
 using namespace std;
 
@@ -152,7 +153,7 @@ void CDlgFEBioInfo::onExport()
 		moduleArray.append(modObj);
 	}
 
-#ifdef FEBIO_EXPERIMENTAL
+#if defined(FEBIO_EXPERIMENTAL) || !defined(NDEBUG)
 	bool includeExperimentals = true;
 #else
 	bool includeExperimentals = false;
@@ -207,7 +208,7 @@ void CDlgFEBioInfo::onExport()
 					case FE_PARAM_INT   : paramVal = QString::number(pi.value<int>()); break;
 					case FE_PARAM_DOUBLE: paramVal = QString::number(pi.value<double>()); break;
 					case FE_PARAM_BOOL  : paramVal = QString(pi.value<bool>() ? "true" : "false"); break;
-					case FE_PARAM_VEC3D : paramVal = Vec3dToString(pi.value<vec3d>()); break;
+					case FE_PARAM_VEC3D : paramVal = QString::fromStdString(Vec3dToString(pi.value<vec3d>())); break;
 					case FE_PARAM_DOUBLE_MAPPED:
 					{
 						FEParamDouble& v = pi.value<FEParamDouble>();
@@ -217,7 +218,7 @@ void CDlgFEBioInfo::onExport()
 					case FE_PARAM_VEC3D_MAPPED:
 					{
 						FEParamVec3& v = pi.value<FEParamVec3>();
-						if (v.isConst()) paramVal = Vec3dToString(v.constValue());
+						if (v.isConst()) paramVal = QString::fromStdString(Vec3dToString(v.constValue()));
 					}
 					break;
 					}
@@ -344,7 +345,7 @@ void CDlgFEBioInfo::onTreeChanged()
 	int index = it->data(0, Qt::UserRole).toInt();
 	if ((index < 0) || (index >= febio.FactoryClasses())) return;
 
-#ifdef FEBIO_EXPERIMENTAL
+#if defined(FEBIO_EXPERIMENTAL) || !defined(NDEBUG)
 	bool includeExperimentals = true;
 #else
 	bool includeExperimentals = false;
@@ -488,7 +489,7 @@ void CDlgFEBioInfo::Update()
 
 	bool addModuleDependencies = false;
 
-#ifdef FEBIO_EXPERIMENTAL
+#if defined(FEBIO_EXPERIMENTAL) || !defined(NDEBUG)
 	bool includeExperimentals = true;
 #else
 	bool includeExperimentals = false;

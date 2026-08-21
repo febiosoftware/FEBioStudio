@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "ObjectProps.h"
 #include <FSCore/FSObject.h>
 #include <FSCore/FSCore.h>
+#include <FSCore/util.h>
 
 //=======================================================================================
 CObjectProps::CObjectProps(FSBase* po, bool beautifyStrings)
@@ -58,6 +59,7 @@ void CObjectProps::AddParameter(Param& p)
 	}
 	break;
 	case Param_VEC3D : prop = addProperty(paramName, CProperty::Vec3); break;
+	case Param_MAT2D : prop = addProperty(paramName, CProperty::Mat2); break;
 	case Param_MAT3D : prop = addProperty(paramName, CProperty::Mat3); break;
 	case Param_MAT3DS: prop = addProperty(paramName, CProperty::Mat3s); break;
 	case Param_STRING: 
@@ -247,35 +249,42 @@ QVariant CObjectProps::GetPropertyValue(Param& p)
 	case Param_VEC3D:
 	{
 		vec3d r = p.GetVec3dValue();
-		QString t = Vec3dToString(r);
+		QString t = QString::fromStdString(Vec3dToString(r));
 		return t;
 	}
 	break;
 	case Param_VEC2I:
 	{
 		vec2i r = p.GetVec2iValue();
-		QString t = Vec2iToString(r);
+		QString t = QString::fromStdString(Vec2iToString(r));
 		return t;
 	}
 	break;
 	case Param_VEC2D:
 	{
 		vec2d r = p.GetVec2dValue();
-		QString t = Vec2dToString(r);
+		QString t = QString::fromStdString(Vec2dToString(r));
+		return t;
+	}
+	break;
+	case Param_MAT2D:
+	{
+		mat2d m = p.GetMat2dValue();
+		QString t = QString::fromStdString(Mat2dToString(m));
 		return t;
 	}
 	break;
 	case Param_MAT3D:
 	{
 		mat3d m = p.GetMat3dValue();
-		QString t = Mat3dToString(m);
+		QString t = QString::fromStdString(Mat3dToString(m));
 		return t;
 	}
 	break;
 	case Param_MAT3DS:
 	{
 		mat3ds m = p.GetMat3dsValue();
-		QString t = Mat3dsToString(m);
+		QString t = QString::fromStdString(Mat3dsToString(m));
 		return t;
 	}
 	break;
@@ -289,28 +298,28 @@ QVariant CObjectProps::GetPropertyValue(Param& p)
 	case Param_STD_VECTOR_INT:
 	{
 		std::vector<int> v = p.GetVectorIntValue();
-		QString t = VectorIntToString(v);
+		QString t = QString::fromStdString(VectorIntToString(v));
 		return t;
 	}
 	break;
 	case Param_STD_VECTOR_DOUBLE:
 	{
 		std::vector<double> v = p.GetVectorDoubleValue();
-		QString t = VectorDoubleToString(v);
+		QString t = QString::fromStdString(VectorDoubleToString(v));
 		return t;
 	}
 	break;
 	case Param_ARRAY_INT:
 	{
 		std::vector<int> v = p.GetArrayIntValue();
-		QString t = VectorIntToString(v);
+		QString t = QString::fromStdString(VectorIntToString(v));
 		return t;
 	}
 	break;
 	case Param_ARRAY_DOUBLE:
 	{
 		std::vector<double> v = p.GetArrayDoubleValue();
-		QString t = VectorDoubleToString(v);
+		QString t = QString::fromStdString(VectorDoubleToString(v));
 		return t;
 	}
 	break;
@@ -346,35 +355,42 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 	case Param_VEC3D:
 	{
 		QString t = v.toString();
-		vec3d r = StringToVec3d(t);
+		vec3d r = StringToVec3d(t.toStdString());
 		p.SetVec3dValue(r);
 	}
 	break;
 	case Param_VEC2I:
 	{
 		QString t = v.toString();
-		vec2i r = StringToVec2i(t);
+		vec2i r = StringToVec2i(t.toStdString());
 		p.SetVec2iValue(r);
 	}
 	break;
 	case Param_VEC2D:
 	{
 		QString t = v.toString();
-		vec2d r = StringToVec2d(t);
+		vec2d r = StringToVec2d(t.toStdString());
 		p.SetVec2dValue(r);
+	}
+	break;
+	case Param_MAT2D:
+	{
+		QString t = v.toString();
+		mat2d m = StringToMat2d(t.toStdString());
+		p.SetMat2dValue(m);
 	}
 	break;
 	case Param_MAT3D:
 	{
 		QString t = v.toString();
-		mat3d m = StringToMat3d(t);
+		mat3d m = StringToMat3d(t.toStdString());
 		p.SetMat3dValue(m);
 	}
 	break;
 	case Param_MAT3DS:
 	{
 		QString t = v.toString();
-		mat3ds m = StringToMat3ds(t);
+		mat3ds m = StringToMat3ds(t.toStdString());
 		p.SetMat3dsValue(m);
 	}
 	break;
@@ -388,14 +404,14 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 	case Param_STD_VECTOR_INT:
 	{
 		QString s = v.toString();
-		std::vector<int> val = StringToVectorInt(s);
+		std::vector<int> val = StringToVectorInt(s.toStdString());
 		p.SetVectorIntValue(val);
 	}
 	break;
 	case Param_STD_VECTOR_DOUBLE:
 	{
 		QString s = v.toString();
-		std::vector<double> val = StringToVectorDouble(s);
+		std::vector<double> val = StringToVectorDouble(s.toStdString());
 		if (p.IsFixedSize())
 		{
 			int n = p.GetVectorDoubleValue().size();
@@ -413,14 +429,14 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 	case Param_ARRAY_INT:
 	{
 		QString s = v.toString();
-		std::vector<int> val = StringToVectorInt(s);
+		std::vector<int> val = StringToVectorInt(s.toStdString());
 		p.SetArrayIntValue(val);
 	}
 	break;
 	case Param_ARRAY_DOUBLE:
 	{
 		QString s = v.toString();
-		std::vector<double> val = StringToVectorDouble(s);
+		std::vector<double> val = StringToVectorDouble(s.toStdString());
 		p.SetArrayDoubleValue(val);
 	}
 	break;

@@ -184,7 +184,7 @@ std::string defaultStepName(FSModel* fem, FSStep* ps)
 	return ss.str();
 }
 
-FSModel::FSModel() : m_skipGeometry(false)
+FSModel::FSModel() : m_skipGeometry(false), m_plt(*this), m_log(*this)
 {
 	m_GMdl = std::make_unique<GModel>(this);
 	Reset();
@@ -236,6 +236,53 @@ FSModel::FSModel() : m_skipGeometry(false)
 	AddScienceParam(0, UNIT_FARADAY_CONSTANT, "Fc", "Faraday's constant");
 
 	m_MLT_offset = 0;
+	m_module = -1;
+	m_units = 0; // 0 = no unit system
+}
+
+void FSModel::SetUnits(int units)
+{
+	m_units = units;
+}
+
+int FSModel::GetUnits() const
+{
+	return m_units;
+}
+
+std::string FSModel::GetModuleName() const
+{
+	int mod = FEBio::GetActiveModule();
+	assert(mod == m_module);
+	return FEBio::GetModuleName(mod);
+}
+
+void FSModel::SetModule(int mod, bool setDefaultPlotVariables)
+{
+	m_module = mod;
+	FEBio::SetActiveModule(mod);
+
+	// get the list of variables
+	if (mod != -1)
+	{
+		FEBio::InitFSModel(*this);
+
+		if (setDefaultPlotVariables)
+		{
+			GetPlotDataSettings().Clear();
+			// add some default variables
+			// TODO: Maybe I can pull this info from FEBio somehow
+			SetDefaultPlotVariables();
+		}
+	}
+}
+
+void FSModel::SetDefaultPlotVariables()
+{
+	int moduleId = GetModule();
+	const char* szmod = FEBio::GetModuleName(moduleId); assert(szmod);
+	if (szmod == nullptr) return;
+	GetPlotDataSettings().InitDefaultPlotVariables(szmod);
 }
 
 void FSModel::ClearVariables()
@@ -1121,6 +1168,20 @@ void FSModel::AddMaterial(GMaterial* pmat)
 	ClearMLT();
 }
 
+GMaterial* FSModel::AddMaterial(const std::string& name, const std::string& type)
+{
+	FSMaterial* pm = FEBio::CreateMaterial(type, this);
+	if (pm)
+	{
+		GMaterial* gm = new GMaterial;
+		gm->SetName(name);
+		gm->SetMaterialProperties(pm);
+		AddMaterial(gm);
+		return gm;
+	}
+	return nullptr;
+}
+
 void FSModel::InsertMaterial(int n, GMaterial* pm)
 { 
 	m_pMat.Insert(n, pm); 
@@ -1374,6 +1435,9 @@ void FSModel::Clear()
 	// remove all steps
 	m_pStep.Clear();
 
+	// remove all load controllers
+	m_LC.Clear();
+
 	// remove all meshes
 	m_GMdl->Clear();
 
@@ -1389,6 +1453,9 @@ void FSModel::Reset()
 
 	// define the initial step
 	m_pStep.Add(new FSInitialStep(this));
+
+	// initialize the plot data
+	m_plt.Init();
 }
 
 int FSModel::CountMeshDataFields()
@@ -1567,6 +1634,24 @@ void FSModel::Save(OArchive& ar)
 		}
 		ar.EndChunk();
 	}
+
+	// save scripts
+	if (m_scripts.IsEmpty() == false)
+	{
+		ar.BeginChunk(CID_SCRIPT_SECTION);
+		{
+			for (size_t i = 0; i < m_scripts.Size(); ++i)
+			{
+				FEBCodeScript* ps = m_scripts[i];
+				ar.BeginChunk(0);
+				{
+					ps->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
 }
 
 void FSModel::Load(IArchive& ar)
@@ -1592,10 +1677,13 @@ void FSModel::Load(IArchive& ar)
 		case CID_STEP_SECTION        : LoadSteps(ar); break;
 		case CID_LOAD_CONTROLLER_LIST: LoadLoadControllers(ar); break;
 		case CID_MESHDATA_LIST       : LoadMeshDataGenerators(ar); break;
+		case CID_SCRIPT_SECTION      : LoadScripts(ar); break;
 		}
 		ar.CloseChunk();
 	}
 	UpdateMaterialPositions();
+
+	UpdateScriptReferenceCounts();
 }
 
 // reads the model data
@@ -1719,6 +1807,19 @@ void FSModel::LoadSteps(IArchive& ar)
 		// add step to model
 		AddStep(ps);
 
+		ar.CloseChunk();
+	}
+}
+
+void FSModel::LoadScripts(IArchive& ar)
+{
+	m_scripts.Clear();
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		FEBCodeScript* ps = new FEBCodeScript("", "");
+		ps->Load(ar);
+		m_nextScriptID = std::max(m_nextScriptID, ps->GetID() + 1);
+		m_scripts.Add(ps);
 		ar.CloseChunk();
 	}
 }
@@ -1877,6 +1978,17 @@ FSStep* FSModel::GetStep(int i)
 	return m_pStep[i]; 
 }
 
+FSStep* FSModel::AddStep(const std::string& name, const std::string& type)
+{
+	FSStep* step = FEBio::CreateStep(type, this);
+	if (step)
+	{
+		step->SetName(name);
+		AddStep(step);
+	}
+	return step;
+}
+
 void FSModel::AddStep(FSStep* ps)
 { 
 	m_pStep.Add(ps); 
@@ -1915,6 +2027,15 @@ FSStep* FSModel::FindStep(int nid)
 		if (m_pStep[i]->GetID() == nid) return m_pStep[i];
 	}
 	assert(false);
+	return nullptr;
+}
+
+FSStep* FSModel::FindStep(const std::string& name)
+{
+	for (int i=0; i<(int) m_pStep.Size(); ++i)
+	{
+		if (m_pStep[i]->GetName() == name) return m_pStep[i];
+	}
 	return nullptr;
 }
 
@@ -2189,6 +2310,23 @@ void FSModel::ClearSelections()
 		}
 	}
 
+	for (int i = 0; i < m_plt.PlotVariables(); ++i)
+	{
+		CPlotVariable& plt = m_plt.PlotVariable(i);
+		plt.removeAllDomains();
+	}
+
+	for (int i = 0; i < m_log.LogDataSize(); )
+	{
+		FSHasOneItemList* pl = dynamic_cast<FSHasOneItemList*>(&m_log.LogData(i));
+		if (pl)
+		{
+			if (pl->GetItemList()) m_log.RemoveLogData(i);
+			else i++;
+		}
+		else i++;
+	}
+
 	GetModel().RemoveNamedSelections();
 }
 
@@ -2436,9 +2574,30 @@ FSLoadController* FSModel::GetLoadControllerFromID(int lc)
 	return nullptr;
 }
 
+FSLoadController* FSModel::FindLoadController(const std::string& name)
+{
+	for (int i = 0; i < m_LC.Size(); ++i)
+	{
+		FSLoadController* plc = m_LC[i];
+		if (plc->GetName() == name) return plc;
+	}
+	return nullptr;
+}
+
 void FSModel::AddLoadController(FSLoadController* plc)
 {
 	m_LC.Add(plc);
+}
+
+FSLoadController* FSModel::AddLoadController(const std::string& name, const std::string& type)
+{
+	FSLoadController* plc = FEBio::CreateLoadController(type, this);
+	if (plc)
+	{
+		plc->SetName(name);
+		AddLoadController(plc);
+	}
+	return plc;
 }
 
 int FSModel::RemoveLoadController(FSLoadController* plc)
@@ -2484,30 +2643,6 @@ FSLoadController* FSModel::AddLoadCurve(LoadCurve& lc)
 	return plc;
 }
 
-void UpdateLCRefsCount(FSModelComponent* pmc, std::map<int, int>& LCT)
-{
-	if (pmc == nullptr) return;
-
-	for (int n = 0; n < pmc->Parameters(); ++n)
-	{
-		Param& p = pmc->GetParam(n);
-		if (p.GetLoadCurveID() > 0)
-		{
-			LCT[p.GetLoadCurveID()]++;
-		}
-	}
-
-	for (int m = 0; m < pmc->Properties(); ++m)
-	{
-		FSProperty& prop = pmc->GetProperty(m);
-		for (int k = 0; k < prop.Size(); ++k)
-		{
-			FSModelComponent* pmk = dynamic_cast<FSModelComponent*>(prop.GetComponent(k));
-			if (pmk) UpdateLCRefsCount(pmk, LCT);
-		}
-	}
-}
-
 void FSModel::UpdateLoadControllerReferenceCounts()
 {
 	// clear all reference counters
@@ -2520,91 +2655,20 @@ void FSModel::UpdateLoadControllerReferenceCounts()
 		LCT[plc->GetID()] = 0;
 	}
 
-	// process materials
-	for (int i = 0; i < Materials(); ++i)
-	{
-		GMaterial* mat = GetMaterial(i);
-		FSMaterial* pm = mat->GetMaterialProperties();
-		if (pm) UpdateLCRefsCount(pm, LCT);
-	}
-
-	// process discrete
-	GModel& gm = GetModel();
-	for (int i=0; i<gm.DiscreteObjects(); ++i)
-	{ 
-		GDiscreteSpringSet* po = dynamic_cast<GDiscreteSpringSet*>(gm.DiscreteObject(i));
-		if (po && po->GetMaterial()) UpdateLCRefsCount(po->GetMaterial(), LCT);
-	}
-
-	// process Steps
-	for (int n = 0; n < Steps(); ++n)
-	{
-		FSStep* step = GetStep(n);
-		UpdateLCRefsCount(step, LCT);
-
-		// process BCs
-		for (int i = 0; i < step->BCs(); ++i)
+	// loop over all components and count the load curve references
+	ForAllComponents([&](FSModelComponent* pc){
+		if (pc)
 		{
-			FSBoundaryCondition* pbc = step->BC(i);
-			UpdateLCRefsCount(pbc, LCT);
+			for (int n = 0; n < pc->Parameters(); ++n)
+			{
+				Param& p = pc->GetParam(n);
+				if (p.GetLoadCurveID() > 0)
+				{
+					LCT[p.GetLoadCurveID()]++;
+				}
+			}
 		}
-
-		// process Loads
-		for (int i = 0; i < step->Loads(); ++i)
-		{
-			FSLoad* pload = step->Load(i);
-			UpdateLCRefsCount(pload, LCT);
-		}
-
-		// process contact
-		for (int i = 0; i < step->Interfaces(); ++i)
-		{
-			FSInterface* pi = step->Interface(i);
-			UpdateLCRefsCount(pi, LCT);
-		}
-
-		// nonlinear constraints
-		for (int i = 0; i < step->Constraints(); ++i)
-		{
-			FSModelConstraint* pi = step->Constraint(i);
-			UpdateLCRefsCount(pi, LCT);
-		}
-
-		// rigid BC
-		for (int i = 0; i < step->RigidBCs(); ++i)
-		{
-			FSRigidBC* pi = step->RigidBC(i);
-			UpdateLCRefsCount(pi, LCT);
-		}
-
-		// rigid load
-		for (int i = 0; i < step->RigidLoads(); ++i)
-		{
-			FSRigidLoad* pi = step->RigidLoad(i);
-			UpdateLCRefsCount(pi, LCT);
-		}
-
-		// rigid constraints
-		for (int i = 0; i < step->RigidConstraints(); ++i)
-		{
-			FSRigidConstraint* pi = step->RigidConstraint(i);
-			UpdateLCRefsCount(pi, LCT);
-		}
-
-		// rigid connector
-		for (int i = 0; i < step->RigidConnectors(); ++i)
-		{
-			FSRigidConnector* pi = step->RigidConnector(i);
-			UpdateLCRefsCount(pi, LCT);
-		}
-
-		// mesh adaptor
-		for (int i = 0; i < step->MeshAdaptors(); ++i)
-		{
-			FSMeshAdaptor* pi = step->MeshAdaptor(i);
-			UpdateLCRefsCount(pi, LCT);
-		}
-	}
+	});
 
 	// update reference counts
 	for (int i = 0; i < NLC; ++i)
@@ -2613,7 +2677,6 @@ void FSModel::UpdateLoadControllerReferenceCounts()
 		plc->SetReferenceCount(LCT[plc->GetID()]);
 	}
 }
-
 
 int FSModel::MeshDataGenerators() const
 {
@@ -2780,4 +2843,421 @@ int CountBCsByTypeString(const std::string& typeStr, FSModel& fem)
 		}
 	}
 	return nc;
+}
+
+FEBCodeScript* FSModel::CreateScript(const std::string& name, const std::string& code)
+{
+	FEBCodeScript* script = m_scripts.FindByName(name);
+	if (script != nullptr)
+	{
+		return nullptr;
+	}
+
+	// strip /r from the code (since some platforms add it to the end of lines)
+	std::string cleanCode;
+	for (char c : code)
+	{
+		if (c != '\r') cleanCode += c;
+	}
+
+	script = new FEBCodeScript(name, cleanCode);
+	script->SetID(m_nextScriptID++);
+	return script;
+}
+
+FEBCodeScript* FSModel::AddNewScript(const std::string& name, ScriptContext context)
+{
+	string code;
+	switch (context.returnType)
+	{
+	case FEValueType::Bool: code = "return true;"; break;
+	case FEValueType::Int: code = "return 0;"; break;
+	case FEValueType::Double: code = "return 0.0;"; break;
+	case FEValueType::Vec2d: code = "return vec2(0);"; break;
+	case FEValueType::Vec3d: code = "return vec3(0);"; break;
+	case FEValueType::Mat2d: code = "return mat2(0);"; break;
+	case FEValueType::Mat3d: code = "return mat3(0);"; break;
+	};
+
+	FEBCodeScript* script = AddNewScript(name, code);
+	if (script) script->SetScriptContext(context);
+	return script;
+}
+
+FEBCodeScript* FSModel::AddNewScript(const std::string& name, const std::string& code)
+{
+	FEBCodeScript* script = CreateScript(name, code);
+	if (script)
+	{
+		AddScript(script);
+		return script;
+	}
+	return nullptr;
+}
+
+void FSModel::AddScript(FEBCodeScript* ps)
+{
+	m_scripts.Add(ps);
+}
+
+void FSModel::RemoveScript(FEBCodeScript* ps)
+{
+	m_scripts.Remove(ps);
+}
+
+size_t FSModel::Scripts() const
+{
+	return m_scripts.Size();
+}
+
+int FSModel::GetNextScriptID() const
+{
+	return m_nextScriptID;
+}
+
+FEBCodeScript* FSModel::GetScript(const std::string& name)
+{
+	FEBCodeScript* script = m_scripts.FindByName(name);
+	return script;
+}
+
+FEBCodeScript* FSModel::GetScriptFromID(int id)
+{
+	for (int i = 0; i < m_scripts.Size(); ++i)
+	{
+		FEBCodeScript* script = m_scripts[i];
+		if (script->GetID() == id)
+		{
+			return script;
+		}
+	}
+	return nullptr;
+}
+
+FEBCodeScript* FSModel::GetScript(size_t n)
+{
+	if (n < m_scripts.Size())
+	{
+		return m_scripts.At(n);
+	}
+	return nullptr;
+}
+
+void FSModel::ForAllComponents(std::function<void(FSModelComponent*)> func)
+{
+	for (int i = 0; i < Steps(); ++i)
+	{
+		FSStep* ps = GetStep(i);
+		func(ps);
+
+		// loop over all BCs
+		for (int j = 0; j < ps->BCs(); ++j)
+		{
+			FSBoundaryCondition* pbc = ps->BC(j);
+			func(pbc);
+			ForAllProperties(pbc, func);
+		}
+		// loop over all Loads
+		for (int j = 0; j < ps->Loads(); ++j)
+		{
+			FSLoad* pl = ps->Load(j);
+			func(pl);
+			ForAllProperties(pl, func);
+		}
+		// loop over all ICs
+		for (int j = 0; j < ps->ICs(); ++j)
+		{
+			FSInitialCondition* pic = ps->IC(j);
+			func(pic);
+			ForAllProperties(pic, func);
+		}
+
+		// loop over all contact interfaces
+		for (int j = 0; j < ps->Interfaces(); ++j)
+		{
+			FSInterface* pi = ps->Interface(j);
+			func(pi);
+			ForAllProperties(pi, func);
+		}
+
+		// loop over all nonlinear constraints
+		for (int j = 0; j < ps->Constraints(); ++j)
+		{
+			FSModelConstraint* pmc = ps->Constraint(j);
+			func(pmc);
+			ForAllProperties(pmc, func);
+		}
+
+		// loop over all rigid constraints
+		for (int j = 0; j < ps->RigidConstraints(); ++j)
+		{
+			FSRigidConstraint* prc = ps->RigidConstraint(j);
+			func(prc);
+			ForAllProperties(prc, func);
+		}
+
+		// loop over all rigid loads
+		for (int j = 0; j < ps->RigidLoads(); ++j)
+		{
+			FSRigidLoad* prl = ps->RigidLoad(j);
+			func(prl);
+			ForAllProperties(prl, func);
+		}
+
+		// loop over all rigid BCs
+		for (int j = 0; j < ps->RigidBCs(); ++j)
+		{
+			FSRigidBC* prb = ps->RigidBC(j);
+			func(prb);
+			ForAllProperties(prb, func);
+		}
+
+		// loop over all rigid ICs
+		for (int j = 0; j < ps->RigidICs(); ++j)
+		{
+			FSRigidIC* pic = ps->RigidIC(j);
+			func(pic);
+			ForAllProperties(pic, func);
+		}
+
+		// loop over all rigid connectors
+		for (int j = 0; j < ps->RigidConnectors(); ++j)
+		{
+			FSRigidConnector* prc = ps->RigidConnector(j);
+			func(prc);
+			ForAllProperties(prc, func);
+		}
+
+		// loop over all mesh adaptors
+		for (int j = 0; j < ps->MeshAdaptors(); ++j)
+		{
+			FSMeshAdaptor* pma = ps->MeshAdaptor(j);
+			func(pma);
+			ForAllProperties(pma, func);
+		}
+	}
+
+	// loop over all materials
+	for (int i = 0; i < Materials(); ++i)
+	{
+		GMaterial* mat = GetMaterial(i);
+		FSMaterial* pm = mat->GetMaterialProperties();
+		if (pm)
+		{
+			func(pm);
+			ForAllProperties(pm, func);
+		}
+	}
+
+	// loop over all mesh-data generators
+	for (int i = 0; i < MeshDataGenerators(); ++i)
+	{
+		FSMeshDataGenerator* pmd = GetMeshDataGenerator(i);
+		func(pmd);
+		ForAllProperties(pmd, func);
+	}
+
+	// loop over load controllers
+	for (int j = 0; j < LoadControllers(); ++j)
+	{
+		FSLoadController* plc = GetLoadController(j);
+		func(plc);
+		ForAllProperties(plc, func);
+	}
+
+	// process discrete
+	GModel& gm = GetModel();
+	for (int i = 0; i < gm.DiscreteObjects(); ++i)
+	{
+		GDiscreteSpringSet* po = dynamic_cast<GDiscreteSpringSet*>(gm.DiscreteObject(i));
+		if (po && po->GetMaterial()) ForAllProperties(po->GetMaterial(), func);
+	}
+}
+
+void FSModel::ForAllProperties(FSModelComponent* pc, std::function<void(FSModelComponent*)> func)
+{
+	for (int i = 0; i < pc->Properties(); ++i)
+	{
+		FSProperty& prop = pc->GetProperty(i);
+		for (int j = 0; j < prop.Size(); ++j)
+		{
+			FSModelComponent* subComponent = dynamic_cast<FSModelComponent*>(prop.GetComponent(j));
+			if (subComponent)
+			{
+				func(subComponent);
+				ForAllProperties(subComponent, func);
+			}
+		}
+	}
+}
+
+void FSModel::UpdateScriptDependencies(FEBCodeScript* script)
+{
+	if (script == nullptr) return;
+
+	ForAllComponents([=](FSModelComponent* pc) {
+		if (auto scripted = dynamic_cast<FSScriptedComponent*>(pc))
+		{
+			UpdateScriptDependency(scripted, script);
+		}
+	});
+}
+
+void FSModel::UpdateScriptDependency(FSScriptedComponent* component, FEBCodeScript* script)
+{
+	// validate arguments
+	if (script == nullptr) return;
+	if (component == nullptr) return;
+	if (component->scriptID != script->GetID()) return;
+
+	// now, we need to get a list of all input variables defined in the script.
+	bool ok = true;
+	std::vector<ScriptInputVariable> inputs = GetScriptInputVariables(script->GetCode(), script->GetScriptContext(), ok);
+	if (!ok) return;
+
+	ScriptContext ctx = script->GetScriptContext();
+
+	// add all inputs as parameters to the component
+	for (int i = 0; i < inputs.size(); ++i)
+	{
+		const ScriptInputVariable& var = inputs[i];
+		Param* p = component->GetParam(var.name.c_str());
+		if (p == nullptr)
+		{
+			switch (var.type)
+			{
+			case FEValueType::Bool  : p = component->AddBoolParam  (false       , var.name.c_str()); break;
+			case FEValueType::Int   : p = component->AddIntParam   (0           , var.name.c_str()); break;
+			case FEValueType::Double: p = component->AddDoubleParam(0.0         , var.name.c_str()); break;
+			case FEValueType::Vec2d : p = component->AddVec2dParam (vec2d(0,0)  , var.name.c_str()); break;
+			case FEValueType::Vec3d : p = component->AddVecParam   (vec3d(0,0,0), var.name.c_str()); break;
+			case FEValueType::Mat2d : p = component->AddMat2dParam (mat2d(0.0), var.name.c_str()); break;
+			case FEValueType::Mat3d : p = component->AddMat3dParam (mat3d(0.0), var.name.c_str()); break;
+			default:
+				assert(false);
+				break;
+			}
+			if (p)
+			{
+				unsigned int flags = p->GetFlags();
+				flags |= FS_PARAM_USER;
+				if (ctx.allowVolatileInputs)
+				{
+					if ((var.type != FEValueType::Bool) && (var.type != FEValueType::Int)) flags |= FS_PARAM_VOLATILE;
+				}
+				if (ctx.allowMappedInputs)
+				{
+					if ((var.type != FEValueType::Bool) && (var.type != FEValueType::Int))
+						p->MakeVariable(true);
+				}
+				p->SetFlags(flags);
+			}
+		}
+		else if (p)
+		{
+			// make sure the type hasn't changed
+			Param_Type pType = p->GetParamType();
+
+			if      (pType == Param_BOOL  && var.type != FEValueType::Bool  ) p->SetParamType(Param_BOOL );
+			else if (pType == Param_INT   && var.type != FEValueType::Int   ) p->SetParamType(Param_INT  );
+			else if (pType == Param_FLOAT && var.type != FEValueType::Double) p->SetParamType(Param_FLOAT);
+			else if (pType == Param_VEC2D && var.type != FEValueType::Vec2d ) p->SetParamType(Param_VEC2D);
+			else if (pType == Param_VEC3D && var.type != FEValueType::Vec3d ) p->SetParamType(Param_VEC3D);
+			else if (pType == Param_MAT2D && var.type != FEValueType::Mat2d ) p->SetParamType(Param_MAT2D);
+			else if (pType == Param_MAT3D && var.type != FEValueType::Mat3d ) p->SetParamType(Param_MAT3D);
+		}
+	}
+
+	// now, remove any component parameters that are no longer referenced by the script. 
+	for (int i = 0; i < component->Parameters();)
+	{
+		Param& p = component->GetParam(i);
+		if (p.GetFlags() & FS_PARAM_USER)
+		{
+			auto it = std::find_if(inputs.begin(), inputs.end(), [&p](const ScriptInputVariable& var) { return var.name == p.GetShortName(); });
+			if (it == inputs.end())
+			{
+				component->RemoveParameter(&p);
+			}
+			else
+				i++;
+		}
+		else
+			i++;
+	}
+}
+
+std::vector<FEBCodeScript*> FSModel::GetMatchingScripts(const ScriptContext& ctx)
+{
+	std::vector<FEBCodeScript*> matches;
+	for (size_t i = 0; i < m_scripts.Size(); ++i)
+	{
+		FEBCodeScript* ps = m_scripts[i];
+		const ScriptContext& sc = ps->GetScriptContext();
+		if (sc == ctx)
+		{
+			matches.push_back(ps);
+		}
+	}
+	return matches;
+}
+
+bool FSModel::ValidateScript(const std::string& code, const ScriptContext& context, std::string& err)
+{
+	ScriptContext actualContext;
+	actualContext.returnType = context.returnType;
+	for (int i=0; i<context.variables.size(); ++i)
+	{
+		const ScriptContext::Variable& var = context.variables[i];
+
+		// if the variable contains "$(species)" then we need to replace it with the names of the solutes and sbms.
+		if (var.name.find("$(species)") != std::string::npos)
+		{
+			size_t pos = var.name.find("$(species)");
+
+			// this is a special variable that is only used for validating species scripts. 
+			// We need to replace it with the names of the solutes and sbms.
+			for (int j = 0; j < Solutes(); ++j)
+			{
+				ScriptContext::Variable v;
+				std::string varName = var.name;
+				varName.replace(pos, std::string("$(species)").length(), GetSoluteData(j).GetName());
+				v.name = varName;
+				v.type = var.type;
+				v.differentiable = var.differentiable;
+				actualContext.variables.push_back(v);
+			}
+			for (int j = 0; j < SBMs(); ++j)
+			{
+				ScriptContext::Variable v;
+				std::string varName = var.name;
+				varName.replace(pos, std::string("$(species)").length(), GetSBMData(j).GetName());
+				v.name = varName;
+				v.type = var.type;
+				v.differentiable = var.differentiable;
+				actualContext.variables.push_back(v);
+			}
+		}
+		else
+			actualContext.variables.push_back(var);
+	}
+	return ::ValidateScript(code, actualContext, err);
+}
+
+void FSModel::UpdateScriptReferenceCounts()
+{
+	// update script reference counts
+	for (size_t i = 0; i < m_scripts.Size(); ++i)
+	{
+		FEBCodeScript* ps = m_scripts[i];
+		ps->ResetRefCount();
+
+		ForAllComponents([=](FSModelComponent* pc) {
+			if (auto scripted = dynamic_cast<FSScriptedComponent*>(pc))
+			{
+				if (scripted->scriptID == ps->GetID())
+					ps->IncRef();
+			}
+			});
+	}
 }

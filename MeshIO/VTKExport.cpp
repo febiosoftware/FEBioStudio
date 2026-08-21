@@ -27,9 +27,9 @@ SOFTWARE.*/
 #include "VTKExport.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
-#include <FEMLib/FSProject.h>
+#include <FEMLib/FSModel.h>
 
-VTKExport::VTKExport(FSProject& prj) : FSFileExport(prj)
+VTKExport::VTKExport(FSModel& fem) : m_fem(fem)
 {
 	m_ops.bpartIds = true;
 	m_ops.bshellthick = false;
@@ -76,8 +76,7 @@ bool VTKExport::Write(const char* szfile)
 	bool isTet4 = false;
 	bool isTet10 = false;
 
-	FSModel* ps = &m_prj.GetFSModel();
-	GModel& model = ps->GetModel();
+	GModel& model = m_fem.GetModel();
 
 	int totElems = 0;
 	int nodesPerElem = 0;

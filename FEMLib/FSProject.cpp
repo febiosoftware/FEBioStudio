@@ -43,151 +43,9 @@ SOFTWARE.*/
 #include <unordered_set>
 using namespace std;
 
-//=================================================================================================
-CLogDataSettings::CLogDataSettings() : m_fem(nullptr)
+FSProject::FSProject(void)
 {
-}
-
-CLogDataSettings::~CLogDataSettings()
-{
-	ClearLogData();
-}
-
-void CLogDataSettings::ClearLogData()
-{ 
-	for (auto p : m_log) delete p;
-	m_log.clear();
-}
-
-void CLogDataSettings::SetFSModel(FSModel* fem) { m_fem = fem; }
-
-FSLogData& CLogDataSettings::LogData(int i) { return *m_log[i]; }
-void CLogDataSettings::AddLogData(FSLogData* d) { m_log.push_back(d); }
-
-void CLogDataSettings::RemoveLogData(int item)
-{
-	delete m_log[item];
-	m_log.erase(m_log.begin() + item);
-}
-
-void CLogDataSettings::Save(OArchive& ar)
-{
-	const int N = (int) m_log.size();
-	for (int i = 0; i<N; ++i)
-	{
-		FSLogData& v = *m_log[i];
-		ar.BeginChunk(CID_PRJ_LOGDATA_ITEM);
-		{
-			ar.WriteChunk(CID_PRJ_LOGDATA_TYPE, v.Type());
-			ar.WriteChunk(CID_PRJ_LOGDATA_DATA, v.GetDataString());
-			ar.WriteChunk(CID_PRJ_LOGDATA_FILE, v.GetFileName());
-
-			switch (v.Type())
-			{
-			case FSLogData::LD_NODE:
-			case FSLogData::LD_ELEM:
-			case FSLogData::LD_FACE:
-			case FSLogData::LD_SURFACE:
-			case FSLogData::LD_DOMAIN:
-			{
-				FSHasOneItemList* pil = dynamic_cast<FSHasOneItemList*>(&v); assert(pil);
-				if (pil)
-				{
-					FSItemListBuilder* pl = pil->GetItemList();
-					if (pl) ar.WriteChunk(CID_PRJ_LOGDATA_GID, pl->GetID());
-				}
-			}
-			break;
-			case FSLogData::LD_RIGID:
-			{
-				FSLogRigidData* prd = dynamic_cast<FSLogRigidData*>(&v); assert(prd);
-				if (prd) ar.WriteChunk(CID_PRJ_LOGDATA_MID, prd->GetMatID());
-			}
-			break;
-			case FSLogData::LD_CNCTR:
-			{
-				FSLogConnectorData* prc = dynamic_cast<FSLogConnectorData*>(&v); assert(prc);
-				if (prc) ar.WriteChunk(CID_PRJ_LOGDATA_CID, prc->GetConnectorID());
-			}
-			break;
-			default:
-				assert(false);
-			}
-		}
-		ar.EndChunk();
-	}
-}
-
-void CLogDataSettings::Load(IArchive& ar)
-{
-	while (IArchive::IO_OK == ar.OpenChunk())
-	{
-		if (ar.GetChunkID() == CID_PRJ_LOGDATA_ITEM)
-		{
-			string data, file;
-			int ntype = -1;
-			int mid = -1, gid = -1, cid = -1;
-			while (IArchive::IO_OK == ar.OpenChunk())
-			{
-				switch (ar.GetChunkID())
-				{
-				case CID_PRJ_LOGDATA_TYPE: ar.read(ntype); break;
-				case CID_PRJ_LOGDATA_DATA: ar.read(data); break;
-				case CID_PRJ_LOGDATA_MID : ar.read(mid); break;
-				case CID_PRJ_LOGDATA_GID : ar.read(gid); break;
-                case CID_PRJ_LOGDATA_CID : ar.read(cid); break;
-				case CID_PRJ_LOGDATA_FILE: ar.read(file); break;
-				}
-				ar.CloseChunk();
-			}
-
-			GModel& gm = m_fem->GetModel();
-
-			FSLogData* ld = nullptr;
-			switch (ntype)
-			{
-			case FSLogData::LD_NODE   : ld = new FSLogNodeData(gm.FindNamedSelection(gid)); break;
-			case FSLogData::LD_FACE   : ld = new FSLogFaceData(gm.FindNamedSelection(gid)); break;
-			case FSLogData::LD_SURFACE: ld = new FSLogSurfaceData(gm.FindNamedSelection(gid)); break;
-			case FSLogData::LD_ELEM   : ld = new FSLogElemData(gm.FindNamedSelection(gid)); break;
-			case FSLogData::LD_DOMAIN : ld = new FSLogDomainData(gm.FindNamedSelection(gid)); break;
-			case FSLogData::LD_RIGID  : ld = new FSLogRigidData(mid); break;
-			case FSLogData::LD_CNCTR  : ld = new FSLogConnectorData(cid); break;
-			default:
-				assert(false);
-			}
-
-			if (ld)
-			{
-				ld->SetDataString(data);
-				ld->SetFileName(file);
-				AddLogData(ld);
-			}
-		}
-		ar.CloseChunk();
-	}
-}
-
-//=================================================================================================
-//-----------------------------------------------------------------------------
-// constructor
-FSProject::FSProject(void) : m_plt(*this)
-{
-	// set the title
-	m_title = "untitled";
-
-	m_module = -1;
-
-	m_units = 0; // 0 = no unit system
-
-	m_log.SetFSModel(&m_fem);
-
-	static bool init = false;
-	if (init == false)
-	{
-		InitModules();
-		init = true;
-	}
+	InitModules();
 }
 
 //-----------------------------------------------------------------------------
@@ -201,49 +59,6 @@ FSProject::~FSProject(void)
 void FSProject::Reset()
 {
 	m_fem.Reset();
-	m_plt.Init();
-}
-
-//-----------------------------------------------------------------------------
-int FSProject::GetModule() const
-{
-	return m_module;// FEBio::GetActiveModule();
-}
-
-//-----------------------------------------------------------------------------
-std::string FSProject::GetModuleName() const
-{
-	int mod = FEBio::GetActiveModule();
-	assert(mod == m_module);
-	return FEBio::GetModuleName(mod);
-}
-
-//-----------------------------------------------------------------------------
-void FSProject::SetModule(int mod, bool setDefaultPlotVariables)
-{
-	m_module = mod;
-	FEBio::SetActiveModule(mod);
-
-	// get the list of variables
-	if (mod != -1)
-	{
-		FSModel& fem = GetFSModel();
-		FEBio::InitFSModel(fem);
-
-		if (setDefaultPlotVariables)
-		{
-			m_plt.Clear();
-			// add some default variables
-			// TODO: Maybe I can pull this info from FEBio somehow
-			SetDefaultPlotVariables();
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void FSProject::SetTitle(const std::string& title)
-{ 
-	m_title = title; 
 }
 
 //-----------------------------------------------------------------------------
@@ -251,7 +66,7 @@ void FSProject::SetTitle(const std::string& title)
 void FSProject::Save(OArchive& ar)
 {
 	// save the title
-	ar.WriteChunk(CID_PRJ_TITLE   , m_title);
+	ar.WriteChunk(CID_PRJ_TITLE   , m_fem.GetTitle());
 
 	// save the modules flag
 	int module = FEBio::GetActiveModule();
@@ -266,23 +81,25 @@ void FSProject::Save(OArchive& ar)
 	ar.EndChunk();
 
 	// save the output data
-	int N = m_plt.PlotVariables();
+	CPlotDataSettings& plt = m_fem.GetPlotDataSettings();
+	int N = plt.PlotVariables();
 	if (N > 0)
 	{
 		ar.BeginChunk(CID_PRJ_OUTPUT);
 		{
-			m_plt.Save(ar);
+			plt.Save(ar);
 		}
 		ar.EndChunk();
 	}
 
 	// save the logfile data
-	N = m_log.LogDataSize();
+	CLogDataSettings& log = m_fem.GetLogDataSettings();
+	N = log.LogDataSize();
 	if (N > 0)
 	{
 		ar.BeginChunk(CID_PRJ_LOGDATA);
 		{
-			m_log.Save(ar);
+			log.Save(ar);
 		}
 		ar.EndChunk();
 	}
@@ -309,13 +126,22 @@ void FSProject::Load(IArchive &ar)
 {
 	TRACE("FSProject::Load");
 
+	CPlotDataSettings& plt = m_fem.GetPlotDataSettings();
+	CLogDataSettings& log = m_fem.GetLogDataSettings();
+
 	int moduleId = FEBio::GetModuleId("solid");
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case CID_PRJ_TITLE  : ar.read(m_title); break;
+		case CID_PRJ_TITLE:
+		{
+			std::string title;
+			ar.read(title);
+			m_fem.SetTitle(title);
+		}
+		break;
 		case CID_PRJ_MODULES: { 
 			int oldModuleId = 0;  
 			ar.read(oldModuleId); 
@@ -333,12 +159,12 @@ void FSProject::Load(IArchive &ar)
 		{
 			// if the moduleID == -1, then this file likely requires a plugin
 			if (moduleId == -1) throw std::runtime_error("Invalid module ID.");
-			SetModule(moduleId);
+			m_fem.SetModule(moduleId);
 			m_fem.Load(ar);
 		}
 		break;
-		case CID_PRJ_OUTPUT : m_plt.Load(ar); break;
-		case CID_PRJ_LOGDATA: m_log.Load(ar); break;
+		case CID_PRJ_OUTPUT : plt.Load(ar); break;
+		case CID_PRJ_LOGDATA: log.Load(ar); break;
 		}
 		ar.CloseChunk();
 	}
@@ -397,8 +223,13 @@ int FSProject::Validate(std::string &szerr)
 	return nerrs;
 }
 
-void FSProject::InitModules()
+void InitModules()
 {
+	// make sure this is only called once
+	static bool init = false;
+	if (init) return;
+	init = true;
+
 	// register material categories
 	FEMaterialFactory::AddCategory("elastic"             , MODULE_MECH               , FE_MAT_ELASTIC);
 	FEMaterialFactory::AddCategory("uncoupled elastic"   , MODULE_MECH               , FE_MAT_ELASTIC_UNCOUPLED);
@@ -580,45 +411,10 @@ void FSProject::InitModules()
 }
 
 //-------------------------------------------------------------------------------------------------
-void FSProject::SetUnits(int units)
-{
-	m_units = units;
-}
-
-//-------------------------------------------------------------------------------------------------
-int FSProject::GetUnits() const
-{
-	return m_units;
-}
-
-void FSProject::PurgeSelections()
-{
-	int nlogs = m_log.LogDataSize();
-	for (int i = 0; i < m_log.LogDataSize(); )
-	{
-		FSHasOneItemList* pl = dynamic_cast<FSHasOneItemList*>(&m_log.LogData(i));
-		if (pl) 
-		{
-			if (pl->GetItemList()) m_log.RemoveLogData(i);
-			else i++;
-		}
-		else i++;
-	}
-
-	for (int i = 0; i < m_plt.PlotVariables(); ++i)
-	{
-		CPlotVariable& plt = m_plt.PlotVariable(i);
-		plt.removeAllDomains();
-	}
-
-	m_fem.ClearSelections();
-}
-
-//-------------------------------------------------------------------------------------------------
 void FSProject::GetActivePluginIDs(std::unordered_set<int>& allocatorIDs)
 {
     // Get the module allocator ID
-    allocatorIDs.insert(FEBio::GetModuleAllocatorID(m_module));
+    allocatorIDs.insert(FEBio::GetModuleAllocatorID(m_fem.GetModule()));
 
     m_fem.GetActivePluginIDs(allocatorIDs);
 
@@ -627,136 +423,6 @@ void FSProject::GetActivePluginIDs(std::unordered_set<int>& allocatorIDs)
 }
 
 //-------------------------------------------------------------------------------------------------
-void FSProject::SetDefaultPlotVariables()
-{
-	int moduleId = GetModule();
-	const char* szmod = FEBio::GetModuleName(moduleId); assert(szmod);
-	if (szmod == nullptr) return;
-	if (strcmp(szmod, "solid") == 0)
-	{
-		m_plt.AddPlotVariable("displacement", true);
-		m_plt.AddPlotVariable("stress", true);
-		m_plt.AddPlotVariable("relative volume", true);
-	}
-	else if (strcmp(szmod, "biphasic") == 0)
-	{
-		m_plt.AddPlotVariable("displacement", true);
-		m_plt.AddPlotVariable("stress", true);
-		m_plt.AddPlotVariable("relative volume", true);
-		m_plt.AddPlotVariable("solid stress", true);
-		m_plt.AddPlotVariable("effective fluid pressure", true);
-        m_plt.AddPlotVariable("fluid pressure", true);
-		m_plt.AddPlotVariable("fluid flux", true);
-	}
-	else if (strcmp(szmod, "heat") == 0)
-	{
-		m_plt.AddPlotVariable("temperature", true);
-		m_plt.AddPlotVariable("heat flux", true);
-	}
-	else if ((strcmp(szmod, "multiphasic") == 0) || (strcmp(szmod, "solute") == 0))
-	{
-		m_plt.AddPlotVariable("displacement", true);
-		m_plt.AddPlotVariable("stress", true);
-		m_plt.AddPlotVariable("relative volume", true);
-		m_plt.AddPlotVariable("solid stress", true);
-		m_plt.AddPlotVariable("fluid flux", true);
-		m_plt.AddPlotVariable("effective fluid pressure", true);
-		m_plt.AddPlotVariable("effective solute concentration", true);
-		m_plt.AddPlotVariable("solute concentration", true);
-		m_plt.AddPlotVariable("solute flux", true);
-	}
-	else if (strcmp(szmod, "fluid") == 0)
-	{
-        m_plt.AddPlotVariable("displacement", true);
-		m_plt.AddPlotVariable("fluid pressure", true);
-		m_plt.AddPlotVariable("nodal fluid velocity", true);
-		m_plt.AddPlotVariable("fluid stress", true);
-		m_plt.AddPlotVariable("fluid velocity", true);
-		m_plt.AddPlotVariable("fluid acceleration", true);
-		m_plt.AddPlotVariable("fluid vorticity", true);
-		m_plt.AddPlotVariable("fluid rate of deformation", true);
-		m_plt.AddPlotVariable("fluid dilatation", true);
-		m_plt.AddPlotVariable("fluid volume ratio", true);
-	}
-	else if (strcmp(szmod, "fluid-FSI") == 0)
-	{
-		m_plt.AddPlotVariable("displacement", true);
-		m_plt.AddPlotVariable("velocity", true);
-		m_plt.AddPlotVariable("acceleration", true);
-		m_plt.AddPlotVariable("fluid pressure", true);
-		m_plt.AddPlotVariable("fluid stress", true);
-		m_plt.AddPlotVariable("fluid velocity", true);
-		m_plt.AddPlotVariable("fluid acceleration", true);
-		m_plt.AddPlotVariable("fluid vorticity", true);
-		m_plt.AddPlotVariable("fluid rate of deformation", true);
-		m_plt.AddPlotVariable("fluid dilatation", true);
-		m_plt.AddPlotVariable("fluid volume ratio", true);
-        m_plt.AddPlotVariable("nodal fluid flux", true);
-	}
-    else if (strcmp(szmod, "fluid-solutes") == 0)
-    {
-        m_plt.AddPlotVariable("displacement", true);
-        m_plt.AddPlotVariable("effective fluid pressure", true);
-        m_plt.AddPlotVariable("effective solute concentration", true);
-        m_plt.AddPlotVariable("fluid acceleration", true);
-        m_plt.AddPlotVariable("fluid dilatation", true);
-        m_plt.AddPlotVariable("fluid pressure", true);
-        m_plt.AddPlotVariable("fluid rate of deformation", true);
-        m_plt.AddPlotVariable("fluid stress", true);
-        m_plt.AddPlotVariable("fluid velocity", true);
-        m_plt.AddPlotVariable("fluid volume ratio", true);
-        m_plt.AddPlotVariable("fluid vorticity", true);
-        m_plt.AddPlotVariable("nodal fluid velocity", true);
-        m_plt.AddPlotVariable("solute concentration", true);
-        m_plt.AddPlotVariable("solute flux", true);
-    }
-    else if (strcmp(szmod, "thermo-fluid") == 0)
-    {
-        m_plt.AddPlotVariable("displacement", true);
-        m_plt.AddPlotVariable("effective fluid pressure", true);
-        m_plt.AddPlotVariable("fluid acceleration", true);
-        m_plt.AddPlotVariable("fluid dilatation", true);
-        m_plt.AddPlotVariable("fluid heat flux", true);
-        m_plt.AddPlotVariable("fluid isobaric specific heat capacity", true);
-        m_plt.AddPlotVariable("fluid isochoric specific heat capacity", true);
-        m_plt.AddPlotVariable("nodal fluid temperature", true);
-        m_plt.AddPlotVariable("nodal fluid velocity", true);
-        m_plt.AddPlotVariable("fluid pressure", true);
-        m_plt.AddPlotVariable("fluid rate of deformation", true);
-        m_plt.AddPlotVariable("fluid specific free energy", true);
-        m_plt.AddPlotVariable("fluid specific entropy", true);
-        m_plt.AddPlotVariable("fluid specific internal energy", true);
-        m_plt.AddPlotVariable("fluid specific gauge enthalpy", true);
-        m_plt.AddPlotVariable("fluid specific free enthalpy", true);
-        m_plt.AddPlotVariable("fluid specific strain energy", true);
-        m_plt.AddPlotVariable("fluid stress", true);
-        m_plt.AddPlotVariable("fluid temperature", true);
-        m_plt.AddPlotVariable("fluid thermal conductivity" , true);
-        m_plt.AddPlotVariable("fluid velocity", true);
-        m_plt.AddPlotVariable("fluid volume ratio", true);
-        m_plt.AddPlotVariable("fluid vorticity", true);
-    }
-    else if (strcmp(szmod, "polar fluid") == 0)
-    {
-        m_plt.AddPlotVariable("displacement", true);
-        m_plt.AddPlotVariable("fluid pressure", true);
-        m_plt.AddPlotVariable("nodal fluid velocity", true);
-        m_plt.AddPlotVariable("fluid stress", true);
-        m_plt.AddPlotVariable("fluid velocity", true);
-        m_plt.AddPlotVariable("fluid acceleration", true);
-        m_plt.AddPlotVariable("fluid vorticity", true);
-        m_plt.AddPlotVariable("fluid rate of deformation", true);
-        m_plt.AddPlotVariable("fluid dilatation", true);
-        m_plt.AddPlotVariable("fluid volume ratio", true);
-        m_plt.AddPlotVariable("nodal polar fluid angular velocity", true);
-        m_plt.AddPlotVariable("polar fluid stress", true);
-        m_plt.AddPlotVariable("polar fluid couple stress", true);
-        m_plt.AddPlotVariable("polar fluid angular velocity", true);
-        m_plt.AddPlotVariable("polar fluid relative angular velocity", true);
-        m_plt.AddPlotVariable("polar fluid regional angular velocity", true);
-    }
-}
-
 bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
 {
 	// we try to copy the parameter value, but we need to make sure
@@ -908,7 +574,7 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
 		default:
 			assert(false);
 		}
-		m_module = FEBio::GetActiveModule();
+		m_fem.SetModule(FEBio::GetActiveModule(), false);
 	}
 
 	ConvertMaterials(log);

@@ -27,20 +27,21 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <PostLib/FEDataManager.h>
 #include <PostLib/constants.h>
+#include <FSCore/ClassDescriptor.h>
 
 typedef unsigned char byte;
 
 using namespace Post;
 
 //-----------------------------------------------------------------------------
-extern int ET_HEX[12][2];
-extern int ET_HEX20[12][3];
-extern int ET_TET[6][2];
-extern int ET_PENTA[9][2];
-extern int ET_PENTA15[9][3];
-extern int ET_TET10[6][3];
-extern int ET_PYRA5[8][2];
-extern int ET_PYRA13[8][3];
+extern int EL_HEX[12][2];
+extern int EL_HEX20[12][3];
+extern int EL_TET[6][2];
+extern int EL_PENTA[9][2];
+extern int EL_PENTA15[9][3];
+extern int EL_TET10[6][3];
+extern int EL_PYRA5[8][2];
+extern int EL_PYRA13[8][3];
 
 //-----------------------------------------------------------------------------
 // constructor
@@ -1074,6 +1075,19 @@ void CGLModel::AddPlot(CGLPlot* pplot, bool update)
 	if (update) pplot->Update(CurrentTimeIndex(), 0.f, true);
 }
 
+CGLPlot* CGLModel::AddPlot(const std::string& name, const std::string& type)
+{
+	FSObject* obj = ClassKernel::CreateClass(CLASS_PLOT, type.c_str());
+	CGLPlot* plt = dynamic_cast<CGLPlot*>(obj);
+	if (plt)
+	{
+		plt->SetName(name);
+		AddPlot(plt, true);
+	}
+	else delete obj;
+	return plt;
+}
+
 void CGLModel::RemovePlot(Post::CGLPlot* pplot)
 {
 	m_pPlot.Remove(pplot);
@@ -1082,6 +1096,16 @@ void CGLModel::RemovePlot(Post::CGLPlot* pplot)
 void CGLModel::ClearPlots()
 {
 	m_pPlot.Clear();
+}
+
+CGLPlot* CGLModel::FindPlot(const std::string& name)
+{
+	for (int i = 0; i < Plots(); ++i)
+	{
+		CGLPlot* plot = Plot(i);
+		if (plot->GetName() == name) return plot;
+	}
+	return nullptr;
 }
 
 void CGLModel::MovePlotUp(Post::CGLPlot* plot)

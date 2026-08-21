@@ -88,6 +88,7 @@ SOFTWARE.*/
 #include <vector>
 #include "HTMLBrowser.h"
 #include "PythonEditor.h"
+#include "CodeEditor.h"
 #include "MainMenu.h"
 #include "PluginManager.h"
 #include <PyLib/PythonRunner.h>
@@ -288,6 +289,7 @@ public:
 	::CMeshInspector* meshWnd = nullptr;
 	::CDlgScreenCapture* imageView = nullptr;
 	::CPythonEditor* pythonEditor = nullptr;
+	::CCodeEditor* codeEditor = nullptr;
 
 	CDlgPartViewer* partViewer = nullptr;
 

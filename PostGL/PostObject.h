@@ -41,7 +41,7 @@ public:
 
 	void UpdateMesh() override;
 
-	BOX GetBoundingBox();
+	BoundingBox GetBoundingBox();
 
 	void BuildFERenderMesh() override;
 

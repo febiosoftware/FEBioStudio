@@ -107,6 +107,7 @@ SOFTWARE.*/
 #include "RemoteJob.h"
 #include "DlgRemoteProgress.h"
 #include <FSCore/FSLogger.h>
+#include <FSCore/util.h>
 #include "PropertyList.h"
 #include "FileProcessor.h"
 #include "modelcheck.h"
@@ -1962,7 +1963,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("lighting", vs.m_bLighting);
 		settings.setValue("ambientLight", vs.m_ambient);
 		settings.setValue("diffuseLight", vs.m_diffuse);
-		settings.setValue("lightDirection", Vec3fToString(vs.m_light));
+		settings.setValue("lightDirection", QString::fromStdString(Vec3fToString(vs.m_light)));
 		settings.setValue("environmentMap", fbs.m_envMapFile);
 		settings.setValue("useEnvironmentMap", vs.m_use_environment_map);
 
@@ -2128,7 +2129,7 @@ void CMainWindow::readSettings()
 		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
 		vs.m_ambient = settings.value("ambientLight", vs.m_ambient).toDouble();
 		vs.m_diffuse = settings.value("diffuseLight", vs.m_diffuse).toDouble();
-		vs.m_light = StringToVec3f(settings.value("lightDirection", "{0.5,0.5,1}").toString());
+		vs.m_light = StringToVec3f(settings.value("lightDirection", "{0.5,0.5,1}").toString().toStdString());
 		QString envmap = settings.value("environmentMap").toString();
 		fbs.m_envMapFile = envmap;
 		vs.m_use_environment_map = settings.value("useEnvironmentMap", false).toBool();
@@ -3269,24 +3270,25 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 	string err;
 
 	// pass the units to the model project
-	doc->GetProject().SetUnits(doc->GetUnitSystem());
+	FSModel& fem = *doc->GetFSModel();
+	fem.SetUnits(doc->GetUnitSystem());
 
 	FEBioExport* writer = nullptr;
 	if (febioFileVersion == 0x0205)
 	{
-		FEBioExport25* feb = new FEBioExport25(doc->GetProject());
+		FEBioExport25* feb = new FEBioExport25(fem);
 		feb->SetExportSelectionsFlag(true);
 		writer = feb;
 	}
 	else if (febioFileVersion == 0x0300)
 	{
-		FEBioExport3* feb = new FEBioExport3(doc->GetProject());
+		FEBioExport3* feb = new FEBioExport3(fem);
 		feb->SetExportSelectionsFlag(true);
 		writer = feb;
 	}
 	else if (febioFileVersion == 0x0400)
 	{
-		FEBioExport4* feb = new FEBioExport4(doc->GetProject());
+		FEBioExport4* feb = new FEBioExport4(fem);
 		feb->SetMixedMeshFlag(allowHybridMesh);
 		feb->SetProgressTracker(prg);
 		writer = feb;
@@ -3749,4 +3751,67 @@ void CMainWindow::on_htmlview_anchorClicked(QUrl link)
 			QMetaObject::invokeMethod(this, [this, fileName]() { OpenFile(fileName, false, false); }, Qt::QueuedConnection);
 		}
 	}
+}
+
+void CMainWindow::OpenCodeEditor(const QString& scriptName)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	FSModel* fem = doc->GetFSModel();
+	if (fem == nullptr) return;
+
+	FEBCodeScript* script = fem->GetScript(scriptName.toStdString());
+	if (script == nullptr)
+	{
+		QMessageBox::critical(this, "Code Editor", "Failed to open script " + scriptName + ".");
+		return;
+	}
+
+	OpenCodeEditor(script);
+}
+
+void CMainWindow::OpenCodeEditor(int scriptID)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	FSModel* fem = doc->GetFSModel();
+	if (fem == nullptr) return;
+
+	FEBCodeScript* script = fem->GetScriptFromID(scriptID);
+	if (script == nullptr)
+	{
+		QMessageBox::critical(this, "Code Editor", "Failed to open script with ID " + QString::number(scriptID) + ".");
+		return;
+	}
+
+	OpenCodeEditor(script);
+}
+
+void CMainWindow::OpenCodeEditor(FEBCodeScript* script)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	if (script == nullptr) return;
+	if (ui->codeEditor == nullptr) ui->codeEditor = new ::CCodeEditor(this);
+	ui->codeEditor->show();
+	ui->codeEditor->raise();
+	ui->codeEditor->activateWindow();
+	ui->codeEditor->SetScript(doc, script);
+}
+
+void CMainWindow::onClosingCodeEditor(FEBCodeScript* script)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	FSModel* fem = doc->GetFSModel();
+	if (fem == nullptr) return;
+
+	// update all script dependencies
+	fem->UpdateScriptDependencies(script);
+
+	UpdateModel();
 }

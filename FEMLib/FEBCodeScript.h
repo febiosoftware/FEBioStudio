@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2026 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,25 +24,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <exception>
+#include <string>
+#include <FSCore/FSObject.h>
+#include <FECore/FEScriptedBehavior.h>
 
-class pyGenericExcept: public std::exception
+class FEBCodeScript : public FSObject
 {
 public:
-    const char * err;
+	FEBCodeScript(const std::string& name, const std::string& code);
 
-    pyGenericExcept(const char* err) : err(err) { }
+	void SetScriptContext(const ScriptContext& c) { context = c; }
+	ScriptContext GetScriptContext() const { return context; }
 
-    virtual const char* what() const throw()
-    {
-        return err;
-    }
-};
+	void SetID(int n) { id = n; }
+	int GetID() const { return id; }
 
-class pyNoModelDocExcept: public std::exception
-{
-    virtual const char* what() const throw()
-    {
-        return "There is no model document open.";
-    }
+	void SetCode(const std::string& s) { code = s; }
+	std::string GetCode() const { return code; }
+
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
+public:
+	// reference counting for keeping track of how many components are using this script
+	void ResetRefCount() { m_refs = 0; }
+	void IncRef() { m_refs++; }
+	void DecRef() { if (m_refs > 0) m_refs--; }
+	int GetRefCount() const { return m_refs; }
+
+private:
+	int id; // unique ID for the script, assigned by the model when the script is added to the model
+	std::string code;
+	ScriptContext context;
+
+	int m_refs = 0;
 };

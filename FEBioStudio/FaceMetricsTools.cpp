@@ -29,14 +29,15 @@ SOFTWARE.*/
 #include <GLLib/GDecoration.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FSMesh.h>
+#include <FSCore/util.h>
 
 QVariant CFaceMetricsTool::GetPropertyValue(int i)
 {
 	switch (i)
 	{
 	case 0: return m_nsel; break;
-	case 1: return Vec3dToString(m_N); break;
-	case 2: return Vec3dToString(m_c); break;
+	case 1: return QString::fromStdString(Vec3dToString(m_N)); break;
+	case 2: return QString::fromStdString(Vec3dToString(m_c)); break;
     case 3: return (float)m_rms; break;
 	}
 	return QVariant();

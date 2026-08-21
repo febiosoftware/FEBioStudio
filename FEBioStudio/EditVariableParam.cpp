@@ -2,9 +2,10 @@
 #include "EditVariableParam.h"
 #include <FSCore/ParamBlock.h>
 
-//-----------------------------------------------------------------------------
 CEditVariableParam::CEditVariableParam(QWidget* parent) : QComboBox(parent)
 {
+	m_param = nullptr;
+
 	addItem("<constant>");
 	addItem("<math>");
 	addItem("<map>");
@@ -13,10 +14,13 @@ CEditVariableParam::CEditVariableParam(QWidget* parent) : QComboBox(parent)
 	setInsertPolicy(QComboBox::NoInsert);
 	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-	m_param = nullptr;
+	QObject::connect(this, &QComboBox::currentIndexChanged, this, &CEditVariableParam::onCurrentIndexChanged);
+	QObject::connect(this, &QComboBox::editTextChanged, this, &CEditVariableParam::onTextChanged);
+}
 
-	QObject::connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentIndexChanged(int)));
-	QObject::connect(this, SIGNAL(editTextChanged(const QString&)), this, SLOT(onEditTextChanged(const QString&)));
+QString CEditVariableParam::text() const
+{
+	return currentText();
 }
 
 void CEditVariableParam::setParam(Param* p)
@@ -85,7 +89,7 @@ void CEditVariableParam::onCurrentIndexChanged(int index)
 	emit typeChanged();
 }
 
-void CEditVariableParam::onEditTextChanged(const QString& txt)
+void CEditVariableParam::onTextChanged(const QString& txt)
 {
 	if (txt.isEmpty()) return;
 	if (m_param == nullptr) return;

@@ -39,7 +39,7 @@ struct LSDYNAEXPORT_OPTIONS
 class LSDYNAexport : public FSFileExport
 {
 public:
-	LSDYNAexport(FSProject& prj);
+	LSDYNAexport(FSModel& fem);
 	~LSDYNAexport(void);
 
 	void SetOptions(LSDYNAEXPORT_OPTIONS o) { m_ops = o; }
@@ -56,6 +56,7 @@ protected:
 	bool write_SET_SHELL_LIST();
 
 protected:
+	FSModel& m_fem;
 	int		m_npart;	// counter for part number
 
 protected:

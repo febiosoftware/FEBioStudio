@@ -55,6 +55,7 @@ CEditVariableProperty::CEditVariableProperty(QWidget* parent) : QComboBox(parent
 	addItem("<constant>");
 	addItem("<math>");
 	addItem("<map>");
+	addItem("<code>");
 
 	setEditable(true);
 	setInsertPolicy(QComboBox::NoInsert);
@@ -171,7 +172,7 @@ public:
 		{
 			switch (section)
 			{
-			case 0: return QString("Property"); break;
+			case 0: return QString("Parameter"); break;
 			case 1: return QString("Value"); break;
 			}
 		}

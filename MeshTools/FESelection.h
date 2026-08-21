@@ -60,7 +60,7 @@ public:
 	bool IsMovable() const { return m_movable; }
 	void SetMovable(bool b) { m_movable = b; }
 
-	BOX GetBoundingBox() { return m_box; }
+	BoundingBox GetBoundingBox() { return m_box; }
 	vec3d GetPivot() { return m_box.Center(); };
 	int Size();
 
@@ -84,7 +84,7 @@ protected:
 	virtual int Count() const = 0;
 
 protected:
-	BOX		m_box;
+	BoundingBox		m_box;
 	int		m_nsize;
 	int		m_ntype;
 	bool	m_movable;

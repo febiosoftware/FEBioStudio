@@ -198,7 +198,7 @@ GLMesh* STLReader::BuildMesh()
 	int NF = (int)m_Face.size();
 
 	// find the bounding box of the model
-	BOX& b = m_box = BoundingBox();
+	BoundingBox& b = m_box = GetBoundingBox();
 	double h = 0.01 * b.GetMaxExtent();
 	b.Inflate(h, h, h);
 	vec3d r0(b.x0, b.y0, b.z0);
@@ -273,7 +273,7 @@ GLMesh* STLReader::BuildMesh()
 
 int STLReader::FindBox(const vec3d& r)
 {
-	BOX& b = m_box;
+	BoundingBox& b = m_box;
 	int i = (int)(m_NB * (r.x - b.x0) / (b.x1 - b.x0));
 	int j = (int)(m_NB * (r.y - b.y0) / (b.y1 - b.y0));
 	int k = (int)(m_NB * (r.z - b.z0) / (b.z1 - b.z0));
@@ -305,11 +305,11 @@ int STLReader::find_node(const vec3d& r, const double eps)
 	return nd.n;
 }
 
-BOX STLReader::BoundingBox()
+BoundingBox STLReader::GetBoundingBox()
 {
 	std::list<FACET>::iterator pf = m_Face.begin();
 	vec3d r = vec3d(pf->v1[0], pf->v1[1], pf->v1[2]);
-	BOX b(r, r);
+	BoundingBox b(r, r);
 	for (pf = m_Face.begin(); pf != m_Face.end(); ++pf)
 	{
 		b += vec3d(pf->v1[0], pf->v1[1], pf->v1[2]);

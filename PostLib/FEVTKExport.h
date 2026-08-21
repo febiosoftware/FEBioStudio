@@ -61,7 +61,7 @@ private:
 private:
 	bool UpdateData(bool bsave) override;
 
-private:
+public:
 	bool	m_bwriteAllStates;	// write all states
 	bool	m_bselElemsOnly;	// only output selected elements
 	bool	m_bwriteSeriesFile;	// write the vtk.series file (only for writeAllStates)

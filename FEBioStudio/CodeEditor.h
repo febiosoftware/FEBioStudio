@@ -23,42 +23,46 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include "PointCloud3d.h"
+#include <QMainWindow>
+#include "Document.h"
+#include <vector>
 
-class Quadric
+namespace Ui {
+	class CCodeEditor;
+}
+
+class CDocument;
+class CMainWindow;
+class FEBCodeScript;
+
+class CCodeEditor : public QMainWindow, public CDocObserver
 {
-public:
-    Quadric() {}
-    Quadric(PointCloud3d& pc) { m_pc = &pc; }
-    Quadric(Quadric* q);
-    Quadric(const Quadric& q);
-    ~Quadric();
-    
-public:
-    // assign a point cloud to this bivariate spline object
-    void SetPointCloud3d(PointCloud3d* pc) { m_pc = new PointCloud3d(pc); }
-    
-    // fit the point cloud to get quadric surface coefficients
-    bool GetQuadricCoeficients();
-    
-    // Evaluate the surface normal at point p
-    vec3d SurfaceNormal(const vec3d p);
-    
-    // Evaluate the surface principal curvatures kappa and directions v at point p
-    void SurfaceCurvature(const vec3d p, const vec3d n, vec2d& kappa, vec3d* v);
-    
-    // Find ray-quadric surface intersections x: p is point on ray, n is normal along ray
-    void RayQuadricIntersection(const vec3d p, const vec3d n, std::vector<vec3d>* x, std::vector<double>* t = nullptr);
-    
-    // Find the point on the quadric closest to the point p
-    vec3d ClosestPoint(const vec3d p);
-    
-    // Find the point on the quadric closest to the point p
-    vec3d ClosestPoint(const vec3d p, const vec3d norm);
+	Q_OBJECT
 
 public:
-    double          m_c[10];    // quadric surface coefficients
-    PointCloud3d*   m_pc;       // pointer to point cloud
+	CCodeEditor(CMainWindow* wnd);
+
+	void closeEvent(QCloseEvent* event) override;
+
+	void SetScript(CDocument* doc, FEBCodeScript* script);
+
+public:
+	void DocumentDelete() override;
+
+signals:
+	void ClosingEditor(FEBCodeScript* script);
+
+private slots:
+	void on_actionOpen_triggered();
+	void on_actionSave_triggered();
+	void on_actionCheck_triggered();
+	void on_edit_textChanged();
+
+private:
+	void updateWindowTitle();
+
+private:
+	Ui::CCodeEditor* ui;
+	CMainWindow* mainWnd;
 };

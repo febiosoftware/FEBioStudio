@@ -130,7 +130,7 @@ void CPlotVariable::removeAllDomains()
 }
 
 //=================================================================================================
-CPlotDataSettings::CPlotDataSettings(FSProject& prj) : m_prj(prj)
+CPlotDataSettings::CPlotDataSettings(FSModel& mdl) : m_fsm(mdl)
 {
 	Init();
 }
@@ -138,186 +138,28 @@ CPlotDataSettings::CPlotDataSettings(FSProject& prj) : m_prj(prj)
 void CPlotDataSettings::Init()
 {
 	m_plot.clear();
-/*
-	// add default plot file variables
-	AddPlotVariable(MODULE_MECH, "acceleration"                      );
-	AddPlotVariable(MODULE_MECH, "contact area"                      , false, true, DOMAIN_SURFACE);
-	AddPlotVariable(MODULE_MECH, "contact force"                     , false, true, DOMAIN_SURFACE);
-	AddPlotVariable(MODULE_MECH, "contact gap"                       , false, true, DOMAIN_SURFACE);
-    AddPlotVariable(MODULE_MECH, "contact penalty"                   , false, true, DOMAIN_SURFACE);
-	AddPlotVariable(MODULE_MECH, "contact pressure"                  , false, true, DOMAIN_SURFACE);
-	AddPlotVariable(MODULE_MECH, "contact stick"                     , false, true, DOMAIN_SURFACE);
-	AddPlotVariable(MODULE_MECH, "contact traction"                  , false, true, DOMAIN_SURFACE);
-	AddPlotVariable(MODULE_MECH, "current density"                   );
-    AddPlotVariable(MODULE_MECH, "damage"                            );
-    AddPlotVariable(MODULE_MECH, "density"                           );
-    AddPlotVariable(MODULE_MECH, "deviatoric fiber stretch"          );
-	AddPlotVariable(MODULE_MECH, "deviatoric strain energy density"  );
-    AddPlotVariable(MODULE_MECH, "deviatoric strong bond SED"        );
-    AddPlotVariable(MODULE_MECH, "deviatoric weak bond SED"          );
-    AddPlotVariable(MODULE_MECH, "weak bond SED"                     );
-	AddPlotVariable(MODULE_MECH, "discrete element stretch"          );
-	AddPlotVariable(MODULE_MECH, "discrete element force"            );
-	AddPlotVariable(MODULE_MECH, "displacement"                      );
-	AddPlotVariable(MODULE_MECH, "effective elasticity"              );
-    AddPlotVariable(MODULE_MECH, "elasticity"                        );
-    AddPlotVariable(MODULE_MECH, "element angular momentum"          );
-    AddPlotVariable(MODULE_MECH, "element center of mass"            );
-    AddPlotVariable(MODULE_MECH, "element kinetic energy"            );
-    AddPlotVariable(MODULE_MECH, "element linear momentum"           );
-    AddPlotVariable(MODULE_MECH, "element strain energy"             );
-    AddPlotVariable(MODULE_MECH, "element stress power"              );
-    AddPlotVariable(MODULE_MECH, "enclosed volume"                   , false, true, DOMAIN_SURFACE);
-    AddPlotVariable(MODULE_MECH, "fatigue bond fraction"             );
-    AddPlotVariable(MODULE_MECH, "fiber stretch"                     );
-    AddPlotVariable(MODULE_MECH, "fiber vector"                      );
-    AddPlotVariable(MODULE_MECH, "intact bond fraction"              );
-    AddPlotVariable(MODULE_MECH, "kinetic energy density"            );
-    AddPlotVariable(MODULE_MECH, "Lagrange strain"                   );
-    AddPlotVariable(MODULE_MECH, "infinitesimal strain"              );
-    AddPlotVariable(MODULE_MECH, "left Hencky"                       );
-    AddPlotVariable(MODULE_MECH, "left stretch"                      );
-    AddPlotVariable(MODULE_MECH, "material axes"                     );
-    AddPlotVariable(MODULE_MECH, "nested damage"                     );
-    AddPlotVariable(MODULE_MECH, "nodal contact gap"                 , false, true, DOMAIN_SURFACE);
-    AddPlotVariable(MODULE_MECH, "nodal contact pressure"            , false, true, DOMAIN_SURFACE);
-    AddPlotVariable(MODULE_MECH, "nodal contact traction"            , false, true, DOMAIN_SURFACE);
-    AddPlotVariable(MODULE_MECH, "nodal stress"                      );
-    AddPlotVariable(MODULE_MECH, "nodal surface traction"            , false, true, DOMAIN_SURFACE);
-    AddPlotVariable(MODULE_MECH, "nodal vector gap"                  );
-    AddPlotVariable(MODULE_MECH, "octahedral plastic strain"         );
-    AddPlotVariable(MODULE_MECH, "rate of deformation"               );
-    AddPlotVariable(MODULE_MECH, "reaction forces"                   );
-    AddPlotVariable(MODULE_MECH, "relative volume");
-    AddPlotVariable(MODULE_MECH, "right Hencky"                      );
-    AddPlotVariable(MODULE_MECH, "right stretch"                     );
-    AddPlotVariable(MODULE_MECH, "rigid acceleration"                );
-    AddPlotVariable(MODULE_MECH, "rigid angular acceleration"        );
-    AddPlotVariable(MODULE_MECH, "rigid angular momentum"            );
-    AddPlotVariable(MODULE_MECH, "rigid angular position"            );
-    AddPlotVariable(MODULE_MECH, "rigid angular velocity"            );
-    AddPlotVariable(MODULE_MECH, "rigid Euler"                       );
-    AddPlotVariable(MODULE_MECH, "rigid force"                       );
-    AddPlotVariable(MODULE_MECH, "rigid kinetic energy"              );
-    AddPlotVariable(MODULE_MECH, "rigid linear momentum"             );
-    AddPlotVariable(MODULE_MECH, "rigid position"                    );
-    AddPlotVariable(MODULE_MECH, "rigid rotation vector"             );
-    AddPlotVariable(MODULE_MECH, "rigid torque"                      );
-    AddPlotVariable(MODULE_MECH, "rigid velocity"                    );
-    AddPlotVariable(MODULE_MECH, "RVE generations"                   );
-    AddPlotVariable(MODULE_MECH, "RVE reforming bonds"               );
-    AddPlotVariable(MODULE_MECH, "RVE strain"                        );
-	AddPlotVariable(MODULE_MECH, "Euler angle"                       );
-    AddPlotVariable(MODULE_MECH, "shell director"                    );
-    AddPlotVariable(MODULE_MECH, "shell relative volume"             );
-    AddPlotVariable(MODULE_MECH, "shell strain"                      );
-    AddPlotVariable(MODULE_MECH, "shell thickness"                   );
-    AddPlotVariable(MODULE_MECH, "SPR stress"                        );
-    AddPlotVariable(MODULE_MECH, "specific strain energy"            );
-    AddPlotVariable(MODULE_MECH, "strain energy density"             );
-    AddPlotVariable(MODULE_MECH, "strong bond SED"                   );
-    AddPlotVariable(MODULE_MECH, "weak bond SED"                     );
-    AddPlotVariable(MODULE_MECH, "stress"                            );
-    AddPlotVariable(MODULE_MECH, "PK1 stress"                        );
-    AddPlotVariable(MODULE_MECH, "PK2 stress"                        );
-    AddPlotVariable(MODULE_MECH, "surface area"                      , false, true, DOMAIN_SURFACE);
-    AddPlotVariable(MODULE_MECH, "facet area"                        , false, true, DOMAIN_SURFACE);
-    AddPlotVariable(MODULE_MECH, "surface traction"                  , false, true, DOMAIN_SURFACE);
-    AddPlotVariable(MODULE_MECH, "uncoupled pressure"                );
-    AddPlotVariable(MODULE_MECH, "vector gap"                        );
-    AddPlotVariable(MODULE_MECH, "velocity"                          );
-    AddPlotVariable(MODULE_MECH, "yielded bond fraction"             );
-
-    AddPlotVariable(MODULE_BIPHASIC, "effective fluid pressure"          );
-    AddPlotVariable(MODULE_BIPHASIC, "effective friction coefficient"    );
-    AddPlotVariable(MODULE_BIPHASIC, "fluid pressure"                    );
-    AddPlotVariable(MODULE_BIPHASIC, "fluid flux");
-    AddPlotVariable(MODULE_BIPHASIC, "fluid flow rate", false, true, DOMAIN_SURFACE);
-    AddPlotVariable(MODULE_BIPHASIC, "fluid force"                       );
-    AddPlotVariable(MODULE_BIPHASIC, "fluid load support"                );
-    AddPlotVariable(MODULE_BIPHASIC, "local fluid load support"          );
-    AddPlotVariable(MODULE_BIPHASIC, "permeability"                      );
-    AddPlotVariable(MODULE_BIPHASIC, "porosity"                          );
-    AddPlotVariable(MODULE_BIPHASIC, "pressure gap"                      );
-    AddPlotVariable(MODULE_BIPHASIC, "referential solid volume fraction" );
-    AddPlotVariable(MODULE_BIPHASIC, "solid stress"                      );
-
-	AddPlotVariable(MODULE_MULTIPHASIC, "effective solute concentration"  );
-    AddPlotVariable(MODULE_MULTIPHASIC, "electric potential"              );
-    AddPlotVariable(MODULE_MULTIPHASIC, "fixed charge density"            );
-    AddPlotVariable(MODULE_MULTIPHASIC, "osmolarity"                      );
-    AddPlotVariable(MODULE_MULTIPHASIC, "osmotic coefficient"             );
-    AddPlotVariable(MODULE_MULTIPHASIC, "referential fixed charge density");
-	AddPlotVariable(MODULE_MULTIPHASIC, "sbm referential apparent density");
-	AddPlotVariable(MODULE_MULTIPHASIC, "sbm concentration");
-    AddPlotVariable(MODULE_MULTIPHASIC, "solid stress"                    );
-	AddPlotVariable(MODULE_MULTIPHASIC, "solute concentration");
-	AddPlotVariable(MODULE_MULTIPHASIC, "solute flux");
-
-    AddPlotVariable(MODULE_HEAT, "temperature");
-	AddPlotVariable(MODULE_HEAT, "heat flux"  );
-
-	AddPlotVariable(MODULE_REACTION_DIFFUSION, "concentration");
-	AddPlotVariable(MODULE_REACTION_DIFFUSION, "effective concentration");
-	AddPlotVariable(MODULE_REACTION_DIFFUSION, "actual concentration");
-	AddPlotVariable(MODULE_REACTION_DIFFUSION, "concentration flux");
-	AddPlotVariable(MODULE_REACTION_DIFFUSION, "sbs concentration");
-	AddPlotVariable(MODULE_REACTION_DIFFUSION, "sbs apparent density");
-	AddPlotVariable(MODULE_REACTION_DIFFUSION, "solid volume fraction");
-
-    AddPlotVariable(MODULE_FLUID, "fluid acceleration"                );
-    AddPlotVariable(MODULE_FLUID, "fluid density"                     );
-    AddPlotVariable(MODULE_FLUID, "fluid dilatation"                  );
-    AddPlotVariable(MODULE_FLUID, "fluid element angular momentum"    );
-    AddPlotVariable(MODULE_FLUID, "fluid element center of mass"      );
-    AddPlotVariable(MODULE_FLUID, "fluid element kinetic energy"      );
-    AddPlotVariable(MODULE_FLUID, "fluid element linear momentum"     );
-    AddPlotVariable(MODULE_FLUID, "fluid element strain energy"       );
-    AddPlotVariable(MODULE_FLUID, "fluid energy density"              );
-    AddPlotVariable(MODULE_FLUID, "fluid heat supply density"         );
-    AddPlotVariable(MODULE_FLUID, "fluid kinetic energy density"      );
-    AddPlotVariable(MODULE_FLUID, "fluid mass flow rate", false, true, DOMAIN_SURFACE);
-    AddPlotVariable(MODULE_FLUID, "fluid pressure"                    );
-    AddPlotVariable(MODULE_FLUID, "fluid rate of deformation"         );
-    AddPlotVariable(MODULE_FLUID, "fluid shear viscosity"             );
-    AddPlotVariable(MODULE_FLUID, "fluid strain energy density"       );
-    AddPlotVariable(MODULE_FLUID, "fluid stress"                      );
-    AddPlotVariable(MODULE_FLUID, "fluid stress power density"        );
-    AddPlotVariable(MODULE_FLUID, "fluid surface force", false, true, DOMAIN_SURFACE);
-    AddPlotVariable(MODULE_FLUID, "fluid surface energy flux", false, true, DOMAIN_SURFACE);
-    AddPlotVariable(MODULE_FLUID, "fluid surface traction power", false, true, DOMAIN_SURFACE);
-    AddPlotVariable(MODULE_FLUID, "fluid velocity"                    );
-    AddPlotVariable(MODULE_FLUID, "fluid volume ratio"                );
-    AddPlotVariable(MODULE_FLUID, "fluid vorticity"                   );
-    AddPlotVariable(MODULE_FLUID, "nodal fluid velocity"              );
-
-    AddPlotVariable(MODULE_FLUID_FSI, "nodal fluid flux"              );
-    AddPlotVariable(MODULE_FLUID_FSI, "fluid flux"                    );
-    AddPlotVariable(MODULE_FLUID_FSI, "permeability"                  );
-    AddPlotVariable(MODULE_FLUID_FSI, "porosity"                      );
-    AddPlotVariable(MODULE_FLUID_FSI, "relative fluid velocity"       );
-    AddPlotVariable(MODULE_FLUID_FSI, "solid stress"                  );
-*/
 }
 
-//-----------------------------------------------------------------------------
 void CPlotDataSettings::Clear()
 {
 	m_plot.clear();
 }
 
-//-----------------------------------------------------------------------------
 CPlotVariable* CPlotDataSettings::AddPlotVariable(const std::string& var, bool b, bool s, DOMAIN_TYPE type)
 {
 	CPlotVariable* pv = FindVariable(var);
-	if (pv) return pv;
+	if (pv)
+	{
+		pv->setActive(b);
+		pv->setShown(s);
+		return pv;
+	}
 
 	CPlotVariable v(var, b, s, type);
 	m_plot.push_back(v);
 	return &m_plot[ m_plot.size() - 1];
 }
 
-//-----------------------------------------------------------------------------
 void CPlotDataSettings::AddPlotVariable(CPlotVariable& var)
 {
 	CPlotVariable* pv = FindVariable(var.name());
@@ -328,7 +170,6 @@ void CPlotDataSettings::AddPlotVariable(CPlotVariable& var)
 	else m_plot.push_back(var);
 }
 
-//-----------------------------------------------------------------------------
 // Find a plot file variable
 CPlotVariable* CPlotDataSettings::FindVariable(const std::string& var)
 {
@@ -366,8 +207,7 @@ void CPlotDataSettings::Save(OArchive& ar)
 
 void CPlotDataSettings::Load(IArchive& ar)
 {
-	FSModel& fem = m_prj.GetFSModel();
-	GModel& mdl = fem.GetModel();
+	GModel& mdl = m_fsm.GetModel();
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		if (ar.GetChunkID() == CID_PRJ_OUTPUT_VAR)
@@ -416,5 +256,132 @@ void CPlotDataSettings::Load(IArchive& ar)
 			}
 		}
 		ar.CloseChunk();
+	}
+}
+
+void CPlotDataSettings::InitDefaultPlotVariables(const std::string& moduleName)
+{
+	if (moduleName == "solid")
+	{
+		AddPlotVariable("displacement", true);
+		AddPlotVariable("stress", true);
+		AddPlotVariable("relative volume", true);
+	}
+	else if (moduleName == "biphasic")
+	{
+		AddPlotVariable("displacement", true);
+		AddPlotVariable("stress", true);
+		AddPlotVariable("relative volume", true);
+		AddPlotVariable("solid stress", true);
+		AddPlotVariable("effective fluid pressure", true);
+		AddPlotVariable("fluid pressure", true);
+		AddPlotVariable("fluid flux", true);
+	}
+	else if (moduleName == "heat")
+	{
+		AddPlotVariable("temperature", true);
+		AddPlotVariable("heat flux", true);
+	}
+	else if ((moduleName == "multiphasic") || (moduleName == "solute"))
+	{
+		AddPlotVariable("displacement", true);
+		AddPlotVariable("stress", true);
+		AddPlotVariable("relative volume", true);
+		AddPlotVariable("solid stress", true);
+		AddPlotVariable("fluid flux", true);
+		AddPlotVariable("effective fluid pressure", true);
+		AddPlotVariable("effective solute concentration", true);
+		AddPlotVariable("solute concentration", true);
+		AddPlotVariable("solute flux", true);
+	}
+	else if (moduleName == "fluid")
+	{
+		AddPlotVariable("displacement", true);
+		AddPlotVariable("fluid pressure", true);
+		AddPlotVariable("nodal fluid velocity", true);
+		AddPlotVariable("fluid stress", true);
+		AddPlotVariable("fluid velocity", true);
+		AddPlotVariable("fluid acceleration", true);
+		AddPlotVariable("fluid vorticity", true);
+		AddPlotVariable("fluid rate of deformation", true);
+		AddPlotVariable("fluid dilatation", true);
+		AddPlotVariable("fluid volume ratio", true);
+	}
+	else if (moduleName == "fluid-FSI")
+	{
+		AddPlotVariable("displacement", true);
+		AddPlotVariable("velocity", true);
+		AddPlotVariable("acceleration", true);
+		AddPlotVariable("fluid pressure", true);
+		AddPlotVariable("fluid stress", true);
+		AddPlotVariable("fluid velocity", true);
+		AddPlotVariable("fluid acceleration", true);
+		AddPlotVariable("fluid vorticity", true);
+		AddPlotVariable("fluid rate of deformation", true);
+		AddPlotVariable("fluid dilatation", true);
+		AddPlotVariable("fluid volume ratio", true);
+		AddPlotVariable("nodal fluid flux", true);
+	}
+	else if (moduleName == "fluid-solutes")
+	{
+		AddPlotVariable("displacement", true);
+		AddPlotVariable("effective fluid pressure", true);
+		AddPlotVariable("effective solute concentration", true);
+		AddPlotVariable("fluid acceleration", true);
+		AddPlotVariable("fluid dilatation", true);
+		AddPlotVariable("fluid pressure", true);
+		AddPlotVariable("fluid rate of deformation", true);
+		AddPlotVariable("fluid stress", true);
+		AddPlotVariable("fluid velocity", true);
+		AddPlotVariable("fluid volume ratio", true);
+		AddPlotVariable("fluid vorticity", true);
+		AddPlotVariable("nodal fluid velocity", true);
+		AddPlotVariable("solute concentration", true);
+		AddPlotVariable("solute flux", true);
+	}
+	else if (moduleName == "thermo-fluid")
+	{
+		AddPlotVariable("displacement", true);
+		AddPlotVariable("effective fluid pressure", true);
+		AddPlotVariable("fluid acceleration", true);
+		AddPlotVariable("fluid dilatation", true);
+		AddPlotVariable("fluid heat flux", true);
+		AddPlotVariable("fluid isobaric specific heat capacity", true);
+		AddPlotVariable("fluid isochoric specific heat capacity", true);
+		AddPlotVariable("nodal fluid temperature", true);
+		AddPlotVariable("nodal fluid velocity", true);
+		AddPlotVariable("fluid pressure", true);
+		AddPlotVariable("fluid rate of deformation", true);
+		AddPlotVariable("fluid specific free energy", true);
+		AddPlotVariable("fluid specific entropy", true);
+		AddPlotVariable("fluid specific internal energy", true);
+		AddPlotVariable("fluid specific gauge enthalpy", true);
+		AddPlotVariable("fluid specific free enthalpy", true);
+		AddPlotVariable("fluid specific strain energy", true);
+		AddPlotVariable("fluid stress", true);
+		AddPlotVariable("fluid temperature", true);
+		AddPlotVariable("fluid thermal conductivity", true);
+		AddPlotVariable("fluid velocity", true);
+		AddPlotVariable("fluid volume ratio", true);
+		AddPlotVariable("fluid vorticity", true);
+	}
+	else if (moduleName == "polar fluid")
+	{
+		AddPlotVariable("displacement", true);
+		AddPlotVariable("fluid pressure", true);
+		AddPlotVariable("nodal fluid velocity", true);
+		AddPlotVariable("fluid stress", true);
+		AddPlotVariable("fluid velocity", true);
+		AddPlotVariable("fluid acceleration", true);
+		AddPlotVariable("fluid vorticity", true);
+		AddPlotVariable("fluid rate of deformation", true);
+		AddPlotVariable("fluid dilatation", true);
+		AddPlotVariable("fluid volume ratio", true);
+		AddPlotVariable("nodal polar fluid angular velocity", true);
+		AddPlotVariable("polar fluid stress", true);
+		AddPlotVariable("polar fluid couple stress", true);
+		AddPlotVariable("polar fluid angular velocity", true);
+		AddPlotVariable("polar fluid relative angular velocity", true);
+		AddPlotVariable("polar fluid regional angular velocity", true);
 	}
 }

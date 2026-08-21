@@ -65,6 +65,8 @@ public:
 	// boundary conditions
 	int BCs();
 	FSBoundaryCondition* BC(int i);
+	FSBoundaryCondition* FindBC(const std::string& name);
+	FSBoundaryCondition* AddBC(const std::string& name, const std::string& type);
 	void AddBC(FSBoundaryCondition* pbc);
 	void InsertBC(int n, FSBoundaryCondition* pbc);
 	int RemoveBC(FSBoundaryCondition* pbc);
@@ -75,15 +77,22 @@ public:
 	// loads
 	int Loads();
 	FSLoad* Load(int i);
+	FSLoad* FindLoad(const std::string& name);
 	void AddLoad(FSLoad* pfc);
 	void InsertLoad(int n, FSLoad* pfc);
 	int RemoveLoad(FSLoad* pfc);
 	void RemoveAllLoads();
 	FSLoad* ReplaceLoad(int n, FSLoad* pl);
 
+	FSLoad* AddNodalLoad  (const std::string& name, const std::string& type);
+	FSLoad* AddSurfaceLoad(const std::string& name, const std::string& type);
+	FSLoad* AddBodyLoad   (const std::string& name, const std::string& type);
+
 	// initial conditions
 	int ICs();
 	FSInitialCondition* IC(int i);
+	FSInitialCondition* FindIC(const std::string& name);
+	FSInitialCondition* AddIC(const std::string& name, const std::string& type);
 	void AddIC(FSInitialCondition* pic);
 	void InsertIC(int n, FSInitialCondition* pic);
 	int RemoveIC(FSInitialCondition* pic);
@@ -92,6 +101,8 @@ public:
 	// contact interfaces
 	int Interfaces();
 	FSInterface* Interface(int i);
+	FSInterface* FindInterface(const std::string& name);
+	FSInterface* AddInterface(const std::string& name, const std::string& type);
 	void AddInterface(FSInterface* pi);
 	void InsertInterface(int n, FSInterface* pi);
 	int RemoveInterface(FSInterface* pi);
@@ -102,6 +113,8 @@ public:
 	int Constraints();
 	int Constraints(int ntype);
 	FSModelConstraint* Constraint(int i);
+	FSModelConstraint* FindConstraint(const std::string& name);
+	FSModelConstraint* AddConstraint(const std::string& name, const std::string& type);
 	void AddConstraint(FSModelConstraint* pc);
 	void InsertConstraint(int n, FSModelConstraint* pc);
 	void RemoveConstraint(FSModelConstraint* pc);
@@ -160,11 +173,14 @@ public:
 	// mesh adaptors
 	int MeshAdaptors();
 	FSMeshAdaptor* MeshAdaptor(int i);
+	FSMeshAdaptor* FindMeshAdaptor(const std::string& name);
+	FSMeshAdaptor* AddMeshAdaptor(const std::string& name, const std::string& type);
 	void AddMeshAdaptor(FSMeshAdaptor* pi);
 	void InsertMeshAdaptor(int n, FSMeshAdaptor* pi);
 	int RemoveMeshAdaptor(FSMeshAdaptor* pi);
 	void RemoveAllMeshAdaptors();
 
+public:
 	// convenience functions for working with components
 	void AddComponent(FSStepComponent* pc);
 	void RemoveComponent(FSStepComponent* pc);

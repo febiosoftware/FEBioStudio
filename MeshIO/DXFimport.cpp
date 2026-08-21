@@ -273,7 +273,7 @@ void DXFimport::MakePolyFace(std::list<FACE3D> &Face)
 	// create a new polyface
 	POLYFACE* po = new POLYFACE;
 
-	BOX b;
+	BoundingBox b;
 
 	// loop over all 3D faces
 	int nn = 0;
@@ -289,7 +289,7 @@ void DXFimport::MakePolyFace(std::list<FACE3D> &Face)
 			// find the node index
 			int n = -1;
 
-			if (nn == 0) b = BOX(r, r);
+			if (nn == 0) b = BoundingBox(r, r);
 
 			if (b.IsInside(r))
 			{

@@ -28,6 +28,10 @@ SOFTWARE.*/
 #include "GModifier.h"
 #include <GeomLib/GObject.h>
 #include "FETetGenMesher.h"
+#include <MeshTools/GPLCObject.h>
+#include <GeomLib/GCurveObject.h>
+#include <memory>
+
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -40,8 +44,15 @@ GRevolveModifier::GRevolveModifier()
 
 //-----------------------------------------------------------------------------
 //! For now we assume that the axis of revolution is the y-axis
-void GRevolveModifier::Apply(GObject* po)
+GObject* GRevolveModifier::Apply(GObject* obj)
 {
+	std::unique_ptr<GObject> po;
+	if (dynamic_cast<GCurveObject*>(obj)) po.reset(obj->Clone());
+	else {
+		po = std::make_unique<GPLCObject>();
+		po->Copy(obj);
+	}
+
 	const double tol = 1.e-6;
 
 	// figure out the divisions
@@ -74,13 +85,11 @@ void GRevolveModifier::Apply(GObject* po)
 	// one side of the y-axis
 	if ((nl == 0) && (nr == 0))
 	{
-		assert(false);
-		return;
+		return nullptr;
 	}
 	if ((nl != 0) && (nr != 0))
 	{
-		assert(false);
-		return;
+		return nullptr;
 	}
 
 	// create all the new nodes
@@ -157,10 +166,11 @@ void GRevolveModifier::Apply(GObject* po)
 					n.push_back(n0);
 					for (int k = 0; k < e.m_cnode.size(); ++k) n.push_back(nn[e.m_cnode[k]] + (i + 1) * N);
 					n.push_back(n1);
-					ne[(i + 1) * E + j] = po->AddBezierSection(n); break;
+					ne[(i + 1) * E + j] = po->AddBezierSection(n);
+					break;
 				}
 				default:
-					assert(false);
+					return nullptr;
 				}
 			}
 			else ne[(i + 1)*E + j] = j;
@@ -314,13 +324,15 @@ void GRevolveModifier::Apply(GObject* po)
 
 	// find all vertices
 	po->UpdateNodeTypes();
+
+	return po.release();
 }
 
 //-----------------------------------------------------------------------------
 GLMesh* GRevolveModifier::BuildGMesh(GObject* po)
 {
 	po->GObject::BuildGMesh();
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

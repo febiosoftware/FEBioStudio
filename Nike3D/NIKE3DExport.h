@@ -28,14 +28,12 @@ SOFTWARE.*/
 #include <MeshIO/FSFileExport.h>
 #include "NIKE3DProject.h"
 
-//-----------------------------------------------------------------------------
-// This class takes an FSProject, converts it to a Nike3d project and
+// This class takes an FSModel, converts it to a Nike3d project and
 // stores it to a file.
-//
 class NIKE3DExport : public FSFileExport
 {
 public:
-	NIKE3DExport(FSProject& prj);
+	NIKE3DExport(FSModel& fem);
 	virtual ~NIKE3DExport();
 
 	bool Write(const char* szfile);
@@ -59,4 +57,5 @@ protected:
 private:
 	FILE*	m_fp;		//!< the file pointer
 	bool	m_bcomm;	//!< add comments or not?
+	FSModel& m_fem;		//!< the FE model
 };

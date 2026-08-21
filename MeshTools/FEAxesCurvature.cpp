@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <map>
 #include "PointCloud3d.h"
 #include "BivariatePolynomialSpline.h"
-#include "Quadric.h"
+#include <FECore/Quadric.h>
 using namespace std;
 
 //--------------------------------------------------------------------------------------
@@ -296,7 +296,7 @@ void FEAxesCurvature::Curvature(FSMesh* pm)
                     vec2d kappa;
                     vec3d theta[2];
                     vec3d faceNorm = pm->FaceNormal(fdata[i]);
-                    spline.SurfaceCurvature(uv.x(), uv.y(), faceNorm, kappa, theta);
+                    spline.SurfaceCurvature(uv.x, uv.y, faceNorm, kappa, theta);
                     vec3d xn = (theta[0] ^ theta[1]).Normalize();
                     mat3d X(theta[0].x, theta[1].x, xn.x,
                             theta[0].y, theta[1].y, xn.y,
@@ -319,15 +319,15 @@ void FEAxesCurvature::Curvature(FSMesh* pm)
             int numNodesCurve = (int)ncurve[0].size();
             
             //extract coordinates of each node for surface fit
-            PointCloud3d curvePoints;
+            std::vector<vec3d> curvePoints;
             
             // store the nodal coordinates into the point cloud
             for (int j = 0; j < numNodesCurve; ++j)
-                curvePoints.AddPoint(pm->Node(ncurve[0][j]).r);
+                curvePoints.push_back(pm->Node(ncurve[0][j]).r);
             
             // performs surface fitting
             Quadric quadric;
-            quadric.SetPointCloud3d(&curvePoints);
+            quadric.SetPoints(curvePoints);
             
             if (quadric.GetQuadricCoeficients()) {
                 for (int i = 0; i < numSelectedFaces; ++i)

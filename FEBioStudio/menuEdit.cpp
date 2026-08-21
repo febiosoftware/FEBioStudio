@@ -543,7 +543,7 @@ vector<int> findElementsByCoordinates(FSMesh* pm, const vec3d& p)
 
 vector<int> findNodesByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
 {
-	BOX box(r0, r1);
+	BoundingBox box(r0, r1);
 	int nmin = -1;
 	double D2min = 0;
 	vector<int> items;
@@ -562,7 +562,7 @@ vector<int> findNodesByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
 
 vector<int> findEdgesByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
 {
-	BOX box(r0, r1);
+	BoundingBox box(r0, r1);
 	vector<int> items;
 	for (int i = 0; i < pm->Edges(); ++i)
 	{
@@ -584,7 +584,7 @@ vector<int> findEdgesByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
 
 vector<int> findFacesByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
 {
-	BOX box(r0, r1);
+	BoundingBox box(r0, r1);
 	vector<int> items;
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
@@ -606,7 +606,7 @@ vector<int> findFacesByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
 
 vector<int> findElemsByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
 {
-	BOX box(r0, r1);
+	BoundingBox box(r0, r1);
 	vector<int> items;
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
@@ -1289,7 +1289,7 @@ void CMainWindow::on_actionPasteObject_triggered()
 	CCmdGroup* cmd = new CCmdGroup("Paste Objects");
 
 	// we need to make sure that the object has a unique name.
-	BOX box;
+	BoundingBox box;
 	for (int i=0; i<copyObject.size(); ++i)
 	{
 		GObject* pco = copyObject[i];
@@ -1611,12 +1611,11 @@ void CMainWindow::on_actionPurge_triggered()
 	CDlgPurge dlg(this);
 	if (dlg.exec())
 	{
-		FSProject& prj = doc->GetProject();
 		FSModel* ps = doc->GetFSModel();
 		switch (dlg.getOption())
 		{
 		case 0: ps->Purge(); break;
-		case 1: prj.PurgeSelections(); break;
+		case 1: ps->ClearSelections(); break;
 		case 2: ps->RemoveUnusedItems(); break;
 		}
 		doc->ClearCommandStack();

@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "ColorMapManager.h"
 #include <assert.h>
+#include <algorithm>
 using namespace std;
 
 class ColorMapTemplate
@@ -86,20 +87,20 @@ void ColorMapManager::Initialize()
 	if (m_map.empty() == false) return;
 
 	CColorMap map;
-	map.autumn(); AddColormap("Autumn", map);
-	map.blue(); AddColormap("Blue", map);
-	map.fire(); AddColormap("Fire", map);
-	map.gray(); AddColormap("Gray", map);
-	map.green(); AddColormap("Green", map);
-	map.hotcold(); AddColormap("Hot-Cold", map);
-	map.jet(); AddColormap("Jet", map);
-	map.parula(); AddColormap("Parula", map);
-	map.rbb(); AddColormap("RBB", map);
-	map.red(); AddColormap("Red", map);
-	map.redgreen(); AddColormap("Red-Green", map);
-	map.spring(); AddColormap("Spring", map);
-	map.summer(); AddColormap("Summer", map);
-	map.winter(); AddColormap("Winter", map);
+	map.autumn(); AddColormap("autumn", map);
+	map.blue(); AddColormap("blue", map);
+	map.fire(); AddColormap("fire", map);
+	map.gray(); AddColormap("gray", map);
+	map.green(); AddColormap("green", map);
+	map.hotcold(); AddColormap("hot-cold", map);
+	map.jet(); AddColormap("jet", map);
+	map.parula(); AddColormap("parula", map);
+	map.rbb(); AddColormap("rbb", map);
+	map.red(); AddColormap("red", map);
+	map.redgreen(); AddColormap("red-green", map);
+	map.spring(); AddColormap("spring", map);
+	map.summer(); AddColormap("summer", map);
+	map.winter(); AddColormap("winter", map);
 }
 
 string ColorMapManager::GetColorMapName(int n)
@@ -117,9 +118,13 @@ string ColorMapManager::GetColorMapName(int n)
 
 int ColorMapManager::FindColorMapFromName(const std::string& mapName)
 {
+	string s = mapName;
+	std::transform(s.begin(), s.end(), s.begin(),
+		[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
 	for (int i = 0; i < m_map.size(); ++i)
 	{
-		if (m_map[i].name() == mapName) return i;
+		if (m_map[i].name() == s) return i;
 	}
 	return -1;
 }

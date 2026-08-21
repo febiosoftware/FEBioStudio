@@ -149,10 +149,10 @@ public:
 	void SetCurrentSelection(FESelection* psel);
 
 	// get the bounding box
-	virtual BOX GetBoundingBox() { return BOX(); }
+	virtual BoundingBox GetBoundingBox() { return BoundingBox(); }
 
 	// get the selection bounding box
-	BOX GetSelectionBox();
+	BoundingBox GetSelectionBox();
 
 	virtual void UpdateSelection();
 

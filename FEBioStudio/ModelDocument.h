@@ -76,7 +76,7 @@ public:
 	// return the active object
 	GObject* GetActiveObject() override;
 
-	BOX GetModelBox();
+	BoundingBox GetModelBox();
 
 	int GetMeshMode() override;
 
@@ -102,7 +102,7 @@ public:
 	// toggle selected parts to (in)active
 	void ToggleActiveParts();
 
-	BOX GetBoundingBox() override;
+	BoundingBox GetBoundingBox() override;
 
 	void AssignColor(GPart* pg, GLColor c);
 

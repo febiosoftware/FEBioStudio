@@ -1660,3 +1660,32 @@ private:
 	GMaterial* m_gmat;
 	FSMaterial* m_props;
 };
+
+class CCmdAddScript : public CCommand
+{
+public:
+	CCmdAddScript(FSModel* fem, FEBCodeScript* script);
+	~CCmdAddScript();
+	void Execute();
+	void UnExecute();
+
+private:
+	FSModel* m_fem;
+	FEBCodeScript* m_script;
+	bool m_del;
+};
+
+class CCmdAttachScriptToComponent : public CCommand
+{
+public:
+	CCmdAttachScriptToComponent(FSScriptedComponent* component, FEBCodeScript* script);
+	void Execute();
+	void UnExecute();
+
+private:
+	FSScriptedComponent* m_comp;
+	FEBCodeScript* m_script;
+	
+	unsigned int m_oldID;
+	ScriptContext m_oldContext;
+};

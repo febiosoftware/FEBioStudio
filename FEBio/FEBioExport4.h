@@ -207,7 +207,7 @@ private:
 	};
 
 public:
-	FEBioExport4(FSProject& prj);
+	FEBioExport4(FSModel& fem);
 	virtual ~FEBioExport4();
 
 	void SetProgressTracker(ProgressTracker* prg);
@@ -222,10 +222,10 @@ public: // set export attributes
 	void SetMixedMeshFlag(bool b) { m_allowMixedParts = b; }
 
 protected:
-	bool PrepareExport(FSProject& prj);
-	void BuildItemLists(FSProject& prj);
+	bool PrepareExport();
+	void BuildItemLists();
 
-	void WriteModuleSection(FSProject& prj);
+	void WriteModuleSection();
 	void WriteControlSection(FSStep& s);
 	void WriteMaterialSection();
 	void WriteMeshSection();
@@ -251,6 +251,7 @@ protected:
 	void WriteGlobalsSection();
 	void WriteLoadDataSection();
 	void WriteOutputSection();
+	void WriteScriptsSection();
 	void WriteStepSection();
 	void WriteConstraintSection(FSStep& s);
 
@@ -296,8 +297,6 @@ protected:
 	void WriteElementList(FSElemList& el);
 
 protected:
-	FSModel* m_pfem;
-
 	bool	m_writeControlSection;	// write Control section for single step analysis
 	ProgressTracker* m_prg;
 

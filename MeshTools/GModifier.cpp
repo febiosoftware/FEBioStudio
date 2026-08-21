@@ -29,8 +29,10 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshLib/FSMesh.h>
 #include <GLLib/GLMesh.h>
+#include <MeshTools/GPLCObject.h>
+#include <memory>
 using std::list;
-//-----------------------------------------------------------------------------
+
 GModifier::GModifier(void)
 {
 }
@@ -39,20 +41,17 @@ GModifier::~GModifier(void)
 {
 }
 
-//-----------------------------------------------------------------------------
 GModifierStack::GModifierStack(GObject *po)
 {
 	m_po = po;
 	m_pmesh = 0;
 }
 
-//-----------------------------------------------------------------------------
 GModifierStack::~GModifierStack()
 {
 	Clear();
 }
 
-//-----------------------------------------------------------------------------
 void GModifierStack::Clear()
 {
 	list<GModifier*>::iterator pi = m_Mod.begin();
@@ -61,14 +60,12 @@ void GModifierStack::Clear()
 	ClearMesh();
 }
 
-//-----------------------------------------------------------------------------
 void GModifierStack::ClearMesh()
 {
 	if (m_pmesh) delete m_pmesh; 
 	m_pmesh = 0;
 }
 
-//-----------------------------------------------------------------------------
 void GModifierStack::Apply()
 {
 	// get the original mesh
@@ -83,7 +80,6 @@ void GModifierStack::Apply()
 	for (int i=0; i<(int) m_Mod.size(); ++i, ++pi) (*pi)->Apply(m_po);
 }
 
-//-----------------------------------------------------------------------------
 // Note that this function removes the modifier from the stack but it 
 // does not delete the modifier. It is assumed that the calling object
 // takes care of this.
@@ -102,7 +98,6 @@ void GModifierStack::Remove(GModifier* pm)
 	assert(false);
 }
 
-//-----------------------------------------------------------------------------
 void GModifierStack::Save(OArchive &ar)
 {
 	if (m_pmesh)
@@ -138,7 +133,6 @@ void GModifierStack::Save(OArchive &ar)
 	ar.EndChunk();
 }
 
-//-----------------------------------------------------------------------------
 void GModifierStack::Load(IArchive &ar)
 {
 	TRACE("GModifierStack::Load");
@@ -181,7 +175,6 @@ void GModifierStack::Load(IArchive &ar)
 	}
 }
 
-//-----------------------------------------------------------------------------
 void GModifierStack::Copy(GModifierStack* ps)
 {
 	Clear();
@@ -205,7 +198,6 @@ void GModifierStack::Copy(GModifierStack* ps)
 
 //=============================================================================
 // GTwistModifier
-//-----------------------------------------------------------------------------
 GTwistModifier::GTwistModifier(FSModel* ps)
 {
 	AddIntParam(2, "orientation", "orientation")->SetEnumNames("X\0Y\0Z\0");
@@ -215,9 +207,11 @@ GTwistModifier::GTwistModifier(FSModel* ps)
 	AddDoubleParam(1, "max", "max");
 }
 
-//-----------------------------------------------------------------------------
-void GTwistModifier::Apply(GObject* po)
+GObject* GTwistModifier::Apply(GObject* obj)
 {
+	std::unique_ptr<GObject> po = std::make_unique<GPLCObject>();
+	po->Copy(obj);
+
 	int m = GetIntValue(ORIENT);
 	double w = GetFloatValue(TWIST);
 	double h = GetFloatValue(SCALE);
@@ -231,7 +225,7 @@ void GTwistModifier::Apply(GObject* po)
 	double ca, sa, a, t;
 	int N = po->Nodes();
 
-	BOX box = po->GetLocalBox();
+	BoundingBox box = po->GetLocalBox();
 	double dx = box.Width(); if (dx == 0) dx = 1;
 	double dy = box.Height(); if (dy == 0) dy = 1;
 	double dz = box.Depth(); if (dz == 0) dz = 1;
@@ -297,11 +291,12 @@ void GTwistModifier::Apply(GObject* po)
 		}
 		break;
 	default:
-		assert(false);
+		return nullptr;
 	}
+
+	return po.release();
 }
 
-//-----------------------------------------------------------------------------
 GLMesh* GTwistModifier::BuildGMesh(GObject* po)
 {
 	GLMesh* pm = po->GetRenderMesh();
@@ -319,7 +314,7 @@ GLMesh* GTwistModifier::BuildGMesh(GObject* po)
 	double ca, sa, a, t;
 	int N = pm->Nodes();
 
-	BOX box = pm->GetBoundingBox();
+	BoundingBox box = pm->GetBoundingBox();
 	double dx = box.Width(); if (dx == 0) dx = 1;
 	double dy = box.Height(); if (dy == 0) dy = 1;
 	double dz = box.Depth(); if (dz == 0) dz = 1;
@@ -393,7 +388,6 @@ GLMesh* GTwistModifier::BuildGMesh(GObject* po)
 	return 0;
 }
 
-//-----------------------------------------------------------------------------
 FSMesh* GTwistModifier::BuildFEMesh(GObject* po)
 {
 	FSMesh* pm = po->GetFEMesh();
@@ -411,7 +405,7 @@ FSMesh* GTwistModifier::BuildFEMesh(GObject* po)
 	double ca, sa, a, t;
 	int N = pm->Nodes();
 
-	BOX box = pm->GetBoundingBox();
+	BoundingBox box = pm->GetBoundingBox();
 	double dx = box.Width(); if (dx == 0) dx = 1;
 	double dy = box.Height(); if (dy == 0) dy = 1;
 	double dz = box.Depth(); if (dz == 0) dz = 1;
@@ -488,17 +482,18 @@ FSMesh* GTwistModifier::BuildFEMesh(GObject* po)
 
 //=============================================================================
 // GPinchModifier
-//-----------------------------------------------------------------------------
 GPinchModifier::GPinchModifier(FSModel* ps)
 {
 	AddDoubleParam(1.0, "scale", "scale");
 	AddIntParam(0, "orientation", "orientation")->SetEnumNames("X\0Y\0Z\0");
 }
 
-//-----------------------------------------------------------------------------
-void GPinchModifier::Apply(GObject* po)
+GObject* GPinchModifier::Apply(GObject* obj)
 {
-	BOX box = po->GetLocalBox();
+	std::unique_ptr<GObject> po = std::make_unique<GPLCObject>();
+	po->Copy(obj);
+
+	BoundingBox box = po->GetLocalBox();
 	vec3d c = box.Center();
 	double W = 0.5*box.Width();
 
@@ -525,14 +520,15 @@ void GPinchModifier::Apply(GObject* po)
 		r.*pb *= w + (1-w)*s;
 		node.LocalPosition() = c + r;
 	}
+
+	return po.release();
 }
 
-//-----------------------------------------------------------------------------
 GLMesh* GPinchModifier::BuildGMesh(GObject* po)
 {
 	GLMesh* pm = po->GetRenderMesh();
 
-	BOX box = pm->GetBoundingBox();
+	BoundingBox box = pm->GetBoundingBox();
 	vec3d c = box.Center();
 	double W = 0.5*box.Width();
 
@@ -565,12 +561,11 @@ GLMesh* GPinchModifier::BuildGMesh(GObject* po)
 	return 0;
 }
 
-//-----------------------------------------------------------------------------
 FSMesh* GPinchModifier::BuildFEMesh(GObject* po)
 {
 	FSMesh* pm = po->GetFEMesh();
 
-	BOX box = pm->GetBoundingBox();
+	BoundingBox box = pm->GetBoundingBox();
 	vec3d c = box.Center();
 	double W = 0.5*box.Width();
 
@@ -606,7 +601,6 @@ FSMesh* GPinchModifier::BuildFEMesh(GObject* po)
 
 //=============================================================================
 // GBendModifier
-//-----------------------------------------------------------------------------
 GBendModifier::GBendModifier()
 {
 	SetName("Bend");
@@ -620,7 +614,6 @@ GBendModifier::GBendModifier()
 	AddDoubleParam(0, "z-pivot", "z-pivot");
 }
 
-//-----------------------------------------------------------------------------
 void GBendModifier::UpdateParams()
 {
 	// get parameter values
@@ -675,9 +668,11 @@ void GBendModifier::UpdateParams()
 	m_R0 = m_L / m_a;
 }
 
-//-----------------------------------------------------------------------------
-void GBendModifier::Apply(GObject *po)
+GObject* GBendModifier::Apply(GObject *obj)
 {
+	std::unique_ptr<GObject> po = std::make_unique<GPLCObject>();
+	po->Copy(obj);
+
 	// set the bounding box
 	m_box = po->GetLocalBox();
 
@@ -696,9 +691,10 @@ void GBendModifier::Apply(GObject *po)
 	}
 	vec3d dr = m_box.Center() - m_rc;
 	for (int i = 0; i<N; ++i) po->Node(i)->LocalPosition() -= dr;
+
+	return po.release();
 }
 
-//-----------------------------------------------------------------------------
 GLMesh* GBendModifier::BuildGMesh(GObject *po)
 {
 	GLMesh* pm = po->GetRenderMesh();
@@ -725,7 +721,6 @@ GLMesh* GBendModifier::BuildGMesh(GObject *po)
 	return 0;
 }
 
-//-----------------------------------------------------------------------------
 FSMesh* GBendModifier::BuildFEMesh(GObject* po)
 {
 	FSMesh* pm = po->GetFEMesh();
@@ -754,7 +749,6 @@ FSMesh* GBendModifier::BuildFEMesh(GObject* po)
 	return 0;
 }
 
-//-----------------------------------------------------------------------------
 void GBendModifier::Apply(vec3d& r)
 {
 	if (fabs(m_a) < 1e-7) return;
@@ -788,22 +782,23 @@ void GBendModifier::Apply(vec3d& r)
 
 //=============================================================================
 // GSkewModifier
-//-----------------------------------------------------------------------------
 GSkewModifier::GSkewModifier(FSModel* ps)
 {
 	AddIntParam(0, "orientation", "Orientation")->SetEnumNames("X\0Y\0Z\0");
 	AddDoubleParam(0, "distance", "Skew distance");
 }
 
-//-----------------------------------------------------------------------------
-void GSkewModifier::Apply(GObject* po)
+GObject* GSkewModifier::Apply(GObject* obj)
 {
+	std::unique_ptr<GObject> po = std::make_unique<GPLCObject>();
+	po->Copy(obj);
+
 	// get parameters
 	int m = GetIntValue(ORIENT);
 	double a = GetFloatValue(SKEW);
 
 	// get the bounding box and its dimensions
-	BOX box = po->GetLocalBox();
+	BoundingBox box = po->GetLocalBox();
 	double dx = box.Width(); if (dx == 0) dx = 1;
 	double dy = box.Height(); if (dy == 0) dy = 1;
 	double dz = box.Depth(); if (dz == 0) dz = 1;
@@ -829,9 +824,10 @@ void GSkewModifier::Apply(GObject* po)
 		r.*pl += a*(r.*pr)*d;
 		node.LocalPosition() = r + rc;
 	}
+
+	return po.release();
 }
 
-//-----------------------------------------------------------------------------
 GLMesh* GSkewModifier::BuildGMesh(GObject* po)
 {
 	GLMesh* pm = po->GetRenderMesh();
@@ -841,7 +837,7 @@ GLMesh* GSkewModifier::BuildGMesh(GObject* po)
 	double a = GetFloatValue(SKEW);
 
 	// get the bounding box and its dimensions
-	BOX box = pm->GetBoundingBox();
+	BoundingBox box = pm->GetBoundingBox();
 	double dx = box.Width(); if (dx == 0) dx = 1;
 	double dy = box.Height(); if (dy == 0) dy = 1;
 	double dz = box.Depth(); if (dz == 0) dz = 1;
@@ -872,7 +868,6 @@ GLMesh* GSkewModifier::BuildGMesh(GObject* po)
 	return 0;
 }
 
-//-----------------------------------------------------------------------------
 FSMesh* GSkewModifier::BuildFEMesh(GObject* po)
 {
 	FSMesh* pm = po->GetFEMesh();
@@ -882,7 +877,7 @@ FSMesh* GSkewModifier::BuildFEMesh(GObject* po)
 	double a = GetFloatValue(SKEW);
 
 	// get the bounding box and its dimensions
-	BOX box = pm->GetBoundingBox();
+	BoundingBox box = pm->GetBoundingBox();
 	double dx = box.Width(); if (dx == 0) dx = 1;
 	double dy = box.Height(); if (dy == 0) dy = 1;
 	double dz = box.Depth(); if (dz == 0) dz = 1;

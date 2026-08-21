@@ -39,7 +39,7 @@ using std::stringstream;
 using namespace Post;
 
 extern int LUT[256][15];
-extern int ET_HEX[12][2];
+extern int EL_HEX[12][2];
 extern int LUT2D_quad[16][9];
 extern int ET2D[4][2];
 #include <GLLib/GLRenderEngine.h>
@@ -226,7 +226,7 @@ void CMarchingCubes::CreateSurface()
 	if (im.Get3DImage() == nullptr) return;
 	C3DImage& im3d = *m_8bitImage;
 
-	BOX b = im.GetBoundingBox();
+	BoundingBox b = im.GetBoundingBox();
 	m_box = b;
 	double W = b.Width();
 	double H = b.Height();
@@ -341,8 +341,8 @@ void CMarchingCubes::CreateSurface()
 							TriMesh::TRI& tri = temp.Face(nfaces++);
 							for (int m = 0; m < 3; m++)
 							{
-								int n1 = ET_HEX[pf[m]][0];
-								int n2 = ET_HEX[pf[m]][1];
+								int n1 = EL_HEX[pf[m]][0];
+								int n2 = EL_HEX[pf[m]][1];
 
 								float w = (fref - (float)val[n1]) / ((float)val[n2] - (float)val[n1]);
 								assert((w >= 0.f) && (w <= 1.f));

@@ -26,11 +26,14 @@
 
 #include "FluentExport.h"
 #include <FSCore/FSLogger.h>
+#include <FEMLib/FSModel.h>
+#include <GeomLib/GModel.h>
+#include <GeomLib/GObject.h>
 
 // This exporter uses information about Fluent mesh file format given at
 // https://romeo.univ-reims.fr/documents/fluent/tgrid/ug/appb.pdf
 
-FluentExport::FluentExport(FSProject& prj) : FSFileExport(prj)
+FluentExport::FluentExport(FSModel& fem) : m_fem(fem)
 {
 }
 
@@ -43,8 +46,7 @@ bool FluentExport::Write(const char* szfile)
     FILE* fp = fopen(szfile, "wt");
     if (fp == 0) return false;
     
-    FSModel* ps = &m_prj.GetFSModel();
-    GModel& model = ps->GetModel();
+    GModel& model = m_fem.GetModel();
     
     for (int i=0; i<model.Objects(); ++i)
     {

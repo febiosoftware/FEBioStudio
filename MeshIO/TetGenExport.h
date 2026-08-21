@@ -30,8 +30,11 @@ SOFTWARE.*/
 class TetGenExport : public FSFileExport
 {
 public:
-	TetGenExport(FSProject& prj);
+	TetGenExport(FSModel& fem);
 	~TetGenExport(void);
 
 	bool Write(const char* szfile) override;
+
+private:
+	FSModel& m_fem;
 };

@@ -32,7 +32,7 @@ class FSProject;
 class AbaqusExport : public FSFileExport
 {
 public:
-	AbaqusExport(FSProject& prj);
+	AbaqusExport(FSModel& fem);
 	~AbaqusExport(void);
 
 	bool Write(const char* szfile) override;
@@ -40,6 +40,7 @@ public:
 	void SetHeading(const std::string& s);
 
 protected:
-	FILE*			m_fp;
-	std::string		m_heading;
+	FILE*		m_fp;
+	std::string	m_heading;
+	FSModel&	m_fem;
 };

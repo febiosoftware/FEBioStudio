@@ -120,6 +120,7 @@ const char* find_attribute(AbaqusImport::ATTRIBUTE* pa, int nmax, const char* sz
 
 AbaqusImport::AbaqusImport(FSProject& prj) : FSFileImport(prj)
 {
+	m_nline = 0;
 	m_breadPhysics = false;
 }
 
@@ -207,8 +208,8 @@ bool szicnt(const char* sz1, const char* sz2)
 //! Load an Abaqus model file
 bool AbaqusImport::Load(const char* szfile)
 {
-	m_prj.SetModule(FEBio::SetActiveModule("solid"));
 	FSModel& fem = m_prj.GetFSModel();
+	fem.SetModule(FEBio::SetActiveModule("solid"));
 	m_pprj = &m_prj;
 	m_pfem = &fem;
 

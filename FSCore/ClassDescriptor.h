@@ -165,7 +165,7 @@ public:
 	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T<theClass>(theType, -1, theName, 0, theFlag));
 
 #define REGISTER_CLASS2(theClass, theType, theName, theResource, theFlag) \
-	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T<theClass>(theType, -1, theName, theResource, theFlag));
+	static RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T<theClass>(theType, -1, theName, theResource, theFlag));
 
 #define REGISTER_CLASS3(theClass, theType, theClassId, theName, theResource, theFlag) \
 	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T<theClass>(theType, theClassId, theName, theResource, theFlag));

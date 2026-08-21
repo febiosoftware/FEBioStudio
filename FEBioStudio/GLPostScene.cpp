@@ -1157,9 +1157,9 @@ void CGLPostScene::Update()
 	GLScene::Update();
 }
 
-BOX CGLPostScene::GetBoundingBox()
+BoundingBox CGLPostScene::GetBoundingBox()
 {
-	BOX box;
+	BoundingBox box;
 	if (m_doc && m_doc->IsValid())
 	{
 		CGLModel& gm = *m_doc->GetGLModel();

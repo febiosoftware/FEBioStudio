@@ -128,6 +128,16 @@ void FSLineMesh::TagAllNodes(int ntag)
 	for (int i = 0; i<NN; ++i) Node(i).m_ntag = ntag;
 }
 
+FSNode* FSLineMesh::FindNodeFromID(int gid)
+{
+	for (int i = 0; i < Nodes(); ++i)
+	{
+		FSNode& node = Node(i);
+		if (node.m_gid == gid) return &node;
+	}
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 // Tag all edges
 void FSLineMesh::TagAllEdges(int ntag)

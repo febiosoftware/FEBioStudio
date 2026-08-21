@@ -67,7 +67,7 @@ public:
 		srb->create();
 	}
 
-	void setData(const rhi::SubMesh& m) override
+	void setData(const rhi::MeshRenderItem& m) override
 	{
 		float diffuse[4] = { 0.f };
 		m.mat.diffuse.toFloat(diffuse);
@@ -136,7 +136,7 @@ public:
 		srb->create();
 	}
 
-	void setData(const rhi::SubMesh& m) override
+	void setData(const rhi::MeshRenderItem& m) override
 	{
 		float diffuse[4] = { 0.f };
 		m.mat.diffuse.toFloat(diffuse);
@@ -192,7 +192,8 @@ public:
 			{rhi::UniformBlock::INT  , "useVertexColor"},
 			{rhi::UniformBlock::INT  , "useLighting"},
 			{rhi::UniformBlock::INT  , "frontOnly"},
-			{rhi::UniformBlock::INT  , "useFrontLight"}
+			{rhi::UniformBlock::INT  , "useFrontLight"},
+			{rhi::UniformBlock::INT  , "invertFaces"}
 			});
 
 		// create the buffer
@@ -213,7 +214,7 @@ public:
 		srb->create();
 	}
 
-	void setData(const rhi::SubMesh& m) override
+	void setData(const rhi::MeshRenderItem& m) override
 	{
 		float diffuse[4] = { 0.f }, spec[4] = { 0.f }, amb[4] = { 0.f };
 		m.mat.ambient.toFloat(amb);
@@ -234,6 +235,7 @@ public:
 		m_data.setInt  (11, (m.mat.type == GLMaterial::CONSTANT) || (m.mat.type == GLMaterial::OVERLAY) || (m.mat.type == GLMaterial::HIGHLIGHT) ? 0 : 1);
 		m_data.setInt  (12, (m.mat.frontOnly ? 1 : 0));
 		m_data.setInt  (13, (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 0 : 1));
+		m_data.setInt  (14, (m.invertFaces ? 1 : 0));
 	}
 };
 
@@ -338,7 +340,7 @@ public:
 		srb->create();
 	}
 
-	void setData(const rhi::SubMesh& m) override
+	void setData(const rhi::MeshRenderItem& m) override
 	{
 		m_data.setMat4(0, m.mvMatrix);
 	}
@@ -397,7 +399,7 @@ public:
 		srb->create();
 	}
 
-	void setData(const rhi::SubMesh& m) override
+	void setData(const rhi::MeshRenderItem& m) override
 	{
 		m_data.setMat4(0, m.mvMatrix);
 		m_data.setVec4(1, m.mat.diffuse);
@@ -469,7 +471,7 @@ public:
 		srb->create();
 	}
 
-	void setData(const rhi::SubMesh& m) override
+	void setData(const rhi::MeshRenderItem& m) override
 	{
 		m_data.setMat4(0, m.mvMatrix);
 		m_data.setVec4(1, m.mat.diffuse);

@@ -356,6 +356,138 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 	return "(invalid)";
 }
 
+
+std::string to_lower(std::string s)
+{
+	std::transform(s.begin(), s.end(), s.begin(),
+		[](unsigned char c) { return std::tolower(c); });
+	return s;
+}
+
+int ModelDataField::componentCode(const std::string& componentName, Data_Tensor_Type ntype)
+{
+	// convert component name to lower case
+	std::string s = to_lower(componentName);
+
+	if (ntype == TENSOR_SCALAR)
+	{
+		switch (m_ntype)
+		{
+		case DATA_SCALAR: return 0; break;
+		case DATA_VEC3:
+		{
+			if      (s == "x") return 0;
+			else if (s == "y") return 1;
+			else if (s == "z") return 2;
+			else if (s == "xy") return 3;
+			else if (s == "yz") return 4;
+			else if (s == "xz") return 5;
+			else if (s == "magnitude") return 6;
+		}
+		break;
+		case DATA_MAT3:
+		{
+			if      (s == "xx") return 0;
+			else if (s == "xy") return 1;
+			else if (s == "xz") return 2;
+			else if (s == "yx") return 3;
+			else if (s == "yy") return 4;
+			else if (s == "yz") return 5;
+			else if (s == "zx") return 6;
+			else if (s == "zy") return 7;
+			else if (s == "zz") return 8;
+			else if (s == "magnitude") return 9;
+		}
+		break;
+		case DATA_MAT3S:
+		{
+			if      (s == "xx") return 0;
+			else if (s == "yy") return 1;
+			else if (s == "zz") return 2;
+			else if ((s == "xy") || (s == "yx")) return 3;
+			else if ((s == "yz") || (s == "zy")) return 4;
+			else if ((s == "xz") || (s == "zx")) return 5;
+			else if (s == "effective") return 6;
+			else if (s == "p1") return 7;
+			else if (s == "p2") return 8;
+			else if (s == "p3") return 9;
+			else if (s == "dev_p1") return 10;
+			else if (s == "dev_p2") return 11;
+			else if (s == "dev_p3") return 12;
+			else if (s == "max_shear") return 13;
+			else if (s == "magnitude") return 14;
+			else if (s == "i1") return 15;
+			else if (s == "i2") return 16;
+			else if (s == "i3") return 17;
+		}
+		break;
+		case DATA_MAT3SD:
+		{
+			if (s == "xx") return 0;
+			else if (s == "yy") return 1;
+			else if (s == "zz") return 2;
+		}
+		break;
+		case DATA_TENS4S:
+		{
+			if (s == "xxxx") return 0;
+			else if (s == "xxyy") return 1;
+			else if (s == "yyyy") return 2;
+			else if (s == "xxzz") return 3;
+			else if (s == "yyzz") return 4;
+			else if (s == "zzzz") return 5;
+			else if (s == "xxxy") return 6;
+			else if (s == "yyxy") return 7;
+			else if (s == "zzxy") return 8;
+			else if (s == "xyxy") return 9;
+			else if (s == "xxyz") return 10;
+			else if (s == "yyyz") return 11;
+			else if (s == "zzyz") return 12;
+			else if (s == "xyyz") return 13;
+			else if (s == "yzyz") return 14;
+			else if (s == "xxxz") return 15;
+			else if (s == "yyxz") return 16;
+			else if (s == "zzxz") return 17;
+			else if (s == "xyxz") return 18;
+			else if (s == "yzxz") return 19;
+			else if (s == "xzxz") return 20;
+		}
+		break;
+		case DATA_ARRAY:
+		{
+			if (m_arrayNames.size() == m_arraySize)
+			{
+				for (int i = 0; i < m_arraySize; ++i)
+				{
+					if (s == to_lower(m_arrayNames[i])) return i;
+				}
+			}
+			else
+			{
+				return std::stoi(s);
+			}
+		}
+		break;
+		}
+	}
+	else if (ntype == TENSOR_VECTOR)
+	{
+		switch (m_ntype)
+		{
+		case DATA_VEC3: return 0; break;
+		case DATA_MAT3S:
+		{
+			if      (s == "p1") return 0;
+			else if (s == "p2") return 1;
+			else if (s == "p3") return 2;
+		}
+		break;
+		}
+	}
+
+	return -1;
+}
+
 void ModelDataField::SetUnits(const char* sz)
 {
 	if (sz) m_units = sz;
@@ -1064,39 +1196,39 @@ void StandardDataFieldManager::Init()
 {
 	if (m_stdDataFields.empty() == false) return;
 
-	Add<FEDataField_T<NodePosition> >("Position", IMPLICIT_DATA);
-	Add<FEDataField_T<NodeInitPos > >("Initial Position", IMPLICIT_DATA);
-	Add<FEDataField_T<DeformationGradient> >("Deformation gradient", IMPLICIT_DATA);
-	Add<StrainDataField >("Infinitesimal strain", StrainDataField::INF_STRAIN);
+	Add<FEDataField_T<NodePosition> >("position", IMPLICIT_DATA);
+	Add<FEDataField_T<NodeInitPos > >("initial position", IMPLICIT_DATA);
+	Add<FEDataField_T<DeformationGradient> >("deformation gradient", IMPLICIT_DATA);
+	Add<StrainDataField >("infinitesimal strain", StrainDataField::INF_STRAIN);
 	Add<StrainDataField >("Lagrange strain"     , StrainDataField::LAGRANGE          );
-	Add<StrainDataField >("Right Cauchy-Green"  , StrainDataField::RIGHT_CAUCHY_GREEN);
-	Add<StrainDataField >("Right stretch"       , StrainDataField::RIGHT_STRETCH     );
+	Add<StrainDataField >("right Cauchy-Green"  , StrainDataField::RIGHT_CAUCHY_GREEN);
+	Add<StrainDataField >("right stretch"       , StrainDataField::RIGHT_STRETCH     );
 	Add<StrainDataField >("Biot strain"         , StrainDataField::BIOT              );
-	Add<StrainDataField >("Right Hencky"        , StrainDataField::RIGHT_HENCKY      );
-	Add<StrainDataField >("Left Cauchy-Green"   , StrainDataField::LEFT_CAUCHY_GREEN );
-	Add<StrainDataField >("Left stretch"        , StrainDataField::LEFT_STRETCH      );
-	Add<StrainDataField >("Left Hencky"         , StrainDataField::LEFT_HENCKY       );
+	Add<StrainDataField >("right Hencky"        , StrainDataField::RIGHT_HENCKY      );
+	Add<StrainDataField >("left Cauchy-Green"   , StrainDataField::LEFT_CAUCHY_GREEN );
+	Add<StrainDataField >("left stretch"        , StrainDataField::LEFT_STRETCH      );
+	Add<StrainDataField >("left Hencky"         , StrainDataField::LEFT_HENCKY       );
 	Add<StrainDataField >("Almansi strain"      , StrainDataField::ALMANSI           );
 	Add<FEDataField_T<LagrangeStrain2D     > >("Lagrange Strain 2D"        , IMPLICIT_DATA);
-	Add<FEDataField_T<InfStrain2D          > >("Infinitesimal Strain 2D"   , IMPLICIT_DATA);
-	Add<FEDataField_T<ElementVolume        > >("Volume"                    , IMPLICIT_DATA);
-	Add<FEDataField_T<VolumeRatio          > >("Volume ratio"              , IMPLICIT_DATA);
-	Add<FEDataField_T<VolumeStrain         > >("Volume strain"             , IMPLICIT_DATA);
-	Add<FEDataField_T<AspectRatio          > >("Aspect ratio"              , IMPLICIT_DATA);
-	Add<CurvatureField >("1-Princ curvature"         , CurvatureField::PRINC1_CURVATURE);
-	Add<CurvatureField >("2-Princ curvature"         , CurvatureField::PRINC2_CURVATURE);
+	Add<FEDataField_T<InfStrain2D          > >("infinitesimal strain 2D"   , IMPLICIT_DATA);
+	Add<FEDataField_T<ElementVolume        > >("volume"                    , IMPLICIT_DATA);
+	Add<FEDataField_T<VolumeRatio          > >("volume ratio"              , IMPLICIT_DATA);
+	Add<FEDataField_T<VolumeStrain         > >("volume strain"             , IMPLICIT_DATA);
+	Add<FEDataField_T<AspectRatio          > >("aspect ratio"              , IMPLICIT_DATA);
+	Add<CurvatureField >("1-princ curvature"         , CurvatureField::PRINC1_CURVATURE);
+	Add<CurvatureField >("2-princ curvature"         , CurvatureField::PRINC2_CURVATURE);
 	Add<CurvatureField >("Gaussian curvature"        , CurvatureField::GAUSS_CURVATURE );
-	Add<CurvatureField >("Mean curvature"            , CurvatureField::MEAN_CURVATURE  );
+	Add<CurvatureField >("mean curvature"            , CurvatureField::MEAN_CURVATURE  );
 	Add<CurvatureField >("RMS curvature"             , CurvatureField::RMS_CURVATURE   );
-	Add<CurvatureField >("Princ curvature difference", CurvatureField::DIFF_CURVATURE  );
-	Add<FEDataField_T<SurfaceCongruency           > >("Congruency", IMPLICIT_DATA);
-	Add<FEDataField_T<PrincCurvatureVector1> >("1-Princ curvature vector", IMPLICIT_DATA);
-	Add<FEDataField_T<PrincCurvatureVector2> >("2-Princ curvature vector", IMPLICIT_DATA);
-	Add<FEDistanceMap >("Distance map", IMPLICIT_DATA);
-	Add<FEAreaCoverage>("Area coverage", IMPLICIT_DATA);
-	Add<FEDataField_T<FEFacetArea> >("Facet area", IMPLICIT_DATA);
-	Add<FEDataField_T<FEElementMaterial> >("Material ID");
-	Add<FEDataField_T<FESurfaceNormal> >("Surface normal", IMPLICIT_DATA);
+	Add<CurvatureField >("princ curvature difference", CurvatureField::DIFF_CURVATURE  );
+	Add<FEDataField_T<SurfaceCongruency           > >("congruency", IMPLICIT_DATA);
+	Add<FEDataField_T<PrincCurvatureVector1> >("1-princ curvature vector", IMPLICIT_DATA);
+	Add<FEDataField_T<PrincCurvatureVector2> >("2-princ curvature vector", IMPLICIT_DATA);
+	Add<FEDistanceMap >("distance map", IMPLICIT_DATA);
+	Add<FEAreaCoverage>("area coverage", IMPLICIT_DATA);
+	Add<FEDataField_T<FEFacetArea> >("facet area", IMPLICIT_DATA);
+	Add<FEDataField_T<FEElementMaterial> >("material ID");
+	Add<FEDataField_T<FESurfaceNormal> >("surface normal", IMPLICIT_DATA);
 }
 
 void Post::InitStandardDataFields()
@@ -1112,6 +1244,11 @@ int Post::StandardDataFields()
 std::string Post::GetStandarDataFieldName(int i)
 {
 	return StandardDataFieldManager::GetStandarDataFieldName(i);
+}
+
+Post::ModelDataField* Post::CreateStandardDataField(FEPostModel& fem, const std::string& dataField)
+{
+	return StandardDataFieldManager::CreateDataField(&fem, dataField);
 }
 
 bool Post::AddStandardDataField(Post::FEPostModel& fem, const std::string& dataField)

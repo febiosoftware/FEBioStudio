@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FEBioExport.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
-#include <FEMLib/FSProject.h>
+#include <FEMLib/FSModel.h>
 #include <sstream>
 #include <iomanip>
 
@@ -51,7 +51,7 @@ template <> std::string type_to_string<vec2f>(const vec2f& v)
 template <> std::string type_to_string<vec2d>(const vec2d& v)
 {
 	std::stringstream ss;
-	ss << v.x() << "," << v.y();
+	ss << v.x << "," << v.y;
 	return ss.str();
 }
 
@@ -92,8 +92,16 @@ template <> std::string type_to_string<mat3d>(const mat3d& v)
 	return ss.str();
 }
 
+template <> std::string type_to_string<mat2d>(const mat2d& v)
+{
+	std::stringstream ss;
+	ss << v[0][0] << "," << v[0][1] << ",";
+	ss << v[1][0] << "," << v[1][1];
+	return ss.str();
+}
+
 //=============================================================================
-FEBioExport::FEBioExport(FSProject& prj) : FSFileExport(prj)
+FEBioExport::FEBioExport(FSModel& fem) : m_fem(fem)
 {
 	m_compress = false;
 	m_exportSelections = false;
@@ -144,8 +152,7 @@ XMLWriter& FEBioExport::GetXMLWriter()
 const char* FEBioExport::GetEnumKey(Param& p)
 {
 	assert((p.GetParamType() == Param_CHOICE) || (p.GetParamType() == Param_INT));
-	FSModel& fem = m_prj.GetFSModel();
-	return fem.GetEnumKey(p, false);
+	return m_fem.GetEnumKey(p, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -167,11 +174,34 @@ void FEBioExport::WriteParam(Param &p)
 	const char* szindex = p.GetIndexName();
 	int nindex = p.GetIndexValue();
 
-	FSModel& fem = m_prj.GetFSModel();
+	FSModel& fem = m_fem;
+
+	XMLElement e;
+
+	if (p.GetFlags() & FS_PARAM_USER)
+	{
+		e.name("add_param");
+		e.add_attribute("name", szname);
+
+		switch (p.GetParamType())
+		{
+		case Param_BOOL : e.add_attribute("data_type", "bool"  ); break;
+		case Param_INT  : e.add_attribute("data_type", "int"   ); break;
+		case Param_FLOAT: e.add_attribute("data_type", "double"); break;
+		case Param_VEC2D: e.add_attribute("data_type", "vec2"  ); break;
+		case Param_VEC3D: e.add_attribute("data_type", "vec3"  ); break;
+		case Param_MAT2D: e.add_attribute("data_type", "mat2"  ); break;
+		case Param_MAT3D: e.add_attribute("data_type", "mat3"  ); break;
+		default:
+			assert(false);
+		}
+	}
+	else
+	{
+		e.name(szname);
+	}
 
 	// setup the xml-element
-	XMLElement e;
-	e.name(szname);
 	if (szindex) e.add_attribute(szindex, nindex);
 	int lc = GetLC(&p);
 	if (lc > 0) e.add_attribute("lc", lc);
@@ -210,6 +240,7 @@ void FEBioExport::WriteParam(Param &p)
 	case Param_VEC3D : e.value(p.GetVec3dValue()); break;
 	case Param_VEC2I : e.value(p.GetVec2iValue()); break;
 	case Param_VEC2D : e.value(p.GetVec2dValue()); break;
+	case Param_MAT2D : e.value(p.GetMat2dValue()); break;
 	case Param_MAT3D : e.value(p.GetMat3dValue()); break;
 	case Param_MAT3DS : e.value(p.GetMat3dsValue()); break;
 	case Param_STD_VECTOR_INT:
@@ -277,7 +308,7 @@ void FEBioExport::WriteParam(Param &p)
 		for (int i = 0; i < v.size(); ++i)
 		{
 			vec2d& p = v[i];
-			double d[2] = { p.x(), p.y() };
+			double d[2] = { p.x, p.y };
 			m_xml.add_leaf("pt", d, 2);
 		}
 		m_xml.close_branch();
@@ -330,13 +361,12 @@ void FEBioExport::Clear()
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioExport::PrepareExport(FSProject& prj)
+bool FEBioExport::PrepareExport()
 {
 	Clear();
 
 	// get the model
-	FSModel& fem = prj.GetFSModel();
-	GModel& model = fem.GetModel();
+	GModel& model = m_fem.GetModel();
 
 	// make sure all objects are meshed
 	for (int i = 0; i < model.Objects(); ++i)
@@ -378,13 +408,13 @@ bool FEBioExport::PrepareExport(FSProject& prj)
 	}
 
 	// set material tags
-	for (int i = 0; i<fem.Materials(); ++i) fem.GetMaterial(i)->m_ntag = i + 1;
+	for (int i = 0; i<m_fem.Materials(); ++i) m_fem.GetMaterial(i)->m_ntag = i + 1;
 
 	// build load controller table
 	m_LCT.clear();
-	for (int i = 0; i < fem.LoadControllers(); ++i)
+	for (int i = 0; i < m_fem.LoadControllers(); ++i)
 	{
-		FSLoadController* plc = fem.GetLoadController(i);
+		FSLoadController* plc = m_fem.GetLoadController(i);
 		m_LCT[plc->GetID()] = i + 1;
 	}
 

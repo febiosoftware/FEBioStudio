@@ -30,8 +30,11 @@ SOFTWARE.*/
 class MeshExport : public FSFileExport
 {
 public:
-	MeshExport(FSProject& prj);
+	MeshExport(FSModel& fem);
 	~MeshExport(void);
 
 	bool Write(const char* szfile) override;
+
+private:
+	FSModel& m_fem;
 };

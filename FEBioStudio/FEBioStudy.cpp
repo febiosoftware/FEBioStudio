@@ -54,7 +54,7 @@ bool COptimizationStudy::WriteFiles(const QString& dir)
 
 	try {
 		setCurrentTask("Saving FEBio input file ...");
-		FEBioExport4* febExport = new FEBioExport4(GetDocument()->GetProject());
+		FEBioExport4* febExport = new FEBioExport4(*GetDocument()->GetFSModel());
 		febExport->SetMixedMeshFlag(false);
 		//		febExport->SetProgressTracker(prg);
 		bool ret = febExport->Write(m_febioFileName.c_str());
@@ -359,7 +359,7 @@ bool CFEBioStudy::WriteFiles(const QString& dir)
 
 	try {
 		setCurrentTask("Saving FEBio input file ...");
-		FEBioExport4* febExport = new FEBioExport4(GetDocument()->GetProject());
+		FEBioExport4* febExport = new FEBioExport4(*GetDocument()->GetFSModel());
 		febExport->SetMixedMeshFlag(false);
 		bool ret = febExport->Write(m_febioFileName.c_str());
 		if (ret == false)

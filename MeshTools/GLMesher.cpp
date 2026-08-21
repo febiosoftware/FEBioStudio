@@ -309,7 +309,7 @@ void GLMesher::BuildFaceExtrude(GLMesh* glmesh, GFace& f)
 		for (int i = 0; i <= M; ++i)
 		{
 			vec2d q = ca.Point(i / (double)M);
-			points[i] = vec3f(q.x(), q.y(), z0);
+			points[i] = vec3f(q.x, q.y, z0);
 		}
 	}
 	break;
@@ -683,7 +683,7 @@ void GLMesher::BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f)
 
 				GLMesh::NODE& n0 = m.Node(i + 1);
 				vec2d p0 = c0.Point(t);
-				n0.r = vec3f(p0.x(), y1, p0.y());
+				n0.r = vec3f(p0.x, y1, p0.y);
 				n0.pid = -1;
 			}
 		}
@@ -709,7 +709,7 @@ void GLMesher::BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f)
 
 				GLMesh::NODE& n0 = m.Node(i + 1);
 				vec2d p0 = c0.Point(t);
-				n0.r = vec3f(p0.x(), p0.y(), z1);
+				n0.r = vec3f(p0.x, p0.y, z1);
 				n0.pid = -1;
 			}
 		}
@@ -770,7 +770,7 @@ vec3d GLMesher::EdgePoint(GEdge& edge, double r)
 		// create an arc object
 		GM_CIRCLE_ARC ca(c, a, b, -edge.m_orient);
 		vec2d q = ca.Point(r);
-		p = vec3d(q.x(), r1.y, q.y());
+		p = vec3d(q.x, r1.y, q.y);
 	}
 	break;
 	case EDGE_ZARC:
@@ -782,7 +782,7 @@ vec3d GLMesher::EdgePoint(GEdge& edge, double r)
 		// create an arc object
 		GM_CIRCLE_ARC ca(c, a, b, edge.m_orient);
 		vec2d q = ca.Point(r);
-		p = vec3d(q.x(), q.y(), r1.z);
+		p = vec3d(q.x, q.y, r1.z);
 	}
 	break;
 	case EDGE_3P_CIRC_ARC:

@@ -40,8 +40,6 @@ SOFTWARE.*/
 using namespace std;
 using namespace Post;
 
-extern int ET_HEX[12][2];
-
 FEPostModel* FEPostModel::m_activeModel = nullptr;
 
 FEPostModel::PlotObject::PlotObject() 
@@ -233,6 +231,15 @@ void FEPostModel::AddMaterial(Material& mat)
 		mat.SetName(sz);
 	}
 	m_Mat.push_back(mat); 
+}
+
+Material* FEPostModel::FindMaterial(const std::string& name)
+{
+	for (auto& mat : m_Mat)
+	{
+		if (mat.GetName() == name) return &mat;
+	}
+	return nullptr;
 }
 
 void FEPostModel::EnableMaterial(int i, bool enable)
@@ -1286,11 +1293,11 @@ void FEPostModel::UpdateBoundingBox()
 	FSMesh* mesh = GetFEMesh(0);
 	if (mesh == nullptr)
 	{
-		m_bbox = BOX(vec3d(0, 0, 0), vec3d(1, 1, 1));
+		m_bbox = BoundingBox(vec3d(0, 0, 0), vec3d(1, 1, 1));
 		return;
 	}
 
-	BOX box;
+	BoundingBox box;
 	int N = mesh->Nodes();
 	for (int i=0; i<N; i++)
 	{

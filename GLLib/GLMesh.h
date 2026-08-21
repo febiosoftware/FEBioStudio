@@ -128,7 +128,7 @@ public:
 
 	bool IsEmpty() const { return m_Node.empty(); }
 
-	BOX GetBoundingBox() const { return m_box; }
+	BoundingBox GetBoundingBox() const { return m_box; }
 
 	void Attach(GLMesh& m, bool bupdate = true);
 
@@ -195,7 +195,7 @@ private:
 	int AddEdge(const EDGE& edge);
 
 protected:
-	BOX				m_box;
+	BoundingBox				m_box;
 	vector<NODE>	m_Node;
 	vector<EDGE>	m_Edge;
 	vector<FACE>	m_Face;

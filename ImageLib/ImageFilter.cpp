@@ -266,13 +266,13 @@ template<class pType> void PadImageFilter::FilterTemplate()
     // Scale the physical dimensions of the image
     if(scaleChoice == 1)
     {
-        BOX box = image->GetBoundingBox();
+        BoundingBox box = image->GetBoundingBox();
 
         double xSpacing = box.Width() / originalX;
         double ySpacing = box.Height() / originalY;
         double zSpacing = box.Depth() / originalZ;
 
-        BOX newBox(box.x0 - xLow * xSpacing, box.y0 - yLow * ySpacing, box.z0 - zLow * zSpacing,
+        BoundingBox newBox(box.x0 - xLow * xSpacing, box.y0 - yLow * ySpacing, box.z0 - zLow * zSpacing,
             box.x1 + xUp * xSpacing, box.y1 + yUp * ySpacing, box.z1 + zUp * zSpacing);
 
         imageToFilter->SetBoundingBox(newBox);
@@ -355,11 +355,11 @@ template<class pType> void WarpImageFilter::FilterTemplate()
 	Post::FERefState* ps = state->m_ref;
 
 	// get the original bounding box
-	BOX box0 = mdl->GetBoundingBox();
+	BoundingBox box0 = mdl->GetBoundingBox();
 
 	// get the (current) bounding box of the mesh
 	FSMesh* mesh = gm.GetActiveMesh();
-	BOX box = mesh->GetBoundingBox();
+	BoundingBox box = mesh->GetBoundingBox();
 
 	// calculate scale factors
 	double sx = box.Width() / box0.Width();

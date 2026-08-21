@@ -37,7 +37,7 @@ public:
 	GCurveMeshObject(FSCurveMesh* pm = 0);
 
 	// updates the GObject data structures based on the curve mesh
-	void Update();
+	bool Update(bool b = true) override;
 
 	// return the curve mesh
 	FSCurveMesh* GetCurveMesh();
@@ -52,6 +52,9 @@ public:
 	FSLineMesh* GetEditableLineMesh() override;
 
 	void ClearMesh();
+
+	//! Add a new node at the specified position
+	int AddGNode(vec3d r) override;
 
 private:
 	FSCurveMesh*	m_curve;

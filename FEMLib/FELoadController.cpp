@@ -42,6 +42,14 @@ void FSLoadController::Save(OArchive& ar)
 		}
 		ar.EndChunk();
 	}
+	if (Properties() > 0)
+	{
+		ar.BeginChunk(CID_PROPERTY_LIST);
+		{
+			SaveFEBioProperties(this, ar);
+		}
+		ar.EndChunk();
+	}
 }
 
 void FSLoadController::Load(IArchive& ar)
@@ -56,6 +64,7 @@ void FSLoadController::Load(IArchive& ar)
 		case CID_LOAD_CONTROLLER_NAME: { string name; ar.read(name); SetName(name); } break;
 		case CID_LOAD_CONTROLLER_INFO: { string info; ar.read(info); SetInfo(info); } break;
 		case CID_LOAD_CONTROLLER_PARAMS: ParamContainer::Load(ar); break;
+		case CID_PROPERTY_LIST         : LoadFEBioProperties(this, ar); break;
 		}
 		ar.CloseChunk();
 	}
@@ -104,7 +113,7 @@ LoadCurve* FEBioLoadController::CreateLoadCurve()
 		for (int i = 0; i < v.size(); ++i)
 		{
 			vec2d& pi = v[i];
-			lc.Add(pi.x(), pi.y());
+			lc.Add(pi.x, pi.y);
 		}
 
 		return m_plc;
@@ -226,7 +235,7 @@ LoadCurve* FEBioFunction1D::CreateLoadCurve()
 		for (int i = 0; i < v.size(); ++i)
 		{
 			vec2d& pi = v[i];
-			lc.Add(pi.x(), pi.y());
+			lc.Add(pi.x, pi.y);
 		}
 
 		return m_plc;

@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshLib/FSNodeData.h>
 #include <MeshLib/FSElementData.h>
+#include <FSCore/util.h>
 #include <QLineEdit>
 #include <QBoxLayout>
 #include <QFormLayout>
@@ -100,7 +101,7 @@ public:
 		f->addRow("Out-plane rotation (deg):", m_otPlane = new QLineEdit()); m_otPlane->setValidator(new QDoubleValidator());
 		f->addRow("In-plane rotation (deg):", m_inPlane = new QLineEdit()); m_inPlane->setValidator(new QDoubleValidator());
 		f->addRow(m_genMap = new QCheckBox("Generate map"), m_mapName = new QLineEdit()); m_mapName->setDisabled(true);
-		m_normal->setText(Vec3dToString(vec3d(0, 0, 1)));
+		m_normal->setText(QString::fromStdString(Vec3dToString(vec3d(0, 0, 1))));
 
 		m_otPlane->setText(QString::number(0));
 		m_inPlane->setText(QString::number(0));
@@ -209,8 +210,8 @@ void CFiberGeneratorTool::OnAddClicked()
 void CFiberGeneratorTool::validateNormal()
 {
 	QString s = ui->m_normal->text();
-	vec3d v = StringToVec3d(s);
-	s = Vec3dToString(v);
+	vec3d v = StringToVec3d(s.toStdString());
+	s = QString::fromStdString(Vec3dToString(v));
 	ui->m_normal->blockSignals(true);
 	ui->m_normal->setText(s);
 	ui->m_normal->blockSignals(false);
@@ -349,7 +350,7 @@ void CFiberGeneratorTool::OnApply()
 	GradientMap G;
 	G.Apply(data, grad, m_nsmoothIters);
 
-	vec3d N = StringToVec3d(ui->m_normal->text());
+	vec3d N = StringToVec3d(ui->m_normal->text().toStdString());
 	N.unit();
 
 	bool cross = ui->m_cross->isChecked();

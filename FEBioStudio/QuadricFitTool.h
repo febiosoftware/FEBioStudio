@@ -26,7 +26,7 @@
 
 #pragma once
 #include "Tool.h"
-#include <MeshTools/QuadricFit.h>
+#include <FECore/QuadricFit.h>
 #include <QtCore>
 
 //-----------------------------------------------------------------------------

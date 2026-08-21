@@ -216,9 +216,9 @@ GObject* CModelDocument::GetActiveObject()
 }
 
 //-----------------------------------------------------------------------------
-BOX CModelDocument::GetModelBox() 
+BoundingBox CModelDocument::GetModelBox()
 { 
-	BOX box = m_Project.GetFSModel().GetModel().GetBoundingBox(); 
+	BoundingBox box = m_Project.GetFSModel().GetModel().GetBoundingBox();
 
 	// add any image models
 	for (int i = 0; i < ImageModels(); ++i)
@@ -364,6 +364,16 @@ void CModelDocument::DeleteObject(FSObject* po)
 				QMessageBox::warning(m_wnd, "FEBio Studio", "This load controller cannot be deleted since other model components are using it.");
 			else
 				DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)), po->GetName());
+		}
+		else if (dynamic_cast<FEBCodeScript*>(po))
+		{
+			FEBCodeScript* psc = dynamic_cast<FEBCodeScript*>(po);
+			if (psc->GetRefCount() > 0)
+			{
+				QMessageBox::warning(m_wnd, "FEBio Studio", "This script cannot be deleted since other model components are using it.");
+				return;
+			}
+			DoCommand(new CCmdDeleteFSObject(psc), po->GetName());
 		}
 		else if (dynamic_cast<FSModelComponent*>(po))
 			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)), po->GetName());
@@ -781,9 +791,9 @@ bool CModelDocument::Initialize()
 {
 	// When called after reading an FEBio, the project's units may be different
 	// than the model's (which is initialized to the default units). 
-	if (m_Project.GetUnits() != 0)
+	if (GetFSModel()->GetUnits() != 0)
 	{
-		SetUnitSystem(m_Project.GetUnits());
+		SetUnitSystem(GetFSModel()->GetUnits());
 
 		if (GetActiveDocument() == this)
 		{
@@ -1368,9 +1378,9 @@ void CModelDocument::ToggleActiveParts()
 	}
 }
 
-BOX CModelDocument::GetBoundingBox()
+BoundingBox CModelDocument::GetBoundingBox()
 {
-	BOX box;
+	BoundingBox box;
 	if (GetGModel()) box = GetGModel()->GetBoundingBox();
 	return box;
 }
@@ -1378,7 +1388,7 @@ BOX CModelDocument::GetBoundingBox()
 CModelDocument* CreateNewModelDocument(CMainWindow* wnd, int moduleID, std::string name, int units)
 {
 	CModelDocument* doc = new CModelDocument(wnd);
-	doc->GetProject().SetModule(moduleID);
+	doc->GetProject().GetFSModel().SetModule(moduleID);
 
 	CDocManager* dm = wnd->GetDocManager();
 

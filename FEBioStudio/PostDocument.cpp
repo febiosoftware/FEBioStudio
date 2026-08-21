@@ -317,7 +317,7 @@ bool CPostDocument::Initialize()
 	else
 	{
 		// get the boundingbox
-		BOX box = GetBoundingBox();
+		BoundingBox box = GetBoundingBox();
 
 		// reset the camera
 		CGView& view = *GetView();
@@ -530,9 +530,9 @@ void CPostDocument::SetDataField(int n)
 	m_glm->Update(false);
 }
 
-BOX CPostDocument::GetBoundingBox()
+BoundingBox CPostDocument::GetBoundingBox()
 {
-	BOX b;
+	BoundingBox b;
 	if (m_fem) b = m_fem->GetBoundingBox();
 	return b;
 }

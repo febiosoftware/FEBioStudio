@@ -24,6 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
+#include <QElapsedTimer>
 #include <QMainWindow>
 #include <vector>
 
@@ -32,6 +33,7 @@ namespace Ui {
 }
 
 class CMainWindow;
+class QCloseEvent;
 
 class CPythonEditor : public QMainWindow
 {
@@ -39,6 +41,11 @@ class CPythonEditor : public QMainWindow
 
 public:
 	CPythonEditor(CMainWindow* wnd);
+	~CPythonEditor();
+
+protected:
+	void closeEvent(QCloseEvent* ev) override;
+	bool eventFilter(QObject* obj, QEvent* ev) override;
 
 private slots:
 	void on_actionNew_triggered();
@@ -46,8 +53,23 @@ private slots:
 	void on_actionSave_triggered();
 	void on_actionSaveAs_triggered();
 	void on_actionClose_triggered();
+	void on_actionFind_triggered();
+	void on_actionFindNext_triggered();
+	void on_actionFindPrevious_triggered();
+	void on_actionReplace_triggered();
+	void on_actionReplaceAll_triggered();
+	void on_actionGoToLine_triggered();
+	void on_actionToggleComment_triggered();
+	void on_actionIndent_triggered();
+	void on_actionUnindent_triggered();
+	void on_actionNormalizeIndentation_triggered();
+	void on_actionDuplicateLine_triggered();
+	void on_actionMoveLineUp_triggered();
+	void on_actionMoveLineDown_triggered();
 	void on_actionRun_triggered();
 	void on_actionStop_triggered();
+	void on_actionWordWrap_toggled(bool checked);
+	void on_actionShowWhitespace_toggled(bool checked);
 	void on_edit_textChanged();
 	void on_python_finished(bool b);
 
@@ -56,9 +78,28 @@ signals:
 
 private:
 	void updateWindowTitle();
+	bool openScript(const QString& filePath);
+	bool saveScript();
+	bool saveScriptAs();
+	bool saveModifiedScript();
+	bool findText(bool forward);
+	bool promptFindText();
+	bool promptReplaceText();
+	void replaceCurrent();
+	int replaceAll();
+	void goToLine(int line);
+	void toggleCommentSelection();
+	void indentSelection();
+	void unindentSelection();
+	void normalizeIndentation();
+	void moveSelectedLines(int direction);
+	void autoIndent();
 
 private:
 	Ui::CPythonEditor* ui;
 	CMainWindow* mainWnd;
 	QString fileName;
+	QString m_findText;
+	QString m_replaceText;
+	QElapsedTimer m_runTimer;
 };

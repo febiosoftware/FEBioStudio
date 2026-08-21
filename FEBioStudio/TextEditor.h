@@ -12,7 +12,8 @@ public:
 		XML,
 		CODE,
 		CMAKE,
-		PYTHON
+		PYTHON,
+		FEBCODE
 	};
 
 public:
@@ -28,12 +29,15 @@ public:
 	void deleteLine();
 
 	void useDarkTheme(bool b);
+	void setShowWhitespace(bool b);
+	bool showWhitespace() const;
 
 protected:
 	void resizeEvent(QResizeEvent* event) override;
 	void paintEvent(QPaintEvent* event) override;
 	void wheelEvent(QWheelEvent* ev) override;
 	void SetHighlighter(QTextDocument* doc, TextFormat fmt);
+	void paintWhitespace(QPainter& painter);
 
 private slots:
 	void updateLineNumberAreaWidth(int newBlockCount);
@@ -44,6 +48,7 @@ private:
 	QWidget*			lineNumberArea;
 	QPair<int, int>		m_countCache;
 	bool				m_useDarkTheme;
+	bool				m_showWhitespace;
 };
 
 class LineNumberArea : public QWidget

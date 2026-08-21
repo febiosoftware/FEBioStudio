@@ -28,12 +28,12 @@ SOFTWARE.*/
 #include <FSCore/FileWriter.h>
 #include <string>
 
-class FSProject;
+class FSModel;
 
 class FSFileExport : public FileWriter
 {
 public:
-	FSFileExport(FSProject& prj);
+	FSFileExport();
 	virtual ~FSFileExport();
 
 	void ClearLog();
@@ -46,5 +46,4 @@ protected:
 
 protected:
 	std::string	m_err;	// error message
-	FSProject&	m_prj;
 };

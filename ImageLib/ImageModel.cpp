@@ -103,7 +103,7 @@ void CImageModel::Render(GLRenderEngine& re, GLContext& rc)
 
 	re.pushTransform();
 
-	BOX box = GetBoundingBox();
+	BoundingBox box = GetBoundingBox();
 	vec3d r0 = box.r0();
 	vec3d r1 = box.r1();
 	re.translate(r0);
@@ -125,10 +125,10 @@ void CImageModel::Render(GLRenderEngine& re, GLContext& rc)
 
 	if (ShowBox())
 	{
-		BOX box = GetBoundingBox();
+		BoundingBox box = GetBoundingBox();
 		vec3d r0 = box.r0();
 		vec3d r1 = box.r1();
-		BOX localBox(vec3d(0, 0, 0), r1 - r0);
+		BoundingBox localBox(vec3d(0, 0, 0), r1 - r0);
 		glx::renderBox(re, localBox, GLColor(255, 128, 128), false);
 	}
 
@@ -225,17 +225,17 @@ void CImageModel::RemoveAnalysis(CImageAnalysis* analysis)
     m_analyses.Remove(analysis);
 }
 
-BOX CImageModel::GetBoundingBox()
+BoundingBox CImageModel::GetBoundingBox()
 {
     if(m_img && m_img->Get3DImage())
     {
         return m_img->Get3DImage()->GetBoundingBox();
     }
 
-    return BOX(0,0,0,1,1,1);
+    return BoundingBox(0,0,0,1,1,1);
 }
 
-void CImageModel::SetBoundingBox(BOX b)
+void CImageModel::SetBoundingBox(BoundingBox b)
 {
     if(m_img && m_img->Get3DImage())
     {

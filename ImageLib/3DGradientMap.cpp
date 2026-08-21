@@ -31,7 +31,7 @@ SOFTWARE.*/
 // C3DGradientMap
 //=============================================================================
 
-C3DGradientMap::C3DGradientMap(C3DImage& im, BOX box) : m_im(im), m_box(box)
+C3DGradientMap::C3DGradientMap(C3DImage& im, BoundingBox box) : m_im(im), m_box(box)
 {
 
 }

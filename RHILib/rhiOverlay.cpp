@@ -176,12 +176,10 @@ void OverlayRenderPass::create(QRhiSwapChain* sc)
 	GLMesh* gltriad = buildTriadMesh();
 	triadMesh.reset(new rhi::TriMesh<TriadShader::Vertex>(m_rhi));
 	triadMesh->CreateFromGLMesh(gltriad);
-	triadMesh->setShaderResource(TriadShader::createShaderResource(m_rhi, m_globalBuf.get()));
 	triadMesh->getSubMesh(0)->SetActive(true);
+	m_triadSR.reset(TriadShader::createShaderResource(m_rhi, m_globalBuf.get()));
 
-	GLMaterial mat;
-	mat.diffuseMap = GLMaterial::VERTEX_COLOR;
-	triadMesh->setMaterial(mat);
+	m_triadMat.diffuseMap = GLMaterial::VERTEX_COLOR;
 	delete gltriad;
 }
 
@@ -250,8 +248,16 @@ void OverlayRenderPass::update(QRhiResourceUpdateBatch* u)
 	m_glob.setMat4(0, proj);
 	u->updateDynamicBuffer(m_globalBuf.get(), 0, m_glob.size(), m_glob.data());
 
-	triadMesh->setModelView(m_overlayVM);
 	triadMesh->Update(u);
+
+	rhi::MeshRenderItem triadItem;
+	triadItem.subMesh = triadMesh->getSubMesh(0);
+	triadItem.mat = m_triadMat;
+	triadItem.sr = m_triadSR.get();
+	triadItem.mvMatrix = m_overlayVM;
+
+	m_triadSR->setData(triadItem);
+	m_triadSR->update(u);
 }
 
 void OverlayRenderPass::draw(QRhiCommandBuffer* cb)
@@ -277,5 +283,10 @@ void OverlayRenderPass::drawTriad(QRhiCommandBuffer* cb)
 	cb->setViewport({ vp[0], vp[1], vp[2], vp[3] });
 	cb->setGraphicsPipeline(m_triadPass->pipeline());
 	cb->setShaderResources();
-	triadMesh->Draw(cb);
+	triadMesh->BindVertexBuffer(cb);
+
+	rhi::SubMesh& sm = *triadMesh->getSubMesh(0);
+
+	cb->setShaderResources(m_triadSR->get());
+	cb->draw(sm.vertexCount, 1, sm.vertexStart);
 }

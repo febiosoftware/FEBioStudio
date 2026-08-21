@@ -73,10 +73,10 @@ void FSCurveMesh::Clear()
 
 //-----------------------------------------------------------------------------
 // calculte the bounding box of the mesh
-BOX FSCurveMesh::BoundingBox() const
+BoundingBox FSCurveMesh::GetBoundingBox() const
 {
-	if (m_Node.empty()) return BOX();
-	BOX b(m_Node[0].r, m_Node[0].r);
+	if (m_Node.empty()) return BoundingBox();
+	BoundingBox b(m_Node[0].r, m_Node[0].r);
 	for (size_t i=1; i<m_Node.size(); ++i) b += m_Node[i].r;
 	return b;
 }

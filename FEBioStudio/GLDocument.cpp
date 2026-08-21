@@ -117,11 +117,11 @@ int CGLDocument::GetUnitSystem() const
 
 FESelection* CGLDocument::GetCurrentSelection() { return m_psel; }
 
-BOX CGLDocument::GetSelectionBox()
+BoundingBox CGLDocument::GetSelectionBox()
 {
-	if (!IsValid()) return BOX(-1, -1, -1, 1, 1, 1);
+	if (!IsValid()) return BoundingBox(-1, -1, -1, 1, 1, 1);
 
-	BOX box;
+	BoundingBox box;
 	FESelection* currentSelection = GetCurrentSelection();
 	if (currentSelection && currentSelection->Size())
 	{
@@ -174,7 +174,7 @@ void CGLDocument::Update()
 
 void CGLDocument::ZoomSelection(bool forceZoom)
 {
-	BOX box = GetSelectionBox();
+	BoundingBox box = GetSelectionBox();
 	GLScene* scene = GetScene();
 	if (box.IsValid() && scene)
 	{

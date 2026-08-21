@@ -318,7 +318,7 @@ void CImageMapTool::OnCreate()
         elems.push_back(it->m_pi);
     }
 
-    BOX box = imageModel->GetBoundingBox();
+	BoundingBox box = imageModel->GetBoundingBox();
     vec3d origin(box.x0, box.y0, box.z0);
     vec3d spacing((box.x1-box.x0)/imageModel->Get3DImage()->Width(), 
         (box.y1-box.y0)/imageModel->Get3DImage()->Height(),

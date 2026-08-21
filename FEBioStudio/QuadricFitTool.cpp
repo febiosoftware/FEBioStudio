@@ -33,7 +33,7 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include "ModelDocument.h"
-#include <MeshTools/QuadricFit.h>
+#include <FECore/QuadricFit.h>
 #include <MeshTools/PointCloud3d.h>
 #include <GeomLib/GObject.h>
 
@@ -93,10 +93,10 @@ bool CQuadricFitTool::OnApply()
             }
         }
         
-        PointCloud3d* pc = new PointCloud3d();
+        std::vector<vec3d> pc;
         for (int i = 0; i<N; ++i)
         {
-            if (mesh.Node(i).m_ntag == 1) pc->AddPoint(mesh.Node(i).r);
+            if (mesh.Node(i).m_ntag == 1) pc.push_back(mesh.Node(i).r);
         }
         
         // find the best fit sphere

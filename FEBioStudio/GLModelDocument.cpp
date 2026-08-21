@@ -37,9 +37,9 @@ float CGLModelDocument::GetCurrentTimeValue()
 
 }
 
-BOX CGLModelDocument::GetBoundingBox()
+BoundingBox CGLModelDocument::GetBoundingBox()
 {
-	BOX box;
+	BoundingBox box;
 	if (GetFSModel()) 
 		box = GetFSModel()->GetBoundingBox();
 	return box;

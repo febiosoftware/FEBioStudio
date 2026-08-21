@@ -57,7 +57,7 @@ class CGLSlicePlot : public CGLPlot
 public:
 	CGLSlicePlot();
 
-	void SetBoundingBox(BOX box) { m_box = box; }
+	void SetBoundingBox(BoundingBox box) { m_box = box; }
 
 	int GetSlices();
 	void SetSlices(int nslices);
@@ -103,7 +103,7 @@ protected:
 
 protected:
 	int			m_nslices;	// nr. of iso surface slices
-	BOX			m_box;		// box to use for slices	
+	BoundingBox			m_box;		// box to use for slices	
 	vec3f		m_norm;
 
 	int			m_nrange;		//!< range option (0=dynamic, 1=user)

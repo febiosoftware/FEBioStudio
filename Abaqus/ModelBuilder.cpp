@@ -637,7 +637,7 @@ bool ModelBuilder::BuildPhysics(AbaqusModel& inp, FSModel& fem)
 		for (int i = 0; i < amp.m_points.size(); ++i)
 		{
 			vec2d p = amp.m_points[i];
-			lc.Add(p.x(), p.y());
+			lc.Add(p.x, p.y);
 		}
 		if (amp.m_type == AbaqusModel::Amplitude::AMP_TABULAR) lc.SetInterpolator(LoadCurve::LINEAR);
 		if (amp.m_type == AbaqusModel::Amplitude::AMP_SMOOTH_STEP) lc.SetInterpolator(LoadCurve::SMOOTH_STEP);

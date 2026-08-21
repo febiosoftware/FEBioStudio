@@ -198,7 +198,7 @@ private:
 	};
 
 public:
-	FEBioExport3(FSProject& prj);
+	FEBioExport3(FSModel& fem);
 	virtual ~FEBioExport3();
 
 	void Clear();
@@ -212,8 +212,8 @@ public: // set export attributes
 	void SetWriteNotesFlag(bool b) { m_writeNotes = b; }
 
 protected:
-	bool PrepareExport(FSProject& prj);
-	void BuildItemLists(FSProject& prj);
+	bool PrepareExport();
+	void BuildItemLists();
 
 public:
 	void WriteModuleSection(FSStep* pstep);
@@ -321,8 +321,6 @@ public:
 	void WriteElementList(FSElemList& el);
 
 protected:
-	FSModel*		m_pfem;
-
 	bool	m_useReactionMaterial2;
 	bool	m_writeControlSection;	// write Control section for single step analysis
 

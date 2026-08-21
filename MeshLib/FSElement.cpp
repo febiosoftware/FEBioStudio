@@ -58,6 +58,7 @@ FSElement_::FSElement_()
 // Set the element type. This also sets some other type related data
 void FSElement_::SetType(int ntype)
 {
+	assert(ntype != 0);
 	m_traits = FSElementLibrary::GetTraits(ntype);
 	assert(m_traits);
 }
@@ -953,27 +954,27 @@ FSElement& FSElement::operator = (const FSElement& el)
 	return *this;
 }
 
-int ET_LINE[1][2] = {
+int EL_LINE[1][2] = {
 	{ 0, 1 }};
 
-int ET_QUAD[4][2] = {
+int EL_QUAD[4][2] = {
 	{ 0, 1 },
 	{ 1, 2 },
 	{ 2, 3 },
 	{ 3, 0 } };
 
-int ET_QUAD8[4][3] = {
+int EL_QUAD8[4][3] = {
 	{ 0, 1, 4 },
 	{ 1, 2, 5 },
 	{ 2, 3, 6 },
 	{ 3, 0, 7 } };
 
-int ET_TRI[3][2] = {
+int EL_TRI[3][2] = {
 	{ 0, 1 },
 	{ 1, 2 },
 	{ 2, 0 } };
 
-int ET_TRI6[3][3] = {
+int EL_TRI6[3][3] = {
 	{ 0, 1, 3 },
 	{ 1, 2, 4 },
 	{ 2, 0, 5 } };

@@ -781,7 +781,7 @@ void CDlgFEBioOptimize::on_addData_clicked()
 		for (int i = 0; i < pts.size(); ++i)
 		{
 			vec2d& p = pts[i];
-			ui->addDataPoint(p.x(), p.y());
+			ui->addDataPoint(p.x, p.y);
 		}
 	}
 }

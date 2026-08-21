@@ -190,7 +190,7 @@ void CMeshToImageTool::OnCreate()
 
     C3DImage img;
     img.Create(ui->m_xPixels->value(), ui->m_yPixels->value(), ui->m_zPixels->value());
-    BOX box = pm->GetBoundingBox();
+	BoundingBox box = pm->GetBoundingBox();
     img.SetBoundingBox(box);
 
     FSFindElement finder(*pm);

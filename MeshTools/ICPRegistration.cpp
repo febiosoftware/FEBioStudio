@@ -185,7 +185,7 @@ Transform GICPRegistration::Register(const vector<vec3d>& X, const vector<vec3d>
 	vec3d cx0 = CenterOfMass(X);
 
 	// estimate the size of the model so we can make the error dimensionless
-	BOX box(P0[0], P0[0]);
+	BoundingBox box(P0[0], P0[0]);
 	for (int i = 1; i < NP; ++i) box += P0[i];
 	double R = box.Radius();
 

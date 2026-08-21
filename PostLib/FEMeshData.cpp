@@ -33,7 +33,7 @@ SOFTWARE.*/
 using namespace Post;
 using namespace std;
 
-extern int ET_HEX[12][2];
+extern int EL_HEX[12][2];
 extern int DIAG_HEX[16][2];
 
 //-----------------------------------------------------------------------------
@@ -1301,7 +1301,7 @@ void MaxEdgeAngle::eval(int iel, float* pv)
 	vec3f et[12];
 	for (int i = 0; i<12; ++i)
 	{
-		et[i] = rt[ ET_HEX[i][1]] - rt[ ET_HEX[i][0] ];
+		et[i] = rt[EL_HEX[i][1]] - rt[EL_HEX[i][0] ];
 		et[i].Normalize();
 	}
 
@@ -1365,7 +1365,7 @@ void MinEdgeAngle::eval(int iel, float* pv)
 	vec3f et[12];
 	for (int i=0; i<12; ++i)
 	{
-		et[i] = rt[ ET_HEX[i][1]] - rt[ ET_HEX[i][0] ];
+		et[i] = rt[ EL_HEX[i][1]] - rt[ EL_HEX[i][0] ];
 		et[i].Normalize();
 	}
 

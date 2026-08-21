@@ -357,7 +357,7 @@ void CDrawROI::startNewCircleNeg()
 void CDrawROI::resizeEvent(QResizeEvent* event)
 {
     QSize newSize = event->size();
-    BOX box = m_model->GetBoundingBox();
+	BoundingBox box = m_model->GetBoundingBox();
 
     float xScale = box.Height()/newSize.width();
     float yScale = box.Depth()/newSize.height();

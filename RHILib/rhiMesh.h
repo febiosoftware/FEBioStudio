@@ -42,6 +42,7 @@ namespace rhi {
 	};
 
 	class SubMesh;
+	class MeshRenderItem;
 
 	// base class for mesh shaders resources
 	class MeshShaderResource
@@ -50,7 +51,7 @@ namespace rhi {
 		MeshShaderResource(QRhi* rhi) : m_rhi(rhi) {}
 		virtual ~MeshShaderResource() {}
 
-		virtual void setData(const SubMesh& m) {}
+		virtual void setData(const MeshRenderItem& m) {}
 
 		QRhiShaderResourceBindings* get() { return srb.get(); }
 
@@ -68,7 +69,7 @@ namespace rhi {
 	class SubMesh
 	{
 	public:
-		SubMesh(Mesh* msh, unsigned int n0, unsigned int ncount, rhi::MeshShaderResource* shaderResource = nullptr) : sr(shaderResource)
+		SubMesh(Mesh* msh, unsigned int n0, unsigned int ncount)
 		{
 			mesh = msh;
 			vertexStart = n0;
@@ -76,38 +77,13 @@ namespace rhi {
 			isActive = false;
 		}
 
-		void SetMaterial(const GLMaterial& material) { mat = material; }
-
-		void SetModelView(const QMatrix4x4& mv)
-		{
-			mvMatrix = mv;
-		}
-
 		void SetActive(bool b) { isActive = b; }
-
-		void DoClipping(bool b) { doClipping = b; }
-
-		void Update(QRhiResourceUpdateBatch* u)
-		{
-			if (sr) {
-				sr->setData(*this);
-				sr->update(u);
-			}
-		}
 
 	public:
 		rhi::Mesh* mesh = nullptr;
 		bool isActive = false;
 		unsigned int vertexStart = 0;
 		unsigned int vertexCount = 0;
-
-	public:
-		GLMaterial mat;
-		bool doClipping = false;
-		QMatrix4x4 mvMatrix; // model view
-
-	public:
-		std::unique_ptr<MeshShaderResource> sr; // shader resources
 	};
 
 	// base class for meshes.
@@ -133,35 +109,7 @@ namespace rhi {
 
 		void Update(QRhiResourceUpdateBatch* u);
 
-		void Draw(QRhiCommandBuffer* cb);
-
-		void setShaderResource(rhi::MeshShaderResource* sr, int subMeshIndex = -1)
-		{
-			subMeshIndex += 1;
-			if ((subMeshIndex >= 0) && (subMeshIndex <= (int)submeshes.size()))
-			{
-				submeshes[subMeshIndex]->sr.reset(sr);
-			}
-		}
-
-		void setMaterial(const GLMaterial& mat, int subMeshIndex = -1)
-		{
-			subMeshIndex += 1;
-			if ((subMeshIndex >= 0) && (subMeshIndex <= (int)submeshes.size()))
-			{
-				submeshes[subMeshIndex]->SetMaterial(mat);
-			}
-		}
-
-		void setModelView(const QMatrix4x4& mv, int subMeshIndex = -1)
-		{
-			subMeshIndex += 1;
-			if ((subMeshIndex >= 0) && (subMeshIndex <= (int)submeshes.size()))
-			{
-				if (subMeshIndex >= (int)submeshes.size()) return;
-				submeshes[subMeshIndex]->SetModelView(mv);
-			}
-		}
+		void BindVertexBuffer(QRhiCommandBuffer* cb);
 
 	protected:
 		void create(unsigned int vertices, unsigned int sizeOfVertex, const void* data);
@@ -180,4 +128,15 @@ namespace rhi {
 	public:
 		static size_t uploadedBytes;
 	};
+
+	struct MeshRenderItem
+	{
+		rhi::SubMesh* subMesh = nullptr;
+		GLMaterial mat;
+		bool doClipping = false;
+		QMatrix4x4 mvMatrix; // model view
+		MeshShaderResource* sr = nullptr;
+		bool invertFaces = false;
+	};
+
 } // rhi

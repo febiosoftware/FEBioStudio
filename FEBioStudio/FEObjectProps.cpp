@@ -40,9 +40,13 @@ SOFTWARE.*/
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
 #include <FEMLib/GDiscreteObject.h>
+#include <FSCore/util.h>
 #include "ModelDocument.h"
 #include "Commands.h"
 #include "FEBioJob.h"
+#include "FEBioStudio.h"
+#include "MainWindow.h"
+
 using namespace std;
 
 //=======================================================================================
@@ -96,7 +100,7 @@ QStringList GetFEBioChoices(int moduleId, int superClassId)
 
 CStepSettings::CStepSettings(FSProject& prj)
 {
-	m_moduleId = prj.GetModule();
+	m_moduleId = prj.GetFSModel().GetModule();
 }
 
 void CStepSettings::BuildProperties()
@@ -393,16 +397,16 @@ QVariant CMaterialProps::GetPropertyValue(int i)
 			if (i == 3) return fiber->m_n[2] + 1;
 			break;
 		case FE_FIBER_CYLINDRICAL:
-			if (i == 1) return Vec3dToString(fiber->m_r);
-			if (i == 2) return Vec3dToString(fiber->m_a);
-			if (i == 3) return Vec3dToString(fiber->m_d);
+			if (i == 1) return QString::fromStdString(Vec3dToString(fiber->m_r));
+			if (i == 2) return QString::fromStdString(Vec3dToString(fiber->m_a));
+			if (i == 3) return QString::fromStdString(Vec3dToString(fiber->m_d));
 			break;
 		case FE_FIBER_SPHERICAL:
-			if (i == 1) return Vec3dToString(fiber->m_r);
-			if (i == 2) return Vec3dToString(fiber->m_d);
+			if (i == 1) return QString::fromStdString(Vec3dToString(fiber->m_r));
+			if (i == 2) return QString::fromStdString(Vec3dToString(fiber->m_d));
 			break;
 		case FE_FIBER_VECTOR:
-			if (i == 1) return Vec3dToString(fiber->m_a);
+			if (i == 1) return QString::fromStdString(Vec3dToString(fiber->m_a));
 			break;
 		case FE_FIBER_USER:
 			break;
@@ -411,12 +415,12 @@ QVariant CMaterialProps::GetPropertyValue(int i)
 			if (i == 2) return fiber->m_phi;
 			break;
 		case FE_FIBER_POLAR:
-			if (i == 1) return Vec3dToString(fiber->m_r);
-			if (i == 2) return Vec3dToString(fiber->m_a);
+			if (i == 1) return QString::fromStdString(Vec3dToString(fiber->m_r));
+			if (i == 2) return QString::fromStdString(Vec3dToString(fiber->m_a));
 			if (i == 3) return fiber->m_R0;
-			if (i == 4) return Vec3dToString(fiber->m_d0);
+			if (i == 4) return QString::fromStdString(Vec3dToString(fiber->m_d0));
 			if (i == 5) return fiber->m_R1;
-			if (i == 6) return Vec3dToString(fiber->m_d1);
+			if (i == 6) return QString::fromStdString(Vec3dToString(fiber->m_d1));
 			break;
 		}
 	}
@@ -432,8 +436,8 @@ QVariant CMaterialProps::GetPropertyValue(int i)
 			if (i == 3) return m_mat->m_axes->m_n[2] + 1;
 			break;
 		case MaterialAxesGeneratorType::AXES_VECTOR:
-			if (i == 1) return Vec3dToString(m_mat->m_axes->m_a);
-			if (i == 2) return Vec3dToString(m_mat->m_axes->m_d);
+			if (i == 1) return QString::fromStdString(Vec3dToString(m_mat->m_axes->m_a));
+			if (i == 2) return QString::fromStdString(Vec3dToString(m_mat->m_axes->m_d));
 			break;
         case MaterialAxesGeneratorType::AXES_ANGLES:
             if (i == 1) return m_mat->m_axes->m_theta;
@@ -477,16 +481,16 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 			if (i == 2) { fiber->m_n[1] = v.toInt() - 1; return; }
 			break;
 		case FE_FIBER_CYLINDRICAL:
-			if (i == 1) { fiber->m_r = StringToVec3d(v.toString()); return; }
-			if (i == 2) { fiber->m_a = StringToVec3d(v.toString()); return; }
-			if (i == 3) { fiber->m_d = StringToVec3d(v.toString()); return; }
+			if (i == 1) { fiber->m_r = StringToVec3d(v.toString().toStdString()); return; }
+			if (i == 2) { fiber->m_a = StringToVec3d(v.toString().toStdString()); return; }
+			if (i == 3) { fiber->m_d = StringToVec3d(v.toString().toStdString()); return; }
 			break;
 		case FE_FIBER_SPHERICAL:
-			if (i == 1) { fiber->m_r = StringToVec3d(v.toString()); return; }
-			if (i == 2) { fiber->m_d = StringToVec3d(v.toString()); return; }
+			if (i == 1) { fiber->m_r = StringToVec3d(v.toString().toStdString()); return; }
+			if (i == 2) { fiber->m_d = StringToVec3d(v.toString().toStdString()); return; }
 			break;
 		case FE_FIBER_VECTOR:
-			if (i == 1) { fiber->m_a = StringToVec3d(v.toString()); return; }
+			if (i == 1) { fiber->m_a = StringToVec3d(v.toString().toStdString()); return; }
 			break;
 		case FE_FIBER_USER:
 			break;
@@ -495,12 +499,12 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 			if (i == 2) { fiber->m_phi = v.toFloat(); return; }
 			break;
 		case FE_FIBER_POLAR:
-			if (i == 1) { fiber->m_r = StringToVec3d(v.toString()); return; }
-			if (i == 2) { fiber->m_a = StringToVec3d(v.toString()); return; }
+			if (i == 1) { fiber->m_r = StringToVec3d(v.toString().toStdString()); return; }
+			if (i == 2) { fiber->m_a = StringToVec3d(v.toString().toStdString()); return; }
 			if (i == 3) { fiber->m_R0 = v.toFloat(); return; }
-			if (i == 4) { fiber->m_d0 = StringToVec3d(v.toString()); return; }
+			if (i == 4) { fiber->m_d0 = StringToVec3d(v.toString().toStdString()); return; }
 			if (i == 5) { fiber->m_R1 = v.toFloat(); return; }
-			if (i == 6) { fiber->m_d1 = StringToVec3d(v.toString()); return; }
+			if (i == 6) { fiber->m_d1 = StringToVec3d(v.toString().toStdString()); return; }
 			break;
 		}
 	}
@@ -530,8 +534,8 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 			if (i == 3) { m_mat->m_axes->m_n[2] = v.toInt() - 1; return; }
 			break;
 		case MaterialAxesGeneratorType::AXES_VECTOR:
-			if (i == 1) { m_mat->m_axes->m_a = StringToVec3d(v.toString()); return; }
-			if (i == 2) { m_mat->m_axes->m_d = StringToVec3d(v.toString()); return; }
+			if (i == 1) { m_mat->m_axes->m_a = StringToVec3d(v.toString().toStdString()); return; }
+			if (i == 2) { m_mat->m_axes->m_d = StringToVec3d(v.toString().toStdString()); return; }
 			break;
         case MaterialAxesGeneratorType::AXES_ANGLES:
             if (i == 1) { m_mat->m_axes->m_theta = v.toFloat(); return; }
@@ -850,7 +854,7 @@ QVariant CImageModelProperties::GetPropertyValue(int i)
 	CImageModel* imgModel = m_pobj;
 	if (imgModel == nullptr) return QVariant();
 
-    BOX box = imgModel->GetBoundingBox();
+	BoundingBox box = imgModel->GetBoundingBox();
 
     switch (i)
     {
@@ -902,7 +906,7 @@ void CImageModelProperties::SetPropertyValue(int i, const QVariant& v)
 	CImageModel* imgModel = m_pobj;
 	if (imgModel == nullptr) return;
 
-    BOX box = imgModel->GetBoundingBox();
+	BoundingBox box = imgModel->GetBoundingBox();
 
     switch (i)
     {
@@ -1153,4 +1157,25 @@ void FSGlobalsProps::SetFSObject(FSObject* po)
 {
 	Clear();
 	BuildParamList(m_fem);
+}
+
+void CScriptSettings::BuildProperties()
+{
+	Clear();
+	addProperty("script:", CProperty::Action, "Edit ...")->setFlags(CProperty::Editable | CProperty::Visible);
+}
+
+QVariant CScriptSettings::GetPropertyValue(int i)
+{
+	return QVariant();
+}
+
+void CScriptSettings::SetPropertyValue(int i, const QVariant& v)
+{
+	FEBCodeScript* script = dynamic_cast<FEBCodeScript*>(m_pobj);
+	if (script && (i == 0))
+	{
+		CMainWindow* wnd = FBS::getMainWindow();
+		wnd->OpenCodeEditor(QString::fromStdString(script->GetName()));
+	}
 }
