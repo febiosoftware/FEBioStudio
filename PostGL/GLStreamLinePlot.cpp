@@ -432,6 +432,7 @@ void CGLStreamLinePlot::ColorStreamLines()
 	const CColorMap& col = ColorMapManager::GetColorMap(ncol);
 
 	int NSL = (int)m_streamLines.size();
+#pragma omp parallel for schedule (dynamic, 1)
 	for (int i=0; i<NSL; ++i)
 	{
 		StreamLine& sl = m_streamLines[i];
@@ -453,32 +454,47 @@ void CGLStreamLinePlot::UpdateMesh()
 
 	// count vertices
 	int verts = 0;
+	int edges = 0;
 	for (int i = 0; i < NSL; ++i)
 	{
 		StreamLine& sl = m_streamLines[i];
+		sl.vertex_offset = verts;
+		sl.edge_offset = edges;
 		if (sl.Points() > 1)
+		{
 			verts += 2*(sl.Points() - 2) + 2;
+			edges += sl.Points() - 1;
+		}
 	}
 
-	m_mesh.Clear();
+	m_mesh.Create(verts, 0, edges);
 
 	// build mesh
-	vec3f vr[2];
-	GLColor vc[2];
+#pragma omp parallel for schedule(dynamic, 1)
 	for (int i = 0; i < NSL; ++i)
 	{
 		StreamLine& sl = m_streamLines[i];
 		int NP = sl.Points();
 		if (NP > 1)
 		{
+			int n0 = sl.vertex_offset;
+			int e0 = sl.edge_offset;
 			for (int j = 0; j < NP - 1; ++j)
 			{
 				StreamPoint& p0 = sl[j];
 				StreamPoint& p1 = sl[j+1];
 
-				vr[0] = p0.r; vc[0] = p0.c;
-				vr[1] = p1.r; vc[1] = p1.c;
-				m_mesh.AddEdge(vr, vc);
+				GLMesh::NODE& v0 = m_mesh.Node(n0 + 2*j);
+				v0.r = p0.r;
+				GLMesh::NODE& v1 = m_mesh.Node(n0 + 2*j + 1);
+				v1.r = p1.r;
+
+				GLMesh::EDGE& e = m_mesh.Edge(e0 + j);
+				e.pid = 0;
+				e.n[0] = n0 + 2 * j;
+				e.n[1] = n0 + 2 * j + 1;
+				e.vr[0] = p0.r; e.vr[1] = p1.r;
+				e.c[0] = p0.c; e.c[1] = p1.c;
 			}
 		}
 	}
