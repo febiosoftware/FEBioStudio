@@ -179,18 +179,20 @@ void CGLParticleFlowPlot::Update(int ntime, float dt, bool breset)
 	if (m_nvec == -1) return;
 
 	CGLModel* mdl = GetModel();
+	FSMeshBase* pm = mdl->GetActiveMesh();
 
 	// see if we need to revaluate the FSFindElement object
 	// We evaluate it when the plot needs to be reset, or when the model has a displacement map
 	bool bdisp = mdl->HasDisplacementMap();
 	if (breset || bdisp)
 	{
+		if (m_find && m_find->GetMesh() != pm) { delete m_find; m_find = nullptr; }
+
 		if (m_find == nullptr) m_find = new FSFindElement(*mdl->GetActiveMesh());
 		// choose reference frame or current frame, depending on whether we have a displacement map
 		m_find->Init(bdisp ? 1 : 0);
 	}
 
-	FSMeshBase* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	if (m_map.States() == 0)
