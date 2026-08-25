@@ -64,6 +64,8 @@ public:
 
 	BoundingBox GetBoundingBox() const { return m_bound.m_box; }
 
+	FSCoreMesh* GetMesh() { return &m_mesh; }
+
 private:
 	void InitReferenceFrame(std::vector<bool>& flags);
 	void InitCurrentFrame(std::vector<bool>& flags);

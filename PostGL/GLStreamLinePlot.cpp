@@ -183,10 +183,14 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 	bool bdisp = mdl->HasDisplacementMap();
 	if (breset || bdisp)
 	{
+		if (m_find && m_find->GetMesh() != pm) { delete m_find; m_find = nullptr; }
+
 		if (m_find == nullptr) m_find = new FSFindElement(*mdl->GetActiveMesh());
 		// choose reference frame or current frame, depending on whether we have a displacement map
 		m_find->Init(bdisp ? 1 : 0);
 	}
+	assert(m_find);
+	if (m_find == nullptr) return;
 
 	if (m_map.States() == 0)
 	{

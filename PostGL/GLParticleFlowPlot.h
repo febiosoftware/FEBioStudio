@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GLPlot.h"
 #include <MeshLib/FSMesh.h>
 #include <MeshLib/FSFindElement.h>
+#include <GLLib/GLMesh.h>
 
 namespace Post {
 
@@ -116,6 +117,8 @@ protected:
 public:
 	void UpdateParticleColors();
 
+	void UpdateMesh();
+
 private:
 	int		m_nvec;	// vector field
 	float	m_dt;	// time increment
@@ -139,5 +142,8 @@ private:
 	FSFindElement*	m_find;
 
 	std::vector<FlowParticle>	m_particles;
+
+	GLMesh m_pointMesh;
+	GLMesh m_lineMesh;
 };
 }

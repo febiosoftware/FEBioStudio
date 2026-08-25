@@ -158,77 +158,15 @@ void CGLParticleFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 	int NP = (int) m_particles.size();
 	if (NP == 0) return;
 
-	re.setMaterial(GLMaterial::CONSTANT, GLColor::White());
-
-	// build a point mesh
-	GLMesh mesh;
-	for (int i=0; i<NP; ++i)
-	{
-		FlowParticle& p = m_particles[i];
-		if (p.m_balive) mesh.AddNode(p.m_r, p.m_col);
-	}
-
 	// render the points
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
-	re.renderGMeshNodes(mesh, false);
+	re.renderGMeshNodes(m_pointMesh, false);
 
 	if (m_showPath)
 	{
-		int ntime = GetModel()->CurrentTimeIndex();
-		if (ntime >= m_seedTime + 1)
-		{
-			// count line segments
-			int lines = 0;
-			for (int i = 0; i < NP; ++i)
-			{
-				FlowParticle& p = m_particles[i];
-
-				int tend = ntime;
-				if (tend > p.m_ndeath) tend = p.m_ndeath;
-
-				int n0 = m_seedTime;
-				if (m_pathLength > 0)
-				{
-					n0 = ntime - m_pathLength;
-					if (n0 < m_seedTime) n0 = m_seedTime;
-					if (n0 > tend) n0 = tend;
-				}
-
-				lines += tend - n0 + 1;
-			}
-
-			// allocate line mesh
-			GLMesh lineMesh;
-
-			re.setColor(GLColor::Blue());
-			for (int i = 0; i<NP; ++i)
-			{
-				FlowParticle& p = m_particles[i];
-
-				int tend = ntime;
-				if (tend > p.m_ndeath) tend = p.m_ndeath;
-
-				int n0 = m_seedTime;
-				if (m_pathLength > 0)
-				{
-					n0 = ntime - m_pathLength;
-					if (n0 < m_seedTime) n0 = m_seedTime;
-					if (n0 > tend) n0 = tend;
-				}
-
-				vec3f vr[2];
-				for (int n=n0; n<tend; ++n)
-				{
-					vr[0] = p.m_pos[n];
-					vr[1] = p.m_pos[n + 1];
-					lineMesh.AddEdge(vr, 2);
-				}					
-			}
-
-			// render the lines
-			re.setMaterial(GLMaterial::CONSTANT, GLColor::Black());
-			re.renderGMeshEdges(lineMesh, false);
-		}
+		// render the lines
+		re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
+		re.renderGMeshEdges(m_lineMesh, false);
 	}
 }
 
@@ -241,18 +179,20 @@ void CGLParticleFlowPlot::Update(int ntime, float dt, bool breset)
 	if (m_nvec == -1) return;
 
 	CGLModel* mdl = GetModel();
+	FSMeshBase* pm = mdl->GetActiveMesh();
 
 	// see if we need to revaluate the FSFindElement object
 	// We evaluate it when the plot needs to be reset, or when the model has a displacement map
 	bool bdisp = mdl->HasDisplacementMap();
 	if (breset || bdisp)
 	{
+		if (m_find && m_find->GetMesh() != pm) { delete m_find; m_find = nullptr; }
+
 		if (m_find == nullptr) m_find = new FSFindElement(*mdl->GetActiveMesh());
 		// choose reference frame or current frame, depending on whether we have a displacement map
 		m_find->Init(bdisp ? 1 : 0);
 	}
 
-	FSMeshBase* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	if (m_map.States() == 0)
@@ -303,6 +243,7 @@ void CGLParticleFlowPlot::Update(int ntime, float dt, bool breset)
 
 	// update particles
 	UpdateParticles(ntime);
+	UpdateMesh();
 }
 
 void CGLParticleFlowPlot::UpdateParticles(int ntime)
@@ -550,6 +491,54 @@ void CGLParticleFlowPlot::SeedParticles()
             {
                 m_particles.push_back(p);
             }
+		}
+	}
+}
+
+void CGLParticleFlowPlot::UpdateMesh()
+{
+	m_pointMesh.Clear();
+	m_lineMesh.Clear();
+
+	int NP = (int)m_particles.size();
+	if (NP == 0) return;
+
+	// build a point mesh
+	for (int i = 0; i < NP; ++i)
+	{
+		FlowParticle& p = m_particles[i];
+		if (p.m_balive) m_pointMesh.AddNode(p.m_r, p.m_col);
+	}
+
+	// build line mesh
+	if (m_showPath)
+	{
+		int ntime = GetModel()->CurrentTimeIndex();
+		for (int i = 0; i < NP; ++i)
+		{
+			FlowParticle& p = m_particles[i];
+
+			int tend = ntime;
+			if (tend > p.m_ndeath) tend = p.m_ndeath;
+
+			int n0 = m_seedTime;
+			if (m_pathLength > 0)
+			{
+				n0 = ntime - m_pathLength;
+				if (n0 < m_seedTime) n0 = m_seedTime;
+				if (n0 > tend) n0 = tend;
+			}
+
+			vec3f vr[2];
+			GLColor c[2];
+			for (int n = n0; n < tend; ++n)
+			{
+				vr[0] = p.m_pos[n];
+				vr[1] = p.m_pos[n + 1];
+				c[0] = p.m_col;
+				c[1] = p.m_col;
+				m_lineMesh.AddEdge(vr, c);
+			}
 		}
 	}
 }
