@@ -328,10 +328,24 @@ public: // overrides from base class
 				double d = m_A->get(row, col);
 				if      (d > 0) return QBrush(QColor::fromRgb(255, 220, 255));
 				else if (d < 0) return QBrush(QColor::fromRgb(220, 255, 255));
+				else return QBrush(QColor::fromRgb(255, 255, 255));
 			}
 			else
 			{
 				return QBrush(QColor::fromRgb(128, 128, 128));
+			}
+		}
+		if (index.isValid() && (role == Qt::ForegroundRole))
+		{
+			int row = index.row();
+			int col = index.column();
+			if (m_A->check(row, col))
+			{
+				return QBrush(QColor::fromRgb(0, 0, 0));
+			}
+			else
+			{
+				return QBrush(QColor::fromRgb(255, 255, 255));
 			}
 		}
 		if (index.isValid() && (role == Qt::FontRole))
@@ -365,6 +379,7 @@ public:
 	QLineEdit* m_oneNorm;
 	QLineEdit* m_condNumber;
 	QLineEdit* m_bandWidth;
+	QLineEdit* m_maxSymmDiff;
 
 public:
 	void setup(CDlgMatrixInspector* dlg)
@@ -400,11 +415,14 @@ public:
 		pf->addRow("One-norm:"               , m_oneNorm           = new QLineEdit());
 		pf->addRow("Condition Number (est.):", m_condNumber        = new QLineEdit());
 		pf->addRow("Bandwidth:"              , m_bandWidth         = new QLineEdit());
+		pf->addRow("Max Symmetric Difference:", m_maxSymmDiff      = new QLineEdit());
 		m_matrixSize->setReadOnly(true);
 		m_nrNonZeroes->setReadOnly(true);
 		m_nrActualNonZeroes->setReadOnly(true);
 		m_oneNorm->setReadOnly(true);
 		m_condNumber->setReadOnly(true);
+		m_bandWidth->setReadOnly(true);
+		m_maxSymmDiff->setReadOnly(true);
 		matViewLayout->addLayout(pf);
 
 		matView->setLayout(matViewLayout);
@@ -475,6 +493,34 @@ void CDlgMatrixInspector::updateView(int x, int y)
 	ui->view->scrollTo(ui->view->model()->index(y, x));
 }
 
+double max_symmetric_difference(FEGlobalMatrix* K)
+{
+	if (K == nullptr) return 0.0;
+	SparseMatrixProfile* P = K->GetSparseMatrixProfile();
+	if (P == nullptr) return 0.0;
+	SparseMatrix* A = K->GetSparseMatrixPtr();
+
+	size_t NC = P->Columns();
+	size_t NR = P->Rows();
+	double maxDiff = 0.0;
+	for (size_t j = 0; j < NC; ++j)
+	{
+		SparseMatrixProfile::ColumnProfile& CP = P->Column(j);
+		for (size_t l = 0; l < CP.size(); ++l)
+		{
+			SparseMatrixProfile::RowEntry& rowSpan = CP[l];
+			for (size_t i = rowSpan.start; i <= rowSpan.end; ++i)
+			{
+				double aij = A->get(i, j);
+				double aji = A->get(j, i);
+				double diff = fabs(aij - aji);
+				if (diff > maxDiff) maxDiff = diff;
+			}
+		}
+	}
+	return maxDiff;
+}
+
 void CDlgMatrixInspector::onAnalyze()
 {
 	ui->ClearStats();
@@ -493,6 +539,7 @@ void CDlgMatrixInspector::onAnalyze()
 	{
 		ui->m_oneNorm->setText(QString::number(M->oneNorm()));
 		ui->m_bandWidth->setText(QString::number(M->bandWidth()));
+		ui->m_maxSymmDiff->setText(QString::number(max_symmetric_difference(ui->m_K)));
 		
 		int nnz = M->NonZeroes();
 		int actualNnz = M->actualNonZeroes();

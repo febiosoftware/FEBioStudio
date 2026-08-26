@@ -81,9 +81,9 @@ void FSFindElement::OCTREE_BOX::split(int levels)
 
 void FSFindElement::OCTREE_BOX::Add(BoundingBox& b, int nelem)
 {
-	if (m_level == 0)
+	if (m_box.Intersects(b))
 	{
-		if (m_box.Intersects(b))
+		if (m_level == 0)
 		{
 			OCTREE_BOX* box = new OCTREE_BOX;
 			box->m_box = b;
@@ -92,12 +92,12 @@ void FSFindElement::OCTREE_BOX::Add(BoundingBox& b, int nelem)
 			m_child.push_back(box);
 			return;
 		}
-	}
-	else
-	{
-		for (size_t i = 0; i<m_child.size(); ++i)
+		else
 		{
-			m_child[i]->Add(b, nelem);
+			for (size_t i = 0; i < m_child.size(); ++i)
+			{
+				m_child[i]->Add(b, nelem);
+			}
 		}
 	}
 }
@@ -126,7 +126,7 @@ FSFindElement::OCTREE_BOX* FSFindElement::OCTREE_BOX::Find(const vec3f& r)
 FSFindElement::OCTREE_BOX* FSFindElement::FindBox(const vec3f& r)
 {
 	// make sure it's in the master box
-	if (m_bound.IsInside(r) == false) return 0;
+	if (m_bound.IsInside(r) == false) return nullptr;
 
 	// try to find the child
 	OCTREE_BOX* b = &m_bound;
@@ -135,7 +135,7 @@ FSFindElement::OCTREE_BOX* FSFindElement::FindBox(const vec3f& r)
 		if (b->m_level == 0)
 		{
 			bool inside = b->IsInside(r);
-			return (inside ? b : 0);
+			return (inside ? b : nullptr);
 		}
 
 		bool bfound = false;
@@ -186,7 +186,7 @@ void FSFindElement::InitReferenceFrame(std::vector<bool>& flags)
 
 	int l = (int)(log(NE) / log(8.0));
 	if (l < 0) l = 0;
-	if (l > 3) l = 3;
+	if (l > 5) l = 5;
 	m_bound.split(l);
 
 	// calculate bounding boxes for all elements
@@ -305,9 +305,8 @@ bool FSFindElement::FindInReferenceFrame(const vec3f& x, int& nelem, double r[3]
 {
 	assert(m_nframe == 0);
 
-	vec3f y[FSElement::MAX_NODES];
 	OCTREE_BOX* b = FindBox(x);
-	if (b == 0) return false;
+	if (b == nullptr) return false;
 	assert(b->m_level == 0);
 
 	int NE = (int)b->m_child.size();

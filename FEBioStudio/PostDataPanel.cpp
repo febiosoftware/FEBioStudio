@@ -493,6 +493,7 @@ public:
 		FILTER_EIGEN,
 		FILTER_TIME_RATE,
 		FILTER_NORM_PROJ,
+		FILTER_LIN2QUAD
 	};
 
 public:
@@ -724,6 +725,7 @@ public:
 		pselect->addItem("Eigen vectors");
 		pselect->addItem("Time Derivative");
 		pselect->addItem("Normal projection");
+		pselect->addItem("Linear to Quadratic");
 
 		QLabel* label;
 		label = new QLabel("Filter:");
@@ -811,7 +813,9 @@ public:
 
 		// normal projection
 		QWidget* prjPage = new QWidget;
-	
+
+		// linear to quadratic conversion
+		QWidget* l2qPage = new QWidget;
 
 		QStackedWidget* stack = new QStackedWidget;
 		stack->addWidget(scalePage);
@@ -825,6 +829,7 @@ public:
 		stack->addWidget(pcaPage);
 		stack->addWidget(dtPage);
 		stack->addWidget(prjPage);
+		stack->addWidget(l2qPage);
 
 		pvl->addWidget(stack);
 
@@ -1432,6 +1437,12 @@ void CPostDataPanel::on_AddFilter_triggered()
 				case Ui::CPostDataPanel::FILTER_NORM_PROJ:
 				{
 					newData = SurfaceNormalProjection(fem, pdf, sname);
+					bret = (newData != nullptr);
+				}
+				break;
+				case Ui::CPostDataPanel::FILTER_LIN2QUAD:
+				{
+					newData = LinearToQuadric(fem, pdf, sname);
 					bret = (newData != nullptr);
 				}
 				break;

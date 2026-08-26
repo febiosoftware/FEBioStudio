@@ -69,6 +69,9 @@ public:
 		StreamPoint& operator [] (int i) { return m_pt[i]; }
 
 		vector<StreamPoint>	m_pt;
+
+		int vertex_offset = 0; // offset in the mesh vertex array
+		int edge_offset = 0;   // offset in the mesh edge array
 	};
 
 public:
