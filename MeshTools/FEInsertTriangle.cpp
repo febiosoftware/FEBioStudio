@@ -88,5 +88,30 @@ FSSurfaceMesh* FEInsertTriangle::Apply(FSSurfaceMesh* pm)
     // rebuild the mesh
     mesh->RebuildMesh();
     
+    // unselect all the nodes
+    for (int i=0; i< mesh->Nodes(); ++i) {
+        FSNode& ni = mesh->Node(i);
+        ni.Unselect();
+    }
+    
+    // determine which nodes should remain selected
+    NF = mesh->Faces();
+    face = mesh->Face(NF-1);
+    for (int i=0; i< face.Edges(); ++i) {
+        FSEdge edge = face.GetEdge(i);
+        // check how many faces in the mesh have this edge
+        int count = 0;
+        for (int j=0; j< mesh->Faces(); ++j) {
+            FSFace& oface = mesh->Face(j);
+            if (oface.HasEdge(edge.n[0], edge.n[1])) ++count;
+        }
+        if (count == 1) {
+            FSNode& n0 = mesh->Node(edge.n[0]);
+            n0.Select();
+            FSNode& n1 = mesh->Node(edge.n[1]);
+            n1.Select();
+        }
+    }
+    
     return mesh;
 }
