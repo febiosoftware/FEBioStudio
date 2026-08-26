@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include <MeshTools/NetGenOCCMesher.h>
 #include <GLLib/GLMesh.h>
 #include <MeshLib/FSMesh.h>
+#include "GPrimitive.h"
+#include "occ_prim.h"
 
 #ifdef HAS_OCC
 #include <gp_Pnt.hxx>
@@ -264,6 +266,7 @@ void GOCCObject::BuildGMesh()
 
 		TopLoc_Location aLoc;
 		Handle(Poly_Triangulation) aTriangulation = BRep_Tool::Triangulation(face, aLoc);
+		if (aTriangulation.IsNull()) continue;
 
 		// copy nodes
 		gp_Trsf aTrsf = aLoc.Transformation();
@@ -560,6 +563,8 @@ GOCCObject* MergeOCCObjects(std::vector<GOCCObject*> occlist)
 GOCCObject* ConvertToOCCObject(GObject* po)
 {
 #ifdef HAS_OCC
+
+	if (dynamic_cast<GPrimitive*>(po)) return CreateOCCObjectFromPrimitive(dynamic_cast<GPrimitive*>(po));
 
 	BRep_Builder B;
 
