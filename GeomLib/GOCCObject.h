@@ -58,6 +58,8 @@ public:
 
 	bool DeletePart(GPart* pg) override;
 
+	GObject* Clone() override;
+
 protected:
 	void BuildGObject();
 

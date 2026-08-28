@@ -69,6 +69,7 @@ SOFTWARE.*/
 #include <BRepCheck_Analyzer.hxx>
 #include <BRepLib.hxx>
 #include <Precision.hxx>
+#include <BRepBuilderAPI_Copy.hxx>
 
 #endif // HAS_OCC
 
@@ -805,5 +806,21 @@ bool GOCCObject::DeletePart(GPart* pg)
 	return true;
 #else
 	return false;
+#endif
+}
+
+GObject* GOCCObject::Clone()
+{
+#ifdef HAS_OCC
+	BRepBuilderAPI_Copy copy(GetShape());
+	TopoDS_Shape shapeCopy = copy.Shape();
+
+	GOCCObject* po = new GOCCObject;
+	po->SetShape(shapeCopy);
+	po->SetName(GetName());
+	po->GetTransform() = GetTransform();
+	return po;
+#else
+	return nullptr;
 #endif
 }
