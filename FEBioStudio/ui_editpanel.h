@@ -160,11 +160,12 @@ public:
 	CFloatInput* r[3];
 };
 
-class SurfaceModifierTool : public CAbstractTool
+class EditPanelTool : public CAbstractTool
 {
 public:
-	SurfaceModifierTool(CMainWindow* wnd, ClassDescriptor* cd) : CAbstractTool(wnd, cd->GetName()), m_cd(cd)
+	EditPanelTool(CMainWindow* wnd, ClassDescriptor* cd) : CAbstractTool(wnd, cd->GetName()), m_cd(cd) 
 	{
+		m_doc = nullptr;
 		m_mod = nullptr;
 		ui = nullptr;
 	}
@@ -174,7 +175,7 @@ public:
 		CAbstractTool::Activate();
 
 		if (m_cd) {
-			m_mod = dynamic_cast<FESurfaceModifier*>(m_cd->Create());
+			m_mod = m_cd->Create();
 			assert(m_mod);
 
 			CMainWindow* wnd = GetMainWindow();
@@ -182,7 +183,7 @@ public:
 			GModel* geo = &doc->GetFSModel()->GetModel();
 
 			CPropertyList* pl = 0;
-			if      (dynamic_cast<FECurveIntersect*>(m_mod)) pl = new CCurveIntersectProps(geo, dynamic_cast<FECurveIntersect*>(m_mod));
+			if (dynamic_cast<FECurveIntersect*>(m_mod)) pl = new CCurveIntersectProps(geo, dynamic_cast<FECurveIntersect*>(m_mod));
 			else if (dynamic_cast<FESurfacePartitionSelection*>(m_mod)) pl = new CPartitionProps(dynamic_cast<FESurfacePartitionSelection*>(m_mod));
 			else pl = new CObjectProps(m_mod);
 
@@ -211,14 +212,14 @@ public:
 		return ui;
 	}
 
-	FESurfaceModifier* GetModifier() { return m_mod; }
-
 	unsigned int flags() const { return (m_cd ? m_cd->Flag() : 0); }
 
-private:
-	CModelDocument* m_doc;
+	FSObject* GetModifier() { return m_mod; }
+
+protected:
 	ClassDescriptor* m_cd;
-	FESurfaceModifier* m_mod;
+	FSObject* m_mod; // modifier
+	CModelDocument* m_doc;
 	CPropertyListForm* ui;
 };
 
@@ -230,6 +231,7 @@ class Ui::CEditPanel
 		POSITION_PANEL,
 		OBJ_PARAMS_PANEL,
 		EDITMESH_PANEL,
+		EDITCAD_PANEL,
 		MOD_PARAMS_PANEL
 	};
 
@@ -247,7 +249,8 @@ public:
 	CToolParamsPanel* modParams;
 
 	CAbstractTool* m_activeTool = nullptr;
-	QList<CAbstractTool*>	tools;
+	QList<CAbstractTool*>	editTools;
+	QList<CAbstractTool*>	occTools;
 
 	GObject* m_currentObject = nullptr;
 
@@ -268,33 +271,52 @@ public:
 		modParams = new CToolParamsPanel;
 		modParams->setObjectName("modParams");
 		int n = 1;
-		for (CAbstractTool* tool : tools)
+		for (CAbstractTool* tool : editTools)
+		{
+			tool->SetID(n++);
+			modParams->AddTool(tool);
+		}
+		for (CAbstractTool* tool : occTools)
 		{
 			tool->SetID(n++);
 			modParams->AddTool(tool);
 		}
 
 		// buttons for mesh modifiers
-		CButtonBox* box = new CButtonBox("buttons");
-		for (CAbstractTool* tool : tools)
+		CButtonBox* editMeshBox = new CButtonBox("buttons");
+		for (CAbstractTool* tool : editTools)
 		{
-			SurfaceModifierTool* modTool = dynamic_cast<SurfaceModifierTool*>(tool);
+			EditPanelTool* modTool = dynamic_cast<EditPanelTool*>(tool);
 			if (modTool)
 			{
-				box->AddButton(modTool->name(), tool->GetID());
+				editMeshBox->AddButton(modTool->name(), tool->GetID());
 			}
 		}
+
+		// buttons for CAD modifiers
+		CButtonBox* editCADBox = new CButtonBox("buttons2");
+		for (CAbstractTool* tool : occTools)
+		{
+			EditPanelTool* modTool = dynamic_cast<EditPanelTool*>(tool);
+			if (modTool)
+			{
+				editCADBox->AddButton(modTool->name(), tool->GetID());
+			}
+		}
+
 
 		tool = new CToolBox;
 		tool->addTool("Object", obj);
 		tool->addTool("Position", pos);
 		tool->addTool("Parameters", editParams);
-		tool->addTool("Edit Surface Mesh", box);
+		tool->addTool("Edit Surface Mesh", editMeshBox);
+		tool->addTool("Edit CAD", editCADBox);
 		tool->addTool("Parameters", modParams);
 
 		showPositionPanel(false);
 		showObjectParametersPanel(false);
-		showButtonsPanel(false);
+		showMeshButtonsPanel(false);
+		showCADButtonsPanel(false);
 		showModifierParametersPanel(false);
 
 		QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -312,7 +334,16 @@ public:
 			ClassDescriptor* pcd = *it;
 			if (pcd->GetType() == CLASS_SURFACE_MODIFIER)
 			{
-				tools.push_back(new SurfaceModifierTool(m_wnd, pcd));
+				editTools.push_back(new EditPanelTool(m_wnd, pcd));
+			}
+		}
+
+		for (Class_Iterator it = ClassKernel::FirstCD(); it != ClassKernel::LastCD(); ++it)
+		{
+			ClassDescriptor* pcd = *it;
+			if (pcd->GetType() == CLASS_OCC_MODIFIER)
+			{
+				occTools.push_back(new EditPanelTool(m_wnd, pcd));
 			}
 		}
 	}
@@ -330,7 +361,15 @@ public:
 		}
 
 		// find the tool
-		for (CAbstractTool* tool : tools)
+		for (CAbstractTool* tool : editTools)
+		{
+			if (tool->GetID() == id)
+			{
+				m_activeTool = tool;
+				break;
+			}
+		}
+		for (CAbstractTool* tool : occTools)
 		{
 			if (tool->GetID() == id)
 			{
@@ -368,9 +407,14 @@ public:
 		tool->getToolItem(OBJ_PARAMS_PANEL)->setVisible(b);
 	}
 
-	void showButtonsPanel(bool b)
+	void showMeshButtonsPanel(bool b)
 	{
 		tool->getToolItem(EDITMESH_PANEL)->setVisible(b);
+	}
+
+	void showCADButtonsPanel(bool b)
+	{
+		tool->getToolItem(EDITCAD_PANEL)->setVisible(b);
 	}
 
 	void showModifierParametersPanel(bool b)

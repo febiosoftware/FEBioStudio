@@ -43,7 +43,8 @@ typedef enum {
 	CLASS_SURFACE_MODIFIER,
 	CLASS_IMAGE_FILTER,
 	CLASS_PLOT,
-	CLASS_FILE_READER
+	CLASS_FILE_READER,
+	CLASS_OCC_MODIFIER
 } Class_Type;
 
 //-----------------------------------------------------------------------------

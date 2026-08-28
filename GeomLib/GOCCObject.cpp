@@ -66,6 +66,9 @@ SOFTWARE.*/
 #include <TopoDS_Shape.hxx>
 #include <GProp_GProps.hxx>
 #include <BRepGProp.hxx>
+#include <BRepCheck_Analyzer.hxx>
+#include <BRepLib.hxx>
+#include <Precision.hxx>
 
 #endif // HAS_OCC
 

@@ -86,6 +86,7 @@ private slots:
 	void on_apply_clicked(bool b);
 	void on_menu_triggered(QAction* pa);
 	void on_buttons_idClicked(int id);
+	void on_buttons2_idClicked(int id);
 	void on_posX_editingFinished();
 	void on_posY_editingFinished();
 	void on_posZ_editingFinished();

@@ -49,6 +49,7 @@ SOFTWARE.*/
 #include <GeomLib/GMultiBox.h>
 #include <GeomLib/GMultiPatch.h>
 #include <GeomLib/GOCCObject.h>
+#include <GeomLib/GOCCModifier.h>
 #include <QMessageBox>
 #include "Commands.h"
 
@@ -127,6 +128,9 @@ REGISTER_CLASS(FEFixJaggedEdges           , CLASS_SURFACE_MODIFIER, "Fix Jagged 
 REGISTER_CLASS(FEExtrudeEdges             , CLASS_SURFACE_MODIFIER, "Extrude Edges"   , 0xFF);
 REGISTER_CLASS(FEFillHole                 , CLASS_SURFACE_MODIFIER, "Fill Holes"      , 0xFF);
 
+REGISTER_CLASS(GOCCChamfer, CLASS_OCC_MODIFIER, "Chamfer"      , 0xFF);
+REGISTER_CLASS(GOCCFillet , CLASS_OCC_MODIFIER, "Fillet"       , 0xFF);
+
 CEditPanel::CEditPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CEditPanel)
 {
 	ui->setupUi(this, wnd);
@@ -157,7 +161,8 @@ void CEditPanel::Update(bool breset)
 	{
 		ui->showPositionPanel(false);
 		ui->showObjectParametersPanel(false);
-		ui->showButtonsPanel(false);
+		ui->showMeshButtonsPanel(false);
+		ui->showCADButtonsPanel(false);
 		ui->showModifierParametersPanel(false);
 	}
 	else
@@ -183,11 +188,18 @@ void CEditPanel::Update(bool breset)
 		GSurfaceMeshObject* surfaceMesh = dynamic_cast<GSurfaceMeshObject*>(activeObject);
 		if (surfaceMesh)
 		{
-			ui->showButtonsPanel(true);
+			ui->showMeshButtonsPanel(true);
+			ui->showCADButtonsPanel(false);
+		}
+		else if (dynamic_cast<GOCCObject*>(activeObject))
+		{
+			ui->showMeshButtonsPanel(false);
+			ui->showCADButtonsPanel(true);
 		}
 		else 
 		{
-			ui->showButtonsPanel(false);
+			ui->showMeshButtonsPanel(false);
+			ui->showCADButtonsPanel(false);
 		}
 	}
 }
@@ -239,14 +251,11 @@ void CEditPanel::on_modParams_apply()
 	}
 
 	// make sure we have a modifier
-	SurfaceModifierTool* modTool = dynamic_cast<SurfaceModifierTool*>(ui->m_activeTool);
+	EditPanelTool* modTool = dynamic_cast<EditPanelTool*>(ui->m_activeTool);
 	if (modTool == nullptr) return;
 
-	FESurfaceModifier* mod = modTool->GetModifier();
+	FSThreadedTask* mod = dynamic_cast<FSThreadedTask*>(modTool->GetModifier());
 	if (mod == nullptr) return;
-
-	GSurfaceMeshObject* surfaceObject = dynamic_cast<GSurfaceMeshObject*>(activeObject);
-	if (surfaceObject == nullptr) return;
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	FESelection* sel = doc->GetCurrentSelection();
@@ -258,38 +267,80 @@ void CEditPanel::on_modParams_apply()
 		if (g == 0) { delete list; list = 0; }
 	}
 
-	SurfaceModifierThread* thread = new SurfaceModifierThread(mod, surfaceObject, g);
-	CDlgStartThread dlg(GetMainWindow(), thread);
-	dlg.setTask(QString::fromStdString(mod->GetName()));
-	if (dlg.exec())
+	FESurfaceModifier* surfaceMod = dynamic_cast<FESurfaceModifier*>(modTool->GetModifier());
+	if (surfaceMod)
 	{
-		bool bsuccess = dlg.GetReturnCode();
-		if (bsuccess == false)
+		GSurfaceMeshObject* surfaceObject = dynamic_cast<GSurfaceMeshObject*>(activeObject);
+		if (surfaceObject == nullptr) return;
+
+		SurfaceModifierThread* thread = new SurfaceModifierThread(surfaceMod, surfaceObject, g);
+		CDlgStartThread dlg(GetMainWindow(), thread);
+		dlg.setTask(QString::fromStdString(surfaceMod->GetName()));
+		if (dlg.exec())
 		{
-			std::string err;
-			if (mod) err = mod->GetErrorString();
-			if (err.empty()) err = "(unknown)";
-			QString errStr = QString::fromStdString(err);
-			QMessageBox::critical(this, "Apply modifier", "Cannot apply this modifier to this selection.\nERROR: " + errStr);
+			bool bsuccess = dlg.GetReturnCode();
+			if (bsuccess == false)
+			{
+				std::string err;
+				if (surfaceMod) err = surfaceMod->GetErrorString();
+				if (err.empty()) err = "(unknown)";
+				QString errStr = QString::fromStdString(err);
+				QMessageBox::critical(this, "Apply modifier", "Cannot apply this modifier to this selection.\nERROR: " + errStr);
+			}
+			else
+			{
+				std::string log = surfaceMod->GetErrorString();
+				if (log.empty() == false)
+				{
+					GetMainWindow()->AddLogEntry(QString::fromStdString(log) + "\n");
+				}
+
+				// if the object has an FE mesh, we need to delete it
+				CCmdGroup* cmdg = new CCmdGroup("Apply surface modifier");
+				cmdg->AddCommand(new CCmdChangeFEMesh(surfaceObject, nullptr));
+				cmdg->AddCommand(new CCmdChangeFESurfaceMesh(surfaceObject, thread->newMesh()));
+				doc->DoCommand(cmdg);
+			}
+			GetMainWindow()->RedrawGL();
+			GetMainWindow()->UpdateModel(activeObject, true);
+		}
+		thread->deleteLater();
+	}
+	GOCCModifier* occMod = dynamic_cast<GOCCModifier*>(modTool->GetModifier());
+	if (occMod)
+	{
+		GOCCObject* occObject = dynamic_cast<GOCCObject*>(activeObject);
+		if (occObject == nullptr) return;
+
+		GOCCObject* newObject = nullptr;
+		QString error;
+		try {
+			newObject = occMod->Apply(occObject);
+			error = QString::fromStdString(occMod->GetErrorString());
+		}
+		catch (...)
+		{
+			error = "Exception detected.";
+		}
+
+		if (newObject == nullptr)
+		{
+			if (error.isEmpty()) error = "(unknown)";
+			QMessageBox::critical(this, "Apply modifier", "Cannot apply this modifier to this object.\nERROR: " + error);
 		}
 		else
 		{
-			std::string log = mod->GetErrorString();
-			if (log.empty() == false)
+			if (error.isEmpty() == false)
 			{
-				GetMainWindow()->AddLogEntry(QString::fromStdString(log) + "\n");
+				GetMainWindow()->AddLogEntry(error + "\n");
 			}
-
-			// if the object has an FE mesh, we need to delete it
-			CCmdGroup* cmdg = new CCmdGroup("Apply surface modifier");
-			cmdg->AddCommand(new CCmdChangeFEMesh(surfaceObject, nullptr));
-			cmdg->AddCommand(new CCmdChangeFESurfaceMesh(surfaceObject, thread->newMesh()));
+			CCmdGroup* cmdg = new CCmdGroup("Apply CAD modifier");
+			cmdg->AddCommand(new CCmdSwapObjects(doc->GetGModel(), occObject, newObject));
 			doc->DoCommand(cmdg);
+			GetMainWindow()->RedrawGL();
+			GetMainWindow()->UpdateModel(newObject, true);
 		}
-		GetMainWindow()->RedrawGL();
-		GetMainWindow()->UpdateModel(activeObject, true);
 	}
-	thread->deleteLater();
 
 	// clear any highlights
 	GLHighlighter::ClearHighlights();
@@ -405,6 +456,11 @@ void CEditPanel::on_posZ_editingFinished()
 }
 
 void CEditPanel::on_buttons_idClicked(int id)
+{
+	ui->activateTool(id);
+}
+
+void CEditPanel::on_buttons2_idClicked(int id)
 {
 	ui->activateTool(id);
 }
