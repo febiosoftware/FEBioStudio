@@ -34,16 +34,6 @@ public:
 	virtual ~GOCCModifier() {}
 
 	virtual GOCCObject* Apply(GOCCObject* po) { return nullptr; }
-
-public:
-	bool SetError(const char* szerr, ...);
-
-	std::string GetErrorString();
-
-	void ClearError();
-
-protected:
-	std::string	m_error;
 };
 
 class GOCCChamfer : public GOCCModifier

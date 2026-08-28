@@ -38,32 +38,6 @@ SOFTWARE.*/
 
 #endif
 
-bool GOCCModifier::SetError(const char* szerr, ...)
-{
-	// get a pointer to the argument list
-	va_list	args;
-
-	// copy to string
-	char sz[256] = { 0 };
-	va_start(args, szerr);
-	vsprintf(sz, szerr, args);
-	va_end(args);
-
-	if (m_error.empty() == false) m_error += "\n";
-	m_error += std::string(sz);
-	return false;
-}
-
-void GOCCModifier::ClearError()
-{
-	m_error = "";
-}
-
-std::string GOCCModifier::GetErrorString()
-{
-	return m_error;
-}
-
 GOCCChamfer::GOCCChamfer() : GOCCModifier("Chamfer") 
 {
 	AddDoubleParam(0.0, "distance", "Distance");
@@ -72,7 +46,7 @@ GOCCChamfer::GOCCChamfer() : GOCCModifier("Chamfer")
 GOCCObject* GOCCChamfer::Apply(GOCCObject* po)
 {
 #ifdef HAS_OCC
-	ClearError();
+	Reset();
 	if (po == nullptr) return nullptr;
 
 	// get the selected edges
@@ -134,7 +108,7 @@ GOCCFillet::GOCCFillet() : GOCCModifier("Fillet")
 GOCCObject* GOCCFillet::Apply(GOCCObject* po)
 {
 #ifdef HAS_OCC
-	ClearError();
+	Reset();
 	if (po == nullptr) return nullptr;
 
 	// get the selected edges
