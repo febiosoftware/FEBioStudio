@@ -51,6 +51,10 @@ SOFTWARE.*/
 #include <GeomLib/GMultiPatch.h>
 #include <GeomLib/GOCCObject.h>
 #include <GeomLib/GOCCModifier.h>
+#include <GeomLib/GOCCChamfer.h>
+#include <GeomLib/GOCCExtrudeFace.h>
+#include <GeomLib/GOCCFillet.h>
+#include <GeomLib/GOCCInsetFace.h>
 #include <QMessageBox>
 #include "Commands.h"
 

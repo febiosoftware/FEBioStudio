@@ -35,35 +35,3 @@ public:
 
 	virtual GOCCObject* Apply(GOCCObject* po) { return nullptr; }
 };
-
-class GOCCChamfer : public GOCCModifier
-{
-public:
-	GOCCChamfer();
-
-	GOCCObject* Apply(GOCCObject* po) override;
-};
-
-class GOCCFillet : public GOCCModifier
-{
-public:
-	GOCCFillet();
-
-	GOCCObject* Apply(GOCCObject* po) override;
-};
-
-class GOCCInsetFace : public GOCCModifier
-{
-public:
-	GOCCInsetFace();
-
-	GOCCObject* Apply(GOCCObject* po) override;
-};
-
-class GOCCExtrudeFace : public GOCCModifier
-{
-public:
-	GOCCExtrudeFace();
-
-	GOCCObject* Apply(GOCCObject* po) override;
-};
