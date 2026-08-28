@@ -51,3 +51,19 @@ public:
 
 	GOCCObject* Apply(GOCCObject* po) override;
 };
+
+class GOCCInsetFace : public GOCCModifier
+{
+public:
+	GOCCInsetFace();
+
+	GOCCObject* Apply(GOCCObject* po) override;
+};
+
+class GOCCExtrudeFace : public GOCCModifier
+{
+public:
+	GOCCExtrudeFace();
+
+	GOCCObject* Apply(GOCCObject* po) override;
+};

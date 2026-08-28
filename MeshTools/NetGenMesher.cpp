@@ -55,7 +55,7 @@ NetGenMesher::NetGenMesher(GObject& o) : FEMesher(o)
 	AddBoolParam(true, "Use local mesh modifiers")->SetEditable(false);
 	AddDoubleParam(m_grading, "Grading")->SetFloatRange(0, 1);
 	AddDoubleParam(1000.0, "Max element size");
-	AddDoubleParam(1.0, "Min element size");
+	AddDoubleParam(0.01, "Min element size");
 	AddIntParam(3, "Nr. 2D optimization steps");
 	AddIntParam(5, "Nr. 3D optimization steps");
 	AddBoolParam(false, "Second-order mesh");

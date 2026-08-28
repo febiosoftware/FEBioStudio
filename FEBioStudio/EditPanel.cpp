@@ -132,6 +132,8 @@ REGISTER_CLASS(FEFillHole                 , CLASS_SURFACE_MODIFIER, "Fill Holes"
 
 REGISTER_CLASS(GOCCChamfer, CLASS_OCC_MODIFIER, "Chamfer"      , 0xFF);
 REGISTER_CLASS(GOCCFillet , CLASS_OCC_MODIFIER, "Fillet"       , 0xFF);
+REGISTER_CLASS(GOCCInsetFace, CLASS_OCC_MODIFIER, "Inset Face" , 0xFF);
+REGISTER_CLASS(GOCCExtrudeFace, CLASS_OCC_MODIFIER, "Extrude Face", 0xFF);
 
 CEditPanel::CEditPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CEditPanel)
 {
