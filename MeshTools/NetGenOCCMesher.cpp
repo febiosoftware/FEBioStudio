@@ -321,7 +321,7 @@ FSMesh*	NetGenOCCMesher::BuildMesh()
     return mesh;
     
 #else
-	SetErrorMessage("This version of FEBio Studio was not built with NetGen support.");
+	error("This version of FEBio Studio was not built with NetGen support.");
     return nullptr;
 #endif // HAS_NETGEN
 }

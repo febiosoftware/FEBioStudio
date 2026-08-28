@@ -1274,6 +1274,18 @@ void FEFillHole::FillPieHole(FSSurfaceMesh* pm)
 	// clear tags
 	pm->TagAllNodes(0);
 
+    // see if any edges are selected. If so, we only fill holes that have at least one selected edge
+    bool selectedEdgesOnly = false;
+    for (int i = 0; i < pm->Edges(); ++i)
+    {
+        FSEdge& edge = pm->Edge(i);
+        if (edge.IsSelected())
+        {
+            selectedEdgesOnly = true;
+            break;
+        }
+    }
+
 	// build the node-edge table
 	m_NEL.Build(pm);
 
@@ -1317,8 +1329,33 @@ void FEFillHole::FillPieHole(FSSurfaceMesh* pm)
 			EdgeRing ri;
 			if (FindEdgeRing(*pm, i, ri))
 			{
-				ring.push_back(ri);
-				for (int j = 0; j < ri.size(); ++j) pm->Node(ri[j]).m_ntag -= 2;
+                // make sure at least one of the edges is selected
+                bool baddRing = true;
+                if (selectedEdgesOnly)
+                {
+                    baddRing = false;
+                    for (int j = 0; j < ri.size(); ++j)
+                    {
+                        auto edgeList = m_NEL.EdgeList(ri[j]);
+                        for (int k = 0; k < edgeList.size(); ++k)
+                        {
+                            if (edgeList[k].pe->IsSelected())
+                            {
+                                baddRing = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (baddRing)
+                {
+                    ring.push_back(ri);
+                    for (int j = 0; j < ri.size(); ++j) pm->Node(ri[j]).m_ntag -= 2;
+                }
+                else
+                {
+                    for (int j = 0; j < ri.size(); ++j) pm->Node(ri[j]).m_ntag = 0;
+                }
 			}
 		}
 		setProgress(100.0 * (i + 1.0) / (double)pm->Nodes());
