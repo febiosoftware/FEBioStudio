@@ -134,6 +134,9 @@ void CObjectPanel::Update()
 		else if (dynamic_cast<GShellPrimitive*>(po))
 		{
 			ui->menu->addAction("Multi-patch Mesh")->setData(CONVERT_TO_MULTIPATCH);
+#ifdef HAS_OCC
+			ui->menu->addAction("CAD object")->setData(CONVERT_TO_OCC);
+#endif
 			ui->menu->setEnabled(true);
 		}
 		else if (dynamic_cast<GPrimitive*>(po))
