@@ -41,15 +41,6 @@ public:
 
 	virtual FSSurfaceMesh* Apply(FSSurfaceMesh* pm) { return 0; }
 	virtual FSSurfaceMesh* Apply(FSSurfaceMesh* pm, FSGroup* pg) { return Apply(pm); }
-
-	bool SetError(const char* szerr, ...);
-
-	std::string GetErrorString();
-
-	void ClearError();
-
-protected:
-	std::string	m_error;
 };
 
 //-----------------------------------------------------------------------------

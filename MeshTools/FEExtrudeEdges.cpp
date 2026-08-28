@@ -84,7 +84,7 @@ FSSurfaceMesh* FEExtrudeEdges::Apply(FSSurfaceMesh* pm)
     for (int i=0; i<mesh->Edges(); ++i) {
         FSEdge& ei = mesh->Edge(i);
         if (ei.Nodes() > 2) {
-            SetError("Can only extrude 2-node edges.");
+            error("Can only extrude 2-node edges.");
             return nullptr;
         }
         if (ei.IsSelected()) {
@@ -106,7 +106,7 @@ FSSurfaceMesh* FEExtrudeEdges::Apply(FSSurfaceMesh* pm)
     // extract number of selected edges
     int NE = edge.size();
     if (NE == 0) {
-        SetError("No edges selected.");
+        error("No edges selected.");
         return nullptr;
     }
     // in case the edge chain is open, search for the two nodes that appear only once
@@ -125,7 +125,7 @@ FSSurfaceMesh* FEExtrudeEdges::Apply(FSSurfaceMesh* pm)
         if ((it->second == 1) && (first_node == -1)) first_node = it->first;
         else if ((it->second == 1) && (first_node > -1)) last_node = it->first;
         else if (it->second > 2) {
-            SetError("Incorrect edge connectivity.");
+            error("Incorrect edge connectivity.");
             return nullptr;
         }
     }
@@ -183,7 +183,7 @@ FSSurfaceMesh* FEExtrudeEdges::Apply(FSSurfaceMesh* pm)
             else if (!found && flip_first_edge) {
                 // come here if no node matching root was found
                 // and the first edge was already flipped once
-                SetError("Edges have a gap.");
+                error("Edges have a gap.");
                 return nullptr;
             }
             else {

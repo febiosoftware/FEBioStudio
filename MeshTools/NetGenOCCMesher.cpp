@@ -206,7 +206,7 @@ FSMesh*	NetGenOCCMesher::BuildMesh()
 	// some validation
 	if ((mp.grading <= 0) || (mp.grading >= 1))
 	{
-		SetErrorMessage("Grading parameter should be between 0 and 1.");
+		error("Grading parameter should be between 0 and 1.");
 		return nullptr;
 	}
 

@@ -53,7 +53,7 @@ FSMesh* FEInflateMesh::Apply(FSMesh* pm)
     // Keep track of the selected surface
     FSMesh* hollow = pm->ExtractFaces(true);
 	if (hollow == nullptr) {
-		SetError("Failed to extract surface mesh."); return nullptr;
+		error("Failed to extract surface mesh."); return nullptr;
 	}
 
     int nnode = hollow->Nodes();
@@ -118,15 +118,15 @@ FSMesh* FEInflateMesh::Apply(FSMesh* pm)
     mytg.SetElementSize(h);
     mytg.SetSplitFaces(false);
     FSMesh* lumen = MeshTools::ConvertSurfaceToMesh(innerSurf);
-	if (lumen == nullptr) { SetError("Failed to convert surface to mesh."); return nullptr; }
+	if (lumen == nullptr) { error("Failed to convert surface to mesh."); return nullptr; }
     lumen = mytg.Apply(lumen);
-	if (lumen == nullptr) { SetError("Failed to create tetmesh."); return nullptr; }
+	if (lumen == nullptr) { error("Failed to create tetmesh."); return nullptr; }
 
     // combine the two domains together into one
     GMeshObject obj(lumen);
     gbm.Attach(&obj, true, tol);
     FSMesh* mymesh = gbm.GetFEMesh();
-	if (mymesh == nullptr) { SetError("Object has no mesh."); return nullptr; }
+	if (mymesh == nullptr) { error("Object has no mesh."); return nullptr; }
     FERebuildMesh rebuild;
     rebuild.SetRepartition(true);
     rebuild.SetCreaseAngle(angle);

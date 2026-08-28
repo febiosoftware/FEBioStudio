@@ -185,9 +185,9 @@ MeshingThread::MeshingThread(GObject* po)
 void MeshingThread::run()
 {
 	m_mesher = m_po->GetFEMesher();
-	if (m_mesher) m_mesher->SetErrorMessage("");
+	if (m_mesher) m_mesher->Reset();
 	FSMesh* mesh = m_po->BuildMesh();
-	if (m_mesher && (mesh == nullptr)) SetErrorString(QString::fromStdString(m_mesher->GetErrorMessage()));
+	if (m_mesher && (mesh == nullptr)) SetErrorString(QString::fromStdString(m_mesher->GetErrorString()));
 	emit resultReady(mesh != nullptr);
 }
 
@@ -239,7 +239,7 @@ void ModifierThread::run()
 		}
 		catch (...)
 		{
-			m_mod->SetError("Exception detected.");
+			m_mod->error("Exception detected.");
 		}
 
 		SetErrorString(QString::fromStdString(m_mod->GetErrorString()));
@@ -460,7 +460,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 		FSMesh* mesh = activeObject->GetFEMesh();
 		if (mesh == nullptr)
 		{
-			QString errMsg = QString::fromStdString(mesher->GetErrorMessage());
+			QString errMsg = QString::fromStdString(mesher->GetErrorString());
 			QString error = QString("Meshing Failed:\n") + errMsg;
 			QMessageBox::critical(this, "Meshing", error);
 		}

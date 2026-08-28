@@ -66,26 +66,6 @@ FSMesh* FEModifier::Apply(GObject* po, FESelection* sel)
 
 FSMeshBase* FEModifier::ApplyModifier(FSMeshBase* pm) { return nullptr; }
 
-bool FEModifier::SetError(const char* szerr, ...)
-{
-	// get a pointer to the argument list
-	va_list	args;
-
-	// copy to string
-	char sz[256] = {0};
-	va_start(args, szerr);
-	vsprintf(sz, szerr, args);
-	va_end(args);
-
-	m_error = std::string(sz);
-	return false;
-}
-
-std::string FEModifier::GetErrorString() 
-{ 
-	return m_error; 
-}
-	
 //=============================================================================
 // FEPartitionSelection
 //-----------------------------------------------------------------------------
@@ -1355,13 +1335,13 @@ FSMesh* FETri2Quad::Apply(FSMesh* pm)
 		else if (el.Type() == FE_QUAD4) nquad++;
 		else
 		{
-			SetError("This is not a valid mesh.");
+			error("This is not a valid mesh.");
 			return nullptr;
 		}
 	}
 	if (ntri == 0)
 	{
-		SetError("This mesh has no triangle elements.");
+		error("This mesh has no triangle elements.");
 		return nullptr;
 	}
 
@@ -1575,7 +1555,7 @@ FSMesh* RefineMesh::Apply(FSMesh* pm)
 		if (pmold == nullptr)
 		{
 			std::string err = mod->GetErrorString();
-			if (!err.empty()) SetError(err.c_str());
+			if (!err.empty()) error(err.c_str());
 			break;
 		}
 
@@ -1781,7 +1761,7 @@ FSMesh* FEConvertMesh::Apply(FSMesh* pm)
 	case LINEAR_TO_QUADRATIC: m_mod = new FELinearToQuadratic; break;
 	case QUADRATIC_TO_LINEAR: m_mod = new FEQuadraticToLinear; break;
 	default:
-		FEModifier::SetError("Unknown converter selected");
+		error("Unknown converter selected");
 		assert(false);
 		return 0;
 	}

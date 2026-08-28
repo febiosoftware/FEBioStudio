@@ -48,13 +48,6 @@ public:
 	// derived classes can return true if a nullptr return from Apply is allowed
 	// (see e.g. FEDiscardMesh)
 	virtual bool AllowNullMesh() { return false; }
-
-	bool SetError(const char* szerr, ...);
-
-	std::string GetErrorString();
-
-protected:
-	std::string	m_error;
 };
 
 //-----------------------------------------------------------------------------

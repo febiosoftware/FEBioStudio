@@ -74,13 +74,13 @@ FSMesh* FEExtrudeFaces::Apply(FSGroup* pg)
 {
 	if (pg->Type() != FE_SURFACE)
 	{
-		FEModifier::SetError("Invalid selection");
+		error("Invalid selection");
 		return 0;
 	}
 
 	if (pg->size() == 0)
 	{
-		FEModifier::SetError("Empty selection");
+		error("Empty selection");
 		return 0;
 	}
 

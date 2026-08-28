@@ -45,17 +45,17 @@ FSSurfaceMesh* FERefineSurface::Apply(FSSurfaceMesh* pm)
 
 	if (niter <= 0)
 	{
-		FESurfaceModifier::SetError("Invalid number of iterations");
-		return 0;
+		error("Invalid number of iterations");
+		return nullptr;
 	}
 
 	if (pm->IsType(FE_FACE_TRI3) == false)
 	{
-		FESurfaceModifier::SetError("This only works on triangle meshes");
-		return 0;
+		error("This only works on triangle meshes");
+		return nullptr;
 	}
 
-	FSSurfaceMesh* newMesh = 0;
+	FSSurfaceMesh* newMesh = nullptr;
 	setProgress(0.0);
 	for (int i = 0; i<niter; ++i)
 	{

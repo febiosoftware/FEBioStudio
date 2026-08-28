@@ -1250,7 +1250,7 @@ bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FESelect
 	}
 	catch (...)
 	{
-		modifier.SetError("Exception detected.");
+		modifier.error("Exception detected.");
 		return false;
 	}
 
@@ -1278,7 +1278,7 @@ bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfac
 	}
 	catch (...)
 	{
-		modifier.SetError("Exception detected.");
+		modifier.error("Exception detected.");
 		return false;
 	}
 

@@ -256,7 +256,7 @@ FSMesh* FEHexSplitModifier::RefineSelection(FSMesh* pm)
 		{
 			if (!el.IsType(FE_HEX8))
 			{
-				SetError("Invalid selection.");
+				error("Invalid selection.");
 				return nullptr;
 			}
 
@@ -267,7 +267,7 @@ FSMesh* FEHexSplitModifier::RefineSelection(FSMesh* pm)
 				FSElement_* elj = pm->ElementPtr(el.m_nbr[j]);
 				if (elj && (!elj->IsSelected()))
 				{
-					SetError("Invalid selection.");
+					error("Invalid selection.");
 					return nullptr;
 				}
 			}

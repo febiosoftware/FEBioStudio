@@ -270,7 +270,7 @@ void FEFillHole::FillAllHoles(FSSurfaceMesh* pm)
 		setProgress(100.0*(i + 1.0) / (double)pm->Nodes());
 	}
 
-	SetError("Found %d holes", ring.size());
+	errf("Found %d holes", ring.size());
 
 	int fixedHoles = 0;
 	vector<FACE> tri_list;
@@ -283,12 +283,11 @@ void FEFillHole::FillAllHoles(FSSurfaceMesh* pm)
 			tri_list.insert(tri_list.end(), tri.begin(), tri.end());
 		}
 	}
-	SetError("Fixed %d holes", fixedHoles);
+	errf("Fixed %d holes", fixedHoles);
 
 	// see how many new faces we have
 	int new_faces = (int) tri_list.size();
-	SetError("Inserted %d new faces", new_faces);
-
+	errf("Inserted %d new faces", new_faces);
 	// allocate room for the new faces
 	int NF = pm->Faces();
 	pm->Create(0, 0, NF + new_faces);
@@ -1325,7 +1324,7 @@ void FEFillHole::FillPieHole(FSSurfaceMesh* pm)
 		setProgress(100.0 * (i + 1.0) / (double)pm->Nodes());
 	}
 
-	SetError("Found %d holes", ring.size());
+	errf("Found %d holes", ring.size());
 	if (ring.empty()) return;
 
 	int fixedHoles = 0;
@@ -1373,12 +1372,11 @@ void FEFillHole::FillPieHole(FSSurfaceMesh* pm)
 		tri_list.insert(tri_list.end(), tri.begin(), tri.end());
 	}
 
-	SetError("Fixed %d holes", fixedHoles);
+	errf("Fixed %d holes", fixedHoles);
 
 	// see how many new faces we have
 	int new_faces = (int)tri_list.size();
-	SetError("Inserted %d new faces", new_faces);
-
+	errf("Inserted %d new faces", new_faces);
 	// allocate room for the new faces
 	int NF = pm->Faces();
 	pm->Create(0, 0, NF + new_faces);

@@ -130,7 +130,7 @@ void FEFillQuadHole::FillAllHoles(FSSurfaceMesh* pm)
 		setProgress(100.0 * (i + 1.0) / (double)pm->Nodes());
 	}
 
-	SetError("Found %d holes", ring.size());
+	errf("Found %d holes", ring.size());
 
 	int fixedHoles = 0;
 	vector<QUAD> quad_list;
@@ -143,7 +143,7 @@ void FEFillQuadHole::FillAllHoles(FSSurfaceMesh* pm)
 			quad_list.insert(quad_list.end(), new_quads.begin(), new_quads.end());
 		}
 	}
-	SetError("Fixed %d holes", fixedHoles);
+	errf("Fixed %d holes", fixedHoles);
 
 	// allocate room for the new faces
 	UpdateMesh(*pm, quad_list);
@@ -173,7 +173,7 @@ void FEFillQuadHole::UpdateMesh(FSSurfaceMesh& mesh, const std::vector<QUAD>& qu
 	mesh.RebuildMesh();
 
 	// see how many new faces we have
-	SetError("Inserted %d new faces", new_faces);
+	errf("Inserted %d new faces", new_faces);
 }
 
 //-----------------------------------------------------------------------------
