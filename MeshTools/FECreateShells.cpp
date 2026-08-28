@@ -39,13 +39,13 @@ FSMesh* FECreateShells::Apply(FSGroup* pg)
 {
     if (pg->Type() != FE_SURFACE)
     {
-        FEModifier::SetError("Invalid selection");
+        error("Invalid selection");
         return 0;
     }
     
     if (pg->size() == 0)
     {
-        FEModifier::SetError("Empty selection");
+        error("Empty selection");
         return 0;
     }
     
@@ -100,7 +100,7 @@ void FECreateShells::CreateShells(FSMesh* pm, vector<int>& faceList){
     
     //error message when no face is selected
     if (faces==0){
-        FEModifier::SetError("Empty Selection");
+        error("Empty Selection");
         return ;
     }
     
@@ -133,7 +133,7 @@ void FECreateShells::CreateShells(FSMesh* pm, vector<int>& faceList){
             case 9: pe.SetType(FE_QUAD9); break;
             default:
                 assert(false);
-                FEModifier::SetError("Failure");
+                error("Failure");
                 return ;
         }
         for (int j=0; j<nf; ++j) pe.m_node[j] = face.n[j];

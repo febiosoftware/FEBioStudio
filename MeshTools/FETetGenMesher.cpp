@@ -147,20 +147,20 @@ FSMesh* FETetGenMesher::BuildMesh()
 	catch (int n)
 	{
 		switch (n) {
-		case 1: SetErrorMessage("Out of memory."); break;
-		case 2: SetErrorMessage("Internal error."); break;
-		case 3: SetErrorMessage("A self-intersection was detected. Meshing stopped."); break;
-		case 4: SetErrorMessage("A very small input feature size was detected. Meshing stopped."); break;
-		case 5: SetErrorMessage("Two very close input facets were detected. Meshing stopped."); break;
-		case 10: SetErrorMessage("An input error was detected. Meshing stopped.\n"); break;
+		case 1: error("Out of memory."); break;
+		case 2: error("Internal error."); break;
+		case 3: error("A self-intersection was detected. Meshing stopped."); break;
+		case 4: error("A very small input feature size was detected. Meshing stopped."); break;
+		case 5: error("Two very close input facets were detected. Meshing stopped."); break;
+		case 10: error("An input error was detected. Meshing stopped.\n"); break;
 		default:
-			SetErrorMessage("Unknown error."); break;
+			error("Unknown error."); break;
 		}
 		return nullptr;
 	}
 	catch (...)
 	{
-		SetErrorMessage("Unknown exception.");
+		error("Unknown exception.");
 		return nullptr;
 	}
 
@@ -1327,7 +1327,7 @@ bool FETetGenMesher::build_plc(FSSurfaceMesh* pm, tetgenio& in)
 			// Make sure each face has a neighbor
 			if (f.m_nbr[j] == -1)
 			{
-				SetErrorMessage("The mesh is not closed.");
+				error("The mesh is not closed.");
 				return false;
 			}
 		}
@@ -1537,20 +1537,20 @@ FSMesh* FETetGenMesher::CreateMesh(GSurfaceMeshObject* surfObj)
 	catch (int n)
 	{
 		switch (n) {
-		case 1: SetErrorMessage("Out of memory."); break;
-		case 2: SetErrorMessage("Internal error."); break;
-		case 3: SetErrorMessage("A self-intersection was detected. Meshing stopped."); break;
-		case 4: SetErrorMessage("A very small input feature size was detected. Meshing stopped."); break;
-		case 5: SetErrorMessage("Two very close input facets were detected. Meshing stopped."); break;
-		case 10: SetErrorMessage("An input error was detected. Meshing stopped.\n"); break;
+		case 1: error("Out of memory."); break;
+		case 2: error("Internal error."); break;
+		case 3: error("A self-intersection was detected. Meshing stopped."); break;
+		case 4: error("A very small input feature size was detected. Meshing stopped."); break;
+		case 5: error("Two very close input facets were detected. Meshing stopped."); break;
+		case 10: error("An input error was detected. Meshing stopped.\n"); break;
 		default:
-			SetErrorMessage("Unknown error."); break;
+			error("Unknown error."); break;
 		}
 		return nullptr;
 	}
 	catch (...)
 	{
-		SetErrorMessage("Unknown exception.");
+		error("Unknown exception.");
 		return nullptr;
 	}
 
@@ -1834,20 +1834,20 @@ FSMesh* FEConvexHullMesher::Create(const std::vector<vec3d>& pointCloud)
 	catch (int n)
 	{
 		switch (n) {
-		case 1: SetErrorMessage("Out of memory."); break;
-		case 2: SetErrorMessage("Internal error."); break;
-		case 3: SetErrorMessage("A self-intersection was detected. Meshing stopped."); break;
-		case 4: SetErrorMessage("A very small input feature size was detected. Meshing stopped."); break;
-		case 5: SetErrorMessage("Two very close input facets were detected. Meshing stopped."); break;
-		case 10: SetErrorMessage("An input error was detected. Meshing stopped.\n"); break;
+		case 1: error("Out of memory."); break;
+		case 2: error("Internal error."); break;
+		case 3: error("A self-intersection was detected. Meshing stopped."); break;
+		case 4: error("A very small input feature size was detected. Meshing stopped."); break;
+		case 5: error("Two very close input facets were detected. Meshing stopped."); break;
+		case 10: error("An input error was detected. Meshing stopped.\n"); break;
 		default:
-			SetErrorMessage("Unknown error."); break;
+			error("Unknown error."); break;
 		}
 		return nullptr;
 	}
 	catch (...)
 	{
-		SetErrorMessage("Unknown exception.");
+		error("Unknown exception.");
 		return nullptr;
 	}
 

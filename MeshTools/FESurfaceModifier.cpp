@@ -37,32 +37,6 @@ FESurfaceModifier::FESurfaceModifier(const std::string& name)
 
 FESurfaceModifier::~FESurfaceModifier() {}
 
-bool FESurfaceModifier::SetError(const char* szerr, ...)
-{
-	// get a pointer to the argument list
-	va_list	args;
-
-	// copy to string
-	char sz[256] = { 0 };
-	va_start(args, szerr);
-	vsprintf(sz, szerr, args);
-	va_end(args);
-
-	if (m_error.empty() == false) m_error += "\n";
-	m_error += std::string(sz);
-	return false;
-}
-
-void FESurfaceModifier::ClearError()
-{
-	m_error = "";
-}
-
-std::string FESurfaceModifier::GetErrorString()
-{
-	return m_error;
-}
-
 //=============================================================================
 
 FESurfacePartitionSelection::FESurfacePartitionSelection()

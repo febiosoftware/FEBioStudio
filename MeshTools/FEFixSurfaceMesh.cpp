@@ -50,7 +50,7 @@ FSTaskProgress FEFixSurfaceMesh::GetProgress()
 FSSurfaceMesh* FEFixSurfaceMesh::Apply(FSSurfaceMesh* pm)
 {
 	m_mod = nullptr;
-	ClearError();
+	Reset();
 
 	// create a copy of the mesh
 	FSSurfaceMesh* pnew = new FSSurfaceMesh(*pm);
@@ -71,7 +71,7 @@ FSSurfaceMesh* FEFixSurfaceMesh::Apply(FSSurfaceMesh* pm)
 	}
 	catch (...)
 	{
-		SetError("*** The operation aborted due to an exception. ***");
+		error("*** The operation aborted due to an exception. ***");
 		ret = false;
 	}
 
@@ -121,7 +121,7 @@ bool FEFixSurfaceMesh::RemoveDuplicateFaces(FSSurfaceMesh* pm)
 	{
 		if (pm->Face(i).m_ntag == 1) taggedFaces++;
 	}
-	SetError("Found %d duplicate faces", taggedFaces);
+	errf("Found %d duplicate faces", taggedFaces);
 
 	// remove tagged faces
 	pm->DeleteTaggedFaces(1);
@@ -319,7 +319,7 @@ bool FEFixSurfaceMesh::FillAllHoles(FSSurfaceMesh* pm)
 
 		// copy the error string
 		std::string err = fill.GetErrorString();
-		if (err.empty() == false) SetError(err.c_str());
+		if (err.empty() == false) error(err.c_str());
 		m_mod = nullptr;
 	}
 	else if (pm->IsType(FE_FACE_QUAD4))
@@ -330,12 +330,12 @@ bool FEFixSurfaceMesh::FillAllHoles(FSSurfaceMesh* pm)
 
 		// copy the error string
 		std::string err = fill.GetErrorString();
-		if (err.empty() == false) SetError(err.c_str());
+		if (err.empty() == false) error(err.c_str());
 		m_mod = nullptr;
 	}
 	else
 	{
-		SetError("Can only fill holes of tri and quad meshes.");
+		error("Can only fill holes of tri and quad meshes.");
 		return false;
 	}
 

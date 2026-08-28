@@ -543,7 +543,7 @@ FSMesh* FERevolveFaces::RevolveSolidMesh(FSMesh* pm)
 							// otherwise we abort
 							if (!allowDegenerateElements)
 							{
-								SetError("Degenerate elements detected but not allowed.");
+								error("Degenerate elements detected but not allowed.");
 								delete pmnew;
 								return nullptr;
 							}

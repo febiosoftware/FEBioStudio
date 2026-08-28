@@ -53,14 +53,14 @@ MMGRemesh::MMGRemesh() : FEModifier("MMG Remesh")
 
 FSMesh* MMGRemesh::Apply(FSMesh* pm)
 {
-	if (pm == nullptr) { SetError("This object has no mesh."); return 0; }
+	if (pm == nullptr) { error("This object has no mesh."); return 0; }
 	if (pm->IsType(FE_TET4))
 	{
 		pm->TagAllElements(0);
 		return RemeshTET4(pm);
 	}
 	else if (pm->IsType(FE_TRI3)) return RemeshTRI3(pm);
-	else { SetError("This is not a TET4 mesh"); return 0; }
+	else { error("This is not a TET4 mesh"); return 0; }
 }
 
 FSMesh* MMGRemesh::Apply(FSGroup* pg)
@@ -143,7 +143,7 @@ FSMesh* MMGRemesh::RemeshTET4(FSMesh* pm)
 	if (MMG3D_Set_meshSize(mmgMesh, NN, NE, 0, NF, 0, NC) != 1)
 	{
 		assert(false);
-		SetError("Error in MMG3D_Set_meshSize");
+		error("Error in MMG3D_Set_meshSize");
 		return nullptr;
 	}
 
@@ -184,7 +184,7 @@ FSMesh* MMGRemesh::RemeshTET4(FSMesh* pm)
 	if (MMG3D_Set_solSize(mmgMesh, mmgSol, MMG5_Vertex, NN, MMG5_Scalar) != 1)
 	{
 		assert(false);
-		SetError("Error in MMG3D_Set_solSize");
+		error("Error in MMG3D_Set_solSize");
 		return nullptr;
 	}
 
@@ -204,7 +204,7 @@ FSMesh* MMGRemesh::RemeshTET4(FSMesh* pm)
 		}
 		if (nsel == 0)
 		{
-			SetError("No faces are selected.");
+			error("No faces are selected.");
 			return nullptr;
 		}
 	}
@@ -289,13 +289,13 @@ FSMesh* MMGRemesh::RemeshTET4(FSMesh* pm)
 	int ier = MMG3D_mmg3dlib(mmgMesh, mmgSol);
 
 	if (ier == MMG5_STRONGFAILURE) {
-		if (h == 0.0) SetError("Element size cannot be zero.");
-		else SetError("MMG was not able to remesh the mesh.");
+		if (h == 0.0) error("Element size cannot be zero.");
+		else error("MMG was not able to remesh the mesh.");
 		return nullptr;
 	}
 	else if (ier == MMG5_LOWFAILURE)
 	{
-		SetError("MMG return low failure error");
+		error("MMG return low failure error");
 	}
 
 	// convert back to prv mesh
@@ -368,7 +368,7 @@ FSMesh* MMGRemesh::RemeshTET4(FSMesh* pm)
 	return newMesh;
 
 #else
-	SetError("This version does not have MMG support");
+	error("This version does not have MMG support");
 	return nullptr;
 #endif
 }
@@ -402,7 +402,7 @@ FSMesh* MMGRemesh::RemeshTRI3(FSMesh* pm)
 	if (MMGS_Set_meshSize(mmgMesh, NN, NE, NC) != 1)
 	{
 		assert(false);
-		SetError("Error in MMGS_Set_meshSize");
+		error("Error in MMGS_Set_meshSize");
 		return nullptr;
 	}
 
@@ -436,7 +436,7 @@ FSMesh* MMGRemesh::RemeshTRI3(FSMesh* pm)
 	if (MMGS_Set_solSize(mmgMesh, mmgSol, MMG5_Vertex, NN, MMG5_Scalar) != 1)
 	{
 		assert(false);
-		SetError("Error in MMG3D_Set_solSize");
+		error("Error in MMG3D_Set_solSize");
 		return nullptr;
 	}
 
@@ -522,13 +522,13 @@ FSMesh* MMGRemesh::RemeshTRI3(FSMesh* pm)
 	int ier = MMGS_mmgslib(mmgMesh, mmgSol);
 
 	if (ier == MMG5_STRONGFAILURE) {
-		if (h == 0.0) SetError("Element size cannot be zero.");
-		else SetError("MMG was not able to remesh the mesh.");
+		if (h == 0.0) error("Element size cannot be zero.");
+		else error("MMG was not able to remesh the mesh.");
 		return nullptr;
 	}
 	else if (ier == MMG5_LOWFAILURE)
 	{
-		SetError("MMG return low failure error");
+		error("MMG return low failure error");
 	}
 
 	// convert back to prv mesh
@@ -595,7 +595,7 @@ FSMesh* MMGRemesh::RemeshTRI3(FSMesh* pm)
 	return newMesh;
 
 #else
-	SetError("This version does not have MMG support");
+	error("This version does not have MMG support");
 	return nullptr;
 #endif
 }
@@ -614,7 +614,7 @@ MMGSurfaceRemesh::MMGSurfaceRemesh() : FESurfaceModifier("MMG Remesh")
 
 FSSurfaceMesh* MMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 {
-	if (pm == nullptr) { SetError("This object has no mesh."); return 0; }
+	if (pm == nullptr) { error("This object has no mesh."); return 0; }
 	assert(pm->IsType(FE_FACE_TRI3));
 
 #ifdef HAS_MMG
@@ -641,7 +641,7 @@ FSSurfaceMesh* MMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 	if (MMGS_Set_meshSize(mmgMesh, NN, NF, 0) != 1)
 	{
 		assert(false);
-		SetError("Error in MMGS_Set_meshSize");
+		error("Error in MMGS_Set_meshSize");
 		return nullptr;
 	}
 
@@ -675,7 +675,7 @@ FSSurfaceMesh* MMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 	if (MMGS_Set_solSize(mmgMesh, mmgSol, MMG5_Vertex, NN, MMG5_Scalar) != 1)
 	{
 		assert(false);
-		SetError("Error in MMG3D_Set_solSize");
+		error("Error in MMG3D_Set_solSize");
 		return nullptr;
 	}
 
@@ -764,13 +764,13 @@ FSSurfaceMesh* MMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 	int ier = MMGS_mmgslib(mmgMesh, mmgSol);
 
 	if (ier == MMG5_STRONGFAILURE) {
-		if (h == 0.0) SetError("Element size cannot be zero.");
-		else SetError("MMG was not able to remesh the mesh.");
+		if (h == 0.0) error("Element size cannot be zero.");
+		else error("MMG was not able to remesh the mesh.");
 		return nullptr;
 	}
 	else if (ier == MMG5_LOWFAILURE)
 	{
-		SetError("MMG return low failure error");
+		error("MMG return low failure error");
 	}
 
 	// convert back to prv mesh
@@ -826,7 +826,7 @@ FSSurfaceMesh* MMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 	return newMesh;
 
 #else
-	SetError("This version does not have MMG support");
+	error("This version does not have MMG support");
 	return nullptr;
 #endif
 }
@@ -844,7 +844,7 @@ MMG2DRemesh::MMG2DRemesh() : FESurfaceModifier("MMG2D Remesh")
 
 FSSurfaceMesh* MMG2DRemesh::Apply(FSSurfaceMesh* pm)
 {
-	if (pm == nullptr) { SetError("This object has no mesh."); return 0; }
+	if (pm == nullptr) { error("This object has no mesh."); return 0; }
 	assert(pm->IsType(FE_FACE_TRI3));
 
 #ifdef HAS_MMG
@@ -877,7 +877,7 @@ FSSurfaceMesh* MMG2DRemesh::Apply(FSSurfaceMesh* pm)
 	if (MMG2D_Set_meshSize(mmgMesh, NN, NF, 0, NC) != 1)
 	{
 		assert(false);
-		SetError("Error in MMG2D_Set_meshSize");
+		error("Error in MMG2D_Set_meshSize");
 		return nullptr;
 	}
 
@@ -925,7 +925,7 @@ FSSurfaceMesh* MMG2DRemesh::Apply(FSSurfaceMesh* pm)
 	if (MMG2D_Set_solSize(mmgMesh, mmgSol, MMG5_Vertex, NN, MMG5_Scalar) != 1)
 	{
 		assert(false);
-		SetError("Error in MMG3D_Set_solSize");
+		error("Error in MMG3D_Set_solSize");
 		return nullptr;
 	}
 
@@ -1012,13 +1012,13 @@ FSSurfaceMesh* MMG2DRemesh::Apply(FSSurfaceMesh* pm)
 	int ier = MMG2D_mmg2dlib(mmgMesh, mmgSol);
 
 	if (ier == MMG5_STRONGFAILURE) {
-		if (h == 0.0) SetError("Element size cannot be zero.");
-		else SetError("MMG was not able to remesh the mesh.");
+		if (h == 0.0) error("Element size cannot be zero.");
+		else error("MMG was not able to remesh the mesh.");
 		return nullptr;
 	}
 	else if (ier == MMG5_LOWFAILURE)
 	{
-		SetError("MMG return low failure error");
+		error("MMG return low failure error");
 	}
 
 	// convert back to prv mesh
@@ -1077,7 +1077,7 @@ FSSurfaceMesh* MMG2DRemesh::Apply(FSSurfaceMesh* pm)
 	return newMesh;
 
 #else
-	SetError("This version does not have MMG support");
+	error("This version does not have MMG support");
 	return nullptr;
 #endif
 }

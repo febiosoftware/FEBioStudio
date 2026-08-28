@@ -97,7 +97,7 @@ bool FEFixMesh::RemoveDuplicateEdges(FSMesh* pm)
 			}
 		}
 	}
-	SetError("%d duplicate edges found.", duplicates);
+	errf("%d duplicate edges found.", duplicates);
 	if (duplicates == 0) return true;
 
 	// re-index the edges
@@ -171,6 +171,6 @@ bool FEFixMesh::RemoveIsolatedVertices(FSMesh* pm)
 {
 	FSMeshBuilder mb(*pm);
 	int n = mb.RemoveIsolatedNodes();
-	SetError("%d vertices removed.", n);
+	errf("%d vertices removed.", n);
 	return true;
 }

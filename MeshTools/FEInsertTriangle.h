@@ -25,44 +25,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <FSCore/FSObject.h>
-#include <FSCore/FSThreadedTask.h>
+#include "FESurfaceModifier.h"
 
-class FSSurfaceMesh;
-class FSGroup;
-
-//-------------------------------------------------------------------
-// Class for modifying surface meshes
-class FESurfaceModifier : public FSThreadedTask
+class FEInsertTriangle : public FESurfaceModifier
 {
 public:
-	FESurfaceModifier(const std::string& name = "");
-	virtual ~FESurfaceModifier();
+    FEInsertTriangle();
 
-	virtual FSSurfaceMesh* Apply(FSSurfaceMesh* pm) { return 0; }
-	virtual FSSurfaceMesh* Apply(FSSurfaceMesh* pm, FSGroup* pg) { return Apply(pm); }
-};
-
-//-----------------------------------------------------------------------------
-class FESurfacePartitionSelection : public FESurfaceModifier
-{
-public:
-	FESurfacePartitionSelection();
-	FSSurfaceMesh* Apply(FSSurfaceMesh* pm, FSGroup* pg);
-
-	void assignToPartition(int n);
-
-protected:
-	void PartitionSelectedFaces(FSSurfaceMesh* mesh);
-
+	FSSurfaceMesh* Apply(FSSurfaceMesh* mesh);
+    
+    void SetNormal(vec3d n) { m_n = n; }
+    
 private:
-	int	m_partition;
-};
-
-//-----------------------------------------------------------------------------
-class FESurfaceAutoPartition : public FESurfaceModifier
-{
-public:
-	FESurfaceAutoPartition();
-	FSSurfaceMesh* Apply(FSSurfaceMesh* pm);
+    vec3d   m_n;
 };

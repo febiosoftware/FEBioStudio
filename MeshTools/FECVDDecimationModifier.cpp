@@ -67,14 +67,14 @@ FSSurfaceMesh* FECVDDecimationModifier::Apply(FSSurfaceMesh* pm)
 	// make sure this is a triangle mesh
 	if (pm->IsType(FE_FACE_TRI3) == false) 
 	{	
-		FESurfaceModifier::SetError("Invalid mesh type");
+		error("Invalid mesh type");
 		return 0;
 	}
 
 	// some sanity checks
 	if (MeshTools::IsMeshClosed(*pm) == false)
 	{
-		FESurfaceModifier::SetError("Mesh is not closed.");
+		error("Mesh is not closed.");
 		return 0;
 	}
 
@@ -169,7 +169,7 @@ bool FECVDDecimationModifier::Initialize(FSSurfaceMesh* pm)
 		if (m_tag[n] == 0) m_tag[n] = ++nc;
 
 		ntries++;
-		if (ntries > MAX_TRIES) return FESurfaceModifier::SetError("Seeding failed");
+		if (ntries > MAX_TRIES) return error("Seeding failed");
 	}
 
 	// calculate the "rho" value (here, the area) and gamma (centroid) for each face
@@ -270,7 +270,7 @@ bool FECVDDecimationModifier::Initialize(FSSurfaceMesh* pm)
 		}
 
 		// make sure rho is positive
-		if (m_rho[i] <= 0.0) return FESurfaceModifier::SetError("Zero triangle area encountered");
+		if (m_rho[i] <= 0.0) return error("Zero triangle area encountered");
 	}
 
 	// now, calculate the sgamma and srho for each cluster
@@ -297,14 +297,14 @@ bool FECVDDecimationModifier::Initialize(FSSurfaceMesh* pm)
 
 			// this algorithm currently only works with closed surfaces
 			// so all neighbors must be assigned
-			if (nj < 0) return FESurfaceModifier::SetError("Mesh is not closed");
+			if (nj < 0) return error("Mesh is not closed");
 
 			if (m_tag[i] < m_tag[nj])
 			{
 				EDGE e;
 				e.face[0] = i;
 				e.face[1] = nj;
-				if (i == nj) return FESurfaceModifier::SetError("Invalid mesh connectivity");
+				if (i == nj) return error("Invalid mesh connectivity");
 
 				e.node[0] = fi.n[j];
 				e.node[1] = fi.n[(j+1)%3];
@@ -419,7 +419,7 @@ bool FECVDDecimationModifier::Minimize(FSSurfaceMesh* pm)
 					Cl.m_srho = r0l;
 					Cl.m_sgamma = g0l;
 
-					if (Swap(pm->Face(m), m, l) == false) return FESurfaceModifier::SetError("Error during minimization");
+					if (Swap(pm->Face(m), m, l) == false) return error("Error during minimization");
 					else it = m_Edge.erase(it);
 
 					bconv = false;
@@ -433,7 +433,7 @@ bool FECVDDecimationModifier::Minimize(FSSurfaceMesh* pm)
 					Cl.m_sgamma = g1l;
 
 					if (Swap(pm->Face(n), n, k) == false)
-						return FESurfaceModifier::SetError("Error during minimization");
+						return error("Error during minimization");
 					else
 						it = m_Edge.erase(it);
 
@@ -457,7 +457,7 @@ bool FECVDDecimationModifier::Minimize(FSSurfaceMesh* pm)
 			for (int i=0; i<NF; ++i)
 			{
 				if (m_tag[i] == 0) 
-					return FESurfaceModifier::SetError("Error during minimization");;
+					return error("Error during minimization");
 			}
 
 			// build the cluster's fid array
@@ -540,7 +540,7 @@ bool FECVDDecimationModifier::Minimize(FSSurfaceMesh* pm)
 	}
 	while ((bconv == false)&&(niter < MAX_ITER));
 
-	if (niter >= MAX_ITER) return FESurfaceModifier::SetError("Error during minimization");
+	if (niter >= MAX_ITER) return error("Error during minimization");
 
 	return true;
 }

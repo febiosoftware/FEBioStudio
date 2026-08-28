@@ -47,7 +47,7 @@ FSMesh* FEDeleteElements::Apply(FSMesh* pm)
 	}
 	if (nsel == 0)
 	{
-		SetError("No elements selected.");
+		error("No elements selected.");
 		return nullptr;
 	}
 

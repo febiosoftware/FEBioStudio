@@ -103,7 +103,7 @@ FSMesh* FETetGenModifier::Apply(FSMesh* pm)
 	}
 	catch (...)
 	{
-		FEModifier::SetError("An error has occurred in Tetgen");
+		error("An error has occurred in Tetgen");
 		return 0;
 	}
 
@@ -134,7 +134,7 @@ FSMesh* FETetGenModifier::CreateMesh(FSMesh* pm)
 		FSFace& face = pm->Face(i);
 		if (face.Type() != FE_FACE_TRI3)
 		{
-			FEModifier::SetError("Invalid mesh type.");
+			error("Invalid mesh type.");
 			return 0;
 		}
 
@@ -142,7 +142,7 @@ FSMesh* FETetGenModifier::CreateMesh(FSMesh* pm)
 		//       have neighbors. I need to modify this so that I only check exterior faces.
 /*		if ((face.m_nbr[0] == -1) || (face.m_nbr[1] == -1) || (face.m_nbr[2] == -1))
 		{
-			FEModifier::SetError("This mesh is not closed.");
+			error("This mesh is not closed.");
 			return 0;
 		}
 */	}
@@ -178,35 +178,19 @@ FSMesh* FETetGenModifier::CreateMesh(FSMesh* pm)
 	catch (int x)
 	{
 		switch (x) {
-		case 1: // Out of memory.
-			SetError("Out of memory.");
-			break;
-		case 2: // Encounter an internal error.
-			SetError("Internal error");
-			break;
-		case 3:
-			SetError("A self-intersection was detected.");
-//			printf("Hint: use -d option to detect all self-intersections.\n");
-			break;
-		case 4:
-			SetError("A very small input feature size was detected.");
-//			printf("Hint: use -T option to set a smaller tolerance.\n");
-			break;
-		case 5:
-			SetError("Two very close input facets were detected.");
-//			printf("Hint: use -Y option to avoid adding Steiner points in boundary.\n");
-			break;
-		case 10:
-			SetError("An input error was detected.");
-			break;
-		default:
-			SetError("Unknown Tetgen error (%d)", x);
+		case 1: error("Out of memory."); break;
+		case 2: error("Internal error"); break;
+		case 3: error("A self-intersection was detected."); break;
+		case 4: error("A very small input feature size was detected."); break;
+		case 5: error("Two very close input facets were detected."); break;
+		case 10: error("An input error was detected."); break;
+		default: errf("Unknown Tetgen error (%d)", x);
 		}
 		return 0;
 	}
 	catch (...)
 	{
-		SetError("Unknown exception raised while executing Tetgen.");
+		error("Unknown exception raised while executing Tetgen.");
 	}
 
 	// create a new mesh
@@ -313,7 +297,7 @@ FSMesh* FETetGenModifier::RefineMesh(FSMesh* pm)
 #ifdef TETLIBRARY
 	if (pm->IsType(FE_TET4)==false)
 	{
-		FEModifier::SetError("This object is not a TET4 mesh");
+		error("This object is not a TET4 mesh");
 		return 0;
 	}
 

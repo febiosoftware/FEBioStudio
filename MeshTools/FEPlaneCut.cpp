@@ -71,7 +71,7 @@ FSMesh* FEPlaneCut::Apply(FSMesh* pm)
 	// make sure this is a triangle mesh
 	if (pm->IsType(FE_TRI3) == false)
 	{
-		SetError("This is not a triangle mesh.");
+		error("This is not a triangle mesh.");
 		return nullptr;
 	}
 

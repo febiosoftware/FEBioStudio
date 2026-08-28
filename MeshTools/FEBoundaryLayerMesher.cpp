@@ -72,7 +72,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 	int ne1 = (int)fdata.size();
 	if (ne1 == 0)
 	{
-		SetError("No faces selected!");
+		error("No faces selected!");
 		return false;
 	}
 

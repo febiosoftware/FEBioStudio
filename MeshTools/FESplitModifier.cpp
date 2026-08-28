@@ -524,7 +524,7 @@ FSMesh* FETriSplitModifier::Apply(FSMesh* pm)
 {
 	if (m_niter <= 0)
 	{
-		FEModifier::SetError("Invalid number of iterations");
+		error("Invalid number of iterations");
 		return 0;
 	}
 

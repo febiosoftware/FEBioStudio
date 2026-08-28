@@ -63,10 +63,6 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-	// set the error message
-	void SetErrorMessage(const std::string& err);
-	std::string GetErrorMessage() const;
-
 	int Type() const;
 
 protected:
@@ -76,7 +72,6 @@ public:
 	static FEMesher* Create(GObject* po, int classType);
 
 protected:
-	std::string		m_error;
 	GObject&		m_o;
 
 	int	m_ntype;

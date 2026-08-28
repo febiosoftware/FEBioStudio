@@ -72,9 +72,7 @@ public:
 	// see if the task was canceled? 
 	virtual bool IsCanceled() const;
 
-	std::string getErrorString() const;
-    
-    std::string GetErrorString() const;
+	std::string GetErrorString() const;
 
 	// get the number of errors
 	int Errors() const;
