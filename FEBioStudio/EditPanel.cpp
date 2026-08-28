@@ -55,6 +55,7 @@ SOFTWARE.*/
 #include <GeomLib/GOCCExtrudeFace.h>
 #include <GeomLib/GOCCFillet.h>
 #include <GeomLib/GOCCInsetFace.h>
+#include <GeomLib/GOCCMirror.h>
 #include <QMessageBox>
 #include "Commands.h"
 
@@ -134,10 +135,11 @@ REGISTER_CLASS(FEInsertTriangle           , CLASS_SURFACE_MODIFIER, "Insert Tria
 REGISTER_CLASS(FEExtrudeEdges             , CLASS_SURFACE_MODIFIER, "Extrude Edges"   , 0xFF);
 REGISTER_CLASS(FEFillHole                 , CLASS_SURFACE_MODIFIER, "Fill Holes"      , 0xFF);
 
-REGISTER_CLASS(GOCCChamfer, CLASS_OCC_MODIFIER, "Chamfer"      , 0xFF);
-REGISTER_CLASS(GOCCFillet , CLASS_OCC_MODIFIER, "Fillet"       , 0xFF);
-REGISTER_CLASS(GOCCInsetFace, CLASS_OCC_MODIFIER, "Inset Face" , 0xFF);
+REGISTER_CLASS(GOCCChamfer    , CLASS_OCC_MODIFIER, "Chamfer"     , 0xFF);
+REGISTER_CLASS(GOCCFillet     , CLASS_OCC_MODIFIER, "Fillet"      , 0xFF);
+REGISTER_CLASS(GOCCInsetFace  , CLASS_OCC_MODIFIER, "Inset Face"  , 0xFF);
 REGISTER_CLASS(GOCCExtrudeFace, CLASS_OCC_MODIFIER, "Extrude Face", 0xFF);
+REGISTER_CLASS(GOCCMirror     , CLASS_OCC_MODIFIER, "Mirror"      , 0xFF);
 
 CEditPanel::CEditPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CEditPanel)
 {
