@@ -97,8 +97,10 @@ private:
 	void MakeBox();
 };
 
-// merge a list of occ objects into a single object
-GOCCObject* MergeOCCObjects(std::vector<GOCCObject*> occlist);
+// apply a boolean operation to a list of occ objects
+GOCCObject* ApplyBooleanUnion(std::vector<GOCCObject*> occlist);
+GOCCObject* ApplyBooleanSubtract(std::vector<GOCCObject*> occlist);
+GOCCObject* ApplyBooleanIntersect(std::vector<GOCCObject*> occlist);
 
 // get the minimum and maximum edge length for an OCC object
 bool MinMaxEdgeLength(GOCCObject* po, double& min, double& max);

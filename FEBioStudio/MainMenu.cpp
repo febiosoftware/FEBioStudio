@@ -96,6 +96,10 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	actionCloneRevolve = createAction("Clone Revolve ...", "actionCloneRevolve", "clonerevolve");
 	actionPurge = createAction("Purge ...", "actionPurge");
 
+	actionBooleanUnion     = createAction("Union", "actionBooleanUnion", "boolean_add");
+	actionBooleanSubtract  = createAction("Subtract", "actionBooleanSubtract", "boolean_sub");
+	actionBooleanIntersect = createAction("Intersect", "actionBooleanIntersect", "boolean_intersect");
+
 	QAction* actionFace2Elems = createAction("Face to Element Selection", "actionFaceToElem");
 	QAction* actionSurfaceToFaces = createAction("Surface to Face Selection", "actionSurfaceToFaces");
 	QAction* actionSelectOverlap = createAction("Select surface overlap ...", "actionSelectOverlap");

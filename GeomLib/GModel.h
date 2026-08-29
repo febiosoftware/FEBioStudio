@@ -247,6 +247,10 @@ public:
 	// merge a "discrete" object with the rest
 	GObject* MergeDiscreteObject(std::vector<GObject*> discreteObjects, std::vector<GObject*>& objList, double tol);
 
+	GObject* ApplyBooleanUnion(GObjectSelection* sel);
+	GObject* ApplyBooleanSubtract(GObjectSelection* sel);
+	GObject* ApplyBooleanIntersect(GObjectSelection* sel);
+
 public:
 	// show (or hide if bshow==false) a list of objects
 	void ShowObjects(const std::vector<int>& objList, bool bshow = true);

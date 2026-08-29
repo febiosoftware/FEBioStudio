@@ -172,6 +172,10 @@ void Ui::CMainWindow::buildToolbars(::CMainWindow* mainWindow)
 	buildToolBar->addAction(mainMenu->actionClone);
 	buildToolBar->addAction(mainMenu->actionCloneGrid);
 	buildToolBar->addAction(mainMenu->actionCloneRevolve);
+	buildToolBar->addSeparator();
+	buildToolBar->addAction(mainMenu->actionBooleanUnion);
+	buildToolBar->addAction(mainMenu->actionBooleanSubtract);
+	buildToolBar->addAction(mainMenu->actionBooleanIntersect);
 
 	mainWindow->addToolBar(Qt::TopToolBarArea, buildToolBar);
 

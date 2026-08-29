@@ -213,5 +213,8 @@
         <file>icons/teapot.png</file>
         <file>icons/foam.png</file>
         <file>icons/help.png</file>
+        <file>icons/boolean_add.png</file>
+        <file>icons/boolean_sub.png</file>
+        <file>icons/boolean_intersect.png</file>
 	</qresource>
 </RCC>

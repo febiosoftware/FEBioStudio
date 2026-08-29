@@ -48,6 +48,8 @@ SOFTWARE.*/
 #include <BRepMesh_IncrementalMesh.hxx>
 #include <BRepFilletAPI_MakeFillet.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
+#include <BRepAlgoAPI_Cut.hxx>
+#include <BRepAlgoAPI_Common.hxx>
 #include <TopExp_Explorer.hxx>
 #include <BRepTools.hxx>
 #include <BOPAlgo_MakerVolume.hxx>
@@ -58,6 +60,7 @@ SOFTWARE.*/
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_Sewing.hxx>
 #include <BRepBuilderAPI_MakeSolid.hxx>
+#include <TopoDS_Compound.hxx>
 #include <BRepOffsetAPI_MakeFilling.hxx>
 #include <TopoDS_Solid.hxx>
 #include <TopoDS_Shell.hxx>
@@ -517,7 +520,39 @@ void GOCCBox::MakeBox()
 #endif
 }
 
-GOCCObject* MergeOCCObjects(std::vector<GOCCObject*> occlist)
+#ifdef HAS_OCC
+static TopoDS_Shape TransformedSolids(GOCCObject* po)
+{
+	BRep_Builder builder;
+	TopoDS_Compound compound;
+	builder.MakeCompound(compound);
+
+	Transform T = po->GetTransform();
+	gp_Trsf trsf;
+	vec3d trans = T.GetPosition();
+	trsf.SetTranslation(gp_Vec(trans.x, trans.y, trans.z));
+
+	int solids = 0;
+	for (TopExp_Explorer ex(po->GetShape(), TopAbs_SOLID); ex.More(); ex.Next())
+	{
+		TopoDS_Solid solid = TopoDS::Solid(ex.Current());
+		BRepBuilderAPI_Transform brepTransform(solid, trsf);
+		builder.Add(compound, brepTransform.Shape());
+		++solids;
+	}
+
+	if (solids == 0) return TopoDS_Shape();
+	if (solids == 1)
+	{
+		TopExp_Explorer ex(compound, TopAbs_SOLID);
+		if (ex.More()) return ex.Current();
+	}
+
+	return compound;
+}
+#endif
+
+GOCCObject* ApplyBooleanUnion(std::vector<GOCCObject*> occlist)
 {
 #ifdef HAS_OCC
 	// empty compound, as nothing has been added yet
@@ -558,6 +593,68 @@ GOCCObject* MergeOCCObjects(std::vector<GOCCObject*> occlist)
 	TopoDS_Shape solid = aBuilder.Shape();
 	GOCCObject* occ = new GOCCObject;
 	occ->SetShape(solid);
+	return occ;
+#else
+	return nullptr;
+#endif
+}
+
+GOCCObject* ApplyBooleanSubtract(std::vector<GOCCObject*> occlist)
+{
+#ifdef HAS_OCC
+	if (occlist.size() < 2) return nullptr;
+	if (occlist[0] == nullptr) return nullptr;
+
+	TopoDS_Shape result = TransformedSolids(occlist[0]);
+	if (result.IsNull()) return nullptr;
+
+	for (size_t i = 1; i < occlist.size(); ++i)
+	{
+		if (occlist[i] == nullptr) return nullptr;
+
+		TopoDS_Shape tool = TransformedSolids(occlist[i]);
+		if (tool.IsNull()) return nullptr;
+
+		BRepAlgoAPI_Cut cut(result, tool);
+		if (!cut.IsDone() || cut.HasErrors()) return nullptr;
+
+		result = cut.Shape();
+		if (result.IsNull()) return nullptr;
+	}
+
+	GOCCObject* occ = new GOCCObject;
+	occ->SetShape(result);
+	return occ;
+#else
+	return nullptr;
+#endif
+}
+
+GOCCObject* ApplyBooleanIntersect(std::vector<GOCCObject*> occlist)
+{
+#ifdef HAS_OCC
+	if (occlist.size() < 2) return nullptr;
+	if (occlist[0] == nullptr) return nullptr;
+
+	TopoDS_Shape result = TransformedSolids(occlist[0]);
+	if (result.IsNull()) return nullptr;
+
+	for (size_t i = 1; i < occlist.size(); ++i)
+	{
+		if (occlist[i] == nullptr) return nullptr;
+
+		TopoDS_Shape tool = TransformedSolids(occlist[i]);
+		if (tool.IsNull()) return nullptr;
+
+		BRepAlgoAPI_Common common(result, tool);
+		if (!common.IsDone() || common.HasErrors()) return nullptr;
+
+		result = common.Shape();
+		if (result.IsNull()) return nullptr;
+	}
+
+	GOCCObject* occ = new GOCCObject;
+	occ->SetShape(result);
 	return occ;
 #else
 	return nullptr;

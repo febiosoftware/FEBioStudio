@@ -73,6 +73,7 @@ public:
 	// EDIT menu
 	QAction* actionUndo;
 	QAction* actionRedo;
+	QAction* actionPurge;
 
 	// FEBIO menu
 	QAction* actionFEBioRun;
@@ -156,7 +157,9 @@ public:
 	QAction* actionClone;
 	QAction* actionCloneGrid;
 	QAction* actionCloneRevolve;
-	QAction* actionPurge;
+	QAction* actionBooleanUnion;
+	QAction* actionBooleanSubtract;
+	QAction* actionBooleanIntersect;
 
 	QAction* actionAddProbe;
 	QAction* actionAddCurveProbe;

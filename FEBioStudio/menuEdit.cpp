@@ -1603,6 +1603,153 @@ void CMainWindow::on_actionExtract_triggered()
 	}
 }
 
+void CMainWindow::on_actionBooleanUnion_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	// make sure we have an object selection
+	FESelection* currentSelection = doc->GetCurrentSelection();
+	if (currentSelection->Type() != SELECT_OBJECTS)
+	{
+		QMessageBox::critical(this, "Merge", "Cannot apply union to selection.");
+		return;
+	}
+
+	GObjectSelection* sel = dynamic_cast<GObjectSelection*>(currentSelection);
+	if (sel == nullptr) return;
+
+	if (sel->Count() < 2)
+	{
+		QMessageBox::critical(this, "Boolean Union", "You need to select at least two objects.");
+		return;
+	}
+
+	GModel& m = *doc->GetGModel();
+	GObject* newObject = m.ApplyBooleanUnion(sel);
+	if (newObject == nullptr)
+	{
+		QMessageBox::critical(this, "Boolean Union", "Cannot apply union to selection.");
+		return;
+	}
+
+	// we need to delete the selected objects and add the new object
+	// create the command that will do the attaching
+	CCmdGroup* pcmd = new CCmdGroup("Boolean Union");
+	for (int i = 0; i < sel->Count(); ++i)
+	{
+		// remove the old object
+		GObject* po = sel->Object(i);
+		pcmd->AddCommand(new CCmdDeleteGObject(&m, po));
+	}
+	// add the new object
+	pcmd->AddCommand(new CCmdAddAndSelectObject(&m, newObject));
+
+	// perform the operation
+	doc->DoCommand(pcmd);
+
+	// update UI
+	Update(0, true);
+}
+
+void CMainWindow::on_actionBooleanSubtract_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	// make sure we have an object selection
+	FESelection* currentSelection = doc->GetCurrentSelection();
+	if (currentSelection->Type() != SELECT_OBJECTS)
+	{
+		QMessageBox::critical(this, "Merge", "Cannot apply union to selection.");
+		return;
+	}
+
+	GObjectSelection* sel = dynamic_cast<GObjectSelection*>(currentSelection);
+	if (sel == nullptr) return;
+
+	if (sel->Count() < 2)
+	{
+		QMessageBox::critical(this, "Boolean Subtract", "You need to select at least two objects.");
+		return;
+	}
+
+	GModel& m = *doc->GetGModel();
+	GObject* newObject = m.ApplyBooleanSubtract(sel);
+	if (newObject == nullptr)
+	{
+		QMessageBox::critical(this, "Boolean Subtract", "Cannot apply subtract to selection.");
+		return;
+	}
+
+	// we need to delete the selected objects and add the new object
+	// create the command that will do the attaching
+	CCmdGroup* pcmd = new CCmdGroup("Boolean Subtract");
+	for (int i = 0; i < sel->Count(); ++i)
+	{
+		// remove the old object
+		GObject* po = sel->Object(i);
+		pcmd->AddCommand(new CCmdDeleteGObject(&m, po));
+	}
+	// add the new object
+	pcmd->AddCommand(new CCmdAddAndSelectObject(&m, newObject));
+
+	// perform the operation
+	doc->DoCommand(pcmd);
+
+	// update UI
+	Update(0, true);
+}
+
+void CMainWindow::on_actionBooleanIntersect_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	// make sure we have an object selection
+	FESelection* currentSelection = doc->GetCurrentSelection();
+	if (currentSelection->Type() != SELECT_OBJECTS)
+	{
+		QMessageBox::critical(this, "Merge", "Cannot apply intersect to selection.");
+		return;
+	}
+
+	GObjectSelection* sel = dynamic_cast<GObjectSelection*>(currentSelection);
+	if (sel == nullptr) return;
+
+	if (sel->Count() < 2)
+	{
+		QMessageBox::critical(this, "Boolean Intersect", "You need to select at least two objects.");
+		return;
+	}
+
+	GModel& m = *doc->GetGModel();
+	GObject* newObject = m.ApplyBooleanIntersect(sel);
+	if (newObject == nullptr)
+	{
+		QMessageBox::critical(this, "Boolean Intersect", "Cannot apply intersect to selection.");
+		return;
+	}
+
+	// we need to delete the selected objects and add the new object
+	// create the command that will do the attaching
+	CCmdGroup* pcmd = new CCmdGroup("Boolean Intersect");
+	for (int i = 0; i < sel->Count(); ++i)
+	{
+		// remove the old object
+		GObject* po = sel->Object(i);
+		pcmd->AddCommand(new CCmdDeleteGObject(&m, po));
+	}
+	// add the new object
+	pcmd->AddCommand(new CCmdAddAndSelectObject(&m, newObject));
+
+	// perform the operation
+	doc->DoCommand(pcmd);
+
+	// update UI
+	Update(0, true);
+}
+
 void CMainWindow::on_actionPurge_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());

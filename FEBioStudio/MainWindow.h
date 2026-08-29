@@ -514,6 +514,10 @@ public slots:
 	void on_actionCopySelection_triggered();
 	void on_actionPasteSelection_triggered();
 
+	void on_actionBooleanUnion_triggered();
+	void on_actionBooleanSubtract_triggered();
+	void on_actionBooleanIntersect_triggered();
+
 	void on_actionFindTxt_triggered();
 	void on_actionFindAgain_triggered();
 	void on_actionToggleComment_triggered();

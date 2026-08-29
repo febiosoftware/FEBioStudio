@@ -2078,7 +2078,7 @@ GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newOb
 		if (allOCC)
 		{
 			static int n = 1;
-			GOCCObject* newocc = MergeOCCObjects(occlist);
+			GOCCObject* newocc = ::ApplyBooleanUnion(occlist);
 			if (newocc)
 			{
 				stringstream ss;
@@ -2324,6 +2324,102 @@ GObject* GModel::DetachDiscreteSet(GDiscreteElementSet* set)
 	}
 
 	return po;
+}
+
+GObject* GModel::ApplyBooleanUnion(GObjectSelection* sel)
+{
+	// see if the objects are OCC
+	bool allOCC = true;
+	std::vector<GOCCObject*> occlist;
+	for (int i = 0; i < sel->Count(); ++i)
+	{
+		GOCCObject* pc = dynamic_cast<GOCCObject*>(sel->Object(i));
+		if (pc == nullptr)
+		{
+			allOCC = false;
+			break;
+		}
+		else occlist.push_back(pc);
+	}
+
+	if (allOCC)
+	{
+		static int n = 1;
+		GOCCObject* newocc = ::ApplyBooleanUnion(occlist);
+		if (newocc)
+		{
+			stringstream ss;
+			ss << "BooleanUnion" << n++;
+			newocc->SetName(ss.str());
+		}
+		return newocc;
+	}
+
+	return nullptr;
+}
+
+GObject* GModel::ApplyBooleanSubtract(GObjectSelection* sel)
+{
+	// see if the objects are OCC
+	bool allOCC = true;
+	std::vector<GOCCObject*> occlist;
+	for (int i = 0; i < sel->Count(); ++i)
+	{
+		GOCCObject* pc = dynamic_cast<GOCCObject*>(sel->Object(i));
+		if (pc == nullptr)
+		{
+			allOCC = false;
+			break;
+		}
+		else occlist.push_back(pc);
+	}
+
+	if (allOCC)
+	{
+		static int n = 1;
+		GOCCObject* newocc = ::ApplyBooleanSubtract(occlist);
+		if (newocc)
+		{
+			stringstream ss;
+			ss << "BooleanSubtract" << n++;
+			newocc->SetName(ss.str());
+		}
+		return newocc;
+	}
+
+	return nullptr;
+}
+
+GObject* GModel::ApplyBooleanIntersect(GObjectSelection* sel)
+{
+	// see if the objects are OCC
+	bool allOCC = true;
+	std::vector<GOCCObject*> occlist;
+	for (int i = 0; i < sel->Count(); ++i)
+	{
+		GOCCObject* pc = dynamic_cast<GOCCObject*>(sel->Object(i));
+		if (pc == nullptr)
+		{
+			allOCC = false;
+			break;
+		}
+		else occlist.push_back(pc);
+	}
+
+	if (allOCC)
+	{
+		static int n = 1;
+		GOCCObject* newocc = ::ApplyBooleanIntersect(occlist);
+		if (newocc)
+		{
+			stringstream ss;
+			ss << "BooleanIntersect" << n++;
+			newocc->SetName(ss.str());
+		}
+		return newocc;
+	}
+
+	return nullptr;
 }
 
 list<GPart*> GModel::FindPartsFromMaterial(int matId, bool bmatch)
