@@ -1626,7 +1626,7 @@ void CMainWindow::on_actionBooleanUnion_triggered()
 	}
 
 	GModel& m = *doc->GetGModel();
-	GObject* newObject = m.ApplyBooleanUnion(sel);
+	GObject* newObject = m.ApplyBooleanOperation(sel, BooleanOperation::BOOLEAN_UNION);
 	if (newObject == nullptr)
 	{
 		QMessageBox::critical(this, "Boolean Union", "Cannot apply union to selection.");
@@ -1675,7 +1675,7 @@ void CMainWindow::on_actionBooleanSubtract_triggered()
 	}
 
 	GModel& m = *doc->GetGModel();
-	GObject* newObject = m.ApplyBooleanSubtract(sel);
+	GObject* newObject = m.ApplyBooleanOperation(sel, BooleanOperation::BOOLEAN_DIFFERENCE);
 	if (newObject == nullptr)
 	{
 		QMessageBox::critical(this, "Boolean Subtract", "Cannot apply subtract to selection.");
@@ -1724,7 +1724,7 @@ void CMainWindow::on_actionBooleanIntersect_triggered()
 	}
 
 	GModel& m = *doc->GetGModel();
-	GObject* newObject = m.ApplyBooleanIntersect(sel);
+	GObject* newObject = m.ApplyBooleanOperation(sel, BooleanOperation::BOOLEAN_INTERSECTION);
 	if (newObject == nullptr)
 	{
 		QMessageBox::critical(this, "Boolean Intersect", "Cannot apply intersect to selection.");

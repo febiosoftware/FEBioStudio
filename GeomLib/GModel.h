@@ -48,6 +48,13 @@ class FSItemListBuilder;
 class GDiscreteObject;
 class GDiscreteElementSet;
 
+enum class BooleanOperation
+{
+	BOOLEAN_UNION,
+	BOOLEAN_INTERSECTION,
+	BOOLEAN_DIFFERENCE
+};
+
 //-----------------------------------------------------------------------------
 // The GModel class manages all GObjects and GGroups that are created by
 // the user.
@@ -247,9 +254,7 @@ public:
 	// merge a "discrete" object with the rest
 	GObject* MergeDiscreteObject(std::vector<GObject*> discreteObjects, std::vector<GObject*>& objList, double tol);
 
-	GObject* ApplyBooleanUnion(GObjectSelection* sel);
-	GObject* ApplyBooleanSubtract(GObjectSelection* sel);
-	GObject* ApplyBooleanIntersect(GObjectSelection* sel);
+	GObject* ApplyBooleanOperation(GObjectSelection* sel, BooleanOperation operation);
 
 public:
 	// show (or hide if bshow==false) a list of objects

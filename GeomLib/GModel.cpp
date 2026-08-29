@@ -2326,100 +2326,56 @@ GObject* GModel::DetachDiscreteSet(GDiscreteElementSet* set)
 	return po;
 }
 
-GObject* GModel::ApplyBooleanUnion(GObjectSelection* sel)
+GObject* GModel::ApplyBooleanOperation(GObjectSelection* sel, BooleanOperation operation)
 {
 	// see if the objects are OCC
 	bool allOCC = true;
 	std::vector<GOCCObject*> occlist;
+	std::vector<GObject*> temps; // list of temporary objects that need to be deleted
 	for (int i = 0; i < sel->Count(); ++i)
 	{
-		GOCCObject* pc = dynamic_cast<GOCCObject*>(sel->Object(i));
+		GObject* po = sel->Object(i);
+		GOCCObject* pc = dynamic_cast<GOCCObject*>(po);
 		if (pc == nullptr)
 		{
-			allOCC = false;
-			break;
+			if (dynamic_cast<GPrimitive*>(po))
+			{
+				// convert the primitive to an OCC object
+				pc = ConvertToOCCObject(po);
+				if (pc == nullptr)
+				{
+					allOCC = false;
+					break;
+				}
+				temps.push_back(pc);
+			}
 		}
-		else occlist.push_back(pc);
+		occlist.push_back(pc);
 	}
-
+	GOCCObject* newocc = nullptr;
 	if (allOCC)
 	{
 		static int n = 1;
-		GOCCObject* newocc = ::ApplyBooleanUnion(occlist);
+		string baseName;
+		switch (operation)
+		{
+		case BooleanOperation::BOOLEAN_UNION       : newocc = ::ApplyBooleanUnion    (occlist); baseName = "BooleanUnion"; break;
+		case BooleanOperation::BOOLEAN_DIFFERENCE  : newocc = ::ApplyBooleanSubtract (occlist); baseName = "BooleanSubtract"; break;
+		case BooleanOperation::BOOLEAN_INTERSECTION: newocc = ::ApplyBooleanIntersect(occlist); baseName = "BooleanIntersect"; break;
+		}
+		
 		if (newocc)
 		{
 			stringstream ss;
-			ss << "BooleanUnion" << n++;
+			ss << baseName << n++;
 			newocc->SetName(ss.str());
 		}
-		return newocc;
 	}
 
-	return nullptr;
-}
+	// delete the temporary objects
+	for (GObject* po : temps) delete po;
 
-GObject* GModel::ApplyBooleanSubtract(GObjectSelection* sel)
-{
-	// see if the objects are OCC
-	bool allOCC = true;
-	std::vector<GOCCObject*> occlist;
-	for (int i = 0; i < sel->Count(); ++i)
-	{
-		GOCCObject* pc = dynamic_cast<GOCCObject*>(sel->Object(i));
-		if (pc == nullptr)
-		{
-			allOCC = false;
-			break;
-		}
-		else occlist.push_back(pc);
-	}
-
-	if (allOCC)
-	{
-		static int n = 1;
-		GOCCObject* newocc = ::ApplyBooleanSubtract(occlist);
-		if (newocc)
-		{
-			stringstream ss;
-			ss << "BooleanSubtract" << n++;
-			newocc->SetName(ss.str());
-		}
-		return newocc;
-	}
-
-	return nullptr;
-}
-
-GObject* GModel::ApplyBooleanIntersect(GObjectSelection* sel)
-{
-	// see if the objects are OCC
-	bool allOCC = true;
-	std::vector<GOCCObject*> occlist;
-	for (int i = 0; i < sel->Count(); ++i)
-	{
-		GOCCObject* pc = dynamic_cast<GOCCObject*>(sel->Object(i));
-		if (pc == nullptr)
-		{
-			allOCC = false;
-			break;
-		}
-		else occlist.push_back(pc);
-	}
-
-	if (allOCC)
-	{
-		static int n = 1;
-		GOCCObject* newocc = ::ApplyBooleanIntersect(occlist);
-		if (newocc)
-		{
-			stringstream ss;
-			ss << "BooleanIntersect" << n++;
-			newocc->SetName(ss.str());
-		}
-		return newocc;
-	}
-
-	return nullptr;
+	return newocc;
 }
 
 list<GPart*> GModel::FindPartsFromMaterial(int matId, bool bmatch)
