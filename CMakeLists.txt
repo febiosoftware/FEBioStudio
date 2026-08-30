@@ -150,7 +150,7 @@ if(CAD_FEATURES)
 set(USE_NEW_OCC "OFF" CACHE BOOL "Enable or disable OCC libraries < 7.7.0")
 
 if (USE_NEW_OCC)
-    set(OCCT_LIB_NAMES TKernel TKGeomBase TKTopAlgo TKPrim TKMesh TKMath TKBRep TKDESTL TKFillet TKBO TKDEIGES TKDESTEP  TKXSBase TKG3d TKLCAF TKVCAF)
+    set(OCCT_LIB_NAMES TKernel TKGeomBase TKGeomAlgo TKTopAlgo TKPrim TKMesh TKMath TKBRep TKDESTL TKFillet TKBO TKDEIGES TKDESTEP  TKXSBase TKG3d TKLCAF TKVCAF TKOffset TKBool TKShHealing)
 else()
     set(OCCT_LIB_NAMES TKernel TKGeomBase TKGeomAlgo TKTopAlgo TKPrim TKMesh TKMath TKBRep TKSTL TKFillet TKBO TKIGES TKSTEP TKSTEPBase TKXSBase TKG3d TKLCAF TKVCAF TKOffset TKBool TKShHealing)
 endif()
