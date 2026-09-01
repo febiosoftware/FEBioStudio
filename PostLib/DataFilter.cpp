@@ -2693,7 +2693,7 @@ ModelDataField* Post::LinearToQuadric(FEPostModel& fem, ModelDataField* dataFiel
 			for (int i = 0; i < NE; ++i)
 			{
 				FSElement& el = mesh.Element(i);
-				if (el.Type() == FE_HEX20)
+				if ((el.Type() == FE_HEX20) || (el.Type() == FE_HEX27))
 				{
 					for (int j = 0; j < 12; ++j)
 					{
@@ -2703,6 +2703,29 @@ ModelDataField* Post::LinearToQuadric(FEPostModel& fem, ModelDataField* dataFiel
 
 						float v2 = (v0 + v1) / 2.f;
 						dst[n[2]] = v2;
+					}
+
+					if (el.Type() == FE_HEX27)
+					{
+						// evaluate face nodes
+						for (int j = 0; j < 6; ++j)
+						{
+							FSFace face = el.GetFace(j);
+							float v[4];
+							v[0] = dst[face.n[0]];
+							v[1] = dst[face.n[1]];
+							v[2] = dst[face.n[2]];
+							v[3] = dst[face.n[3]];
+
+							float v4 = (v[0] + v[1] + v[2] + v[3]) / 4.f;
+							dst[el.m_node[20 + j]] = v4;
+						}
+
+						// evaluate center node
+						float v[8];
+						for (int j = 0; j < 8; ++j) v[j] = dst[el.m_node[j]];
+						float v8 = (v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7]) / 8.f;
+						dst[el.m_node[26]] = v8;
 					}
 				}
 			}
