@@ -52,6 +52,7 @@ SOFTWARE.*/
 #include <GeomLib/GOCCObject.h>
 #include <GeomLib/GOCCModifier.h>
 #include <GeomLib/GOCCChamfer.h>
+#include <GeomLib/GOCCFuse.h>
 #include <GeomLib/GOCCExtrudeFace.h>
 #include <GeomLib/GOCCFillet.h>
 #include <GeomLib/GOCCInsetFace.h>
@@ -140,6 +141,7 @@ REGISTER_CLASS(GOCCFillet     , CLASS_OCC_MODIFIER, "Fillet"      , 0xFF);
 REGISTER_CLASS(GOCCInsetFace  , CLASS_OCC_MODIFIER, "Inset Face"  , 0xFF);
 REGISTER_CLASS(GOCCExtrudeFace, CLASS_OCC_MODIFIER, "Extrude Face", 0xFF);
 REGISTER_CLASS(GOCCMirror     , CLASS_OCC_MODIFIER, "Mirror"      , 0xFF);
+REGISTER_CLASS(GOCCFuse       , CLASS_OCC_MODIFIER, "Fuse"        , 0xFF);
 
 CEditPanel::CEditPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CEditPanel)
 {
