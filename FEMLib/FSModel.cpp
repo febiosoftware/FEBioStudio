@@ -397,6 +397,7 @@ void FSModel::AddSolute(const std::string& name, int z, double M, double d)
 	var.AddDOF(name, sz);
 
 	FEDOFVariable& svar = GetVariable("shell concentration");
+	sprintf(sz, "d%d", (int)m_Sol.Size());
 	svar.AddDOF(name, sz);
 }
 
