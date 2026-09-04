@@ -2326,15 +2326,15 @@ GObject* GModel::DetachDiscreteSet(GDiscreteElementSet* set)
 	return po;
 }
 
-GObject* GModel::ApplyBooleanOperation(GObjectSelection* sel, BooleanOperation operation)
+GObject* GModel::ApplyBooleanOperation(std::vector<GObject*> objects, BooleanOperation operation)
 {
 	// see if the objects are OCC
 	bool allOCC = true;
 	std::vector<GOCCObject*> occlist;
 	std::vector<GObject*> temps; // list of temporary objects that need to be deleted
-	for (int i = 0; i < sel->Count(); ++i)
+	for (int i = 0; i < objects.size(); ++i)
 	{
-		GObject* po = sel->Object(i);
+		GObject* po = objects[i];
 		GOCCObject* pc = dynamic_cast<GOCCObject*>(po);
 		if (pc == nullptr)
 		{

@@ -1615,8 +1615,11 @@ void CMainWindow::on_actionBooleanUnion_triggered()
 		return;
 	}
 
+	std::vector<GObject*> objects;
+	for (int i = 0; i < sel->Count(); ++i) objects.push_back(sel->Object(i));
+
 	GModel& m = *doc->GetGModel();
-	GObject* newObject = m.ApplyBooleanOperation(sel, BooleanOperation::BOOLEAN_UNION);
+	GObject* newObject = m.ApplyBooleanOperation(objects, BooleanOperation::BOOLEAN_UNION);
 	if (newObject == nullptr)
 	{
 		QMessageBox::critical(this, "Boolean Union", "Cannot apply union to selection.");
@@ -1664,8 +1667,26 @@ void CMainWindow::on_actionBooleanSubtract_triggered()
 		return;
 	}
 
+	std::vector<GObject*> objects;
+	for (int i = 0; i < sel->Count(); ++i) objects.push_back(sel->Object(i));
+
+	// for subtraction, we need to know the "target", i.e. the left operand of the operation.
+	QStringList objNames;
+	for (int i = 0; i < sel->Count(); ++i) objNames << sel->Object(i)->GetName().c_str();
+	QString selectedItem = QInputDialog::getItem(this, "Boolean Subtract", "Select target object:", objNames, 0, false);
+	if (selectedItem.isEmpty()) return;
+	int targetIndex = objNames.indexOf(selectedItem);
+	if (targetIndex < 0) return;
+	if (targetIndex > 0)
+	{
+		// swap the target object to the front of the selection list
+		GObject* po = objects[0];
+		objects[0] = objects[targetIndex];
+		objects[targetIndex] = po;
+	}
+
 	GModel& m = *doc->GetGModel();
-	GObject* newObject = m.ApplyBooleanOperation(sel, BooleanOperation::BOOLEAN_DIFFERENCE);
+	GObject* newObject = m.ApplyBooleanOperation(objects, BooleanOperation::BOOLEAN_DIFFERENCE);
 	if (newObject == nullptr)
 	{
 		QMessageBox::critical(this, "Boolean Subtract", "Cannot apply subtract to selection.");
@@ -1713,8 +1734,11 @@ void CMainWindow::on_actionBooleanIntersect_triggered()
 		return;
 	}
 
+	std::vector<GObject*> objects;
+	for (int i = 0; i < sel->Count(); ++i) objects.push_back(sel->Object(i));
+
 	GModel& m = *doc->GetGModel();
-	GObject* newObject = m.ApplyBooleanOperation(sel, BooleanOperation::BOOLEAN_INTERSECTION);
+	GObject* newObject = m.ApplyBooleanOperation(objects, BooleanOperation::BOOLEAN_INTERSECTION);
 	if (newObject == nullptr)
 	{
 		QMessageBox::critical(this, "Boolean Intersect", "Cannot apply intersect to selection.");
