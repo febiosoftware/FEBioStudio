@@ -267,6 +267,7 @@ public:
 
 private:
 	CModelViewer* m_wnd;
+	QStringList m_plotVars;
 	FSProject& m_prj;
 	int	m_actionIndex;
 	int m_pltFormatIndex;

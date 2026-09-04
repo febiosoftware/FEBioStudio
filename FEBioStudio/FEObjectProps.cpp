@@ -1108,15 +1108,18 @@ void CPlotfileProperties::Update()
 
 	int ncount = 0;
 	addProperty("Plot Variables", CProperty::Group); ncount++;
+
+	m_plotVars.clear();
 	for (int i = 0; i < plt.PlotVariables(); ++i)
 	{
 		CPlotVariable& var = plt.PlotVariable(i);
 		if (var.isShown() && var.isActive())
 		{
-			addProperty(QString::fromStdString(var.name()), CProperty::Bool)->setFlags(CProperty::Visible);
-			ncount++;
+			m_plotVars.append(QString::fromStdString(var.name()));
 		}
 	}
+	addProperty("", CProperty::Std_Vector_String);
+	ncount++;
 
 	m_actionIndex = ncount;
 	addProperty("", CProperty::Action, "Edit plot variables ..."); ncount++;
@@ -1129,18 +1132,38 @@ void CPlotfileProperties::Update()
 
 QVariant CPlotfileProperties::GetPropertyValue(int i) 
 { 
-	if (i == m_pltFormatIndex)
+	if (i == 1)
+	{
+		return m_plotVars;
+	}
+	else if (i == m_pltFormatIndex)
 	{
 		CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
 		return (int)plt.GetPlotFormat();
 	}
-	else return (i != m_actionIndex ? true : QVariant()); 
+	else return QVariant(); 
 }
 
 void CPlotfileProperties::SetPropertyValue(int i, const QVariant& v)
 {
 	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-	if (i == m_pltFormatIndex)
+	if (i == 1)
+	{
+		QStringList vars = v.toStringList();
+		for (int i = 0; i < plt.PlotVariables(); ++i)
+		{
+			CPlotVariable& var = plt.PlotVariable(i);
+			if (vars.contains(QString::fromStdString(var.name())))
+			{
+				var.setActive(true);
+			}
+			else
+			{
+				var.setActive(false);
+			}
+		}
+	}
+	else if (i == m_pltFormatIndex)
 	{
 		int fmt = v.toInt();
 		plt.SetPlotFormat(static_cast<CPlotDataSettings::PlotFormat>(fmt));

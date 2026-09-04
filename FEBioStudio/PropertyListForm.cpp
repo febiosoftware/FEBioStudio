@@ -33,7 +33,15 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QPushButton>
 #include <QListWidget>
+#include <QTableWidget>
 #include <QToolButton>
+#include <QAbstractItemView>
+#include <QHeaderView>
+#include <QIcon>
+#include <QMouseEvent>
+#include <QSignalBlocker>
+#include <QStyledItemDelegate>
+#include <QStyle>
 #include <CUILib/InputWidgets.h>
 #include "GLHighlighter.h"
 #include "ResourceEdit.h"
@@ -47,6 +55,7 @@ SOFTWARE.*/
 #include "PropertyListView.h"
 #include "units.h"
 #include <FSCore/util.h>
+#include <functional>
 
 //=================================================================================================
 
@@ -299,6 +308,192 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 	}
 //	ui->addStretch();
 }
+
+class CStringListEditorDelegate : public QStyledItemDelegate
+{
+public:
+	CStringListEditorDelegate(QObject* parent = nullptr) : QStyledItemDelegate(parent) {}
+
+	void setHoverRow(int row) { m_hoverRow = row; }
+
+	void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+	{
+		QStyleOptionViewItem opt = option;
+		if (index.row() == m_hoverRow) opt.state |= QStyle::State_MouseOver;
+		else opt.state &= ~QStyle::State_MouseOver;
+
+		QStyledItemDelegate::paint(painter, opt, index);
+	}
+
+private:
+	int m_hoverRow = -1;
+};
+
+class CStringListEditor : public QWidget
+{
+public:
+	CStringListEditor(QWidget* parent = nullptr) : QWidget(parent)
+	{
+		QVBoxLayout* l = new QVBoxLayout;
+		l->setContentsMargins(0, 0, 0, 0);
+		m_list = new QTableWidget;
+		m_list->setColumnCount(2);
+		m_list->horizontalHeader()->hide();
+		m_list->horizontalHeader()->setStretchLastSection(false);
+		m_list->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+		m_list->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
+		m_list->setColumnWidth(1, 24);
+		m_list->verticalHeader()->hide();
+		m_list->setShowGrid(false);
+		m_list->setSelectionBehavior(QAbstractItemView::SelectRows);
+		m_list->setSelectionMode(QAbstractItemView::SingleSelection);
+		m_list->setMouseTracking(true);
+		m_list->viewport()->setMouseTracking(true);
+		m_list->viewport()->installEventFilter(this);
+		m_delegate = new CStringListEditorDelegate(m_list);
+		m_list->setItemDelegate(m_delegate);
+		l->addWidget(m_list);
+		setLayout(l);
+
+		QObject::connect(m_list, &QTableWidget::currentCellChanged, [this](int currentRow, int, int previousRow, int) {
+			setDeleteIcon(previousRow, false);
+			setDeleteIcon(currentRow, true);
+		});
+
+		QObject::connect(m_list, &QTableWidget::cellClicked, [this](int row, int column) {
+			if ((column == 1) && m_deletePressedOnActiveRow)
+			{
+				m_list->removeRow(row);
+				if (m_list->rowCount() > 0)
+				{
+					m_list->setCurrentCell(qMin(row, m_list->rowCount() - 1), 0);
+				}
+				updateDeleteIcon();
+				if (m_onChanged) m_onChanged();
+			}
+			m_deletePressedOnActiveRow = false;
+		});
+
+		QObject::connect(m_list, &QTableWidget::itemChanged, [this](QTableWidgetItem* item) {
+			if ((item->column() == 0) && m_onChanged) m_onChanged();
+		});
+	}
+
+	void addItem(const QString& name)
+	{
+		QSignalBlocker blocker(m_list);
+		int n = m_list->rowCount();
+		m_list->insertRow(n);
+		m_list->setItem(n, 0, new QTableWidgetItem(name));
+		m_list->setItem(n, 1, createDeleteItem());
+		setDeleteIcon(n, n == m_list->currentRow());
+	}
+
+	void setStringList(const QStringList& list)
+	{
+		QSignalBlocker blocker(m_list);
+		m_list->setRowCount(0);
+		for (const QString& item : list)
+		{
+			int n = m_list->rowCount();
+			m_list->insertRow(n);
+			m_list->setItem(n, 0, new QTableWidgetItem(item));
+			m_list->setItem(n, 1, createDeleteItem());
+		}
+
+		if (m_list->rowCount() > 0)
+		{
+			m_list->setCurrentCell(0, 0);
+			setDeleteIcon(0, true);
+		}
+	}
+
+	QStringList stringList() const
+	{
+		QStringList list;
+		for (int i = 0; i < m_list->rowCount(); ++i)
+		{
+			QTableWidgetItem* item = m_list->item(i, 0);
+			if (item) list << item->text();
+		}
+		return list;
+	}
+
+	void setOnChanged(std::function<void()> onChanged)
+	{
+		m_onChanged = onChanged;
+	}
+
+protected:
+	bool eventFilter(QObject* obj, QEvent* ev) override
+	{
+		if (obj == m_list->viewport())
+		{
+			if ((ev->type() == QEvent::MouseMove) || (ev->type() == QEvent::MouseButtonPress))
+			{
+				QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(ev);
+				QModelIndex index = m_list->indexAt(mouseEvent->pos());
+				setHoverRow(index.isValid() ? index.row() : -1);
+
+				if (ev->type() == QEvent::MouseButtonPress)
+				{
+					m_deletePressedOnActiveRow = (index.isValid() && (index.column() == 1) && (index.row() == m_list->currentRow()));
+				}
+			}
+			else if (ev->type() == QEvent::Leave)
+			{
+				setHoverRow(-1);
+			}
+		}
+
+		return QWidget::eventFilter(obj, ev);
+	}
+
+private:
+	QTableWidgetItem* createDeleteItem()
+	{
+		QTableWidgetItem* item = new QTableWidgetItem;
+		item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+		item->setToolTip("Delete item");
+		item->setTextAlignment(Qt::AlignCenter);
+		return item;
+	}
+
+	void setDeleteIcon(int row, bool visible)
+	{
+		if ((row < 0) || (row >= m_list->rowCount())) return;
+
+		QSignalBlocker blocker(m_list);
+		QTableWidgetItem* item = m_list->item(row, 1);
+		if (item) item->setIcon(visible ? QIcon(":/icons/delete.png") : QIcon());
+	}
+
+	void updateDeleteIcon()
+	{
+		QSignalBlocker blocker(m_list);
+		int currentRow = m_list->currentRow();
+		for (int i = 0; i < m_list->rowCount(); ++i)
+		{
+			QTableWidgetItem* item = m_list->item(i, 1);
+			if (item) item->setIcon((i == currentRow) ? QIcon(":/icons/delete.png") : QIcon());
+		}
+	}
+
+	void setHoverRow(int row)
+	{
+		if (m_hoverRow == row) return;
+		m_hoverRow = row;
+		m_delegate->setHoverRow(row);
+		m_list->viewport()->update();
+	}
+
+private:
+	QTableWidget* m_list;
+	CStringListEditorDelegate* m_delegate = nullptr;
+	int m_hoverRow = -1;
+	bool m_deletePressedOnActiveRow = false;
+	std::function<void()> m_onChanged;
+};
 
 //-----------------------------------------------------------------------------
 bool CMouseWheelFilter::eventFilter(QObject* po, QEvent* ev)
@@ -558,6 +753,13 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 		return edit;
 	}
 	break;
+	case CProperty::Std_Vector_String:
+	{
+		CStringListEditor* pw = new CStringListEditor;
+		pw->setStringList(v.toStringList());
+		pw->setOnChanged([this, pw]() { onEditorDataChanged(pw); });
+		return pw;
+	}
 	default:
 		assert(false);
 	}
@@ -669,6 +871,12 @@ void CPropertyListForm::updateData()
 						if (pick) pick->setCurves(v.toStringList());
 					}
 					break;
+				case CProperty::Std_Vector_String:
+					{
+						CStringListEditor* edit = dynamic_cast<CStringListEditor*>(pw);
+						if (edit) edit->setStringList(v.toStringList());
+					}
+					break;
 				}
 			}
 			else
@@ -721,6 +929,15 @@ void CPropertyListForm::onDataChanged()
 
 	// get the sending widget
 	QWidget* pw = qobject_cast<QWidget*>(sender());
+	if (pw == 0) return;
+
+	onEditorDataChanged(pw);
+}
+
+void CPropertyListForm::onEditorDataChanged(QWidget* pw)
+{
+	// make sure we have a property list attached
+	if (m_list==0) return;
 	if (pw == 0) return;
 
     int propIndex = m_widgets.at(pw);
@@ -896,6 +1113,12 @@ void CPropertyListForm::onDataChanged()
             {
                 QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
                 if (edit) m_list->SetPropertyValue(propIndex, edit->text());
+            }
+            break;
+        case CProperty::Std_Vector_String:
+            {
+                CStringListEditor* edit = dynamic_cast<CStringListEditor*>(pw);
+                if (edit) m_list->SetPropertyValue(propIndex, edit->stringList());
             }
             break;
 		case CProperty::InternalLink:
