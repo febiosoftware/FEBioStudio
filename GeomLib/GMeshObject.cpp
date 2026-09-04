@@ -1411,3 +1411,33 @@ GMeshObject* ConvertToEditableMesh(GObject* po)
 
 	return pnew;
 }
+
+bool GMeshObject::CollapseTransform()
+{
+	// collapse the node positions
+	for (int i = 0; i < (int)m_Node.size(); ++i)
+	{
+		Node(i)->LocalPosition() = Node(i)->Position();
+	}
+
+	Transform& transform = GetTransform();
+
+	// collapse the mesh' nodes
+	FSMesh* mesh = GetFEMesh();
+	if (mesh)
+	{
+		for (int i = 0; i < mesh->Nodes(); ++i)
+		{
+			FSNode& node = mesh->Node(i);
+			node.r = transform.LocalToGlobal(node.r);
+		}
+	}
+
+	// reset the transform info
+	GetTransform().Reset();
+
+	if (mesh) mesh->UpdateMesh();
+	Update();
+
+	return true;
+}

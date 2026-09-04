@@ -1013,3 +1013,31 @@ GObject* GOCCObject::Clone()
 	return nullptr;
 #endif
 }
+
+bool GOCCObject::CollapseTransform()
+{
+#ifdef HAS_OCC
+	TopoDS_Shape  transformedShape = TransformedShape(this);
+	SetShape(transformedShape, false);
+	SetRenderMesh(nullptr);
+	// collapse the mesh' nodes
+	FSMesh* mesh = GetFEMesh();
+	if (mesh)
+	{
+		Transform& transform = GetTransform();
+		for (int i = 0; i < mesh->Nodes(); ++i)
+		{
+			FSNode& node = mesh->Node(i);
+			node.r = transform.LocalToGlobal(node.r);
+		}
+	}
+
+	// reset the transform info
+	GetTransform().Reset();
+
+	if (mesh) mesh->UpdateMesh();
+	return true;
+#else
+	return false;
+#endif
+}

@@ -85,7 +85,7 @@ public:
 	void SetMaterial(GLMaterial mat);
 
 	//! Collapse the transformation
-	void CollapseTransform();
+	virtual bool CollapseTransform() { return false; }
 
 	//! Save object to archive
 	void Save(OArchive& ar) override;

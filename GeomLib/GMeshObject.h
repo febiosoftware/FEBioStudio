@@ -88,6 +88,9 @@ public:
 	//! Detach an element selection and create a new GMeshObject
 	GMeshObject* DetachSelection();
 
+	// collapse the transformation
+	bool CollapseTransform() override;
+
 public:
 	//! Attach another object to this one
 	void Attach(GObject* po, bool bweld, double tol);

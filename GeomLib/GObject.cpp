@@ -470,35 +470,6 @@ void GObject::InsertFEEdgeSet(int n, FSEdgeSet* pg) { if (imp->m_pmesh) imp->m_p
 void GObject::InsertFENodeSet(int n, FSNodeSet* pg) { if (imp->m_pmesh) imp->m_pmesh->InsertFENodeSet(n, pg); }
 
 //-----------------------------------------------------------------------------
-void GObject::CollapseTransform()
-{
-	// collapse the node positions
-	for (int i = 0; i<(int)m_Node.size(); ++i)
-	{
-		Node(i)->LocalPosition() = Node(i)->Position();
-	}
-
-	Transform& transform = GetTransform();
-
-	// collapse the mesh' nodes
-	if (imp->m_pmesh)
-	{
-		FSMesh& m = *imp->m_pmesh;
-		for (int i = 0; i<m.Nodes(); ++i)
-		{
-			FSNode& node = m.Node(i);
-			node.r = transform.LocalToGlobal(node.r);
-		}
-	}
-
-	// reset the transform info
-	GetTransform().Reset();
-
-	if (imp->m_pmesh) imp->m_pmesh->UpdateMesh();
-	Update();
-}
-
-//-----------------------------------------------------------------------------
 //! This function makes sure that the GNodes correspond to the mesh' nodes
 //! When the mesh is transformed independently from the gobject te nodes
 //! might not coincide any more and this function should be called. 

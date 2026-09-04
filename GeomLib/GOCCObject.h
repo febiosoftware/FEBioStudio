@@ -60,6 +60,8 @@ public:
 
 	GObject* Clone() override;
 
+	bool CollapseTransform() override;
+
 protected:
 	void BuildGObject();
 

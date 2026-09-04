@@ -1145,22 +1145,12 @@ void CMainWindow::on_actionCollapseTransform_triggered()
 		return;
 	}
 
-	// make sure the objects are all editable meshes
-	std::vector<GMeshObject*> objList;
-	for (int i = 0; i < sel->Size(); ++i)
-	{
-		GMeshObject* po = dynamic_cast<GMeshObject*>(sel->Object(i));
-		if (po == nullptr)
-		{
-			QMessageBox::critical(this, "FEBio Studio", "Collapsing transforms can only be done on editable meshes.");
-			return;
-		}
-		objList.push_back(po);
-	}
-
 	// apply the collapse
 	// TODO: put this is a command
-	for (auto po : objList) po->CollapseTransform();
+	bool ok = false;
+	for (int i = 0; i < sel->Size(); ++i) ok |= sel->Object(i)->CollapseTransform();
+
+	if (!ok) QMessageBox::critical(this, "FEBio Studio", "Could not collapse transform for the selected object(s).");
 
 	RedrawGL();
 }
