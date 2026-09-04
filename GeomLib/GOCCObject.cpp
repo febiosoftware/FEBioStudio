@@ -566,20 +566,23 @@ static TopoDS_Shape TransformedShape(GOCCObject* po)
 	return brepTransform.Shape();
 }
 
-static TopoDS_Shell MakeShellFromFaces(const TopoDS_Shape& shape)
+static TopoDS_Shape MakeShellsFromFaces(const TopoDS_Shape& shape)
 {
 	BRep_Builder builder;
-	TopoDS_Shell shell;
-	builder.MakeShell(shell);
+	TopoDS_Compound compound;
+	builder.MakeCompound(compound);
 
 	int faces = 0;
 	for (TopExp_Explorer it(shape, TopAbs_FACE); it.More(); it.Next())
 	{
+		TopoDS_Shell shell;
+		builder.MakeShell(shell);
 		builder.Add(shell, TopoDS::Face(it.Current()));
+		builder.Add(compound, shell);
 		++faces;
 	}
 
-	return (faces > 0 ? shell : TopoDS_Shell());
+	return (faces > 0 ? compound : TopoDS_Shape());
 }
 #endif
 
@@ -661,10 +664,10 @@ TopoDS_Shape ApplyShellUnion(std::vector<GOCCObject*> occlist)
 	result = unify.Shape();
 	if (result.IsNull()) return TopoDS_Shape();
 
-	TopoDS_Shell shell = MakeShellFromFaces(result);
-	if (shell.IsNull()) return TopoDS_Shape();
+	TopoDS_Shape shells = MakeShellsFromFaces(result);
+	if (shells.IsNull()) return TopoDS_Shape();
 
-	return shell;
+	return shells;
 }
 #endif
 
