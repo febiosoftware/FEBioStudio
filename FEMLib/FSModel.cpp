@@ -390,11 +390,15 @@ void FSModel::AddSolute(const std::string& name, int z, double M, double d)
 	m_Sol.Add(s);
 
 	// Also add a degree of freedom for this
-	FEDOFVariable& var = GetVariable("concentration");
-
 	char sz[12] = {0};
 	sprintf(sz, "c%d", (int)m_Sol.Size());
+
+	FEDOFVariable& var = GetVariable("concentration");
 	var.AddDOF(name, sz);
+
+	FEDOFVariable& svar = GetVariable("shell concentration");
+	sprintf(sz, "d%d", (int)m_Sol.Size());
+	svar.AddDOF(name, sz);
 }
 
 void FSModel::GetRigidMaterialNames(char* szbuf)

@@ -96,6 +96,7 @@ private:
 
 	// create an editor for a property
 	QWidget* createPropertyEditor(CProperty& p, QVariant v);
+	void onEditorDataChanged(QWidget* pw);
 
 private slots:
 	// catch-all slot for when a widget gets changed

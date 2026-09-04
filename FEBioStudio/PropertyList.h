@@ -57,6 +57,7 @@ public:
 		Vec2d,
 		Std_Vector_Int,
 		Std_Vector_Double,
+		Std_Vector_String,
 
 		// from PostView
 		DataScalar,
