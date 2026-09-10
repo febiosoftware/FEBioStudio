@@ -130,7 +130,9 @@ int main(int argc, char* argv[])
 
 	GraphicsAPI defaultRhiApi = GraphicsAPI::API_NULL;
 	bool breset = false;
-	for (int i = 0; i < argc; ++i)
+	// Start at 1: argv[0] is the executable path, not a user argument. Starting
+	// at 0 made every launch log "Unknown command line argument: <exe path>".
+	for (int i = 1; i < argc; ++i)
 	{
 		if (strcmp(argv[i], "-reset") == 0)
 		{

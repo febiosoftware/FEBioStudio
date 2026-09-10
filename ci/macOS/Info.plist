@@ -347,17 +347,35 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleLongVersionString</key>
-	<string></string>
+	<string>3.2.0</string>
 	<key>CFBundleName</key>
-	<string></string>
+	<string>FEBioStudio</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string></string>
+	<string>3.2.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string></string>
+	<string>3.2.0</string>
+	<!-- Independent of CMAKE_OSX_DEPLOYMENT_TARGET. This is what makes macOS
+	     REFUSE to launch on an older system with a clear message, instead of
+	     launching and then crashing on a missing symbol. Homebrew bottles on
+	     the build host are compiled against the macOS 26 SDK, so 26.0 is the
+	     real floor. -->
+	<key>LSMinimumSystemVersion</key>
+	<string>26.0</string>
+	<!-- macOS gates ~/Documents, ~/Desktop and ~/Downloads behind user
+	     consent. The default model-repository folder is
+	     ~/Documents/FEBio Studio Repo Files, so without these the consent
+	     prompt is generic and a denial shows up only as an empty repository.
+	     These strings are what the user is asked to approve. -->
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>FEBio Studio stores downloaded models from the FEBio model repository in your Documents folder.</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>FEBio Studio needs access to your Downloads folder to open and save model files stored there.</string>
+	<key>NSDesktopFolderUsageDescription</key>
+	<string>FEBio Studio needs access to your Desktop to open and save model files stored there.</string>
 	<key>CSResourcesFileMapped</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
@@ -377,12 +395,17 @@
 			</array>
 		</dict>
 	</array>
-	<key>LSEnvironment</key>
-	<dict>
-		<key>DYLD_LIBRARY_PATH</key>
-		<string>$(HOME)/panua-pardiso-20240630-mac_arm64/lib</string>
-		<key>PARDISOLICMESSAGE</key>
-		<string>1</string>
-	</dict>
+	<!-- LSEnvironment removed for distribution builds. It set:
+	         DYLD_LIBRARY_PATH = $(HOME)/panua-pardiso-20240630-mac_arm64/lib
+	         PARDISOLICMESSAGE = 1
+	     None of which can work in a signed, distributed app:
+	       1. Values here are literal — launchd does not expand $(HOME).
+	       2. The hardened runtime strips every DYLD_* variable, so the
+	          setting is inert in any notarizable build.
+	       3. It points at a separately licensed Panua Pardiso install in the
+	          developer's home directory, absent on any end user's machine.
+	     The bundled Resources/febio.xml therefore selects the "accelerate"
+	     solver. Restore this block only for local Pardiso development, and
+	     keep it out of release builds. -->
 </dict>
 </plist>

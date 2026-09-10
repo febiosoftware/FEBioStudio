@@ -273,7 +273,13 @@ if(WIN32)
     add_compile_options(/MP /openmp)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
+    set(CMAKE_OSX_ARCHITECTURES arm64)
+    # Homebrew bottles on this build host are compiled against the macOS 26
+    # SDK, so 26.0 is the real floor. Keep this in sync with
+    # LSMinimumSystemVersion in ci/macOS/Info.plist and with FEBio's own
+    # deployment target, or the app installs on older systems and then dies on
+    # a missing symbol.
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 26.0)
 
     set(CMAKE_THREAD_LIBS_INIT "-lpthread")
     set(CMAKE_HAVE_THREADS_LIBRARY 1)
@@ -285,8 +291,11 @@ elseif(APPLE)
     endif()
     add_compile_options(-w)
 
-    # Ensures that macOS properly executes the fbs-test-suite binary
-    set(CMAKE_CROSSCOMPILING_EMULATOR arch -x86_64)
+    # Only meaningful for an x86_64 build. On Apple silicon this ran the test
+    # binaries under Rosetta, where a native arm64 build cannot execute.
+    if(CMAKE_OSX_ARCHITECTURES STREQUAL "x86_64")
+        set(CMAKE_CROSSCOMPILING_EMULATOR arch -x86_64)
+    endif()
 
 else()
 	add_definitions(-DLINUX)

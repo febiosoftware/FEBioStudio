@@ -103,6 +103,18 @@ void CDatabaseInterface::execute(string& query, int (*callback)(void*,int,char**
 
 void CDatabaseInterface::getTable(string& query, char ***table, int* rows, int* cols)
 {
+    // Always initialise the out-parameters FIRST. Every failure path below
+    // (database cannot be opened, query fails) previously returned while
+    // leaving the caller's uninitialised stack values untouched. Callers
+    // declare `char** table; int rows, cols;` without initialising them, then
+    // loop to `rows` and dereference `table[row]` — reading garbage. That is
+    // what crashed on a clean machine: no localdb.db yet, so openDatabase()
+    // failed, and checkLocalCopies() walked an uninitialised pointer into
+    // strlen(NULL).
+    if(table) *table = nullptr;
+    if(rows)  *rows  = 0;
+    if(cols)  *cols  = 0;
+
     if(!openDatabase()) return;
 
     char *zErrMsg = 0;
@@ -113,6 +125,12 @@ void CDatabaseInterface::getTable(string& query, char ***table, int* rows, int* 
     {
         fprintf(stderr, "SQL error: %s\n", zErrMsg);
         sqlite3_free(zErrMsg);
+
+        // sqlite3_get_table's output is unspecified on failure; do not let a
+        // half-set table escape to the caller.
+        if(table) *table = nullptr;
+        if(rows)  *rows  = 0;
+        if(cols)  *cols  = 0;
     }
 
     closeDatabase();

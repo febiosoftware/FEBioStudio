@@ -125,11 +125,21 @@ public:
 
 	void checkLocalCopies()
 	{
-		char **table;
-		int rows, cols;
+		char **table = nullptr;
+		int rows = 0, cols = 0;
 
 		std::string query = "SELECT ID FROM filenames";
 		interface->getTable(query, &table, &rows, &cols);
+
+		// On a fresh install there is no localdb.db yet, so the query fails and
+		// there is nothing to reconcile. Bail out before the loop rather than
+		// walking a null table.
+		if(table == nullptr || rows <= 0 || cols <= 0)
+		{
+			if(table) interface->freeTable(table);
+			downloadTimes.clear();
+			return;
+		}
 
 		std::string hasCopy = "UPDATE filenames set localCopy = 1 WHERE ID IN (";
 		std::string noCopy = "UPDATE filenames set localCopy = 0 WHERE ID IN (";
@@ -141,6 +151,10 @@ public:
 		for(int row = 1; row < rows + 1; row++)
 		{
             char* ID = table[row];
+
+            // A NULL cell would make std::stoi construct a std::string from a
+            // null pointer, i.e. strlen(NULL).
+            if(ID == nullptr) continue;
 
 			QString filename = GetFullFilename(std::stoi(ID), 1);
 

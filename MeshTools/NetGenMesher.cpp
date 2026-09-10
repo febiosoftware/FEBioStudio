@@ -226,7 +226,7 @@ FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool sec
 			FSEdge& edge = mesh->Edge(i);
 
 			// get the edge's group ID (which is the same as the edge's index in the NG mesh)
-			edge.m_gid = sel.si - 1;
+			edge.m_gid = sel.GetIndex() - 1;
 
 			if (secondOrder == false)
 			{
@@ -343,7 +343,7 @@ FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool sec
 			FSEdge& edge = mesh->Edge(i);
 
 			// get the edge's group ID (which is the same as the edge's index in the NG mesh)
-			edge.m_gid = sel.si - 1;
+			edge.m_gid = sel.GetIndex() - 1;
 
 			if (secondOrder == false)
 			{

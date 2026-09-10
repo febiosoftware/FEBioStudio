@@ -1683,15 +1683,40 @@ void CRepositoryPanel::AddCurrentFileTag(char **data)
 
 QString CRepositoryPanel::GetRepositoryFolder()
 {
-	return m_repositoryFolder;
+	// The mkpath() below used to sit AFTER the return statement, so it was dead
+	// code and the repository directory was never created. sqlite3_open() then
+	// failed on every query ("Can't open database .../localdb.db") and the
+	// repository panel came up empty. Only visible on a machine where the
+	// folder did not already exist from earlier use.
+	if(!m_repositoryFolder.isEmpty())
+	{
+		QDir dir(m_repositoryFolder);
+		if(!dir.exists())
+		{
+			if(!dir.mkpath(m_repositoryFolder))
+			{
+				// Most likely macOS privacy protection: ~/Documents, ~/Desktop
+				// and ~/Downloads require user consent, and a denial is
+				// reported here rather than by the file dialog.
+				qDebug() << "Could not create repository folder:" << m_repositoryFolder;
+			}
+		}
+	}
 
-	QDir dir(m_repositoryFolder);
-	if(!dir.exists()) dir.mkpath(m_repositoryFolder);
+	return m_repositoryFolder;
 }
 
 void CRepositoryPanel::SetRepositoryFolder(QString folder)
 {
 	m_repositoryFolder = folder;
+
+	// Create it up front so a failure surfaces while the user is still in the
+	// folder-selection dialog, instead of as an empty repository later.
+	if(!m_repositoryFolder.isEmpty())
+	{
+		QDir dir(m_repositoryFolder);
+		if(!dir.exists()) dir.mkpath(m_repositoryFolder);
+	}
 }
 
 qint64 CRepositoryPanel::GetLastMessageTime()

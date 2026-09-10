@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+    FEBio configuration shipped inside FEBioStudio.app.
+
+    Installed to Contents/Resources/febio.xml, NOT Contents/MacOS. codesign
+    seals Contents/MacOS as code, so a data file there makes signing the bundle
+    fail with "code object is not signed at all".
+
+    The linear solver is "accelerate" (Apple's Accelerate framework) rather
+    than "pardiso-project": Panua Pardiso is separately licensed and lives
+    outside the bundle, so it is unavailable on an end user's machine.
+-->
+<febio_config version="3.0">
+    <default_linear_solver type="accelerate"></default_linear_solver>
+</febio_config>
