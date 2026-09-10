@@ -715,6 +715,11 @@ void CPartProperties::BuildProperties()
 			AddParameterList(form);
 		}
 	}
+	else
+	{
+		QStringList sections; sections << "solid section" << "shell section" << "beam section";
+		addProperty("section", CProperty::Enum)->setEnumValues(sections);
+	}
 
 	if (m_fem)
 	{
@@ -798,7 +803,19 @@ QStringList CPartProperties::GetEnumValues(const char* ch)
 
 QVariant CPartProperties::GetPropertyValue(int i)
 {
-	if (i < Properties() - 1) return CObjectProps::GetPropertyValue(i);
+	if (i < Properties() - 1)
+	{
+		GPart* pg = m_pobj;
+		if (pg == nullptr) return QVariant();
+		GPartSection* section = pg->GetSection();
+		if (section == nullptr)
+		{
+			if (i == 0) return -1;
+			else return QVariant();
+		}
+
+		return CObjectProps::GetPropertyValue(i);
+	}
 
 	GPart* pg = m_pobj;
 	if (pg == nullptr) return QVariant();
@@ -817,7 +834,28 @@ QVariant CPartProperties::GetPropertyValue(int i)
 
 void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 {
-	if (i < Properties() - 1) return CObjectProps::SetPropertyValue(i, v);
+	if (i < Properties() - 1)
+	{
+		GPart* pg = m_pobj;
+		if (pg == nullptr) return;
+		GPartSection* section = pg->GetSection();
+		if (section == nullptr)
+		{
+			int n = v.toInt();
+			switch (n)
+			{
+			case 0: pg->SetSection(new GSolidSection(pg)); break;
+			case 1: pg->SetSection(new GShellSection(pg)); break;
+			case 2: pg->SetSection(new GBeamSection(pg)); break;
+			}
+			Clear();
+			BuildProperties();
+			SetModified(true);
+			return;
+		}
+
+		return CObjectProps::SetPropertyValue(i, v);
+	}
 	else
 	{
 		GPart* pg = m_pobj;
