@@ -70,6 +70,37 @@ void CLocalJobProcess::run()
 	args.replaceInStrings("$(Filename)", fileName);
 	args.replaceInStrings("$(ConfigFile)", QString::fromStdString(configFile));
 
+	// If this job does not name a config file of its own, fall back to the one
+	// the application itself is configured with.
+	//
+	// Without this, febio4 falls back to its own default: FEBioApp.cpp does
+	// get_app_path() + "febio.xml", i.e. it looks for the config NEXT TO ITS OWN
+	// BINARY. Inside the .app that is Contents/MacOS, and a non-Mach-O file
+	// cannot live there -- codesign seals that directory as code and signing
+	// fails with "code object is not signed at all". The config therefore ships
+	// in Contents/Resources (see ui_mainwindow.cpp), which febio4 will never
+	// find on its own, so it has to be passed explicitly.
+	//
+	// Only applied when the command does not already specify one, so a custom
+	// command or a per-job config still wins.
+	if ((args.contains("-config") == false) && (args.contains("-cnf") == false))
+	{
+		QString cnf = m_wnd->GetConfigFileName();
+		if (cnf.isEmpty() == false)
+		{
+			QString cnfPath = QString::fromStdString(FSDir::expandMacros(cnf.toStdString()));
+			if (QFileInfo::exists(cnfPath))
+			{
+				args << "-config" << cnfPath;
+				m_wnd->AddLogEntry(QString("Using FEBio configuration file: %1\n").arg(cnfPath));
+			}
+			else
+			{
+				m_wnd->AddLogEntry(QString("Warning: FEBio configuration file not found: %1\n").arg(cnfPath));
+			}
+		}
+	}
+
 	// get ready ...
 	m_wnd->AddLogEntry(QString("Starting FEBio: %1\n").arg(args.join(" ")));
 

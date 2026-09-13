@@ -34,38 +34,46 @@ extern "C"
 #include "libavcodec/avcodec.h"
 #include "libavutil/avutil.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/opt.h"
 #include "libswscale/swscale.h"
 }
 
+// -----------------------------------------------------------------
+// Writes H.264 video into an MP4 container.
+//
+// The class name is historical. It used to emit a raw MPEG-1 elementary
+// stream: encoder packets fwrite() straight to a FILE* with a sequence-end
+// code appended and no container at all. That produced a file with no
+// timestamps and no index, which only ffmpeg-based players would open —
+// QuickTime showed an empty window. Everything now goes through libavformat.
 // -----------------------------------------------------------------
 class CMPEGAnimation : public CAnimation
 {
 public:
     CMPEGAnimation();
-    
+    ~CMPEGAnimation() override;
+
 public:
     int Create(const char* szfile, int cx, int cy, float fps = 10.f) override;
     int Write(QImage& im) override;
     void Close() override;
-    bool IsValid() override { return (file != NULL); }
+    bool IsValid() override { return (av_format_context != nullptr); }
 	int Frames() override { return m_nframe; };
 
 protected:
-    FILE *file; // a file pointer
-    AVCodecContext *av_codec_context; // save the stream infomation
-    const AVCodec *av_codec; // encoder
-    AVPacket av_packet; // all frames will be dumped into avpacket for muxing
-    AVOutputFormat *av_output_format; // the output format for muxing
-    AVFrame *rgb_frame;
-    AVFrame *yuv_frame; // save the yuv frame data
-    AVFormatContext *av_format_context;
-    uint8_t *buffer;
+    AVFormatContext *av_format_context;  // the MP4 muxer
+    AVStream        *av_stream;          // the single video stream
+    AVCodecContext  *av_codec_context;   // H.264 encoder state
+    const AVCodec   *av_codec;           // the encoder itself
+    AVPacket        *av_packet;          // reusable output packet
+    AVFrame         *yuv_frame;          // reusable YUV420P input frame
+    struct SwsContext *sws_context;      // cached RGBA -> YUV420P converter
 	int		m_nframe;	// frame index
-    
+
 private:
     bool Rgb24ToYuv420p(QImage &im);
     bool EncodeVideo(AVFrame *frame);
 
-    int m_repeatFrames;
+    bool m_headerWritten;   // av_write_trailer is only legal if it was
 };
 #endif

@@ -388,7 +388,7 @@ elseif(APPLE)
 	
 	add_executable(FEBioStudio MACOSX_BUNDLE ${FBS_ICON} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
 	set_property(TARGET FEBioStudio PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
-	set_target_properties(FEBioStudio PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/ci/MacOS/Info.plist")
+	set_target_properties(FEBioStudio PROPERTIES INSTALL_RPATH "@executable_path/../Frameworks" BUILD_WITH_INSTALL_RPATH TRUE MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/ci/MacOS/Info.plist")
 
 else()
 	add_executable(FEBioStudio ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
@@ -490,6 +490,13 @@ endif()
 
 if(WIN32)
 elseif(APPLE)
+    # NOTE: deliberately no macdeployqt here. package-macos-app.sh owns
+    # deployment (Qt + non-Qt deps + extra files + signing + dmg), and
+    # macdeployqt is not idempotent: deploying at build time populates
+    # Contents/Frameworks, which makes the packaging script refuse to run, and
+    # a second macdeployqt pass silently produces a broken bundle.
+    # Leaving the bundle undeployed also means a build-tree run resolves Qt
+    # entirely from Homebrew, so only one copy of Qt is ever loaded.
 else()
     target_link_libraries(FEBioStudio -static-libstdc++ -static-libgcc)
 	target_link_libraries(FEBioStudio -Wl,--allow-shlib-undefined -Wl,--start-group)

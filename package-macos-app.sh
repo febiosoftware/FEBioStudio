@@ -273,12 +273,64 @@ if [ "$SKIP_QT" = "0" ]; then
   if [ -n "$MACDEPLOYQT" ]; then
     log "running macdeployqt: $MACDEPLOYQT"
     # -no-strip keeps signatures verifiable; we sign everything ourselves later.
-    "$MACDEPLOYQT" "$APP" -no-strip -verbose=1 \
+    #
+    # Output is captured and filtered. macdeployqt emits a wall of "ERROR:
+    # Cannot resolve rpath" that looks alarming and is entirely expected here:
+    #   * It searches only qtbase's lib dir, so it cannot see Qt modules that
+    #     Homebrew ships in separate formulae (qtsvg, qtdeclarative,
+    #     qtvirtualkeyboard, qtpdf).
+    #   * It knows nothing about the app's own @rpath libraries (libfecore,
+    #     libSimpleITK_*, libnglib, ...).
+    #   * It looks for Homebrew's Python under lib/, but Homebrew puts the
+    #     framework under Frameworks/.
+    # Every one of those is resolved by the dependency walker below, and the
+    # "auditing for build-machine paths" step at the end is the real check.
+    # Anything macdeployqt says that is NOT one of those patterns still shows.
+    MDQ_LOG="$WORK/macdeployqt.log"
+    "$MACDEPLOYQT" "$APP" -no-strip -verbose=1 >"$MDQ_LOG" 2>&1 \
       || warn "macdeployqt returned non-zero — continuing, but check Qt frameworks by hand"
+
+    _mdq_noise="$(grep -cE 'Cannot resolve rpath|^ERROR:  using QList|no file at .*python@|otool-classic: can.t open file' "$MDQ_LOG" 2>/dev/null || true)"
+    grep -vE 'Cannot resolve rpath|^ERROR:  using QList|no file at .*python@|otool-classic: can.t open file' \
+         "$MDQ_LOG" 2>/dev/null | sed '/^[[:space:]]*$/d;s/^/    /' || true
+    if [ "${_mdq_noise:-0}" -gt 0 ]; then
+      log "macdeployqt: suppressed $_mdq_noise expected 'cannot resolve' line(s); the dependency walker handles those"
+    fi
   else
     warn "macdeployqt not found. Qt frameworks and plugins will NOT be deployed."
     warn "Install it (brew install qtbase) or pass --macdeployqt PATH."
   fi
+
+  # -------------------------------------------------------------------------
+  # 1b. Drop Qt modules the app does not use.
+  # -------------------------------------------------------------------------
+  # Homebrew splits Qt across formulae (qtbase, qtsvg, qtdeclarative,
+  # qtvirtualkeyboard, qtpdf). macdeployqt only searches qtbase's lib dir, so
+  # it cannot resolve QtSvg / QtPdf / QtVirtualKeyboard* and prints
+  # "Cannot resolve rpath ..." for each. It then skips rewriting their install
+  # names. The dependency walker below still copies them in, so they land in
+  # the bundle with their load commands still pointing at /opt/homebrew --
+  # and the moment one of those plugins is dlopen'd it drags a SECOND copy of
+  # QtCore/QtGui into the process. That is the "Class ... is implemented in
+  # both" duplicate-Qt crash.
+  #
+  # FEBio Studio uses none of them (no .svg in febiostudio.qrc, no touch
+  # keyboard, no PDF image decoding), so remove them before the walker runs
+  # rather than shipping a landmine.
+  for _qtmod in QtPdf QtSvg QtVirtualKeyboard QtVirtualKeyboardQml; do
+    if [ -d "$FRAMEWORKS/$_qtmod.framework" ]; then
+      log "removing unused $_qtmod.framework"
+      rm -rf "$FRAMEWORKS/$_qtmod.framework"
+    fi
+  done
+  for _qtplug in "PlugIns/platforminputcontexts" \
+                 "PlugIns/imageformats/libqpdf.dylib" \
+                 "PlugIns/iconengines/libqsvgicon.dylib"; do
+    if [ -e "$APP/Contents/$_qtplug" ]; then
+      log "removing unused plugin $_qtplug"
+      rm -rf "$APP/Contents/$_qtplug"
+    fi
+  done
 fi
 
 # ---------------------------------------------------------------------------
@@ -519,6 +571,14 @@ log "pruning cruft and dangling symlinks"
 find "$APP/Contents" -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
 find "$APP/Contents" \( -name '*.pyc' -o -name '*.pyo' -o -name '*.prl' \
                         -o -name '*.la' -o -name '*.a' \) -delete 2>/dev/null || true
+
+# CPython's own test suite must not ship. Beyond being dead weight, it contains
+# deliberately malformed archives (test/zipimport_data/sparse-zip64-*.part)
+# that the notary service tries to unpack and cannot, which it reports as a
+# critical validation error. idlelib is the Tk IDE — equally unwanted here.
+rm -rf "$FRAMEWORKS"/Python.framework/Versions/*/lib/python*/test 2>/dev/null || true
+rm -rf "$FRAMEWORKS"/Python.framework/Versions/*/lib/python*/idlelib 2>/dev/null || true
+rm -rf "$FRAMEWORKS"/Python.framework/Versions/*/share 2>/dev/null || true
 FW_LOST="$WORK/fwlost"; : > "$FW_LOST"
 while IFS= read -r l; do
   [ -n "$l" ] || continue
@@ -601,15 +661,28 @@ EOF
 
 # ---------------------------------------------------------------------------
 log "rewriting install names"
-all_machos | while read -r bin; do
-  [ -f "$bin" ] || continue
-  file "$bin" 2>/dev/null | grep -q 'Mach-O' || continue
-  chmod u+w "$bin"
-  while IFS='|' read -r origref newref; do
-    [ -n "${origref:-}" ] || continue
-    install_name_tool -change "$origref" "$newref" "$bin" 2>/dev/null || true
-  done < "$CHANGES"
-done
+# install_name_tool accepts any number of -change pairs per invocation, so the
+# whole change table is applied to each binary in ONE exec. The obvious nesting
+# (a -change per pair per binary) is quadratic: ~350 binaries x ~200 recorded
+# changes is ~70,000 process spawns, each one rewriting a Mach-O header, which
+# took many minutes on a bundle this size. Building the argument list once
+# reduces that to ~350 execs.
+CHANGE_ARGS=()
+while IFS='|' read -r origref newref; do
+  [ -n "${origref:-}" ] || continue
+  CHANGE_ARGS+=( -change "$origref" "$newref" )
+done < "$CHANGES"
+
+if [ "${#CHANGE_ARGS[@]}" -eq 0 ]; then
+  log "no references to rewrite"
+else
+  all_machos | while read -r bin; do
+    [ -f "$bin" ] || continue
+    file "$bin" 2>/dev/null | grep -q 'Mach-O' || continue
+    chmod u+w "$bin"
+    install_name_tool "${CHANGE_ARGS[@]}" "$bin" 2>/dev/null || true
+  done
+fi
 
 # ---------------------------------------------------------------------------
 # 4. LC_RPATH entries
@@ -642,6 +715,132 @@ if [ -d "$PLUGINS" ] && [ ! -f "$APP/Contents/Resources/qt.conf" ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# 4b. Hardening pass — make the bundle genuinely self-contained
+# ---------------------------------------------------------------------------
+# Sections 2-4 are driven by $CHANGES, which only holds references collect()
+# actually walked. Two blind spots let absolute paths survive:
+#
+#   * all_machos() selects with `-name '*.dylib' -o -perm -u+x`. A framework's
+#     binary is named Foo.framework/Versions/A/Foo and ships mode 0644 --
+#     neither test matches, so NO framework binary is ever rewritten here.
+#     Frameworks macdeployqt handled are fine; ones it skipped keep absolute
+#     /opt/homebrew references and pull a second copy of Qt at runtime.
+#   * Python's extension modules (lib-dynload/*.so) and helper executables are
+#     reached via dlopen, so they never enter the dependency graph at all.
+#
+# This pass is deliberately NOT change-list driven. It re-reads every Mach-O in
+# the bundle -- detected by CONTENT, not by name or mode -- and repoints any
+# remaining non-system absolute dependency at @rpath, embedding the library
+# first if it is not already present. Idempotent: safe to run repeatedly.
+
+# Enumerate by content, so framework binaries, .so modules and unsuffixed
+# helper executables are all caught.
+# NOTE the trailing `|| true`: this script runs under `set -euo pipefail`, and
+# xargs exits 123 if ANY `file` invocation fails (a stray unreadable file is
+# enough). With pipefail that failure becomes the pipeline's status, the
+# command substitution that calls this fails, and set -e kills the run with no
+# diagnostic. Same reason every pipeline in this section ends in `|| true`.
+bundle_machos() {
+  find "$APP/Contents" -type f ! -name '*.py' ! -name '*.pyc' ! -name '*.h' \
+       ! -name '*.txt' ! -name '*.plist' -print0 2>/dev/null \
+    | xargs -0 -n 100 file --mime-type 2>/dev/null \
+    | grep -E ':[[:space:]]+application/x-mach-binary$' \
+    | sed -E 's/:[[:space:]]+application\/x-mach-binary$//' \
+    || true
+}
+
+# Levels from this binary up to Contents/Frameworks, as an @loader_path rpath.
+rpath_to_frameworks() {
+  local rel dir up c
+  rel="${1#"$APP"/Contents/}"
+  dir="$(dirname "$rel")"
+  up=""
+  if [ "$dir" != "." ]; then
+    local IFS=/
+    for c in $dir; do up="../$up"; done
+  fi
+  printf '@loader_path/%sFrameworks' "$up"
+}
+
+HARDENED=0
+HARD_FAIL=0
+
+harden_pass() {
+  local bin ref self need dest newref fwroot fwname rel base real
+  while IFS= read -r bin; do
+    [ -n "$bin" ] || continue
+    [ -f "$bin" ] || continue
+    chmod u+w "$bin" 2>/dev/null || true
+    # own_install_name pipes through `head -1`, which can SIGPIPE otool under
+    # pipefail. Tolerate it.
+    self="$(own_install_name "$bin" || true)"
+    need=0
+
+    while IFS= read -r ref; do
+      [ -n "$ref" ] || continue
+      [ "$ref" = "$self" ] && continue
+      case "$ref" in /*) ;; *) continue ;; esac   # absolute references only
+      is_system_lib "$ref" && continue
+      if [ -n "$EXCLUDE" ] && echo "$ref" | grep -qE "$EXCLUDE"; then continue; fi
+
+      fwroot="$(framework_root_of "$ref")"
+      if [ -n "$fwroot" ]; then
+        fwname="$(basename "$fwroot")"
+        rel="${ref#"$fwroot"/}"
+        dest="$FRAMEWORKS/$fwname/$rel"
+        newref="@rpath/$fwname/$rel"
+      else
+        base="$(basename "$ref")"
+        dest="$FRAMEWORKS/$base"
+        newref="@rpath/$base"
+      fi
+
+      if [ ! -e "$dest" ]; then
+        real="$ref"
+        [ -e "$real" ] || real="$(search_for "$(basename "$ref")")"
+        if [ -n "$real" ] && [ -e "$real" ]; then
+          embed "$ref" "$real" >/dev/null || true
+        else
+          warn "hardening: cannot embed '$ref'"
+          warn "  needed by ${bin#"$APP"/} — bundle will NOT run without it"
+          HARD_FAIL=$((HARD_FAIL+1))
+          continue
+        fi
+      fi
+
+      install_name_tool -change "$ref" "$newref" "$bin" 2>/dev/null || true
+      echo "    ${bin#"$APP"/Contents/}: $(basename "$ref") -> @rpath"
+      need=1
+      HARDENED=$((HARDENED+1))
+    done <<EOF
+$(otool -L "$bin" 2>/dev/null | tail -n +2 | awk '{print $1}' || true)
+EOF
+
+    # Make sure @rpath actually resolves from wherever this binary sits.
+    # This MUST be an if-block, not `[ ... ] && cmd`. That form returns 1 when
+    # the test is false, and as the last command of the loop body it becomes
+    # the loop's status, then the function's status — and a bare `harden_pass`
+    # call failing under set -e aborts the whole script.
+    if [ "$need" = "1" ]; then
+      add_rpath_once "$bin" "$(rpath_to_frameworks "$bin")"
+    fi
+  done <<EOF
+$(bundle_machos)
+EOF
+  return 0
+}
+
+# Two passes: the first may embed frameworks whose own binaries then need the
+# same treatment. The second is a no-op on an already-clean bundle.
+log "hardening: making the bundle self-contained"
+harden_pass
+harden_pass
+log "hardening: rewrote $HARDENED reference(s)"
+if [ "$HARD_FAIL" -gt 0 ]; then
+  warn "$HARD_FAIL dependency/ies could not be embedded — this bundle is NOT portable"
+fi
+
+# ---------------------------------------------------------------------------
 # 5. Sign, inside-out
 # ---------------------------------------------------------------------------
 
@@ -652,6 +851,34 @@ if [ "$IDENTITY" = "-" ]; then
   warn "ad-hoc signing: Gatekeeper will reject a downloaded copy of this app"
 fi
 sign() { codesign $SIGN_ARGS --sign "$IDENTITY" "$@"; }   # shellcheck disable=SC2086
+
+# Notarization requires EVERY Mach-O in the bundle to carry its own Developer
+# ID signature, a secure timestamp and the hardened runtime. Signing a
+# framework as a bundle only seals its contents as RESOURCES, which is not the
+# same thing — the notary service rejected 157 binaries on the first attempt,
+# all of them inside Python.framework (lib-dynload/*.so, bin/python3.*).
+# Section 4b makes this worse by design: rewriting load commands with
+# install_name_tool invalidates whatever signature a file arrived with.
+#
+# Deepest path first, so nested code is always signed before the bundle that
+# contains it. The app's own main binary is skipped — it gets signed as part
+# of the .app at the end.
+log "signing nested Mach-O binaries"
+_nsigned=0
+while IFS= read -r m; do
+  [ -n "$m" ] || continue
+  [ -f "$m" ] || continue
+  if [ "$m" = "$MAIN_BINARY" ]; then continue; fi
+  if sign "$m" >/dev/null 2>&1; then
+    _nsigned=$((_nsigned+1))
+  else
+    warn "could not sign ${m#"$APP"/}"
+  fi
+done <<EOF
+$(bundle_machos | awk '{ n = gsub(/\//,"/"); print n "\t" $0 }' \
+   | sort -rn -k1,1 | cut -f2- || true)
+EOF
+log "signed $_nsigned nested binary/ies"
 
 # Plain dylibs and plugins first.
 find "$FRAMEWORKS" -maxdepth 1 -type f -name '*.dylib' 2>/dev/null | while read -r f; do sign "$f"; done
@@ -890,7 +1117,17 @@ if [ "$DO_DMG" = "1" ]; then
   rm -f "$DMG"
   hdiutil create -volname "$APP_NAME" -srcfolder "$STAGE" -ov -format UDZO "$DMG" >/dev/null
   codesign --force --timestamp --sign "$IDENTITY" "$DMG"
-  [ "$DO_NOTARIZE" = "1" ] && xcrun stapler staple "$DMG" || true
+  # A stapled ticket must exist for THIS artifact. Notarizing the .app earlier
+  # produces a ticket for the app only — the .dmg is a separate submission, and
+  # stapling it without submitting it fails with "Record not found ... Error 65".
+  # The app inside is already notarized, so this pass is quick.
+  if [ "$DO_NOTARIZE" = "1" ]; then
+    log "notarizing the disk image"
+    xcrun notarytool submit "$DMG" --keychain-profile "$KEYCHAIN_PROFILE" --wait \
+      || warn "dmg notarization failed — the .app inside is still notarized"
+    xcrun stapler staple "$DMG" \
+      || warn "could not staple the dmg"
+  fi
   log "created $DMG"
 fi
 

@@ -35,15 +35,20 @@ Ui::CMainWindow::CMainWindow()
 	m_settings.clearUndoOnSave = true;
 	m_settings.autoSaveInterval = 600;
 	m_settings.loadFEBioConfigFile = true;
+	m_settings.febioConfigFileName = defaultFEBioConfigFile();
+}
+
+QString defaultFEBioConfigFile()
+{
 #ifdef __APPLE__
 	// FEBioStudioDir is Contents/MacOS, which codesign seals as CODE rather
 	// than as resources. A non-Mach-O file there makes signing the bundle fail
 	// with "code object is not signed at all", so the config lives in
 	// Contents/Resources instead. (The upstream release pipeline signs only the
 	// installer, never the .app, so it never hits this.)
-	m_settings.febioConfigFileName = "$(FEBioStudioDir)/../Resources/febio.xml";
+	return "$(FEBioStudioDir)/../Resources/febio.xml";
 #else
-	m_settings.febioConfigFileName = "$(FEBioStudioDir)/febio.xml";
+	return "$(FEBioStudioDir)/febio.xml";
 #endif
 }
 

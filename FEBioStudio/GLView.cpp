@@ -1470,6 +1470,12 @@ void CGLView::captureFrameReady(QImage img)
 	if (m_pframe && m_pframe->visible())
 	{
 		// crop based on the capture frame
+		// NOTE: do NOT scale by devicePixelRatio here. The GL widgets are
+		// already put into device pixels at construction (see the pw->scale(dpr)
+		// loop in the constructor), and snap_to_bounds() positions them against
+		// the device-sized viewport, so x/y/w/h are device pixels ALREADY.
+		// Scaling again puts the crop at twice the intended offset, which shows
+		// up as a recording shifted right of and below the yellow rectangle.
 		img = img.copy(m_pframe->x(), m_pframe->y(), m_pframe->w(), m_pframe->h());
 	}
 
@@ -2792,13 +2798,22 @@ void CGLView::RenderTags(QPainter& painter)
 
 QSize CGLView::GetSafeFrameSize() const
 {
-	int cx = width();
-	int cy = height();
+	// Report DEVICE pixels in both branches: captured frames come back from the
+	// RHI readback at framebuffer resolution, so the encoder must be sized to
+	// match. The two branches get there differently, which is what made this
+	// inconsistent before:
+	//   * width()/height() are Qt's LOGICAL widget size, so they need scaling.
+	//   * m_pframe's geometry is ALREADY in device pixels (the constructor runs
+	//     pw->scale(dpr) over every GL widget), so it must NOT be scaled again.
+	// Scaling the safe frame here while the crop in captureFrameReady() did not
+	// is what made the encoder twice the size of the frames fed to it.
+	double dpr = devicePixelRatio();
+	int cx = (int)(dpr * width());
+	int cy = (int)(dpr * height());
 	if (m_pframe && m_pframe->visible())
 	{
-		double dpr = devicePixelRatio();
-		cx = (int)(dpr * m_pframe->w());
-		cy = (int)(dpr * m_pframe->h());
+		cx = m_pframe->w();
+		cy = m_pframe->h();
 	}
 	return QSize(cx, cy);
 }

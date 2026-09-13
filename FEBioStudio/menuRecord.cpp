@@ -47,7 +47,7 @@ void CMainWindow::on_actionRecordNew_triggered()
 	}
 
 	QStringList filters;
-	filters << "MPG files (*.mpg)"
+	filters << "MP4 video (*.mp4)"
 			<< "GIF files (*.gif)"
 			<< "PNG files (*.png)"
 			<< "Bitmap files (*.bmp)"
@@ -79,7 +79,7 @@ void CMainWindow::on_actionRecordNew_triggered()
 		{
 #ifdef FFMPEG
 			panim = new CMPEGAnimation;
-			if (fileExtenion == nullptr) sprintf(szfilename + l, ".mpg");
+			if (fileExtenion == nullptr) sprintf(szfilename + l, ".mp4");
 #else
 			QMessageBox::critical(this, "FEBio Studio", "This video format is not supported in this version");
 #endif

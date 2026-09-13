@@ -253,6 +253,13 @@ struct FBS_SETTINGS
 	vector<CLaunchConfig*> m_launch_configs;
 };
 
+// The built-in location of the FEBio config file that ships with the app.
+// Defined in one place because it is needed twice: once to seed the setting,
+// and once to recover when a stored setting points somewhere that no longer
+// exists (the macOS config moved from Contents/MacOS to Contents/Resources,
+// so every settings file written by an older build names a dead path).
+QString defaultFEBioConfigFile();
+
 class Ui::CMainWindow
 {
 	enum

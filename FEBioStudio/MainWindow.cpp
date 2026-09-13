@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <QtCore/QMimeData>
 #include <FSCore/FSObject.h>
 #include <QtCore/QTimer>
+#include <QFile>
 #include <QFileDialog>
 #include <QTimer>
 #include "DocTemplate.h"
@@ -247,10 +248,36 @@ CMainWindow::CMainWindow(bool reset, GraphicsAPI api, QWidget* parent) : QMainWi
 	// configure FEBio library
 	if (ui->m_settings.loadFEBioConfigFile)
 	{
-		std::string fileName = ui->m_settings.febioConfigFileName.toStdString();
-		FSDir dir(fileName);
-		std::string filepath = dir.expandMacros();
-		FEBio::ConfigureFEBio(filepath.c_str());
+		QString cnf = ui->m_settings.febioConfigFileName;
+		std::string filepath = FSDir(cnf.toStdString()).expandMacros();
+
+		// A settings file written by an older build can name a path that no
+		// longer exists -- on macOS the config moved from Contents/MacOS to
+		// Contents/Resources -- and the stored value takes precedence over the
+		// built-in default. Recover instead of starting unconfigured, which
+		// leaves FEBio on its skyline default and then fails on the first
+		// unsymmetric matrix with a message that names neither cause.
+		if (QFile::exists(QString::fromStdString(filepath)) == false)
+		{
+			QString def = defaultFEBioConfigFile();
+			std::string defpath = FSDir(def.toStdString()).expandMacros();
+			if (QFile::exists(QString::fromStdString(defpath)))
+			{
+				AddLogEntry(QString("FEBio configuration file not found:\n  %1\nFalling back to:\n  %2\n")
+					.arg(QString::fromStdString(filepath)).arg(QString::fromStdString(defpath)));
+				ui->m_settings.febioConfigFileName = def;
+				filepath = defpath;
+			}
+		}
+
+		// ConfigureFEBio returns a bool that used to be discarded, so a missing
+		// or malformed config produced no diagnostic at all.
+		if (FEBio::ConfigureFEBio(filepath.c_str()) == false)
+		{
+			AddLogEntry(QString("Failed to read the FEBio configuration file:\n  %1\n"
+				"FEBio will use its built-in defaults.\n").arg(QString::fromStdString(filepath)));
+		}
+		else AddLogEntry(QString("Read FEBio configuration file: %1\n").arg(QString::fromStdString(filepath)));
 	}
 
 	// Start AutoSave Timer

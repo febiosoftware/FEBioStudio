@@ -32,203 +32,233 @@ SOFTWARE.*/
 #ifdef FFMPEG
 CMPEGAnimation::CMPEGAnimation()
 {
-    file = NULL;
-    av_codec_context = NULL;
-    av_output_format = NULL;
-    rgb_frame = NULL;
-    yuv_frame = NULL;
-    av_format_context = NULL;
+    av_format_context = nullptr;
+    av_stream         = nullptr;
+    av_codec_context  = nullptr;
+    av_codec          = nullptr;
+    av_packet         = nullptr;
+    yuv_frame         = nullptr;
+    sws_context       = nullptr;
+    m_nframe          = 0;
+    m_headerWritten   = false;
+}
+
+CMPEGAnimation::~CMPEGAnimation()
+{
+    // Close() is idempotent; this only matters if the caller forgot.
+    Close();
 }
 
 int CMPEGAnimation::Create(const char *szfile, int cx, int cy, float fps)
 {
-	m_nframe = 0;
-    
-    #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58, 137, 100)
-        avcodec_register_all();
-    #endif
-    
-    // find mpeg1 video encoder
-    av_codec = avcodec_find_encoder(AV_CODEC_ID_MPEG1VIDEO);
-    
-    if (!av_codec)
-    {
-        return false;
-    }
-    
-    // alloc an AVCodecContext
+    Close();
+    m_nframe = 0;
+
+    if (fps <= 0.f) fps = 10.f;
+
+    // H.264 in YUV420P needs even dimensions for the chroma planes.
+    cx &= ~1;
+    cy &= ~1;
+    if ((cx <= 0) || (cy <= 0)) return false;
+
+    // Force the MP4 muxer by NAME rather than letting libavformat guess from
+    // the filename. If the user types "movie.mpg" in the save dialog, guessing
+    // would select the MPEG program-stream muxer, which cannot carry H.264 —
+    // the muxer would be created and then fail at write_header.
+    if (avformat_alloc_output_context2(&av_format_context, NULL, "mp4", szfile) < 0) return false;
+    if (av_format_context == nullptr) return false;
+
+    av_codec = avcodec_find_encoder(AV_CODEC_ID_H264);
+    if (!av_codec) return false;
+
+    av_stream = avformat_new_stream(av_format_context, NULL);
+    if (!av_stream) return false;
+
     av_codec_context = avcodec_alloc_context3(av_codec);
-    
-    if (!av_codec_context)
-    {
-        return false;
-    }
-    
-    av_codec_context->bit_rate = 40000000;
-    
-    // resolution must be a multiple of 2
-    av_codec_context->width = cx;
-    av_codec_context->height = cy;
-    
-    // frames per second
-    // MPEG-1/2 only supports specific FPS values, two of which are 25, and 60. 60 is the highest possible
-    // In order to provide some sort of FPS control, we choose the a video framerate based on the user-
-    // specified fps. We then add in dubplicate frames in order to allow
+    if (!av_codec_context) return false;
 
-//    if(fps > 60) fps = 60;
-//    m_repeatFrames = round(60/fps);
-//
-//    int videoFPS;
-//    if(fps <= 25) videoFPS = 25;
-//    else videoFPS = 60;
-    int videoFPS = 25;
-
-    av_codec_context->time_base = av_make_q(1,videoFPS);
-	av_codec_context->framerate = av_make_q(videoFPS, 1);
-
-    // emit one intra frame every ten frames
-    av_codec_context->gop_size = 10;
-    av_codec_context->max_b_frames = 1;
+    av_codec_context->width   = cx;
+    av_codec_context->height  = cy;
     av_codec_context->pix_fmt = AV_PIX_FMT_YUV420P;
-    
-    // open the codec
-    if (avcodec_open2(av_codec_context, av_codec, NULL))
+
+    // Unlike MPEG-1, H.264 accepts an arbitrary frame rate, so the user's
+    // requested fps is honoured directly instead of being forced to 25 and
+    // padded with duplicate frames.
+    AVRational tb = av_d2q(1.0 / (double)fps, 100000);
+    av_codec_context->time_base = tb;
+    av_codec_context->framerate = av_inv_q(tb);
+    av_stream->time_base        = tb;
+
+    av_codec_context->gop_size     = 12;
+    av_codec_context->max_b_frames = 2;
+
+    // MP4 stores SPS/PPS in the container header, not inline in the stream.
+    if (av_format_context->oformat->flags & AVFMT_GLOBALHEADER)
+        av_codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+
+    // Constant-quality rather than the old fixed 40 Mbit/s: screen recordings
+    // of a 3D viewport are mostly flat colour and compress far better than a
+    // fixed bitrate assumes. crf 18 is visually lossless for this material.
+    av_opt_set(av_codec_context->priv_data, "preset", "medium", 0);
+    av_opt_set(av_codec_context->priv_data, "crf",    "18",     0);
+
+    if (avcodec_open2(av_codec_context, av_codec, NULL) < 0) return false;
+    if (avcodec_parameters_from_context(av_stream->codecpar, av_codec_context) < 0) return false;
+
+    if (!(av_format_context->oformat->flags & AVFMT_NOFILE))
     {
-        return false;
+        if (avio_open(&av_format_context->pb, szfile, AVIO_FLAG_WRITE) < 0) return false;
     }
-    
-    file = fopen(szfile, "wb");
-    
-    if (!file)
-    {
-        return false;
-    }
-    
-	yuv_frame = av_frame_alloc();
-	if (yuv_frame == 0) return false;
 
-	yuv_frame->format = av_codec_context->pix_fmt;
-	yuv_frame->width = av_codec_context->width;
-	yuv_frame->height = av_codec_context->height;
-	yuv_frame->pts = 0;
+    if (avformat_write_header(av_format_context, NULL) < 0) return false;
+    m_headerWritten = true;
 
-	int yuv_frame_bytes = av_image_get_buffer_size(AV_PIX_FMT_YUV420P, av_codec_context->width, av_codec_context->height, 32);
+    av_packet = av_packet_alloc();
+    if (!av_packet) return false;
 
-	buffer = (uint8_t *)av_malloc(yuv_frame_bytes * sizeof(uint8_t));
-
-    av_image_fill_arrays(yuv_frame->data, yuv_frame->linesize, buffer, AV_PIX_FMT_YUV420P, av_codec_context->width, av_codec_context->height, 1);
+    yuv_frame = av_frame_alloc();
+    if (!yuv_frame) return false;
+    yuv_frame->format = AV_PIX_FMT_YUV420P;
+    yuv_frame->width  = cx;
+    yuv_frame->height = cy;
+    // Let libavutil own the frame buffer. The old code hand-rolled this with
+    // av_malloc + av_image_fill_arrays, which cannot be reference-counted and
+    // therefore cannot be made writable while the encoder still holds it.
+    if (av_frame_get_buffer(yuv_frame, 32) < 0) return false;
 
     return true;
 }
 
-bool CMPEGAnimation::EncodeVideo(AVFrame *frame) 
+bool CMPEGAnimation::EncodeVideo(AVFrame *frame)
 {
-    int ret;
-
-    ret = avcodec_send_frame(av_codec_context, frame);
-    if (ret < 0) 
+    if ((av_codec_context == nullptr) || (av_packet == nullptr) ||
+        (av_format_context == nullptr) || (av_stream == nullptr))
     {
         return false;
     }
 
-    while (ret >= 0) 
-    {
-        ret = avcodec_receive_packet(av_codec_context, &av_packet);
-        // Nothing wrong, just done or need more frames
-        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
-        {
-            return true;
-        }
-        else if (ret < 0) // Presumably unrecoverable errors
-        {
-            return false;
-        }
+    int ret = avcodec_send_frame(av_codec_context, frame);
+    if (ret < 0) return false;
 
-        fwrite(av_packet.data, 1, av_packet.size, file);
-        av_packet_unref(&av_packet);
+    while (ret >= 0)
+    {
+        ret = avcodec_receive_packet(av_codec_context, av_packet);
+        // Not an error: the encoder wants more input, or the drain is done.
+        if ((ret == AVERROR(EAGAIN)) || (ret == AVERROR_EOF)) return true;
+        if (ret < 0) return false;
+
+        // The encoder stamps packets in its own time base; the muxer expects
+        // the stream's. With B-frames these differ, and skipping this step
+        // produces a file that plays at the wrong speed or not at all.
+        av_packet_rescale_ts(av_packet, av_codec_context->time_base, av_stream->time_base);
+        av_packet->stream_index = av_stream->index;
+
+        // Takes ownership of the packet's contents and unrefs it for us.
+        ret = av_interleaved_write_frame(av_format_context, av_packet);
+        av_packet_unref(av_packet);
+        if (ret < 0) return false;
     }
     return true;
 }
 
 int CMPEGAnimation::Write(QImage &im)
 {
-	// cannot convert rgb24 to yuv420
-    if (!Rgb24ToYuv420p(im))
-    {
-        return false;
-    }
-    
-    // Commenting out repeat frames as they result in choppy video in some cases
-//    for(int index = 0; index < m_repeatFrames; index++)
-//    {
-    
-	int got_packet = 0;
-	av_init_packet(&av_packet);
-	av_packet.data = NULL;
-	av_packet.size = 0;
+    if (yuv_frame == nullptr) return false;
 
-	fflush(stdout);
+    // The encoder may still reference the previous frame (B-frames), so ask
+    // for a private copy before overwriting the planes.
+    if (av_frame_make_writable(yuv_frame) < 0) return false;
 
-	yuv_frame->pts = m_nframe++;
+    if (!Rgb24ToYuv420p(im)) return false;
 
-    if (!EncodeVideo(yuv_frame))
-    {
-        return false;
-    }
-//	}
+    yuv_frame->pts = m_nframe++;
+
+    if (!EncodeVideo(yuv_frame)) return false;
 
     return true;
 }
 
 bool CMPEGAnimation::Rgb24ToYuv420p(QImage &im)
 {
-    struct SwsContext *converted_format = NULL;
-    
-	converted_format = sws_getCachedContext(converted_format, av_codec_context->width, av_codec_context->height, AV_PIX_FMT_RGBA, av_codec_context->width, av_codec_context->height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL);
-    
-    if (!converted_format)
+    if (im.isNull() || (av_codec_context == nullptr) || (yuv_frame == nullptr))
     {
         return false;
     }
 
-	int linesize[] = { (int)im.bytesPerLine(), 0, 0, 0, 0, 0, 0, 0 };
-	const uint8_t* p = im.bits();
-    
-    sws_scale(converted_format, &p, linesize, 0, av_codec_context->height, yuv_frame->data, yuv_frame->linesize);
-    
-    //sws_scale(converted_format, (const uint8_t* const*)rgb_frame->data, rgb_frame->linesize, 0, av_codec_context->height, yuv_frame->data, yuv_frame->linesize);
-    
+    // Guarantee the memory layout actually matches AV_PIX_FMT_RGBA.
+    // QImage::Format_ARGB32 / Format_RGB32 are BGRA in memory on little-endian
+    // machines, so without this the red and blue channels come out swapped.
+    // QImage is implicitly shared, so this is free when no conversion is needed.
+    const QImage src = (im.format() == QImage::Format_RGBA8888)
+                     ? im
+                     : im.convertToFormat(QImage::Format_RGBA8888);
+    if (src.isNull()) return false;
+
+    const int srcW = src.width();
+    const int srcH = src.height();
+    if ((srcW <= 0) || (srcH <= 0)) return false;
+
+    // Describe the source using the QImage's OWN dimensions, never the
+    // encoder's. The captured frame is not guaranteed to match the size handed
+    // to Create() -- on a HiDPI display the RHI capture comes back at a
+    // different pixel size. Passing the encoder height as srcSliceH makes
+    // sws_scale walk off the end of the QImage buffer and segfault.
+    sws_context = sws_getCachedContext(sws_context,
+        srcW, srcH, AV_PIX_FMT_RGBA,
+        av_codec_context->width, av_codec_context->height, AV_PIX_FMT_YUV420P,
+        SWS_BICUBIC, NULL, NULL, NULL);
+
+    if (!sws_context) return false;
+
+    const uint8_t* srcData[4]   = { src.constBits(), nullptr, nullptr, nullptr };
+    int            srcStride[4] = { (int)src.bytesPerLine(), 0, 0, 0 };
+
+    sws_scale(sws_context, srcData, srcStride, 0, srcH,
+              yuv_frame->data, yuv_frame->linesize);
+
     return true;
 }
 
 void CMPEGAnimation::Close()
 {
-    // get the delayed frames
-	if (m_nframe > 0)
-	{
-        fflush(stdout);
+    // Flush the encoder's internal queue. With max_b_frames > 0 several frames
+    // are still held back at this point; without the drain the tail of the
+    // recording is silently lost.
+    if ((av_codec_context != nullptr) && (m_nframe > 0))
+    {
         EncodeVideo(NULL);
-	}
+    }
 
-    // add sequence end code to have a real video file
-    uint8_t endcode[] = {0, 0, 1, 0xb7};
-    fwrite(endcode, 1, sizeof(endcode), file);
+    // Writes the moov atom. Without it the MP4 has no index and no player will
+    // open it -- this is the step the old elementary-stream code had no
+    // equivalent for.
+    if ((av_format_context != nullptr) && m_headerWritten)
+    {
+        av_write_trailer(av_format_context);
+        m_headerWritten = false;
+    }
 
-    // deallocating AVCodecContext
-# ifdef NEW_FFMPEG
-    avcodec_free_context(&av_codec_context);
-#else
-    avcodec_close(av_codec_context);
-#endif
-    av_free(av_codec_context);
-    if (file) fclose(file);
-	av_frame_free(&yuv_frame);
+    if (av_codec_context) avcodec_free_context(&av_codec_context);
+    if (av_packet)        av_packet_free(&av_packet);
+    if (yuv_frame)        av_frame_free(&yuv_frame);
 
-    file = NULL;
-    av_codec_context = NULL;
-    av_output_format = NULL;
-    rgb_frame = NULL;
-    yuv_frame = NULL;
-    av_format_context = NULL;
+    if (sws_context)
+    {
+        sws_freeContext(sws_context);
+        sws_context = nullptr;
+    }
+
+    if (av_format_context)
+    {
+        if (!(av_format_context->oformat->flags & AVFMT_NOFILE) && av_format_context->pb)
+        {
+            avio_closep(&av_format_context->pb);
+        }
+        avformat_free_context(av_format_context);
+        av_format_context = nullptr;
+    }
+
+    av_stream = nullptr;
+    av_codec  = nullptr;
 }
 #endif
