@@ -187,10 +187,11 @@ void GOCCObject::BuildGObject()
 	// add a part
 	if ((m_occ->m_shape.ShapeType() == TopAbs_SOLID) || (m_occ->m_shape.ShapeType() == TopAbs_COMPOUND))
 	{
+		int solids = 0;
 		for (TopExp_Explorer ex(shape, TopAbs_SOLID); ex.More(); ex.Next())
 		{
 			const TopoDS_Solid& solid = TopoDS::Solid(ex.Current());
-			GPart* pg = AddSolidPart();
+			GPart* pg = AddSolidPart(); solids++;
 
 			// get all the faces of this solid
 			TopTools_IndexedMapOfShape solidFaceMap;
@@ -212,27 +213,30 @@ void GOCCObject::BuildGObject()
 			}
 		}
 
-		for (TopExp_Explorer ex(shape, TopAbs_SHELL); ex.More(); ex.Next())
+		if (solids == 0)
 		{
-			const TopoDS_Shell& shell = TopoDS::Shell(ex.Current());
-			GPart* pg = AddShellPart();
-
-			// get all the faces of this shell
-			TopTools_IndexedMapOfShape shellFaceMap;
-			TopExp::MapShapes(shell, TopAbs_FACE, shellFaceMap);
-
-			for (int i = 1; i <= shellFaceMap.Extent(); ++i)
+			for (TopExp_Explorer ex(shape, TopAbs_SHELL); ex.More(); ex.Next())
 			{
-				const TopoDS_Face& face = TopoDS::Face(shellFaceMap(i));
+				const TopoDS_Shell& shell = TopoDS::Shell(ex.Current());
+				GPart* pg = AddShellPart();
 
-				int nf = faceMap.FindIndex(face) - 1; // get the global face index (1-based)
-				if ((nf >= 0) && (nf < (int)m_Face.size()))
+				// get all the faces of this shell
+				TopTools_IndexedMapOfShape shellFaceMap;
+				TopExp::MapShapes(shell, TopAbs_FACE, shellFaceMap);
+
+				for (int i = 1; i <= shellFaceMap.Extent(); ++i)
 				{
-					GFace* pf = Face(nf);
-					int m = 0;
-					if (pf->m_nPID[0] >= 0) m++;
-					if (pf->m_nPID[1] >= 0) m++;
-					pf->m_nPID[m] = pg->GetLocalID();
+					const TopoDS_Face& face = TopoDS::Face(shellFaceMap(i));
+
+					int nf = faceMap.FindIndex(face) - 1; // get the global face index (1-based)
+					if ((nf >= 0) && (nf < (int)m_Face.size()))
+					{
+						GFace* pf = Face(nf);
+						int m = 0;
+						if (pf->m_nPID[0] >= 0) m++;
+						if (pf->m_nPID[1] >= 0) m++;
+						pf->m_nPID[m] = pg->GetLocalID();
+					}
 				}
 			}
 		}
