@@ -33,7 +33,6 @@ SOFTWARE.*/
 
 #ifdef HAS_OCC
 #include <gp_Pnt.hxx>
-#include <gp_Quaternion.hxx>
 #include <GC_MakeArcOfCircle.hxx>
 #include <GC_MakeSegment.hxx>
 #include <TopoDS_Edge.hxx>
@@ -41,6 +40,7 @@ SOFTWARE.*/
 #include <TopoDS.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
+#include <BRepBuilderAPI_GTransform.hxx>
 #include <BRepBuilderAPI_Transform.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepPrimAPI_MakePrism.hxx>
@@ -62,6 +62,9 @@ SOFTWARE.*/
 #include <BRepBuilderAPI_Sewing.hxx>
 #include <BRepBuilderAPI_MakeSolid.hxx>
 #include <BRep_Builder.hxx>
+#include <gp_GTrsf.hxx>
+#include <gp_Mat.hxx>
+#include <gp_XYZ.hxx>
 #include <TopoDS_Compound.hxx>
 #include <BRepOffsetAPI_MakeFilling.hxx>
 #include <TopoDS_Solid.hxx>
@@ -554,15 +557,19 @@ static TopoDS_Shape TransformedShape(GOCCObject* po)
 	Transform T = po->GetTransform();
 
 	vec3d trans = T.GetPosition();
-	gp_Vec t(trans.x, trans.y, trans.z);
+	vec3d scale = T.GetScale();
 
 	quatd q = T.GetRotation();
-	gp_Quaternion Q(q.x, q.y, q.z, q.w);
+	q.MakeUnit();
+	mat3d R = q.RotationMatrix();
 
-	gp_Trsf trsf;
-	trsf.SetTransformation(Q, t);
+	gp_Mat m(
+		R(0, 0) * scale.x, R(0, 1) * scale.y, R(0, 2) * scale.z,
+		R(1, 0) * scale.x, R(1, 1) * scale.y, R(1, 2) * scale.z,
+		R(2, 0) * scale.x, R(2, 1) * scale.y, R(2, 2) * scale.z);
 
-	BRepBuilderAPI_Transform brepTransform(po->GetShape(), trsf);
+	gp_GTrsf trsf(m, gp_XYZ(trans.x, trans.y, trans.z));
+	BRepBuilderAPI_GTransform brepTransform(po->GetShape(), trsf, Standard_True);
 	return brepTransform.Shape();
 }
 
