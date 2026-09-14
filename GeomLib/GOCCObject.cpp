@@ -1034,6 +1034,7 @@ bool GOCCObject::CollapseTransform()
 	TopoDS_Shape  transformedShape = TransformedShape(this);
 	SetShape(transformedShape, false);
 	SetRenderMesh(nullptr);
+	SetFERenderMesh(nullptr);
 	// collapse the mesh' nodes
 	FSMesh* mesh = GetFEMesh();
 	if (mesh)
