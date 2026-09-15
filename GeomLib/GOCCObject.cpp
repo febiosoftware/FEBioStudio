@@ -54,6 +54,7 @@ SOFTWARE.*/
 #include <TopExp_Explorer.hxx>
 #include <BRepTools.hxx>
 #include <BOPAlgo_MakerVolume.hxx>
+#include <BOPAlgo_Builder.hxx>
 
 #include <BRepBuilderAPI_MakeVertex.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
@@ -649,30 +650,21 @@ TopoDS_Shape ApplySolidUnion(std::vector<GOCCObject*> occlist)
 TopoDS_Shape ApplyShellUnion(std::vector<GOCCObject*> occlist)
 {
 	if (occlist.empty()) return TopoDS_Shape();
-	if (occlist[0] == nullptr) return TopoDS_Shape();
 
-	TopoDS_Shape result = TransformedShape(occlist[0]);
-	if (result.IsNull()) return TopoDS_Shape();
-
-	for (size_t i = 1; i < occlist.size(); ++i)
+	BOPAlgo_Builder builder;
+	for (GOCCObject* po : occlist)
 	{
-		if (occlist[i] == nullptr) return TopoDS_Shape();
+		if (po == nullptr) return TopoDS_Shape();
 
-		TopoDS_Shape tool = TransformedShape(occlist[i]);
-		if (tool.IsNull()) return TopoDS_Shape();
-
-		BRepAlgoAPI_Fuse fuse(result, tool);
-		fuse.Build();
-
-		if (!fuse.IsDone() || fuse.HasErrors()) return TopoDS_Shape();
-
-		result = fuse.Shape();
-		if (result.IsNull()) return TopoDS_Shape();
+		TopoDS_Shape shape = TransformedShape(po);
+		if (shape.IsNull()) return TopoDS_Shape();
+		builder.AddArgument(shape);
 	}
 
-	ShapeUpgrade_UnifySameDomain unify(result, Standard_True, Standard_True, Standard_True);
-	unify.Build();
-	result = unify.Shape();
+	builder.Perform();
+	if (builder.HasErrors()) return TopoDS_Shape();
+
+	TopoDS_Shape result = builder.Shape();
 	if (result.IsNull()) return TopoDS_Shape();
 
 	TopoDS_Shape shells = MakeShellsFromFaces(result);
