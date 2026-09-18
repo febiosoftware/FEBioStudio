@@ -550,6 +550,7 @@ CLogfileProperties::CLogfileProperties(CModelViewer* wnd, FSProject& prj) : CFSO
 {
 	m_prj = &prj;
 	m_wnd = wnd;
+	m_actionIndex = -1;
 }
 
 void CLogfileProperties::Update()
@@ -557,26 +558,41 @@ void CLogfileProperties::Update()
 	Clear();
 	if (m_prj == nullptr) return;
 
+	addProperty("Log Variables", CProperty::Group);
+	m_logVars.clear();
 	CLogDataSettings& log = m_prj->GetLogDataSettings();
-
 	for (int i = 0; i<log.LogDataSize(); ++i)
 	{
 		FSLogData& ld = log.LogData(i);
-		addProperty(QString::fromStdString(ld.GetDataString()), CProperty::Bool)->setFlags(CProperty::Visible);
+		m_logVars.append(QString::fromStdString(ld.GetDataString()));
 	}
+	addProperty("", CProperty::Std_Vector_String);
 
 	addProperty("", CProperty::Action, "Edit log variables ...");
-	m_actionIndex = log.LogDataSize();
+	m_actionIndex = 2;
 }
 
 QVariant CLogfileProperties::GetPropertyValue(int i)
 {
-	return (i != m_actionIndex ? true : QVariant());
+	if (i == 1) return m_logVars;
+	return QVariant();
 }
 
 void CLogfileProperties::SetPropertyValue(int i, const QVariant& v)
 {
-	if (i == m_actionIndex)
+	if (i == 1)
+	{
+		CLogDataSettings& log = m_prj->GetLogDataSettings();
+		QStringList vars = v.toStringList();
+		int size = log.LogDataSize();
+		for (int n = size - 1; n >= 0; --n)
+		{
+			FSLogData& ld = log.LogData(n);
+			if (vars.contains(QString::fromStdString(ld.GetDataString())) == false)
+				log.RemoveLogData(n);
+		}
+	}
+	else if (i == m_actionIndex)
 	{
 		m_wnd->blockUpdate(true);
 		m_wnd->OnEditOutputLog();
@@ -715,6 +731,11 @@ void CPartProperties::BuildProperties()
 			AddParameterList(form);
 		}
 	}
+	else
+	{
+		QStringList sections; sections << "solid section" << "shell section" << "beam section";
+		addProperty("section", CProperty::Enum)->setEnumValues(sections);
+	}
 
 	if (m_fem)
 	{
@@ -798,7 +819,19 @@ QStringList CPartProperties::GetEnumValues(const char* ch)
 
 QVariant CPartProperties::GetPropertyValue(int i)
 {
-	if (i < Properties() - 1) return CObjectProps::GetPropertyValue(i);
+	if (i < Properties() - 1)
+	{
+		GPart* pg = m_pobj;
+		if (pg == nullptr) return QVariant();
+		GPartSection* section = pg->GetSection();
+		if (section == nullptr)
+		{
+			if (i == 0) return -1;
+			else return QVariant();
+		}
+
+		return CObjectProps::GetPropertyValue(i);
+	}
 
 	GPart* pg = m_pobj;
 	if (pg == nullptr) return QVariant();
@@ -817,7 +850,28 @@ QVariant CPartProperties::GetPropertyValue(int i)
 
 void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 {
-	if (i < Properties() - 1) return CObjectProps::SetPropertyValue(i, v);
+	if (i < Properties() - 1)
+	{
+		GPart* pg = m_pobj;
+		if (pg == nullptr) return;
+		GPartSection* section = pg->GetSection();
+		if (section == nullptr)
+		{
+			int n = v.toInt();
+			switch (n)
+			{
+			case 0: pg->SetSection(new GSolidSection(pg)); break;
+			case 1: pg->SetSection(new GShellSection(pg)); break;
+			case 2: pg->SetSection(new GBeamSection(pg)); break;
+			}
+			Clear();
+			BuildProperties();
+			SetModified(true);
+			return;
+		}
+
+		return CObjectProps::SetPropertyValue(i, v);
+	}
 	else
 	{
 		GPart* pg = m_pobj;

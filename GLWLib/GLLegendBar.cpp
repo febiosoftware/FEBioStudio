@@ -314,6 +314,7 @@ void GLLegendBar::draw_gradient_horz(GLPainter* painter)
 	}
 
 	double a = fmax(fabs(m_fmin), fabs(m_fmax));
+	double p = 1.0;
 	int ipow;
 	if (a > 0)
 	{
@@ -321,7 +322,6 @@ void GLLegendBar::draw_gradient_horz(GLPainter* painter)
 		ipow = (int)floor(g);
 	}
 	else ipow = 0;
-	double p = pow(10.0, ipow);
 
 	int W = x1 - x0;
 	int H = y1 - y0;
@@ -381,6 +381,7 @@ void GLLegendBar::draw_gradient_horz(GLPainter* painter)
 
 			// reset font size
 			painter->setFont(m_font);
+			p = pow(10.0, ipow);
 		}
 
 		char szfmt[16] = { 0 };
