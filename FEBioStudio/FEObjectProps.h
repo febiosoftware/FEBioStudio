@@ -160,6 +160,7 @@ public:
 	void Update() override;
 
 private:
+	QStringList m_logVars;
 	int	m_actionIndex;
 	CModelViewer* m_wnd;
 	FSProject* m_prj;
