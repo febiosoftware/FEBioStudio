@@ -47,7 +47,7 @@ MMGRemesh::MMGRemesh() : FEModifier("MMG Remesh")
 	AddDoubleParam(0.05, "hv", "Global Hausdorff value");
 	AddDoubleParam(1.3, "grad", "Gradation");
 	AddDoubleParam(45, "angle", "Angle (degrees)");
-	AddBoolParam(false, "Only remesh selection");
+	AddBoolParam(true, "Only remesh selection");
 	AddBoolParam(false, "Preserve selected faces");
 }
 
