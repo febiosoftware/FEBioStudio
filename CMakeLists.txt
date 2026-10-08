@@ -279,7 +279,6 @@ elseif(APPLE)
     # LSMinimumSystemVersion in ci/macOS/Info.plist and with FEBio's own
     # deployment target, or the app installs on older systems and then dies on
     # a missing symbol.
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 26.0)
 
     set(CMAKE_THREAD_LIBS_INIT "-lpthread")
     set(CMAKE_HAVE_THREADS_LIBRARY 1)
