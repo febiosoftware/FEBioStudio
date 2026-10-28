@@ -80,7 +80,7 @@ protected slots:
 	void onDelete();
 	void onEdit();
 	void onInvert();
-	void onSetDefault(Qt::CheckState nstate);
+	void onSetDefault(int nstate);
 
 private:
 	void updateMaps();

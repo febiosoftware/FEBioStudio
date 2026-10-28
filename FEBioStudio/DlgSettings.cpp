@@ -631,7 +631,7 @@ CColormapWidget::CColormapWidget(QWidget* parent) : QWidget(parent)
 	QObject::connect(delButton, SIGNAL(clicked()), this, SLOT(onDelete()));
 	QObject::connect(editButton, SIGNAL(clicked()), this, SLOT(onEdit()));
 	QObject::connect(invertButton, SIGNAL(clicked()), this, SLOT(onInvert()));
-	QObject::connect(m_default, SIGNAL(stateChanged(Qt::CheckState)), this, SLOT(onSetDefault(Qt::CheckState)));
+	QObject::connect(m_default, SIGNAL(stateChanged(int)), this, SLOT(onSetDefault(int)));
 
 	updateMaps();
 	currentMapChanged(0);
@@ -647,7 +647,7 @@ void CColormapWidget::updateMaps()
 	}
 }
 
-void CColormapWidget::onSetDefault(Qt::CheckState nstate)
+void CColormapWidget::onSetDefault(int nstate)
 {
 	if (nstate == Qt::Checked)
 	{
