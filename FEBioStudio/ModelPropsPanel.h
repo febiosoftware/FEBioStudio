@@ -123,7 +123,6 @@ protected slots:
 	void on_name_textEdited(const QString&);
 	void on_list_currentIndexChanged(int n);
 	void on_state_toggled(bool b);
-	void on_editScript_clicked();
 
 signals:
 	void nameChanged(const QString& newName);
@@ -256,7 +255,7 @@ private slots:
 	void on_fec_paramChanged(FSCoreBase* pc, Param* p);
 
 	void on_plt_dataChanged();
-    void on_imageFilter_statusChanged(bool unapplied);
+    void onImageFilterStatusChanged(bool unapplied);
 
 private:
 	void SetSelection(int n, FSItemListBuilder* it);

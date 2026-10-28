@@ -2018,7 +2018,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Remove all", this, SLOT(OnRemoveAllSelections()));
 		break;
 	case MT_MESH_ADAPTOR_LIST:
-		menu.addAction("Add Mesh Adaptor ...", wnd, SLOT(on_actionAddMeshAdaptor_triggered()));
+		menu.addAction("Add Mesh Adaptor ...", wnd, SLOT(onAddMeshAdaptorTriggered()));
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllMeshAdaptors()));
 		break;
 	case MT_OBJECT:
@@ -2152,7 +2152,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		}
 		break;
 	case MT_LOAD_CONTROLLERS:
-		menu.addAction("Add Load Controller ...", wnd, SLOT(on_actionAddLoadController_triggered()));
+		menu.addAction("Add Load Controller ...", wnd, SLOT(onAddLoadControllerTriggered()));
 		menu.addAction("Remove unused", this, SLOT(OnRemoveUnusedLoadControllers()));
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllLoadControllers()));
 		break;
@@ -2160,8 +2160,8 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		del = true;
 		break;
 	case MT_MESH_DATA_LIST:
-		menu.addAction("Add mesh data map ..."   , wnd, SLOT(on_actionAddMeshDataMap_triggered()));
-		menu.addAction("Add mesh data generator ..."   , wnd, SLOT(on_actionAddMeshDataGenerator_triggered()));
+		menu.addAction("Add mesh data map ..."   , wnd, SLOT(onAddMeshDataMapTriggered()));
+		menu.addAction("Add mesh data generator ..."   , wnd, SLOT(onAddMeshDataGeneratorTriggered()));
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllMeshData()));
 		break;
 	case MT_MESH_DATA:

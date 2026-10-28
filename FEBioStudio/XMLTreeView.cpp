@@ -514,7 +514,7 @@ public:
         columnsMenu->addAction(showCommentColumn);
 
         parent->header()->setContextMenuPolicy(Qt::CustomContextMenu);
-        QObject::connect(parent->header(), &QHeaderView::customContextMenuRequested, parent, &::XMLTreeView::on_headerMenu_requested);
+        QObject::connect(parent->header(), &QHeaderView::customContextMenuRequested, parent, &::XMLTreeView::onHeaderMenuRequested);
     }
 
 public:
@@ -705,7 +705,7 @@ void XMLTreeView::resizeEvent(QResizeEvent *event)
     ui->findWidget->move(width() - ui->findWidget->width(), 0);
 }
 
-void XMLTreeView::on_headerMenu_requested(const QPoint& pos)
+void XMLTreeView::onHeaderMenuRequested(const QPoint& pos)
 {
     ui->columnsMenu->exec(viewport()->mapToGlobal(pos));
 }
@@ -794,19 +794,21 @@ void XMLTreeView::on_collapseAll_triggered()
     collapseAll();
 }
 
-void XMLTreeView::on_collapseChildren_triggered(QModelIndex index)
+
+void XMLTreeView::on_collapseChildren_triggered(bool b)
 {
-    if(!index.isValid())
-    {
-        index = currentIndex();
-        if(!index.isValid()) return;
-    }
+	collapseChildren(currentIndex());
+}
+
+void XMLTreeView::collapseChildren(QModelIndex index)
+{
+	if(!index.isValid()) return;
 
     XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
 
     for(int child = 0; child < item->childCount(); child++)
     {
-        on_collapseChildren_triggered(model()->index(child, 0, index));
+        collapseChildren(model()->index(child, 0, index));
     }
 
     collapse(index);    

@@ -102,7 +102,7 @@ public:
 		QPushButton* applyButton = new QPushButton("Apply");
 		applyButton->setObjectName("apply");
 		pl->addWidget(form = new CPropertyListForm); form->setBackgroundRole(QPalette::Light);
-		form->setObjectName("form2");
+		form->setObjectName("form");
 		pl->addWidget(applyButton);
 		setLayout(pl);
 	}

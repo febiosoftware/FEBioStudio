@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
 
 	GraphicsAPI defaultRhiApi = GraphicsAPI::API_NULL;
 	bool breset = false;
-	for (int i = 0; i < argc; ++i)
+	for (int i = 1; i < argc; ++i)
 	{
 		if (strcmp(argv[i], "-reset") == 0)
 		{
@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
 		{
 			defaultRhiApi = GraphicsAPI::API_METAL;
 		}
-		else
+		else if (argv[i][0] == '-')
 		{
 			qDebug() << "Unknown command line argument: " << argv[i];
 		}

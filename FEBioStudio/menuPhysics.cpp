@@ -706,7 +706,7 @@ void CMainWindow::on_actionAddMaterial_triggered()
 	}
 }
 
-void CMainWindow::on_actionAddMeshAdaptor_triggered()
+void CMainWindow::onAddMeshAdaptorTriggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
@@ -733,7 +733,7 @@ void CMainWindow::on_actionAddMeshAdaptor_triggered()
 	}
 }
 
-void CMainWindow::on_actionAddLoadController_triggered()
+void CMainWindow::onAddLoadControllerTriggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
@@ -764,7 +764,7 @@ void CMainWindow::on_actionAddLoadController_triggered()
 	}
 }
 
-void CMainWindow::on_actionAddMeshDataMap_triggered()
+void CMainWindow::onAddMeshDataMapTriggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
@@ -836,7 +836,7 @@ void CMainWindow::on_actionAddMeshDataMap_triggered()
 	}
 }
 
-void CMainWindow::on_actionAddMeshDataGenerator_triggered()
+void CMainWindow::onAddMeshDataGeneratorTriggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;

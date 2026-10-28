@@ -100,7 +100,7 @@ CImageFilterWidget::CImageFilterWidget(CMainWindow* wnd)
     setLayout(layout);
 
     QMetaObject::connectSlotsByName(this);
-    connect(m_filterProps, &CPropertyListView::dataChanged, this, &CImageFilterWidget::on_filterProps_changed);
+    connect(m_filterProps, &CPropertyListView::dataChanged, this, &CImageFilterWidget::onFilterPropsChanged);
 }
 
 CImageFilterWidget::~CImageFilterWidget()
@@ -246,7 +246,7 @@ void CImageFilterWidget::on_applyFilters_clicked()
     m_wnd->UpdateUiView();
 }
 
-void CImageFilterWidget::on_filterProps_changed()
+void CImageFilterWidget::onFilterPropsChanged()
 {
     if(m_imgModel)
     {

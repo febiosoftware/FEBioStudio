@@ -537,10 +537,10 @@ public slots:
 	void on_actionAddRigidIC_triggered();
 	void on_actionAddRigidConnector_triggered();
 	void on_actionAddMaterial_triggered();
-	void on_actionAddMeshAdaptor_triggered();
-	void on_actionAddLoadController_triggered();
-	void on_actionAddMeshDataMap_triggered();
-	void on_actionAddMeshDataGenerator_triggered();
+	void onAddMeshAdaptorTriggered();
+	void onAddLoadControllerTriggered();
+	void onAddMeshDataMapTriggered();
+	void onAddMeshDataGeneratorTriggered();
 	void on_actionAddStep_triggered();
 	void on_actionStepViewer_triggered();
 	void on_actionAddReaction_triggered();
@@ -724,7 +724,6 @@ public slots:
 	void on_tab_tabCloseRequested(int n);
 
 	void on_txtedit_textChanged();
-    void on_xmlTree_modelEdited();
 
 	void on_clearProject();
 	void on_closeProject();
@@ -754,8 +753,7 @@ public slots:
 
 	void onTimer(); // timer slot for post side animation. 
 
-	void on_glview_pointPicked(const vec3d& r);
-	void on_glview_selectionChanged();
+	void onGlviewPointPicked(const vec3d& r);
 
 	void onExportMaterials(const std::vector<GMaterial*>& matList);
 	void onExportAllMaterials();
@@ -768,7 +766,7 @@ public slots:
 
 	void autoUpdateCheck(bool update);
 
-	void on_planecut_dataChanged();
+	void onPlanecutDataChanged();
 
 	void onCaptureFrameFinished(QImage img);
 
