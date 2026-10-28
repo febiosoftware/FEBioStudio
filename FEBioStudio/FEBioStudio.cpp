@@ -109,8 +109,6 @@ int main(int argc, char* argv[])
 	app.setWindowIcon(QIcon(":/icons/FEBioStudio.png"));
 
 	string appdir = QApplication::applicationDirPath().toStdString();
-	qDebug() << appdir.c_str();
-	
 	FSDir::setMacro("FEBioStudioDir", appdir);
 
 	// show the splash screen
