@@ -80,10 +80,7 @@ protected slots:
 	void onDelete();
 	void onEdit();
 	void onInvert();
-	void onSetDefault(int nstate);
-
-signals:
-	void colormapChanged(int map);
+	void onSetDefault(Qt::CheckState nstate);
 
 private:
 	void updateMaps();

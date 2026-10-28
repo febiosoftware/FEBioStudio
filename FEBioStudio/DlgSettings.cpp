@@ -631,7 +631,7 @@ CColormapWidget::CColormapWidget(QWidget* parent) : QWidget(parent)
 	QObject::connect(delButton, SIGNAL(clicked()), this, SLOT(onDelete()));
 	QObject::connect(editButton, SIGNAL(clicked()), this, SLOT(onEdit()));
 	QObject::connect(invertButton, SIGNAL(clicked()), this, SLOT(onInvert()));
-	QObject::connect(m_default, SIGNAL(stateChanged(int)), this, SLOT(onSetDefault(int)));
+	QObject::connect(m_default, SIGNAL(stateChanged(Qt::CheckState)), this, SLOT(onSetDefault(Qt::CheckState)));
 
 	updateMaps();
 	currentMapChanged(0);
@@ -647,7 +647,7 @@ void CColormapWidget::updateMaps()
 	}
 }
 
-void CColormapWidget::onSetDefault(int nstate)
+void CColormapWidget::onSetDefault(Qt::CheckState nstate)
 {
 	if (nstate == Qt::Checked)
 	{
@@ -754,7 +754,6 @@ void CColormapWidget::currentMapChanged(int n)
 		if (QMessageBox::question(this, "FEBio Studio", "The current map was changed. Do you want to keep the changes?") == QMessageBox::Yes)
 		{
 			ColorMapManager::SetColormap(m_currentMap, m_map);
-			emit colormapChanged(m_currentMap);
 		}
 	}
 
@@ -1202,7 +1201,6 @@ public:
 		QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), pwnd, SLOT(onClicked(QAbstractButton*)));
 		QObject::connect(list, SIGNAL(currentRowChanged(int)), stack, SLOT(setCurrentIndex(int)));
 		QObject::connect(resetButton, SIGNAL(clicked()), pwnd, SLOT(onReset()));
-		QObject::connect(m_map, SIGNAL(colormapChanged(int)), pwnd, SLOT(onColormapChanged(int)));
 	}
 };
 
