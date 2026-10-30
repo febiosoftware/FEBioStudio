@@ -126,6 +126,10 @@ bool PostSessionFileReader::Load(const char* szfile)
 			{
 				if (parse_datafield(tag) == false) return false;
 			}
+			else if (tag == "add_datafield")
+			{
+				if (parse_add_datafield(tag) == false) return false;
+			}
 			else if (tag == "mesh:nodeset")
 			{
 				if (parse_mesh_nodeset(tag) == false) return false;
@@ -357,6 +361,24 @@ bool PostSessionFileReader::parse_datafield(XMLTag& tag)
 
 	Post::ModelDataField* data = *dm.DataField(n);
 	fsps_read_parameters(data, tag);
+
+	return true;
+}
+
+bool PostSessionFileReader::parse_add_datafield(XMLTag& tag)
+{
+	const char* szname = tag.AttributeValue("name", true);
+	const char* sztype = tag.AttributeValue("type");
+	Post::FEPostModel& fem = *m_doc->GetFSModel();
+	Post::FEDataManager& dm = *fem.GetDataManager();
+
+	Post::ModelDataField* pdf = Post::StandardDataFieldManager::CreateDataField(&fem, sztype);
+	if (pdf == nullptr) return false;
+
+	if (szname) pdf->SetName(szname); else pdf->SetName(sztype);
+	fem.AddDataField(pdf);
+
+	fsps_read_parameters(pdf, tag);
 
 	return true;
 }

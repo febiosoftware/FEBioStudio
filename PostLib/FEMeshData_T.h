@@ -966,18 +966,16 @@ public:
 	CurvatureField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_SCALAR, DATA_NODE, FACE_DATA, IMPLICIT_DATA)
 	{
 		m_measure = measure;
-		m_nlevels = 1;
-		m_nmax = 10;
-		m_bext = false;
+		AddIntParam(1, "smoothness");
+		AddIntParam(10, "max_iterations");
+		AddBoolParam(false, "extended_quadric");
 	}
 
 	ModelDataField* Clone() const override
 	{
 		CurvatureField* pd = new CurvatureField(m_fem, m_measure);
 		pd->SetName(GetName());
-		pd->m_nlevels = m_nlevels;
-		pd->m_nmax = m_nmax;
-		pd->m_bext = m_bext;
+		pd->CopyParams(*this);
 		return pd;
 	}
 
@@ -986,11 +984,16 @@ public:
 		return new Curvature(pstate, this);
 	}
 
+	int Smoothness() const { return GetIntValue(0); }
+	int MaxIterations() const { return GetIntValue(1); }
+	bool ExtendedQuadric() const { return GetBoolValue(2); }
+
+	void SetSmoothness(int n) { SetIntValue(0, n); }
+	void SetMaxIterations(int n) { SetIntValue(1, n); }
+	void SetExtendedQuadric(bool b) { SetBoolValue(2, b); }
+
 public:
 	int	m_measure;	// curvature measure to evaluate
-	int	m_nlevels;	// neighbor search radius
-	int	m_nmax;		// max iterations
-	int m_bext;		// use extended quadric method
 };
 
 //-----------------------------------------------------------------------------

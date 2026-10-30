@@ -1554,7 +1554,7 @@ float Curvature::nodal_curvature(int n, int measure)
 	vector<vec3f> x; x.reserve(128);
 
 	// number of levels
-	int nlevels = m_pdf->m_nlevels - 1;
+	int nlevels = m_pdf->Smoothness() - 1;
 	if (nlevels <  0) nlevels = 0;
 	if (nlevels > 10) nlevels = 10;
 
@@ -1570,7 +1570,7 @@ float Curvature::nodal_curvature(int n, int measure)
 	}
 
 	// evaluate curvature
-	float K = FEMeshMetrics::eval_curvature(x, r0, sn, measure, m_pdf->m_bext == 0, m_pdf->m_nmax);
+	float K = FEMeshMetrics::eval_curvature(x, r0, sn, measure, m_pdf->ExtendedQuadric(), m_pdf->MaxIterations());
 
 	// return result
 	return (float) K;

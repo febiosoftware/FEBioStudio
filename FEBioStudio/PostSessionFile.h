@@ -26,6 +26,7 @@ private:
 	bool parse_model(XMLTag& tag);
 	bool parse_material(XMLTag& tag);
 	bool parse_datafield(XMLTag& tag);
+	bool parse_add_datafield(XMLTag& tag);
 	bool parse_mesh_nodeset(XMLTag& tag);
 	bool parse_mesh_edgeset(XMLTag& tag);
 	bool parse_mesh_surface(XMLTag& tag);

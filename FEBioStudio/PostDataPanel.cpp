@@ -86,9 +86,9 @@ public:
 	{
 		switch (i)
 		{
-		case 0: return m_pf->m_nlevels; break;
-		case 1: return m_pf->m_nmax; break;
-		case 2: return (m_pf->m_bext != 0); break;
+		case 0: return m_pf->Smoothness(); break;
+		case 1: return m_pf->MaxIterations(); break;
+		case 2: return m_pf->ExtendedQuadric(); break;
 		}
 
 		return QVariant();
@@ -98,9 +98,9 @@ public:
 	{
 		switch (i)
 		{
-		case 0: m_pf->m_nlevels = v.toInt(); break;
-		case 1: m_pf->m_nmax = v.toInt(); break;
-		case 2: m_pf->m_bext = (v.toBool() ? 1 : 0); break;
+		case 0: m_pf->SetSmoothness(v.toInt()); break;
+		case 1: m_pf->SetMaxIterations(v.toInt()); break;
+		case 2: m_pf->SetExtendedQuadric(v.toBool()); break;
 		}
 	}
 };

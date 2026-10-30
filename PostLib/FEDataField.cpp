@@ -1122,77 +1122,9 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 
 //=============================================================================
 
-class StandardDataField
-{
-public:
-	StandardDataField(const char* sz, int flag) : m_szname(sz), m_flag(flag) {}
-	virtual ~StandardDataField() {}
-public:
-	virtual Post::ModelDataField* Create(Post::FEPostModel* fem) = 0;
-	
-public:
-	const char*	m_szname;
-	int			m_flag;
-};
+std::vector<Post::StandardDataField*> Post::StandardDataFieldManager::m_stdDataFields;
 
-template <typename T> class StandardDataField_T : public StandardDataField
-{
-public:
-	StandardDataField_T(const char* szname, int flag = 0) : StandardDataField(szname, flag) {}
-	Post::ModelDataField* Create(Post::FEPostModel* fem) override 
-	{ 
-		Post::ModelDataField* dataField = new T(fem, m_flag);
-		dataField->SetName(m_szname);
-		return dataField;
-	}
-};
-
-class StandardDataFieldManager
-{
-public:
-	static void Init();
-
-	static int StandardDataFields() { return (int)m_stdDataFields.size(); }
-
-	static std::string GetStandarDataFieldName(int i)
-	{ 
-		assert((i >= 0) && (i < m_stdDataFields.size()));
-		std::string name;
-		if ((i >= 0) && (i < m_stdDataFields.size()))
-		{
-			name = m_stdDataFields[i]->m_szname;
-		}
-		return name;
-	}
-
-	static Post::ModelDataField* CreateDataField(Post::FEPostModel* fem, const std::string& name)
-	{
-		for (int i = 0; i < m_stdDataFields.size(); ++i)
-		{
-			std::string namei = m_stdDataFields[i]->m_szname;
-			if (namei == name)
-			{
-				return m_stdDataFields[i]->Create(fem);
-			}
-		}
-		return nullptr;
-	}
-
-	template <typename T>
-	static void Add(const char* sz, int flag = 0)
-	{
-		m_stdDataFields.push_back(new StandardDataField_T<T>(sz, flag));
-	}
-
-private:
-	StandardDataFieldManager() {}
-
-	static std::vector<StandardDataField*>	m_stdDataFields;
-};
-
-std::vector<StandardDataField*>	StandardDataFieldManager::m_stdDataFields;
-
-void StandardDataFieldManager::Init()
+void Post::StandardDataFieldManager::Init()
 {
 	if (m_stdDataFields.empty() == false) return;
 
@@ -1229,6 +1161,34 @@ void StandardDataFieldManager::Init()
 	Add<FEDataField_T<FEFacetArea> >("facet area", IMPLICIT_DATA);
 	Add<FEDataField_T<FEElementMaterial> >("material ID");
 	Add<FEDataField_T<FESurfaceNormal> >("surface normal", IMPLICIT_DATA);
+}
+
+int Post::StandardDataFieldManager::StandardDataFields() { return (int)m_stdDataFields.size(); }
+
+std::string Post::StandardDataFieldManager::GetStandarDataFieldName(int i)
+{
+	assert((i >= 0) && (i < m_stdDataFields.size()));
+	std::string name;
+	if ((i >= 0) && (i < m_stdDataFields.size()))
+	{
+		name = m_stdDataFields[i]->m_szname;
+	}
+	return name;
+}
+
+Post::ModelDataField* Post::StandardDataFieldManager::CreateDataField(Post::FEPostModel* fem, const std::string& name)
+{
+	StandardDataFieldManager::Init();
+
+	for (int i = 0; i < m_stdDataFields.size(); ++i)
+	{
+		std::string namei = m_stdDataFields[i]->m_szname;
+		if (namei == name)
+		{
+			return m_stdDataFields[i]->Create(fem);
+		}
+	}
+	return nullptr;
 }
 
 void Post::InitStandardDataFields()

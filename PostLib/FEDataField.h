@@ -188,4 +188,52 @@ public:
 	ModelDataField* Clone() const override { assert(false); return nullptr; };
 	FEMeshData* CreateData(FEState* pstate) override { assert(false); return nullptr; }
 };
+
+class StandardDataField
+{
+public:
+	StandardDataField(const char* sz, int flag) : m_szname(sz), m_flag(flag) {}
+	virtual ~StandardDataField() {}
+public:
+	virtual Post::ModelDataField* Create(Post::FEPostModel* fem) = 0;
+
+public:
+	const char* m_szname;
+	int			m_flag;
+};
+
+template <typename T> class StandardDataField_T : public StandardDataField
+{
+public:
+	StandardDataField_T(const char* szname, int flag = 0) : StandardDataField(szname, flag) {}
+	Post::ModelDataField* Create(Post::FEPostModel* fem) override
+	{
+		Post::ModelDataField* dataField = new T(fem, m_flag);
+		dataField->SetName(m_szname);
+		return dataField;
+	}
+};
+
+class StandardDataFieldManager
+{
+public:
+	static void Init();
+
+	static int StandardDataFields();
+
+	static std::string GetStandarDataFieldName(int i);
+
+	static Post::ModelDataField* CreateDataField(Post::FEPostModel* fem, const std::string& name);
+
+	template <typename T>
+	static void Add(const char* sz, int flag = 0)
+	{
+		m_stdDataFields.push_back(new StandardDataField_T<T>(sz, flag));
+	}
+
+private:
+	StandardDataFieldManager() {}
+
+	static std::vector<StandardDataField*>	m_stdDataFields;
+};
 }
