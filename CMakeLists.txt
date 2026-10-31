@@ -387,7 +387,16 @@ elseif(APPLE)
 	
 	add_executable(FEBioStudio MACOSX_BUNDLE ${FBS_ICON} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
 	set_property(TARGET FEBioStudio PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
-	set_target_properties(FEBioStudio PROPERTIES INSTALL_RPATH "@executable_path/../Frameworks" BUILD_WITH_INSTALL_RPATH TRUE MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/ci/MacOS/Info.plist")
+	# Build-tree rpaths: @executable_path/../Frameworks (for a packaged bundle) plus,
+	# because BUILD_WITH_INSTALL_RPATH is FALSE and CMAKE_BUILD_RPATH_USE_LINK_PATH
+	# defaults to ON, the directories of every linked @rpath library (FEBio, Netgen, ...).
+	# This lets an unpackaged Xcode build run in place. package-macos-app.sh strips the
+	# absolute entries again before signing, so they never ship.
+	set_target_properties(FEBioStudio PROPERTIES
+		BUILD_RPATH "@executable_path/../Frameworks"
+		INSTALL_RPATH "@executable_path/../Frameworks"
+		BUILD_WITH_INSTALL_RPATH FALSE
+		MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/ci/MacOS/Info.plist")
 
 else()
 	add_executable(FEBioStudio ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)

@@ -32,6 +32,9 @@ SOFTWARE.*/
 #endif
 
 #ifdef HAS_NETGEN
+// nglib.h includes <stddef.h>; include it first so that size_t etc.
+// are not declared inside the nglib namespace below.
+#include <cstddef>
 namespace nglib {
 #include <nglib.h>
 }
@@ -102,11 +105,11 @@ FSMesh* NetGenSTLMesher::BuildMesh()
 	}
 
 	// Set the surface element indices to the correct (one-based) surface number
-	for (SurfaceElementIndex sei = 0; sei < NF; ++sei)
+	// (Netgen's index types no longer convert to/from int, so we use typed indices here.)
+	for (SurfaceElementIndex sei : mesh.SurfaceElements().Range())
 	{
-		FSFace& face = surfMesh->Face(sei);
-		Element2d& sel = mesh[sei];
-		sel.SetIndex(face.m_gid + 1);
+		FSFace& face = surfMesh->Face(sei.Nr0());
+		mesh[sei].SetIndex(FaceRegionIndex::FromNr1(face.m_gid + 1));
 	}
 
 	// set meshing parameters
@@ -130,8 +133,10 @@ FSMesh* NetGenSTLMesher::BuildMesh()
 	mp.quad_dominated = 0;
 
 	// Generate volume mesh
+	// (Ng_GenerateVolumeMesh currently always returns NG_OK, so also check
+	// that volume elements were actually generated.)
 	Ng_Result ret = Ng_GenerateVolumeMesh(ngmesh, &mp);
-	if (ret != NG_OK) {
+	if ((ret != NG_OK) || (mesh.GetNE() == 0)) {
 		Ng_DeleteMesh(ngmesh);
 		Ng_Exit();
 		return nullptr;

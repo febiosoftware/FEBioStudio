@@ -416,6 +416,30 @@ resolve_ref() {
 
 record_change() { echo "$1|$2" >> "$CHANGES"; }
 
+# Recreate the standard framework symlinks if the source lacked them.
+# Homebrew's python@3.x deliberately removes Versions/Current and the top-level
+# Python/Resources/Headers links (so several Python versions can coexist), and
+# codesign then rejects the copy with "bundle format unrecognized, invalid, or
+# unsuitable". $2 is the binary's path relative to the framework root, e.g.
+# Versions/3.14/Python, which tells us which version Current should point to.
+ensure_framework_links() {
+  local fw="$1" rel="$2" name ver
+  case "$rel" in Versions/*/*) ;; *) return 0 ;; esac   # not a versioned framework
+  name="$(basename "$fw" .framework)"
+  ver="${rel#Versions/}"; ver="${ver%%/*}"
+  if [ ! -e "$fw/Versions/Current" ]; then
+    ln -s "$ver" "$fw/Versions/Current"
+    echo "    restored $(basename "$fw")/Versions/Current -> $ver" >&2
+  fi
+  if [ ! -e "$fw/$name" ] && [ -e "$fw/Versions/Current/$name" ]; then
+    ln -s "Versions/Current/$name" "$fw/$name"
+  fi
+  if [ ! -e "$fw/Resources" ] && [ -d "$fw/Versions/Current/Resources" ]; then
+    ln -s "Versions/Current/Resources" "$fw/Resources"
+  fi
+  return 0
+}
+
 # Copy a dylib or a whole framework into Contents/Frameworks.
 # Echoes the new @rpath reference.
 embed() {
@@ -442,6 +466,7 @@ embed() {
              "$dest"/*.prl "$dest"/Versions/*/*.prl "$dest"/*.dSYM 2>/dev/null || true
       echo "    embedded framework $fwname" >&2
     fi
+    ensure_framework_links "$dest" "$rel"
     install_name_tool -id "@rpath/$fwname/$rel" "$dest/$rel" 2>/dev/null || true
     echo "@rpath/$fwname/$rel"
   else
@@ -696,6 +721,15 @@ add_rpath_once() {
 
 find "$EXE_DIR" -type f -perm -u+x 2>/dev/null | while read -r b; do
   add_rpath_once "$b" "@executable_path/../Frameworks"
+  # Drop absolute build-machine rpaths (added by CMake so that unpackaged
+  # build-tree runs work). Left in, they would make the packaged app load
+  # unsigned libraries from the build tree on this machine instead of the
+  # embedded copies, which the hardened runtime then rejects.
+  otool -l "$b" 2>/dev/null | awk '/cmd LC_RPATH/{getline; getline; print $2}' \
+    | grep '^/' | while read -r abs; do
+      install_name_tool -delete_rpath "$abs" "$b" 2>/dev/null \
+        && echo "    removed build rpath from ${b#"$APP"/Contents/}: $abs"
+    done || true
 done
 # So embedded libs find their siblings even when dlopen'd.
 find "$FRAMEWORKS" -type f -name '*.dylib' 2>/dev/null | while read -r lib; do

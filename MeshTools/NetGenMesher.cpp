@@ -33,6 +33,9 @@ SOFTWARE.*/
 #endif
 
 #ifdef HAS_NETGEN
+// nglib.h includes <stddef.h>; include it first so that size_t etc.
+// are not declared inside the nglib namespace below.
+#include <cstddef>
 namespace nglib {
 #include <nglib.h>
 }
@@ -43,10 +46,6 @@ using namespace nglib;
 
 NetGenMesher::NetGenMesher(GObject& o) : FEMesher(o)
 {
-	m_meshGranularity = Moderate;
-	m_grading = 0.3;
-	m_elemPerEdge = 1;
-	m_elemPerCurve = 2;
 	m_meshGranularity = Moderate;
 	m_grading = 0.3;
 	m_elemPerEdge = 1;
@@ -152,15 +151,84 @@ void NetGenMesher::Terminate()
 #endif
 }
 
-FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool secondOrder)
+#ifdef HAS_NETGEN
+namespace {
+
+	// Netgen's index types (PointIndex, ElementIndex, ...) no longer convert
+	// implicitly to int. Nr0() returns the zero-based number, independent of
+	// the index base Netgen was compiled with (NETGEN_POINTINDEX_BASE).
+	inline int N0(netgen::PointIndex pi) { return (int)pi.Nr0(); }
+
+	// zero-based geometry edge number of a segment
+	inline int SegmentEdgeID(const netgen::Mesh& ngmesh, const netgen::Segment& seg)
+	{
+		// Since 2026-03-29 Segment::GetIndex() is the edge-descriptor (region) index,
+		// and the geometry edge number is stored in the edge descriptor.
+		if (ngmesh.HasEdgeDescriptor(seg))
+		{
+			int edgeNr = ngmesh.GetEdgeDescriptor(seg).EdgeNr(); // 1-based
+			if (edgeNr > 0) return edgeNr - 1;
+		}
+		return (int)seg.GetIndex().Nr0();
+	}
+
+	// zero-based surface number of a surface element
+	inline int FaceSurfaceID(const netgen::Mesh& ngmesh, const netgen::Element2dRef& sel)
+	{
+		return ngmesh.GetFaceDescriptor(sel.GetIndex()).SurfNr() - 1;
+	}
+
+	void CopyNodes(const netgen::Mesh& ngmesh, FSMesh* mesh)
+	{
+		for (netgen::PointIndex pi : ngmesh.Points().Range())
+		{
+			const netgen::MeshPoint& p = ngmesh[pi];
+			FSNode& ni = mesh->Node(N0(pi));
+			ni.r = vec3d(p(0), p(1), p(2));
+		}
+	}
+
+	void CopyEdges(const netgen::Mesh& ngmesh, FSMesh* mesh, bool secondOrder)
+	{
+		for (netgen::SegmentIndex sgi : ngmesh.LineSegments().Range())
+		{
+			const netgen::Segment& sel = ngmesh[sgi];
+
+			FSEdge& edge = mesh->Edge(sgi.Nr0());
+
+			// get the edge's group ID (which is the geometry edge number)
+			edge.m_gid = SegmentEdgeID(ngmesh, sel);
+
+			if ((secondOrder == false) || (sel.GetNP() < 3))
+			{
+				edge.SetType(FE_EDGE2);
+				edge.n[0] = N0(sel[0]);
+				edge.n[1] = N0(sel[1]);
+				edge.n[2] = edge.n[1];
+			}
+			else
+			{
+				edge.SetType(FE_EDGE3);
+				edge.n[0] = N0(sel[0]);
+				edge.n[1] = N0(sel[1]);
+				edge.n[2] = N0(sel[2]);
+			}
+		}
+	}
+}
+#endif
+
+FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmeshPtr, bool secondOrder)
 {
 #ifdef HAS_NETGEN
 	using namespace netgen;
 
-	int nodes = ngmesh->GetNP();
-	int elems = ngmesh->GetNE();
-	int faces = ngmesh->GetNSE();
-	int edges = ngmesh->GetNSeg();
+	const Mesh& ngmesh = *ngmeshPtr;
+
+	int nodes = (int)ngmesh.GetNP();
+	int elems = (int)ngmesh.GetNE();
+	int faces = (int)ngmesh.GetNSE();
+	int edges = (int)ngmesh.GetNSeg();
 
 	FSMesh* mesh = new FSMesh();
 
@@ -169,18 +237,7 @@ FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool sec
 		mesh->Create(nodes, elems, faces, edges);
 
 		// copy nodes
-		PointIndex pi;
-		int i = 0;
-		for (pi = PointIndex::BASE;
-			pi < ngmesh->GetNP() + PointIndex::BASE; pi++, ++i)
-		{
-			double x = (*ngmesh)[pi](0);
-			double y = (*ngmesh)[pi](1);
-			double z = (*ngmesh)[pi](2);
-
-			FSNode& ni = mesh->Node(i);
-			ni.r = vec3d(x, y, z);
-		}
+		CopyNodes(ngmesh, mesh);
 
 		// we need to find the FE nodes that correspond to the geometry nodes
 		// I don't know if there is a better way to do this (i.e. if NetGen stores this information)
@@ -216,101 +273,68 @@ FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool sec
 		}
 
 		// copy edges
-		SegmentIndex sgi;
-		i = 0;
-		for (sgi = 0; sgi < edges; sgi++, ++i)
-		{
-			// get the next edge
-			Segment sel = (*ngmesh)[sgi];
-
-			FSEdge& edge = mesh->Edge(i);
-
-			// get the edge's group ID (which is the same as the edge's index in the NG mesh)
-			edge.m_gid = sel.GetIndex() - 1;
-
-			if (secondOrder == false)
-			{
-				edge.SetType(FE_EDGE2);
-				edge.n[0] = sel[0] - 1;
-				edge.n[1] = sel[1] - 1;
-				edge.n[2] = edge.n[1];
-			}
-			else
-			{
-				int np = sel.GetNP();
-				edge.SetType(FE_EDGE3);
-				edge.n[0] = sel[0] - 1;
-				edge.n[1] = sel[1] - 1;
-				edge.n[2] = sel[2] - 1;
-			}
-		}
+		CopyEdges(ngmesh, mesh, secondOrder);
 
 		// copy facets
-		SurfaceElementIndex sei;
-		i = 0;
-		for (sei = 0; sei < faces; sei++, ++i)
+		for (SurfaceElementIndex sei : ngmesh.SurfaceElements().Range())
 		{
-			Element2d sel = (*ngmesh)[sei];
-			//		if (invertsurf) sel.Invert();
+			const Element2dRef sel = ngmesh[sei];
 
-			FSFace& face = mesh->Face(i);
-			face.m_gid = ngmesh->GetFaceDescriptor(sel.GetIndex()).SurfNr() - 1;
+			FSFace& face = mesh->Face(sei.Nr0());
+			face.m_gid = FaceSurfaceID(ngmesh, sel);
 
 			if (secondOrder == false)
 			{
 				face.SetType(FE_FACE_TRI3);
-				face.n[0] = sel[0] - 1;
-				face.n[1] = sel[1] - 1;
-				face.n[2] = sel[2] - 1;
+				face.n[0] = N0(sel[0]);
+				face.n[1] = N0(sel[1]);
+				face.n[2] = N0(sel[2]);
 				face.n[3] = face.n[2];
 			}
 			else
 			{
-				int np = sel.GetNP();
 				face.SetType(FE_FACE_TRI6);
-				face.n[0] = sel[0] - 1;
-				face.n[1] = sel[1] - 1;
-				face.n[2] = sel[2] - 1;
-				face.n[3] = sel[5] - 1;
-				face.n[4] = sel[3] - 1;
-				face.n[5] = sel[4] - 1;
+				face.n[0] = N0(sel[0]);
+				face.n[1] = N0(sel[1]);
+				face.n[2] = N0(sel[2]);
+				face.n[3] = N0(sel[5]);
+				face.n[4] = N0(sel[3]);
+				face.n[5] = N0(sel[4]);
 			}
 		}
 
 		// copy elements
-		i = 0;
-		for (ElementIndex ei = 0; ei < ngmesh->GetNE(); ei++, ++i)
+		for (ElementIndex ei : ngmesh.VolumeElements().Range())
 		{
-			Element ngel = (*ngmesh)[ei];
+			const ElementRef ngel = ngmesh[ei];
 
 			// Note that I need to invert the element
-			FSElement& el = mesh->Element(i);
+			FSElement& el = mesh->Element(ei.Nr0());
 
-			el.m_gid = ngel.GetIndex() - 1; assert(el.m_gid >= 0);
+			el.m_gid = ngel.GetIndex().Nr0(); assert(el.m_gid >= 0);
 			if (el.m_gid < 0) el.m_gid = 0;
 
 			if (secondOrder == false)
 			{
 				el.SetType(FE_TET4);
-				el.m_node[0] = ngel[2] - 1;
-				el.m_node[1] = ngel[1] - 1;
-				el.m_node[2] = ngel[0] - 1;
-				el.m_node[3] = ngel[3] - 1;
+				el.m_node[0] = N0(ngel[2]);
+				el.m_node[1] = N0(ngel[1]);
+				el.m_node[2] = N0(ngel[0]);
+				el.m_node[3] = N0(ngel[3]);
 			}
 			else
 			{
-				int np = ngel.GetNP();
 				el.SetType(FE_TET10);
-				el.m_node[0] = ngel[0] - 1;
-				el.m_node[1] = ngel[2] - 1;
-				el.m_node[2] = ngel[1] - 1;
-				el.m_node[3] = ngel[3] - 1;
-				el.m_node[4] = ngel[5] - 1;
-				el.m_node[5] = ngel[7] - 1;
-				el.m_node[6] = ngel[4] - 1;
-				el.m_node[7] = ngel[6] - 1;
-				el.m_node[8] = ngel[9] - 1;
-				el.m_node[9] = ngel[8] - 1;
+				el.m_node[0] = N0(ngel[0]);
+				el.m_node[1] = N0(ngel[2]);
+				el.m_node[2] = N0(ngel[1]);
+				el.m_node[3] = N0(ngel[3]);
+				el.m_node[4] = N0(ngel[5]);
+				el.m_node[5] = N0(ngel[7]);
+				el.m_node[6] = N0(ngel[4]);
+				el.m_node[7] = N0(ngel[6]);
+				el.m_node[8] = N0(ngel[9]);
+				el.m_node[9] = N0(ngel[8]);
 			}
 		}
 	}
@@ -319,59 +343,22 @@ FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool sec
 		mesh->Create(nodes, faces, faces, edges);
 
 		// copy nodes
-		PointIndex pi;
-		int i = 0;
-		for (pi = PointIndex::BASE;
-			pi < ngmesh->GetNP() + PointIndex::BASE; pi++, ++i)
-		{
-			double x = (*ngmesh)[pi](0);
-			double y = (*ngmesh)[pi](1);
-			double z = (*ngmesh)[pi](2);
-
-			FSNode& ni = mesh->Node(i);
-			ni.r = vec3d(x, y, z);
-		}
+		CopyNodes(ngmesh, mesh);
 
 		// copy edges
-		SegmentIndex sgi;
-		i = 0;
-		for (sgi = 0; sgi < edges; sgi++, ++i)
+		CopyEdges(ngmesh, mesh, secondOrder);
+
+		// copy facets and shell elements
+		for (SurfaceElementIndex sei : ngmesh.SurfaceElements().Range())
 		{
-			// get the next edge
-			Segment sel = (*ngmesh)[sgi];
-
-			FSEdge& edge = mesh->Edge(i);
-
-			// get the edge's group ID (which is the same as the edge's index in the NG mesh)
-			edge.m_gid = sel.GetIndex() - 1;
-
-			if (secondOrder == false)
-			{
-				edge.SetType(FE_EDGE2);
-				edge.n[0] = sel[0] - 1;
-				edge.n[1] = sel[1] - 1;
-				edge.n[2] = edge.n[1];
-			}
-			else
-			{
-				int np = sel.GetNP();
-				edge.SetType(FE_EDGE3);
-				edge.n[0] = sel[0] - 1;
-				edge.n[1] = sel[1] - 1;
-				edge.n[2] = sel[2] - 1;
-			}
-		}
-
-		// copy facets
-		SurfaceElementIndex sei;
-		i = 0;
-		for (sei = 0; sei < faces; sei++, ++i)
-		{
-			Element2d sel = (*ngmesh)[sei];
-			//        if (invertsurf) sel.Invert();
+			const Element2dRef sel = ngmesh[sei];
+			int i = sei.Nr0();
 
 			FSFace& face = mesh->Face(i);
-			face.m_gid = ngmesh->GetFaceDescriptor(sel.GetIndex()).SurfNr() - 1;
+			face.m_gid = FaceSurfaceID(ngmesh, sel);
+
+			FSElement& el = mesh->Element(i);
+			el.m_gid = 0;
 
 			int np = sel.GetNP();
 
@@ -381,19 +368,28 @@ FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool sec
 				case 3:
 				{
 					face.SetType(FE_FACE_TRI3);
-					face.n[0] = sel[0] - 1;
-					face.n[1] = sel[1] - 1;
-					face.n[2] = sel[2] - 1;
+					face.n[0] = N0(sel[0]);
+					face.n[1] = N0(sel[1]);
+					face.n[2] = N0(sel[2]);
 					face.n[3] = face.n[2];
+
+					el.SetType(FE_TRI3);
+					el.m_node[0] = face.n[0];
+					el.m_node[1] = face.n[1];
+					el.m_node[2] = face.n[2];
+					el.m_node[3] = el.m_node[2];
 				}
 				break;
 				case 4:
 				{
 					face.SetType(FE_FACE_QUAD4);
-					face.n[0] = sel[0] - 1;
-					face.n[1] = sel[1] - 1;
-					face.n[2] = sel[2] - 1;
-					face.n[3] = sel[3] - 1;
+					face.n[0] = N0(sel[0]);
+					face.n[1] = N0(sel[1]);
+					face.n[2] = N0(sel[2]);
+					face.n[3] = N0(sel[3]);
+
+					el.SetType(FE_QUAD4);
+					for (int k = 0; k < 4; ++k) el.m_node[k] = face.n[k];
 				}
 				break;
 				default:
@@ -406,95 +402,31 @@ FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool sec
 				case 6:
 				{
 					face.SetType(FE_FACE_TRI6);
-					face.n[0] = sel[0] - 1;
-					face.n[1] = sel[1] - 1;
-					face.n[2] = sel[2] - 1;
-					face.n[3] = sel[5] - 1;
-					face.n[4] = sel[3] - 1;
-					face.n[5] = sel[4] - 1;
+					face.n[0] = N0(sel[0]);
+					face.n[1] = N0(sel[1]);
+					face.n[2] = N0(sel[2]);
+					face.n[3] = N0(sel[5]);
+					face.n[4] = N0(sel[3]);
+					face.n[5] = N0(sel[4]);
+
+					el.SetType(FE_TRI6);
+					for (int k = 0; k < 6; ++k) el.m_node[k] = face.n[k];
 				}
 				break;
 				case 8:
 				{
 					face.SetType(FE_FACE_QUAD8);
-					face.n[0] = sel[0] - 1;
-					face.n[1] = sel[1] - 1;
-					face.n[2] = sel[2] - 1;
-					face.n[3] = sel[3] - 1;
-					face.n[4] = sel[4] - 1;
-					face.n[5] = sel[7] - 1;
-					face.n[6] = sel[5] - 1;
-					face.n[7] = sel[6] - 1;
-				}
-				break;
-				default:
-					break;
-				}
-			}
-		}
+					face.n[0] = N0(sel[0]);
+					face.n[1] = N0(sel[1]);
+					face.n[2] = N0(sel[2]);
+					face.n[3] = N0(sel[3]);
+					face.n[4] = N0(sel[4]);
+					face.n[5] = N0(sel[7]);
+					face.n[6] = N0(sel[5]);
+					face.n[7] = N0(sel[6]);
 
-		// copy elements
-		i = 0;
-		for (sei = 0; sei < faces; sei++, ++i)
-		{
-			Element2d sel = (*ngmesh)[sei];
-
-			// Note that I need to invert the element
-			FSElement& el = mesh->Element(i);
-			el.m_gid = 0;
-
-			int np = sel.GetNP();
-
-			if (secondOrder == false)
-			{
-				switch (np) {
-				case 3:
-				{
-					el.SetType(FE_TRI3);
-					el.m_node[0] = sel[0] - 1;
-					el.m_node[1] = sel[1] - 1;
-					el.m_node[2] = sel[2] - 1;
-					el.m_node[3] = el.m_node[2];
-				}
-				break;
-				case 4:
-				{
-					el.SetType(FE_QUAD4);
-					el.m_node[0] = sel[0] - 1;
-					el.m_node[1] = sel[1] - 1;
-					el.m_node[2] = sel[2] - 1;
-					el.m_node[3] = sel[3] - 1;
-				}
-				break;
-				default:
-					break;
-				}
-			}
-			else
-			{
-				switch (np) {
-				case 6:
-				{
-					el.SetType(FE_TRI6);
-					el.m_node[0] = sel[0] - 1;
-					el.m_node[1] = sel[1] - 1;
-					el.m_node[2] = sel[2] - 1;
-					el.m_node[3] = sel[5] - 1;
-					el.m_node[4] = sel[3] - 1;
-					el.m_node[5] = sel[4] - 1;
-				}
-				break;
-				case 8:
-				{
 					el.SetType(FE_QUAD8);
-					el.m_node[0] = sel[0] - 1;
-					el.m_node[1] = sel[1] - 1;
-					el.m_node[2] = sel[2] - 1;
-					el.m_node[3] = sel[3] - 1;
-					el.m_node[4] = sel[4] - 1;
-					el.m_node[5] = sel[7] - 1;
-					el.m_node[6] = sel[5] - 1;
-					el.m_node[7] = sel[6] - 1;
+					for (int k = 0; k < 8; ++k) el.m_node[k] = face.n[k];
 				}
 				break;
 				default:
@@ -507,27 +439,6 @@ FSMesh* NetGenMesher::NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool sec
 	// update the element neighbours
 	mesh->BuildMesh();
 
-	// associate the FE nodes with the GNodes
-/*	double R2 = mesh->GetBoundingBox().GetMaxExtent();
-	if (R2 == 0) R2 = 1.0; else R2 *= R2;
-	for (i = 0; i<mesh->Nodes(); ++i)
-	{
-		FSNode& node = mesh->Node(i);
-		vec3d& ri = node.r;
-		node.m_gid = -1;
-		for (j = 0; j<m_occ->Nodes(); ++j)
-		{
-			GNode& gn = *m_po->Node(j);
-			vec3d& rj = gn.LocalPosition();
-			double L2 = (ri - rj).SqrLength();
-			if (L2 / R2 < 1e-6)
-			{
-				node.m_gid = j;
-				break;
-			}
-		}
-	}
-*/
 	return mesh;
 #else
 	return nullptr;
