@@ -12,6 +12,7 @@
 moc_*
 qrc_*
 cmbuild*/
+vs26/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

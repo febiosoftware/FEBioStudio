@@ -754,7 +754,6 @@ void CColormapWidget::currentMapChanged(int n)
 		if (QMessageBox::question(this, "FEBio Studio", "The current map was changed. Do you want to keep the changes?") == QMessageBox::Yes)
 		{
 			ColorMapManager::SetColormap(m_currentMap, m_map);
-			emit colormapChanged(m_currentMap);
 		}
 	}
 
@@ -1202,7 +1201,6 @@ public:
 		QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), pwnd, SLOT(onClicked(QAbstractButton*)));
 		QObject::connect(list, SIGNAL(currentRowChanged(int)), stack, SLOT(setCurrentIndex(int)));
 		QObject::connect(resetButton, SIGNAL(clicked()), pwnd, SLOT(onReset()));
-		QObject::connect(m_map, SIGNAL(colormapChanged(int)), pwnd, SLOT(onColormapChanged(int)));
 	}
 };
 

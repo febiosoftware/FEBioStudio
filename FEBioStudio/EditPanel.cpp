@@ -399,7 +399,8 @@ void CEditPanel::on_buttons_idClicked(int id)
 
 void CEditPanel::on_form_dataChanged(bool itemModified, int index)
 {
-	CPropertyList* pl = ui->editParams->GetPropertyList();
+	// TODO: Commenting this out since a parameter change does not take effect until Apply is clicked. So we don't want to log a change until then.
+/*	CPropertyList* pl = ui->editParams->GetPropertyList();
 	if (pl == nullptr) return;
 	if ((index >= 0) && (index < pl->Properties()))
 	{
@@ -415,4 +416,5 @@ void CEditPanel::on_form_dataChanged(bool itemModified, int index)
 			doc->AppendChangeLog(msg);
 		}
 	}
+*/
 }

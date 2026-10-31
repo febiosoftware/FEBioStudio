@@ -240,9 +240,7 @@ bool NIKE3DProject::BuildControl(FSModel& fem)
 	Defaults();
 
 	// set the project title
-	char* sztitle = "";
-	if (!fem.GetTitle().empty()) sztitle = (char*)fem.GetTitle().c_str();
-	sprintf(c.sztitle, "%-40s", sztitle);
+	std::snprintf(c.sztitle, sizeof(c.sztitle), "%-40.40s", fem.GetTitle().c_str());
 
 	// time settings
 	c.ntime = set.ntime;

@@ -93,7 +93,7 @@ private slots:
     void on_addFilterBtn_clicked();
     void on_delFilterBtn_clicked();
     void on_applyFilters_clicked();
-    void on_filterProps_changed();
+    void onFilterPropsChanged();
 
 private:
     CImageModel* m_imgModel;

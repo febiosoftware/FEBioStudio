@@ -82,9 +82,6 @@ protected slots:
 	void onInvert();
 	void onSetDefault(int nstate);
 
-signals:
-	void colormapChanged(int map);
-
 private:
 	void updateMaps();
 

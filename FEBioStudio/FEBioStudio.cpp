@@ -109,8 +109,6 @@ int main(int argc, char* argv[])
 	app.setWindowIcon(QIcon(":/icons/FEBioStudio.png"));
 
 	string appdir = QApplication::applicationDirPath().toStdString();
-	qDebug() << appdir.c_str();
-	
 	FSDir::setMacro("FEBioStudioDir", appdir);
 
 	// show the splash screen
@@ -130,8 +128,11 @@ int main(int argc, char* argv[])
 
 	GraphicsAPI defaultRhiApi = GraphicsAPI::API_NULL;
 	bool breset = false;
+<<<<<<< HEAD
 	// Start at 1: argv[0] is the executable path, not a user argument. Starting
 	// at 0 made every launch log "Unknown command line argument: <exe path>".
+=======
+>>>>>>> develop
 	for (int i = 1; i < argc; ++i)
 	{
 		if (strcmp(argv[i], "-reset") == 0)
@@ -159,7 +160,7 @@ int main(int argc, char* argv[])
 		{
 			defaultRhiApi = GraphicsAPI::API_METAL;
 		}
-		else
+		else if (argv[i][0] == '-')
 		{
 			qDebug() << "Unknown command line argument: " << argv[i];
 		}

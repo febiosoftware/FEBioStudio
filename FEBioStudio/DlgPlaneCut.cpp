@@ -105,7 +105,7 @@ CDlgPlaneCut::CDlgPlaneCut(CMainWindow* wnd) : QDialog(wnd), ui(new UIDlgPlaneCu
 	setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
 	ui->setup(this);
 
-	QObject::connect(this, &CDlgPlaneCut::dataChanged, wnd, &CMainWindow::on_planecut_dataChanged);
+	QObject::connect(this, &CDlgPlaneCut::dataChanged, wnd, &CMainWindow::onPlanecutDataChanged);
 }
 
 void CDlgPlaneCut::setData(GLViewSettings* vs, GLScene* scene)

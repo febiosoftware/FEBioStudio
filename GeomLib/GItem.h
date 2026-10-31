@@ -386,7 +386,7 @@ public:
 	void operator = (const GEdge& e);
 
 	//! Equality operator
-	bool operator == (const GEdge& e);
+	bool operator == (const GEdge& e) const;
 
 	//! Get node at index
 	GNode* Node(int i);

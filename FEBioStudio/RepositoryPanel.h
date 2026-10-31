@@ -122,9 +122,9 @@ private slots:
 	void on_projectTags_linkActivated(const QString& link);
 	void on_fileTags_linkActivated(const QString& link);
 
-    void on_actionAdvnacedSearch_triggered();
-    void on_actionAdvancedClear_triggered();
-    void on_actionAdvnacedHide_triggered();
+    void onActionAdvancedSearchTriggered();
+    void onActionAdvancedClearTriggered();
+    void onActionAdvancedHideTriggered();
 
 private:
     void GetFileMetaDataForUpload(QVariantList& fileInfoList, QStringList& localPaths, QStringList& zipPaths);

@@ -32,6 +32,8 @@ SOFTWARE.*/
 #include "PointCloud3d.h"
 #include "BivariatePolynomialSpline.h"
 #include <FECore/Quadric.h>
+#include <FSCore/FSThreadedTask.h>
+
 using namespace std;
 
 //--------------------------------------------------------------------------------------
@@ -86,15 +88,23 @@ FSMesh* FEAxesCurvature::Apply(FSMesh* pm)
     
     //Fit surface to spline or quadric
     Curvature(pnm);
+    if (pnm == nullptr) {
+        error ("Error with calculation of curvatures");
+        return pnm;
+    }
     
     //Apply them as fiber axes for each element of face selected
-    if(apply || part)
+    if(apply || part) {
         ApplyCurvature(pnm);
+        if (pnm == nullptr) {
+            error ("Error with assignment of curvature data to matrices");
+            return pnm;
+        }
+    }
     
     //Apply to all elements of part
     if (part)
         ApplyCurvaturePart(pnm);
-    
     return pnm;
 }
 
@@ -160,7 +170,7 @@ void FEAxesCurvature::Curvature(FSMesh* pm)
     
     switch (option) {
         case 0:
-        // store nodes of neighboring faces
+            // store nodes of neighboring faces
         {
             for (int i = 0; i<ne1; ++i)
             {
@@ -204,14 +214,20 @@ void FEAxesCurvature::Curvature(FSMesh* pm)
                     int numSurrFace = (int)surroundingFaces.size();
                     for (int k = 0; k<numSurrFace; ++k)
                     {
-                        int numFacesNextNext = pm->Face(surroundingFaces[k]).Edges();
+                        int ktmp = surroundingFaces[k];
+                        if (ktmp < 0) { pm = nullptr; return; }
+                        int numFacesNextNext = pm->Face(ktmp).Edges();
                         for (int l = 0; l<numFacesNextNext; ++l)
                         {
-                            bool isSel = pm->Face(pm->Face(surroundingFaces[k]).m_nbr[l]).IsSelected();
+                            int ltmp = pm->Face(surroundingFaces[k]).m_nbr[l];
+                            if (ltmp < 0) { pm = nullptr; return; }
+                            bool isSel = pm->Face(ltmp).IsSelected();
                             if (isSel)
                             {
-                                surroundingFaces.push_back(pm->Face(surroundingFaces[k]).m_nbr[l]);
-                                int numNodeNext = pm->Face(pm->Face(surroundingFaces[k]).m_nbr[l]).Nodes();
+                                int itmp = pm->Face(surroundingFaces[k]).m_nbr[l];
+                                if (itmp < 0) { pm = nullptr; return; }
+                                surroundingFaces.push_back(itmp);
+                                int numNodeNext = pm->Face(itmp).Nodes();
                                 
                                 //For each node in surrounding face check if duplicate. Includes just added nodes.
                                 for(int n = 0; n<numNodeNext; ++n)
@@ -219,14 +235,18 @@ void FEAxesCurvature::Curvature(FSMesh* pm)
                                     bool isDuplicate = false;
                                     for(int m = 0; m<numCurveNodes; ++m)
                                     {
-                                        if (temp[m] == pm->Face(pm->Face(surroundingFaces[k]).m_nbr[l]).n[n])
+                                        int mtmp = surroundingFaces[k];
+                                        if (mtmp < 0) { pm = nullptr; return; }
+                                        if (temp[m] == pm->Face(pm->Face(mtmp).m_nbr[l]).n[n])
                                         {
                                             isDuplicate = true;
                                         }
                                     }
                                     if (!isDuplicate)
                                     {
-                                        temp.push_back(pm->Face(pm->Face(surroundingFaces[k]).m_nbr[l]).n[n]);
+                                        int dtmp = surroundingFaces[k];
+                                        if (dtmp < 0) { pm = nullptr; return; }
+                                        temp.push_back(pm->Face(pm->Face(dtmp).m_nbr[l]).n[n]);
                                         numCurveNodes = (int)temp.size();
                                         //we want it to be symmetric, no bias to certain neighboring nodes
                                         //if (numCurveNodes >= numNodesDesired) break;
@@ -371,7 +391,7 @@ void FEAxesCurvature::Curvature(FSMesh* pm)
 void FEAxesCurvature::ApplyCurvature(FSMesh* pm)
 {
     int numElements = (int)fel.size();
-    
+    if (eigenvecFace.size() != numElements) { pm = nullptr; return; }
     for(int i=0; i<numElements; ++i)
     {
         mat3d eigenVectors = eigenvecFace[i];

@@ -1658,10 +1658,18 @@ void CMainWindow::on_actionSurfaceToFaces_triggered()
 	if (doc->GetSelectionMode() != SELECT_SURF) return;
 
 	GObject* po = doc->GetActiveObject();
-	if (po == nullptr) return;
+	if (po == nullptr)
+	{
+		QMessageBox::critical(this, "Surface to Faces", "You need to select an object first.");
+		return;
+	}
 
 	FSMesh* mesh = po->GetFEMesh();
-	if (mesh == nullptr) return;
+	if (mesh == nullptr)
+	{
+		QMessageBox::critical(this, "Surface to Faces", "You need to select an object that has a mesh.");
+		return;
+	}
 
 	// now, select the faces
 	vector<int> faceList;

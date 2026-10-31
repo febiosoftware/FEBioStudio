@@ -250,11 +250,6 @@ void CBCObjectPropsPanel::on_state_toggled(bool b)
 	emit stateChanged(b);
 }
 
-void CBCObjectPropsPanel::on_editScript_clicked()
-{
-	emit editScriptClicked(m_script->text());
-}
-
 //=============================================================================
 CGItemInfoPanel::CGItemInfoPanel(QWidget* parent, bool showActiveOption) : QWidget(parent)
 {
@@ -797,7 +792,7 @@ CModelPropsPanel::CModelPropsPanel(CMainWindow* wnd, QWidget* parent) : QWidget(
 	m_isUpdating = false;
 	ui->setupUi(wnd, this);
 
-    connect(ui->imageFilters, &CImageFilterWidget::filterStatusChanged, this, &CModelPropsPanel::on_imageFilter_statusChanged);
+    connect(ui->imageFilters, &CImageFilterWidget::filterStatusChanged, this, &CModelPropsPanel::onImageFilterStatusChanged);
 }
 
 void CModelPropsPanel::Update()
@@ -1938,7 +1933,7 @@ void CModelPropsPanel::on_plt_dataChanged()
 	}
 }
 
-void CModelPropsPanel::on_imageFilter_statusChanged(bool unapplied)
+void CModelPropsPanel::onImageFilterStatusChanged(bool unapplied)
 {
     if(unapplied)
     {

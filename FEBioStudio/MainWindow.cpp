@@ -471,17 +471,6 @@ void CMainWindow::on_txtedit_textChanged()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::on_xmlTree_modelEdited()
-{
-    CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
-	if (xmlDoc && xmlDoc->IsValid() && (xmlDoc->IsModified() == false))
-	{
-        xmlDoc->SetModifiedFlag();
-        UpdateTab(xmlDoc);
-	}
-}
-
-//-----------------------------------------------------------------------------
 // Read a file asynchronously
 // doc        : the document that is being modified 
 // fileName   : the file name of the file that is read
@@ -2832,15 +2821,9 @@ void CMainWindow::ClearPythonLog()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::on_glview_pointPicked(const vec3d& r)
+void CMainWindow::onGlviewPointPicked(const vec3d& r)
 {
 	GetCreatePanel()->setInput(r);
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::on_glview_selectionChanged()
-{
-	ReportSelection();
 }
 
 //-----------------------------------------------------------------------------
@@ -3691,7 +3674,7 @@ QString CMainWindow::GetCreatePluginPath() const { return ui->m_settings.createP
 void CMainWindow::SetSDKPath(const QString& s) { ui->m_settings.FEBioSDKPath = s; }
 void CMainWindow::SetCreatePluginPath(const QString& s) { ui->m_settings.createPluginPath = s; }
 
-void CMainWindow::on_planecut_dataChanged()
+void CMainWindow::onPlanecutDataChanged()
 {
 	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;

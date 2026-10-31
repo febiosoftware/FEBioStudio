@@ -94,7 +94,7 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
 private slots:
-    void on_headerMenu_requested(const QPoint& pos);
+    void onHeaderMenuRequested(const QPoint& pos);
 
     void on_findWidget_next();
     void on_findWidget_prev();
@@ -104,7 +104,7 @@ private slots:
     void on_expandAll_triggered();
     void on_expandChildren_triggered();
     void on_collapseAll_triggered();
-    void on_collapseChildren_triggered(QModelIndex index = QModelIndex());
+    void on_collapseChildren_triggered(bool b);
     
     void on_showIDColumn_triggered(bool b);
     void on_showTypeColumn_triggered(bool b);
@@ -118,6 +118,8 @@ private:
 
     void expandAndSelect(const QModelIndex& index, const int cursorStart, int cursorEnd);
     void expandToMatch(const QModelIndex& index);
+
+	void collapseChildren(QModelIndex index);
 
 private:
     friend class Ui::XMLTreeView;

@@ -180,7 +180,7 @@ void GEdge::operator =(const GEdge &e)
 }
 
 //-----------------------------------------------------------------------------
-bool GEdge::operator==(const GEdge& e)
+bool GEdge::operator==(const GEdge& e) const
 {
 	if (e.m_ntype != m_ntype) return false;
 	switch (m_ntype)

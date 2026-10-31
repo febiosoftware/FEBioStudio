@@ -75,9 +75,9 @@ CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QDockWidget* parent)
 	connect(ui->searchLineEdit, &QLineEdit::returnPressed, this, &CRepositoryPanel::on_actionSearch_triggered);
 	connect(ui->loadingCancel, SIGNAL(clicked(bool)), this, SIGNAL(cancelClicked()));
 
-    connect(ui->advancedSearch->actionSearch, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvnacedSearch_triggered);
-    connect(ui->advancedSearch->actionClear, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvancedClear_triggered);
-    connect(ui->advancedSearch->actionHide, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvnacedHide_triggered);
+    connect(ui->advancedSearch->actionSearch, &QAction::triggered, this, &::CRepositoryPanel::onActionAdvancedSearchTriggered);
+    connect(ui->advancedSearch->actionClear , &QAction::triggered, this, &::CRepositoryPanel::onActionAdvancedClearTriggered);
+    connect(ui->advancedSearch->actionHide  , &QAction::triggered, this, &::CRepositoryPanel::onActionAdvancedHideTriggered);
 
 	dbHandler = new CModelDatabaseHandler(this);
 	repoHandler = new CModelRepoConnectionHandler(this, dbHandler, m_wnd);
@@ -1551,22 +1551,22 @@ void CRepositoryPanel::on_fileTags_linkActivated(const QString& link)
 	on_actionSearch_triggered();
 }
 
-void CRepositoryPanel::on_actionAdvnacedSearch_triggered()
+void CRepositoryPanel::onActionAdvancedSearchTriggered()
 {
     QString searchTerm = ui->advancedSearch->GetSearchTerm();
     SearchDatabase(searchTerm);
     ui->searchLineEdit->setText(searchTerm);
-    on_actionAdvnacedHide_triggered();
+    onActionAdvancedHideTriggered();
 }
 
-void CRepositoryPanel::on_actionAdvancedClear_triggered()
+void CRepositoryPanel::onActionAdvancedClearTriggered()
 {
     ui->advancedSearch->Clear();
     ui->searchLineEdit->clear();
     ui->treeStack->setCurrentIndex(0);
 }
 
-void CRepositoryPanel::on_actionAdvnacedHide_triggered()
+void CRepositoryPanel::onActionAdvancedHideTriggered()
 {
     ui->searchBar->show();
     ui->advancedSearch->hide();
@@ -1810,9 +1810,9 @@ void CRepositoryPanel::on_searchTree_itemSelectionChanged() {}
 void CRepositoryPanel::on_searchTree_customContextMenuRequested(const QPoint &pos) {}
 void CRepositoryPanel::on_showProjectsCB_stateChanged(int state) {}
 void CRepositoryPanel::on_showFilesCB_stateChanged(int state) {}
-void CRepositoryPanel::on_actionAdvnacedSearch_triggered() {}
-void CRepositoryPanel::on_actionAdvancedClear_triggered() {}
-void CRepositoryPanel::on_actionAdvnacedHide_triggered() {}
+void CRepositoryPanel::onActionAdvancedSearchTriggered() {}
+void CRepositoryPanel::onActionAdvancedClearTriggered() {}
+void CRepositoryPanel::onActionAdvancedHideTriggered() {}
 void CRepositoryPanel::SearchDatabase(QString searchTerm) {}
 void CRepositoryPanel::GetFileMetaDataForUpload(QVariantList& fileInfoList, QStringList& localPaths, QStringList& zipPaths) {}
 QString CRepositoryPanel::GetFilePathFromID(int fileID) {return "";}
