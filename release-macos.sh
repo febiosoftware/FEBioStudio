@@ -38,7 +38,7 @@ BUILD_DIR="build"
 APP="$BUILD_DIR/bin/Release/FEBioStudio.app"
 DMG="$BUILD_DIR/bin/Release/FEBioStudio.dmg"
 
-FEBIO_BUILD="$HOME/GitHub/FEBio-safe/build"
+FEBIO_BUILD="$HOME/GitHub/FEBio/build"
 SIMPLEITK_BUILD="$HOME/GitHub/SimpleITK/SuperBuild/build"
 
 SEARCH_PATHS=(
