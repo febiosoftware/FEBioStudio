@@ -358,13 +358,14 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>3.2.0</string>
-	<!-- Independent of CMAKE_OSX_DEPLOYMENT_TARGET. This is what makes macOS
-	     REFUSE to launch on an older system with a clear message, instead of
-	     launching and then crashing on a missing symbol. Homebrew bottles on
-	     the build host are compiled against the macOS 26 SDK, so 26.0 is the
-	     real floor. -->
+	<!-- This is what makes macOS REFUSE to launch on an older system with a
+	     clear message, instead of launching and then crashing on a missing
+	     symbol. CMake fills in FEBIOSTUDIO_MIN_MACOS from
+	     CMAKE_OSX_DEPLOYMENT_TARGET (26.0 for arm64 builds, whose Homebrew
+	     bottles are compiled against the macOS 26 SDK), so this file must be
+	     installed through MACOSX_BUNDLE_INFO_PLIST, not copied as is. -->
 	<key>LSMinimumSystemVersion</key>
-	<string>26.0</string>
+	<string>${FEBIOSTUDIO_MIN_MACOS}</string>
 	<!-- macOS gates ~/Documents, ~/Desktop and ~/Downloads behind user
 	     consent. The default model-repository folder is
 	     ~/Documents/FEBio Studio Repo Files, so without these the consent

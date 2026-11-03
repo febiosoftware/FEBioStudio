@@ -3,6 +3,31 @@ cmake_minimum_required(VERSION 3.18.0)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Homebrew bottles on the arm64 build host are compiled against the macOS 26
+# SDK, so 26.0 is the real floor there. LSMinimumSystemVersion in
+# ci/macOS/Info.plist follows this value automatically; keep FEBio's own
+# deployment target in sync, or the app installs on older systems and then
+# dies on a missing symbol. x86_64 builds keep CMake's default so they still run on Intel
+# Macs that cannot run macOS 26. This must come before project(), which
+# otherwise fills in the host's macOS version. -DCMAKE_OSX_DEPLOYMENT_TARGET
+# overrides it.
+if(CMAKE_HOST_APPLE AND NOT DEFINED CACHE{CMAKE_OSX_DEPLOYMENT_TARGET})
+    set(_target_arch "${CMAKE_OSX_ARCHITECTURES}")
+    if(NOT _target_arch)
+        # Same test CMake uses for CMAKE_HOST_SYSTEM_PROCESSOR, so this agrees
+        # with the architecture default below even under Rosetta.
+        execute_process(COMMAND sysctl -q -n hw.optional.arm64
+            OUTPUT_VARIABLE _host_is_arm64 OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+        if(_host_is_arm64 STREQUAL "1")
+            set(_target_arch arm64)
+        endif()
+    endif()
+    if(_target_arch STREQUAL "arm64")
+        set(CMAKE_OSX_DEPLOYMENT_TARGET 26.0 CACHE STRING
+            "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked. Set to empty string for default value.")
+    endif()
+endif()
+
 project(FEBioStudio)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -273,12 +298,22 @@ if(WIN32)
     add_compile_options(/MP /openmp)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
-    set(CMAKE_OSX_ARCHITECTURES arm64)
-    # Homebrew bottles on this build host are compiled against the macOS 26
-    # SDK, so 26.0 is the real floor. Keep this in sync with
-    # LSMinimumSystemVersion in ci/macOS/Info.plist and with FEBio's own
-    # deployment target, or the app installs on older systems and then dies on
-    # a missing symbol.
+    # Build for the host CPU (arm64 on Apple silicon, x86_64 on Intel) unless
+    # overridden with -DCMAKE_OSX_ARCHITECTURES=..., since the Homebrew
+    # dependencies (Qt, etc.) are only installed for the host architecture.
+    if(NOT CMAKE_OSX_ARCHITECTURES)
+        set(CMAKE_OSX_ARCHITECTURES ${CMAKE_HOST_SYSTEM_PROCESSOR})
+    endif()
+    # The deployment target is chosen before project() at the top of this file.
+    # ci/macOS/Info.plist uses ${FEBIOSTUDIO_MIN_MACOS} for LSMinimumSystemVersion,
+    # so the bundle never claims a lower floor than the binaries were built for.
+    # CMake older than 4.0 leaves the target empty, meaning the host's version.
+    set(FEBIOSTUDIO_MIN_MACOS "${CMAKE_OSX_DEPLOYMENT_TARGET}")
+    if(NOT FEBIOSTUDIO_MIN_MACOS)
+        execute_process(COMMAND sw_vers -productVersion
+            OUTPUT_VARIABLE FEBIOSTUDIO_MIN_MACOS OUTPUT_STRIP_TRAILING_WHITESPACE)
+        string(REGEX MATCH "^[0-9]+\\.[0-9]+" FEBIOSTUDIO_MIN_MACOS "${FEBIOSTUDIO_MIN_MACOS}")
+    endif()
 
     set(CMAKE_THREAD_LIBS_INIT "-lpthread")
     set(CMAKE_HAVE_THREADS_LIBRARY 1)

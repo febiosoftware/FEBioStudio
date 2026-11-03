@@ -6,7 +6,9 @@ FBS_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/../
 cp $FBS_DIR/cmbuild/bin/FEBioStudioUpdater $FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents/MacOS
 cp $FBS_DIR/cmbuild/bin/mvUtil $FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents/MacOS
 
-cp $FBS_DIR/ci/macOS/Info.plist $FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents
+# Info.plist is not copied here: CMake already installed ci/macOS/Info.plist
+# into the bundle with LSMinimumSystemVersion filled in, and copying the raw
+# template would leave the unexpanded ${FEBIOSTUDIO_MIN_MACOS} in place.
 
 mkdir $FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents/Frameworks
 
