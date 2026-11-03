@@ -930,7 +930,14 @@ done
 find "$FRAMEWORKS" -maxdepth 1 -type d -name '*.framework' 2>/dev/null | while read -r fw; do sign "$fw"; done
 
 # Helper executables, then the app itself last.
-find "$EXE_DIR" -type f -perm -u+x ! -name "$EXECUTABLE" 2>/dev/null | while read -r h; do sign "$h"; done
+# Helpers get the app's entitlements too: febio4 runs as its own hardened
+# process and must be allowed (disable-library-validation) to dlopen a
+# user-installed, Panua-signed libpardiso.dylib.
+if [ -n "$ENTITLEMENTS" ]; then
+  find "$EXE_DIR" -type f -perm -u+x ! -name "$EXECUTABLE" 2>/dev/null | while read -r h; do sign --entitlements "$ENTITLEMENTS" "$h"; done
+else
+  find "$EXE_DIR" -type f -perm -u+x ! -name "$EXECUTABLE" 2>/dev/null | while read -r h; do sign "$h"; done
+fi
 
 if [ -n "$ENTITLEMENTS" ]; then
   [ -f "$ENTITLEMENTS" ] || die "entitlements file not found: $ENTITLEMENTS"

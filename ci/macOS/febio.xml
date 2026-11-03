@@ -6,10 +6,16 @@
     seals Contents/MacOS as code, so a data file there makes signing the bundle
     fail with "code object is not signed at all".
 
-    The linear solver is "accelerate" (Apple's Accelerate framework) rather
-    than "pardiso-project": Panua Pardiso is separately licensed and lives
-    outside the bundle, so it is unavailable on an end user's machine.
+    No default_linear_solver is set here on purpose. FEBio (built with
+    PDL_RUNTIME_LOAD) chooses the default at start-up: "pardiso-project" if the
+    user has installed a licensed Panua Pardiso library (e.g. in
+    ~/Library/Application Support/FEBio/lib/libpardiso.dylib, or wherever
+    PARDISO_LIB_PATH points), otherwise "accelerate". Setting a solver here
+    would override that choice, and users cannot edit this file without
+    breaking the app's code signature.
 -->
 <febio_config version="3.0">
-    <default_linear_solver type="accelerate"></default_linear_solver>
+    <!-- same as FEBio's built-in default; present only because the config
+         parser expects at least one child element -->
+    <show_warnings_and_errors>1</show_warnings_and_errors>
 </febio_config>

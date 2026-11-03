@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <QStandardPaths>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QVariantMap>
 #include "RepositoryPanel.h"
 #include "DatabaseInterface.h"
@@ -538,7 +539,23 @@ CModelDatabaseHandler::~CModelDatabaseHandler(){}
 
 void CModelDatabaseHandler::init(std::string schema)
 {
-	interface.setDBPath((imp->dbPanel->GetRepositoryFolder() += "/localdb.db").toStdString());
+	QString folder = imp->dbPanel->GetRepositoryFolder();
+
+	// If the folder cannot be written, sqlite cannot create localdb.db and the
+	// repository silently shows up empty. On macOS the usual cause is privacy
+	// protection: ~/Documents, ~/Desktop and ~/Downloads need the user's consent,
+	// which is granted per app. A copy launched from Terminal borrows Terminal's
+	// consent, so it can work there and fail when launched from Finder.
+	QFileInfo fi(folder);
+	if (!fi.isDir() || !fi.isWritable())
+	{
+		imp->dbPanel->ShowMessage("FEBio Studio cannot write to the repository folder:\n\n" + folder +
+			"\n\nIf this folder is inside Documents, Desktop or Downloads, allow FEBio Studio to access it in "
+			"System Settings > Privacy & Security > Files and Folders, or choose a different repository folder "
+			"in FEBio Studio's settings.");
+	}
+
+	interface.setDBPath((folder + "/localdb.db").toStdString());
 
     // Before we close and delete it, we need to copy the downloaded date for the files
     imp->saveDownloadDates();
