@@ -38,6 +38,9 @@ SOFTWARE.*/
 #include "GLViewSelector.h"
 #include "GLScreenRecorder.h"
 #include <list>
+#include <QPoint>
+
+class QTimer;
 
 class CMainWindow;
 class CGLDocument;
@@ -303,6 +306,16 @@ protected:
 
 	CGLPivot m_pivot;
 	bool	m_userPivot;
+
+	// Hover handling. On macOS, after a modal dialog (e.g. File > Open) the
+	// embedded RHI window stops receiving button-less mouse-move events, which
+	// breaks pivot highlighting/picking. A light poll of the cursor position
+	// stands in for those missing events.
+	void HandleHover(int x, int y);
+	void PollHover();
+	QTimer*	m_hoverTimer = nullptr;
+	QPoint	m_lastHoverPos;
+	bool	m_hoverEventSeen = false;
 
 	// GL widgets
 	GLLabel*		m_ptitle;

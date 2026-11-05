@@ -39,6 +39,9 @@ SOFTWARE.*/
 #include <math.h>
 #include <MeshLib/MeshTools.h>
 #include "GLViewTransform.h"
+#include <QTimer>
+#include <QCursor>
+#include <QGuiApplication>
 #include <GLLib/GDecoration.h>
 #include <GLLib/GLCamera.h>
 #include <GLLib/GLContext.h>
@@ -360,6 +363,12 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : m_pWnd(pwnd), m_pivot(thi
 
 	m_coord = COORD_GLOBAL;
 
+	// see comment in GLView.h: stands in for hover events macOS stops delivering
+	m_hoverTimer = new QTimer(this);
+	m_hoverTimer->setInterval(40);
+	QObject::connect(m_hoverTimer, &QTimer::timeout, this, [this]() { PollHover(); });
+	m_hoverTimer->start();
+
 	// attach the highlighter to this view
 	GLHighlighter::AttachToView(this);
 
@@ -488,6 +497,10 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 
 	Qt::MouseButton but = ev->button();
 
+	// Re-pick the manipulator arm at the press location, so a drag works even
+	// if no hover event updated it beforehand (see PollHover in GLView.h).
+	if (ntrans != TRANSFORM_NONE) SelectPivot(x, y);
+
 	int pivotMode = m_pivot.GetSelectionMode();
 
 	if (but == Qt::LeftButton)
@@ -612,35 +625,10 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	// if no buttons are pressed, then we update the pivot only
 	if ((but1 == false) && (but2 == false) && (but3 == false))
 	{
-		int ntrans = pdoc->GetTransformMode();
-		if (ntrans != TRANSFORM_NONE)
-		{
-			if (SelectPivot(x, y)) 
-			repaint();
-		}
-		else
-		{
-			if (GLHighlighter::IsTracking() || vs.m_showHighlights)
-			{
-				switch (pdoc->GetSelectionMode())
-				{
-				case SELECT_EDGE: HighlightEdge(x, y); break;
-				case SELECT_NODE: HighlightNode(x, y); break;
-				case SELECT_SURF: HighlightSurface(x, y); break;
-				case SELECT_PART: HighlightPart(x, y); break;
-				}
-			}
-		}
+		m_hoverEventSeen = true;
+		m_lastHoverPos = QPoint(x, y);
+		HandleHover(x, y);
 		ev->accept();
-
-		// we need to repaint if brush selection is on so the brush can be redrawn
-		if (vs.m_bselbrush)
-		{
-			m_x1 = x;
-			m_y1 = y;
-			repaint();
-		}
-
 		return;
 	}
 
@@ -2268,6 +2256,63 @@ void CGLView::RemoveDecoration(GDecoration* deco)
 	}
 }
 
+// Handle a button-less mouse move at (x, y) (logical pixels): update the
+// pivot manipulator highlight, or the item highlighter.
+void CGLView::HandleHover(int x, int y)
+{
+	CGLDocument* pdoc = GetDocument();
+	if ((pdoc == nullptr) || (GetActiveScene() == nullptr)) return;
+
+	GLViewSettings& vs = GetViewSettings();
+
+	int ntrans = pdoc->GetTransformMode();
+	if (ntrans != TRANSFORM_NONE)
+	{
+		if (SelectPivot(x, y)) repaint();
+	}
+	else
+	{
+		if (GLHighlighter::IsTracking() || vs.m_showHighlights)
+		{
+			switch (pdoc->GetSelectionMode())
+			{
+			case SELECT_EDGE: HighlightEdge(x, y); break;
+			case SELECT_NODE: HighlightNode(x, y); break;
+			case SELECT_SURF: HighlightSurface(x, y); break;
+			case SELECT_PART: HighlightPart(x, y); break;
+			}
+		}
+	}
+
+	// we need to repaint if brush selection is on so the brush can be redrawn
+	if (vs.m_bselbrush)
+	{
+		m_x1 = x;
+		m_y1 = y;
+		repaint();
+	}
+}
+
+// On macOS, after a modal dialog the embedded RHI window can stop receiving
+// button-less mouse-move events. Poll the cursor and run the hover logic
+// whenever it moved inside the view without a real event arriving.
+void CGLView::PollHover()
+{
+	if (!isExposed()) return;
+	if (QGuiApplication::mouseButtons() != Qt::NoButton) return;
+
+	QPoint p = mapFromGlobal(QCursor::pos());
+	if ((p.x() < 0) || (p.y() < 0) || (p.x() >= width()) || (p.y() >= height())) return;
+	if (p == m_lastHoverPos) return;
+
+	m_lastHoverPos = p;
+
+	// real hover events are arriving; nothing to do
+	if (m_hoverEventSeen) { m_hoverEventSeen = false; return; }
+
+	HandleHover(p.x(), p.y());
+}
+
 // Select an arm of the pivot manipulator
 bool CGLView::SelectPivot(int x, int y)
 {
@@ -2279,6 +2324,7 @@ bool CGLView::SelectPivot(int x, int y)
 
 	// get a new pivot mode
 	int newMode = m_pivot.Pick(ntrans, x, y);
+
 	return (newMode != oldMode);
 }
 
