@@ -36,7 +36,9 @@ public:
 
 	void Create(int colormap, int ndivs, bool smooth);
 
-	GLTexture1D& GetTexture() { return m_tex; }
+	// Returns the texture. The texture is rebuilt first if the underlying
+	// color map template was modified in the ColorMapManager.
+	GLTexture1D& GetTexture();
 
 	void UpdateTexture();
 
@@ -52,10 +54,16 @@ public:
 	CColorMap& ColorMap();
 
 private:
+	// returns true if the color map manager was modified since the texture was last built
+	bool IsOutOfDate() const;
+
+private:
 	int		m_colorMap;		// index of template to use
 	int		m_ndivs;		// number of divisions
 	bool	m_bsmooth;		// smooth interpolation or not
 
 	GLTexture1D m_tex;	// the actual texture
 	CColorMap m_map;
+
+	unsigned int m_revision;	// ColorMapManager revision this texture was built from
 };

@@ -57,6 +57,12 @@ private:
 
 vector<class ColorMapTemplate>	ColorMapManager::m_map;
 int ColorMapManager::m_defaultMap = ColorMapManager::JET;
+unsigned int ColorMapManager::m_revision = 0;
+
+unsigned int ColorMapManager::GetRevision()
+{
+	return m_revision;
+}
 
 // set the default color map
 void ColorMapManager::SetDefaultMap(int map)
@@ -143,11 +149,12 @@ const CColorMap& ColorMapManager::GetColorMap(int n)
 
 void ColorMapManager::SetColormap(int n, const CColorMap& map)
 {
-	if ((n >= 0) || (n < m_map.size()))
+	if ((n >= 0) && (n < (int)m_map.size()))
 	{
 		CColorMap& trg = m_map[n].colormap();
 		trg = map;
 		trg.SetRange(0.f, 1.f); // make sure the range is not altered
+		m_revision++;
 	}
 }
 
@@ -155,12 +162,17 @@ void ColorMapManager::AddColormap(const string& name, const CColorMap& map)
 {
 	ColorMapTemplate newTemplate(name, map);
 	m_map.push_back(newTemplate);
+	m_revision++;
 }
 
 // remove a color map template (can't delete default templates)
 bool ColorMapManager::RemoveColormap(int n)
 {
 	if (n < USER) return false;
+	if (n >= (int)m_map.size()) return false;
 	m_map.erase(m_map.begin() + n);
+
+	// indices of subsequent maps have shifted, so cached textures must be rebuilt
+	m_revision++;
 	return true;
 }

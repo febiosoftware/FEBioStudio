@@ -32,6 +32,7 @@ CColorTexture::CColorTexture()
 	m_ndivs = 10;
 	m_bsmooth = true;
 	m_map = ColorMapManager::GetColorMap(ColorMapManager::JET);
+	m_revision = 0;
 
 	UpdateTexture();
 }
@@ -41,6 +42,8 @@ CColorTexture::CColorTexture(const CColorTexture& col)
 	m_colorMap = col.m_colorMap;
 	m_ndivs = col.m_ndivs;
 	m_bsmooth = col.m_bsmooth;
+	m_map = col.m_map;
+	m_revision = col.m_revision;
 
 	m_tex = col.m_tex;
 }
@@ -50,6 +53,8 @@ void CColorTexture::operator = (const CColorTexture& col)
 	m_colorMap = col.m_colorMap;
 	m_ndivs = col.m_ndivs;
 	m_bsmooth = col.m_bsmooth;
+	m_map = col.m_map;
+	m_revision = col.m_revision;
 
 	m_tex = col.m_tex;
 }
@@ -60,6 +65,17 @@ void CColorTexture::Create(int colormap, int ndivs, bool smooth)
 	m_ndivs = ndivs;
 	m_bsmooth = smooth;
 	UpdateTexture();
+}
+
+bool CColorTexture::IsOutOfDate() const
+{
+	return (m_revision != ColorMapManager::GetRevision());
+}
+
+GLTexture1D& CColorTexture::GetTexture()
+{
+	if (IsOutOfDate()) UpdateTexture();
+	return m_tex;
 }
 
 void CColorTexture::UpdateTexture()
@@ -87,6 +103,9 @@ void CColorTexture::UpdateTexture()
 	}
 
 	m_tex.Update();
+
+	// remember which version of the color maps this texture reflects
+	m_revision = ColorMapManager::GetRevision();
 }
 
 int CColorTexture::GetDivisions() const
@@ -96,7 +115,7 @@ int CColorTexture::GetDivisions() const
 
 void CColorTexture::SetDivisions(int n)
 {
-	if (n != m_ndivs)
+	if ((n != m_ndivs) || IsOutOfDate())
 	{
 		m_ndivs = n;
 		UpdateTexture();
@@ -110,7 +129,7 @@ bool CColorTexture::GetSmooth() const
 
 void CColorTexture::SetSmooth(bool b)
 {
-	if (b != m_bsmooth)
+	if ((b != m_bsmooth) || IsOutOfDate())
 	{
 		m_bsmooth = b;
 		UpdateTexture();
@@ -119,7 +138,7 @@ void CColorTexture::SetSmooth(bool b)
 
 void CColorTexture::SetColorMap(int n)
 {
-	if (n != m_colorMap)
+	if ((n != m_colorMap) || IsOutOfDate())
 	{
 		m_colorMap = n;
 		UpdateTexture();
@@ -133,5 +152,6 @@ int CColorTexture::GetColorMap() const
 
 CColorMap& CColorTexture::ColorMap()
 {
+	if (IsOutOfDate()) UpdateTexture();
 	return m_map;
 }
