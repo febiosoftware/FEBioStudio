@@ -2907,12 +2907,15 @@ void FEBioExport25::WriteSurfaceDataSection()
 					XMLElement el("face");
 					int n1 = el.add_attribute("lid", 0);
 
-					int nid = 1;
+					// write one entry per face, with all components of the data item
 					std::vector<double> data = sd.GetData();
-					for (double d : data)
+					int itemSize = sd.ItemSize();
+					int nitems = (itemSize > 0 ? (int)data.size() / itemSize : 0);
+					for (int n = 0; n < nitems; ++n)
 					{
-						el.set_attribute(n1, nid++);
-						el.value(d);
+						el.set_attribute(n1, n + 1);
+						if (itemSize == 1) el.value(data[n]);
+						else el.value(&data[n * itemSize], itemSize);
 
 						m_xml.add_leaf(el, false);
 					}
