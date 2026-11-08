@@ -38,6 +38,9 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 #include <QCheckBox>
 #include <QApplication>
+#include <QRegularExpression>
+#include <QLabel>
+#include <QMessageBox>
 #include <QClipboard>
 #include <QtCore/QMimeData>
 #include <GeomLib/FSGroup.h>
@@ -162,6 +165,21 @@ public:
 		std::vector<double> data = m_data->GetData();
 		int nrows = data.size() / ncols;
 
+		dlg->setWindowTitle(QString("Edit Mesh Data - %1").arg(QString::fromStdString(m_data->GetName())));
+
+		if (nrows == 0)
+		{
+			// The data field has no storage yet. This happens when no selection
+			// (node set, surface, element set, or part) has been assigned to it.
+			QLabel* msg = new QLabel("This mesh data field has no items yet.\n"
+				"Assign a selection (node set, surface, or element set) to it first,\n"
+				"then reopen this dialog to edit or paste values.");
+			msg->setWordWrap(true);
+			layout->addWidget(msg);
+			copy->setEnabled(false);
+			paste->setEnabled(false);
+		}
+
 		m_table = new QTableWidget(nrows, ncols);
 		m_table->setItemDelegate(new DataTableDelegate);
 		m_table->setObjectName("dataTable");
@@ -249,7 +267,8 @@ void CDlgEditMeshData::OnCopyToClipboard()
 
 	for (int i = 0; i < rows; ++i)
 	{
-		QString label = ui->m_table->verticalHeaderItem(i)->text();
+		QTableWidgetItem* headerItem = ui->m_table->verticalHeaderItem(i);
+		QString label = (headerItem ? headerItem->text() : QString::number(i + 1));
 		txt += label + "\t";
 		for (int j = 0; j < cols; ++j)
 		{
@@ -277,22 +296,51 @@ void CDlgEditMeshData::OnPasteFromClipboard()
 		int nrows = ui->m_table->rowCount();
 		int ncols = ui->m_table->columnCount();
 
-		QStringList lines = text.split("\n");
-		int lineCount = lines.size();
-		if (lineCount > nrows) lineCount = nrows;
-		QString sep = "\t";
+		// accept any line ending (\n, \r\n, or \r) and skip blank lines
+		QStringList lines = text.split(QRegularExpression("[\r\n]+"), Qt::SkipEmptyParts);
 
-		for (int i = 0; i < lineCount; ++i)
+		// start pasting at the selected row (or the first row if nothing is selected)
+		int row0 = ui->m_table->currentRow();
+		if (row0 < 0) row0 = 0;
+
+		// accept tabs, commas, semicolons, or spaces as column separators
+		QRegularExpression sep("[\\s,;]+");
+
+		int row = row0;
+		for (int i = 0; (i < lines.size()) && (row < nrows); ++i)
 		{
-			QStringList items = lines[i].split(sep);
-			int itemCount = items.size();
+			QStringList items = lines[i].split(sep, Qt::SkipEmptyParts);
+			if (items.isEmpty()) continue;
+
+			// if there is one extra column, assume the first one is the item label
+			// (e.g. text produced by "Copy to clipboard") and skip it
+			int offset = (items.size() == ncols + 1 ? 1 : 0);
+
+			int itemCount = items.size() - offset;
 			if (itemCount > ncols) itemCount = ncols;
 			for (int j = 0; j < itemCount; ++j)
 			{
-				QString s = items[j];
-				double aij = s.toDouble();
-				ui->m_table->item(i, j)->setText(QString::number(aij));
+				bool ok = false;
+				double aij = items[j + offset].toDouble(&ok);
+				if (ok) ui->m_table->item(row, j)->setText(QString::number(aij));
 			}
+			row++;
 		}
+
+		int pasted = row - row0;
+		if (pasted == 0)
+		{
+			QMessageBox::warning(this, "Paste from clipboard", "No numeric values were found on the clipboard.");
+		}
+		else if (lines.size() > pasted)
+		{
+			QMessageBox::information(this, "Paste from clipboard",
+				QString("The clipboard contains %1 lines, but only %2 rows were available starting at row %3.\nThe remaining lines were ignored.")
+				.arg(lines.size()).arg(pasted).arg(row0 + 1));
+		}
+	}
+	else
+	{
+		QMessageBox::warning(this, "Paste from clipboard", "The clipboard does not contain text.");
 	}
 }
