@@ -90,6 +90,12 @@ public:
 	// set the default color map
 	static void SetDefaultMap(int map);
 
+	// Revision counter. This is incremented whenever the content of the color map
+	// list changes (a map is edited, added, or removed). Clients that cache data
+	// derived from a color map (e.g. CColorTexture) can compare against this value
+	// to detect that their cache is stale.
+	static unsigned int GetRevision();
+
 private:
 	// this is a singleton so don't try to instantiate this
 	ColorMapManager() {}
@@ -98,5 +104,5 @@ private:
 private:
 	static std::vector<class ColorMapTemplate>	m_map;
 	static int m_defaultMap;
+	static unsigned int m_revision;
 };
-
