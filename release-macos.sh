@@ -70,8 +70,10 @@ fi
 if [ "${#NOTARIZE_ARGS[@]}" -gt 0 ]; then
     # Fails fast on a missing or misnamed keychain profile, rather than after a
     # full build and a 150 MB upload.
-    if ! xcrun notarytool history --keychain-profile "$KEYCHAIN_PROFILE" >/dev/null 2>&1; then
+    if ! NOTARY_OUT=$(xcrun notarytool history --keychain-profile "$KEYCHAIN_PROFILE" 2>&1); then
         echo "error: no usable notarytool profile named '$KEYCHAIN_PROFILE'" >&2
+        echo "notarytool reported:" >&2
+        echo "$NOTARY_OUT" | sed 's/^/    /' >&2
         echo "see the store-credentials command in the header of this script" >&2
         exit 1
     fi

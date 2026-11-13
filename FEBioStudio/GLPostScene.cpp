@@ -1196,6 +1196,10 @@ void CGLPostScene::Render(GLRenderEngine& engine, GLContext& rc)
 	}
 	engine.setBackgroundGradient(c1, c2, orient);
 
+	// set global settings
+	engine.setPointSize(vs.m_node_size);
+	engine.setLineWidth(vs.m_line_size);
+
 	if (vs.m_use_environment_map) ActivateEnvironmentMap(engine);
 
 	// now render it

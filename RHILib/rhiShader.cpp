@@ -39,7 +39,7 @@ void rhi::Shader::create(const QString& vertexShader, const QString& fragmentSha
 class PointShaderResource : public rhi::MeshShaderResource
 {
 public:
-	enum { MV, COL, CLIP, VCOL };
+	enum { MV, COL, CLIP, VCOL, PSIZE };
 
 public:
 	PointShaderResource(QRhi* rhi, QRhiBuffer* globalBuf) : MeshShaderResource(rhi)
@@ -48,7 +48,8 @@ public:
 			{rhi::UniformBlock::MAT4, "mv"},
 			{rhi::UniformBlock::VEC4, "col"},
 			{rhi::UniformBlock::INT , "useClipping"},
-			{rhi::UniformBlock::INT , "useVertexColor"}
+			{rhi::UniformBlock::INT , "useVertexColor"},
+			{rhi::UniformBlock::FLOAT, "pointSize"}
 			});
 
 		// create the buffer
@@ -76,6 +77,7 @@ public:
 		m_data.setVec4(COL, diffuse);
 		m_data.setInt (CLIP, (m.doClipping? 1 : 0));
 		m_data.setInt (VCOL, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
+		m_data.setFloat(PSIZE, (m.pointSize < 1.f ? 1.f : m.pointSize));
 	}
 };
 
@@ -171,6 +173,98 @@ QRhiVertexInputLayout LineShader::meshLayout()
 rhi::MeshShaderResource* LineShader::createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D)
 {
 	return new LineShaderResource(rhi, globalBuf, tex1D);
+}
+
+//=============================================================================
+// Wide lines are rendered as screen-space quads, since most backends
+// (e.g. Metal, D3D, and Vulkan without the wideLines feature) only
+// support 1-pixel wide line primitives.
+class WideLineShaderResource : public rhi::MeshShaderResource
+{
+public:
+	// NOTE: the order of the members is chosen to satisfy std140 alignment rules,
+	// since rhi::UniformBlock packs members tightly.
+	enum { MV, COL, VIEWPORT, LWIDTH, CLIP, VCOL, TEX };
+
+public:
+	WideLineShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D, const float* viewportSize) : rhi::MeshShaderResource(rhi), m_vp(viewportSize)
+	{
+		m_data.create({
+			{rhi::UniformBlock::MAT4 , "mv"},
+			{rhi::UniformBlock::VEC4 , "col"},
+			{rhi::UniformBlock::VEC2 , "viewport"},
+			{rhi::UniformBlock::FLOAT, "lineWidth"},
+			{rhi::UniformBlock::INT  , "useClipping" },
+			{rhi::UniformBlock::INT  , "useVertexColor" },
+			{rhi::UniformBlock::INT  , "useTexture" }
+			});
+
+		// create the buffer
+		ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, m_data.size()));
+		ubuf->create();
+
+		// create resource binding
+		static const QRhiShaderResourceBinding::StageFlags visibility =
+			QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage;
+
+		srb.reset(rhi->newShaderResourceBindings());
+		srb->setBindings({
+				QRhiShaderResourceBinding::uniformBuffer(0, visibility, globalBuf),
+				QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get()),
+				QRhiShaderResourceBinding::sampledTexture(2, visibility, tex1D.texture.get(), tex1D.sampler.get())
+			});
+		srb->create();
+	}
+
+	void setData(const rhi::MeshRenderItem& m) override
+	{
+		float diffuse[4] = { 0.f };
+		m.mat.diffuse.toFloat(diffuse);
+
+		vec2f vp(1.f, 1.f);
+		if (m_vp)
+		{
+			vp.x = (m_vp[0] > 0.f ? m_vp[0] : 1.f);
+			vp.y = (m_vp[1] > 0.f ? m_vp[1] : 1.f);
+		}
+
+		m_data.setMat4 (MV, m.mvMatrix);
+		m_data.setVec4 (COL, diffuse);
+		m_data.setVec2 (VIEWPORT, vp);
+		m_data.setFloat(LWIDTH, (m.lineWidth < 1.f ? 1.f : m.lineWidth));
+		m_data.setInt  (CLIP, (m.doClipping ? 1 : 0));
+		m_data.setInt  (VCOL, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
+		m_data.setInt  (TEX , (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 1 : 0));
+	}
+
+private:
+	const float* m_vp = nullptr; // viewport size (owned by render pass)
+};
+
+WideLineShader::WideLineShader(QRhi* rhi) : rhi::Shader(rhi)
+{
+	rhi::Shader::create("widelines.vert.qsb", "widelines.frag.qsb");
+}
+
+QRhiVertexInputLayout WideLineShader::meshLayout()
+{
+	QRhiVertexInputLayout meshLayout;
+	meshLayout.setBindings({
+		{ sizeof(WideLineShader::Vertex) }
+		});
+	meshLayout.setAttributes({
+		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // segment start point
+		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // segment end point
+		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }, // texture coordinate
+		{ 0, 3, QRhiVertexInputAttribute::Float4, 9 * sizeof(float) }, // color
+		{ 0, 4, QRhiVertexInputAttribute::Float2, 13 * sizeof(float) } // (endpoint, side)
+		});
+	return meshLayout;
+}
+
+rhi::MeshShaderResource* WideLineShader::createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D, const float* viewportSize)
+{
+	return new WideLineShaderResource(rhi, globalBuf, tex1D, viewportSize);
 }
 
 class ColorShaderResource : public rhi::MeshShaderResource

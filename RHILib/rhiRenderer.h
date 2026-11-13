@@ -119,6 +119,10 @@ public:
 	void setLightEnabled(unsigned int lightIndex, bool b) override;
 
 	void setPointSize(float s) override;
+	void setLineWidth(float w) override;
+
+	float pointSize() override { return m_pointSize; }
+	float lineWidth() override { return m_lineWidth; }
 
 	void setClearColor(const GLColor& c) override;
 
@@ -169,6 +173,13 @@ public:
 private:
 	QMatrix4x4 modelViewMatrix() const;
 
+	// returns the render pass that should be used for rendering lines
+	rhi::MeshRenderPass* linePass(bool wide, bool overlay);
+
+	// point size and line width in physical pixels (i.e. scaled by the device pixel ratio)
+	float pixelPointSize() const;
+	float pixelLineWidth() const;
+
 signals:
 	void captureFrameReady(QImage img);
 
@@ -183,6 +194,8 @@ private:
 	// 3D render passes
 	std::unique_ptr<LineRenderPass> m_linePass;
 	std::unique_ptr<LineRenderPass> m_lineOverlayPass;
+	std::unique_ptr<WideLineRenderPass> m_wideLinePass;
+	std::unique_ptr<WideLineRenderPass> m_wideLineOverlayPass;
 	std::unique_ptr<PointRenderPass> m_pointPass;
 	std::unique_ptr<PointRenderPass> m_pointOverlayPass;
 	std::unique_ptr<TwoPassSolidRenderPass> m_solidPass;
@@ -227,5 +240,7 @@ private:
 	bool m_clipEnabled = false;
 	float clipPlane[4];
 	bool useEnvMap = false;
+	float m_pointSize = 1.f;
+	float m_lineWidth = 1.f;
 	FrontFace m_frontFace = FrontFace::COUNTER_CLOCKWISE;
 };

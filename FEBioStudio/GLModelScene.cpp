@@ -229,6 +229,7 @@ void CGLModelScene::Render(GLRenderEngine& engine, GLContext& rc)
 
 	// set global setting
 	engine.setPointSize(rc.m_settings.m_node_size);
+	engine.setLineWidth(rc.m_settings.m_line_size);
 
 	if (view.m_use_environment_map) ActivateEnvironmentMap(engine);
 

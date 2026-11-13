@@ -672,6 +672,8 @@ set(SHADER_FILES
     RHILib/shaders/color.frag
     RHILib/shaders/lines.vert
     RHILib/shaders/lines.frag
+    RHILib/shaders/widelines.vert
+    RHILib/shaders/widelines.frag
     RHILib/shaders/point.vert
     RHILib/shaders/point.frag
     RHILib/shaders/overlay.vert

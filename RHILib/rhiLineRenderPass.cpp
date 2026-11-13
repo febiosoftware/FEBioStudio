@@ -73,3 +73,51 @@ rhi::MeshShaderResource* LineRenderPass::createShaderResource()
 {
 	return LineShader::createShaderResource(m_rhi, m_globalBuf, *m_tex1D);
 }
+
+//=============================================================================
+void WideLineRenderPass::create(QRhiSwapChain* sc, QRhiBuffer* globalBuf, rhi::Texture* tex1D)
+{
+	m_globalBuf = globalBuf;
+	m_tex1D = tex1D;
+
+	QRhiRenderPassDescriptor* rp = sc->renderPassDescriptor();
+	int sampleCount = sc->sampleCount();
+
+	WideLineShader lineShader(m_rhi);
+
+	m_sr.reset(lineShader.createShaderResource(m_rhi, m_globalBuf, *tex1D, m_vp));
+
+	m_pl.reset(m_rhi->newGraphicsPipeline());
+	m_pl->setRenderPassDescriptor(rp);
+	m_pl->setSampleCount(sampleCount);
+
+	m_pl->setDepthTest(m_depthTest);
+	m_pl->setDepthWrite(false);
+	m_pl->setTargetBlends({ rhi::defaultBlendState() });
+
+	m_pl->setShaderStages(lineShader.begin(), lineShader.end());
+	m_pl->setTopology(QRhiGraphicsPipeline::Triangles);
+	m_pl->setCullMode(QRhiGraphicsPipeline::None);
+
+	m_pl->setVertexInputLayout(lineShader.meshLayout());
+	m_pl->setShaderResourceBindings(m_sr->get());
+	m_pl->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
+	m_pl->create();
+}
+
+rhi::Mesh* WideLineRenderPass::newMesh(const GLMesh* mesh)
+{
+	if (mesh == nullptr) return nullptr;
+	rhi::Mesh* rm = new rhi::WideLineMesh<WideLineShader::Vertex>(m_rhi);
+	if (!rm->CreateFromGLMesh(mesh))
+	{
+		delete rm;
+		rm = nullptr;
+	}
+	return rm;
+}
+
+rhi::MeshShaderResource* WideLineRenderPass::createShaderResource()
+{
+	return WideLineShader::createShaderResource(m_rhi, m_globalBuf, *m_tex1D, m_vp);
+}
