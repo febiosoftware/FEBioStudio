@@ -137,6 +137,8 @@ namespace rhi {
 		QMatrix4x4 mvMatrix; // model view
 		MeshShaderResource* sr = nullptr;
 		bool invertFaces = false;
+		float pointSize = 1.f; // point size (in pixels) used by point render passes
+		float lineWidth = 1.f; // line width (in pixels) used by line render passes
 	};
 
 } // rhi

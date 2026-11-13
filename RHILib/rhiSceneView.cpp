@@ -57,6 +57,8 @@ void rhiSceneView::customInit()
 
 void rhiSceneView::customRender()
 {
+	// update the device pixel ratio, since it can change when the window moves to another screen
+	m_rhiRender->setDPR(devicePixelRatio());
 	m_rhiRender->start();
 	m_rhiRender->useOverlayImage(false);
 

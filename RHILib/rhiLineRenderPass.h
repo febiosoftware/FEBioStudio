@@ -44,3 +44,26 @@ private:
 	QRhiBuffer* m_globalBuf = nullptr;
 	rhi::Texture* m_tex1D = nullptr;
 };
+
+// Render pass for lines that are wider than one pixel.
+// Lines are rendered as screen-aligned quads, which works on all backends.
+class WideLineRenderPass : public rhi::MeshRenderPass
+{
+public:
+	WideLineRenderPass(QRhi* rhi) : MeshRenderPass(rhi) {}
+
+	void create(QRhiSwapChain* sc, QRhiBuffer* globalBuf, rhi::Texture* tex1D);
+
+	rhi::Mesh* newMesh(const GLMesh* mesh) override;
+
+	rhi::MeshShaderResource* createShaderResource() override;
+
+	// set the size of the viewport (in pixels). Needed to compute the line width.
+	void setViewportSize(float w, float h) { m_vp[0] = w; m_vp[1] = h; }
+
+private:
+	std::unique_ptr<rhi::MeshShaderResource> m_sr;
+	QRhiBuffer* m_globalBuf = nullptr;
+	rhi::Texture* m_tex1D = nullptr;
+	float m_vp[2] = { 1.f, 1.f };
+};

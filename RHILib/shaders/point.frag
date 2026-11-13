@@ -26,6 +26,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     vec4 col;
     int useClipping;
     int useVertexColor;
+    float pointSize;
 } mesh;
 
 void main()

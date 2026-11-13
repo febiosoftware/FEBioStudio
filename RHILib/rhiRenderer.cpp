@@ -158,6 +158,13 @@ void rhiRenderer::init()
 	m_lineOverlayPass->setDepthTest(false);
 	m_lineOverlayPass->create(m_sc, m_global.get(), &m_tex1D);
 
+	m_wideLinePass.reset(new WideLineRenderPass(m_rhi));
+	m_wideLinePass->create(m_sc, m_global.get(), &m_tex1D);
+
+	m_wideLineOverlayPass.reset(new WideLineRenderPass(m_rhi));
+	m_wideLineOverlayPass->setDepthTest(false);
+	m_wideLineOverlayPass->create(m_sc, m_global.get(), &m_tex1D);
+
 	m_pointPass.reset(new PointRenderPass(m_rhi));
 	m_pointPass->create(m_sc, m_global.get());
 
@@ -189,6 +196,8 @@ void rhiRenderer::clearCache()
 	if (m_solidOverlayPass) m_solidOverlayPass->clearCache();
 	if (m_linePass ) m_linePass ->clearCache();
 	if (m_lineOverlayPass) m_lineOverlayPass->clearCache();
+	if (m_wideLinePass) m_wideLinePass->clearCache();
+	if (m_wideLineOverlayPass) m_wideLineOverlayPass->clearCache();
 	if (m_pointPass) m_pointPass->clearCache();
 	if (m_pointOverlayPass) m_pointOverlayPass->clearCache();
 	for (auto& it : m_volumeRenderPass) it.second->clearCache();
@@ -212,6 +221,8 @@ GLRenderStats rhiRenderer::GetRenderStats() const
 	stats.cachedObjects += m_solidOverlayPass->cachedMeshes();
 	stats.cachedObjects += m_linePass->cachedMeshes();
 	stats.cachedObjects += m_lineOverlayPass->cachedMeshes();
+	stats.cachedObjects += m_wideLinePass->cachedMeshes();
+	stats.cachedObjects += m_wideLineOverlayPass->cachedMeshes();
 	stats.cachedObjects += m_pointPass->cachedMeshes();
 	stats.cachedObjects += m_pointOverlayPass->cachedMeshes();
 
@@ -234,6 +245,8 @@ void rhiRenderer::clearUnusedCache()
 	m_solidOverlayPass->clearUnusedCache();
 	m_linePass->clearUnusedCache();
 	m_lineOverlayPass->clearUnusedCache();
+	m_wideLinePass->clearUnusedCache();
+	m_wideLineOverlayPass->clearUnusedCache();
 	m_pointPass->clearUnusedCache();
 	m_pointOverlayPass->clearUnusedCache();
 
@@ -255,6 +268,8 @@ void rhiRenderer::deleteCachedMesh(GLMesh* gm)
 	m_solidOverlayPass->removeCachedMesh(gm);
 	m_linePass->removeCachedMesh(gm);
 	m_lineOverlayPass->removeCachedMesh(gm);
+	m_wideLinePass->removeCachedMesh(gm);
+	m_wideLineOverlayPass->removeCachedMesh(gm);
 	m_pointPass->removeCachedMesh(gm);
 	m_pointOverlayPass->removeCachedMesh(gm);
 
@@ -313,7 +328,15 @@ void rhiRenderer::setLightEnabled(unsigned int lightIndex, bool b)
 
 void rhiRenderer::setPointSize(float s)
 {
+	if (s < 1.f) s = 1.f;
+	m_pointSize = s;
 	m_global.setPointSize(s);
+}
+
+void rhiRenderer::setLineWidth(float w)
+{
+	if (w < 1.f) w = 1.f;
+	m_lineWidth = w;
 }
 
 void rhiRenderer::setProjection(double fov, double fnear, double far)
@@ -426,27 +449,48 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 	}
 }
 
+// The point size and line width are specified in logical (device-independent) pixels.
+// These functions convert them to physical pixels, so that points and lines appear
+// the same size on standard and high-DPI (e.g. Retina) displays.
+float rhiRenderer::pixelPointSize() const
+{
+	float s = (float)(m_pointSize * (m_dpr > 0 ? m_dpr : 1.0));
+	return (s < 1.f ? 1.f : s);
+}
+
+float rhiRenderer::pixelLineWidth() const
+{
+	float w = (float)(m_lineWidth * (m_dpr > 0 ? m_dpr : 1.0));
+	return (w < 1.f ? 1.f : w);
+}
+
+rhi::MeshRenderPass* rhiRenderer::linePass(bool wide, bool overlay)
+{
+	if (wide) return (overlay ? m_wideLineOverlayPass.get() : m_wideLinePass.get());
+	return (overlay ? m_lineOverlayPass.get() : m_linePass.get());
+}
+
 void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 {
 	if (mesh.Edges() == 0) return;
 
-	rhi::SubMesh* lineMesh = nullptr;
-	if (m_currentMat.type == GLMaterial::OVERLAY)
-	{
-		rhi::Mesh* rm = m_lineOverlayPass->addGLMesh(mesh, cacheMesh);
-		if (rm) lineMesh = m_lineOverlayPass->getSubMesh(*rm, -1);
-		if (lineMesh) m_lineOverlayPass->addRenderItem(lineMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
-	}
-	else
-	{
-		rhi::Mesh* rm = m_linePass->addGLMesh(mesh, cacheMesh);
-		if (rm) lineMesh = m_linePass->getSubMesh(*rm, -1);
-		if (lineMesh) m_linePass->addRenderItem(lineMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
-	}
+	// Lines wider than one pixel are rendered as screen-aligned quads,
+	// since most graphics backends do not support wide line primitives.
+	const float lineWidth = pixelLineWidth();
+	const bool wide = (lineWidth > 1.f);
+	const bool overlay = (m_currentMat.type == GLMaterial::OVERLAY);
 
+	rhi::MeshRenderPass* pass = linePass(wide, overlay);
+
+	rhi::SubMesh* lineMesh = nullptr;
+	rhi::Mesh* rm = pass->addGLMesh(mesh, cacheMesh);
+	if (rm) lineMesh = pass->getSubMesh(*rm, -1);
 	if (lineMesh)
 	{
-		m_stats.lines += (lineMesh->vertexCount / 2); // 2 vertices per edge
+		rhi::MeshRenderItem* item = pass->addRenderItem(lineMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
+		if (item) item->lineWidth = lineWidth;
+
+		m_stats.lines += (lineMesh->vertexCount / (wide ? 6 : 2)); // vertices per edge
 	}
 }
 
@@ -454,23 +498,23 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cache
 {
 	if (mesh.Edges() == 0) return;
 
-	rhi::SubMesh* lineMesh = nullptr;
-	if (m_currentMat.type == GLMaterial::OVERLAY)
-	{
-		rhi::Mesh* rm = m_lineOverlayPass->addGLMesh(mesh, cacheMesh);
-		if (rm) lineMesh = m_lineOverlayPass->getSubMesh(*rm, partition);
-		if (lineMesh) m_lineOverlayPass->addRenderItem(lineMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
-	}
-	else
-	{
-		rhi::Mesh* rm = m_linePass->addGLMesh(mesh, cacheMesh);
-		if (rm) lineMesh = m_linePass->getSubMesh(*rm, partition);
-		if (lineMesh) m_linePass->addRenderItem(lineMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
-	}
+	// Lines wider than one pixel are rendered as screen-aligned quads,
+	// since most graphics backends do not support wide line primitives.
+	const float lineWidth = pixelLineWidth();
+	const bool wide = (lineWidth > 1.f);
+	const bool overlay = (m_currentMat.type == GLMaterial::OVERLAY);
 
+	rhi::MeshRenderPass* pass = linePass(wide, overlay);
+
+	rhi::SubMesh* lineMesh = nullptr;
+	rhi::Mesh* rm = pass->addGLMesh(mesh, cacheMesh);
+	if (rm) lineMesh = pass->getSubMesh(*rm, partition);
 	if (lineMesh)
 	{
-		m_stats.lines += (lineMesh->vertexCount / 2); // 2 vertices per edge
+		rhi::MeshRenderItem* item = pass->addRenderItem(lineMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
+		if (item) item->lineWidth = lineWidth;
+
+		m_stats.lines += (lineMesh->vertexCount / (wide ? 6 : 2)); // vertices per edge
 	}
 }
 
@@ -478,22 +522,16 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 {
 	if (mesh.Nodes() == 0) return;
 
-	rhi::SubMesh* pointMesh = nullptr;
-	if (m_currentMat.type == GLMaterial::OVERLAY)
-	{
-		rhi::Mesh* rm = m_pointOverlayPass->addGLMesh(mesh, cacheMesh);
-		if (rm) pointMesh = m_pointOverlayPass->getSubMesh(*rm, -1);
-		if (pointMesh) m_pointOverlayPass->addRenderItem(pointMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
-	}
-	else
-	{
-		rhi::Mesh* rm = m_pointPass->addGLMesh(mesh, cacheMesh);
-		if (rm) pointMesh = m_pointPass->getSubMesh(*rm, -1);
-		if (pointMesh) m_pointPass->addRenderItem(pointMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
-	}
+	PointRenderPass* pass = (m_currentMat.type == GLMaterial::OVERLAY ? m_pointOverlayPass.get() : m_pointPass.get());
 
+	rhi::SubMesh* pointMesh = nullptr;
+	rhi::Mesh* rm = pass->addGLMesh(mesh, cacheMesh);
+	if (rm) pointMesh = pass->getSubMesh(*rm, -1);
 	if (pointMesh)
 	{
+		rhi::MeshRenderItem* item = pass->addRenderItem(pointMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
+		if (item) item->pointSize = pixelPointSize();
+
 		m_stats.points += pointMesh->vertexCount;
 	}
 }
@@ -615,12 +653,18 @@ void rhiRenderer::start()
 	m_solidOverlayPass->reset();
 	m_linePass->reset();
 	m_lineOverlayPass->reset();
+	m_wideLinePass->reset();
+	m_wideLineOverlayPass->reset();
 	m_pointPass->reset();
 	m_pointOverlayPass->reset();
 	for (auto& it : m_volumeRenderPass) it.second->reset();
 
 	// we also disable all volume renderers
 	for (auto& it : m_volumeRenderPass) it.second->enable(false);
+
+	// reset point size and line width to defaults
+	m_pointSize = 1.f;
+	m_lineWidth = 1.f;
 
 	// reset matrices
 	resetTransform();
@@ -705,6 +749,12 @@ void rhiRenderer::finish()
 	m_linePass->update(resourceUpdates);
 	m_lineOverlayPass->update(resourceUpdates);
 
+	// update wide line mesh data
+	m_wideLinePass->setViewportSize(m_viewport[2], m_viewport[3]);
+	m_wideLinePass->update(resourceUpdates);
+	m_wideLineOverlayPass->setViewportSize(m_viewport[2], m_viewport[3]);
+	m_wideLineOverlayPass->update(resourceUpdates);
+
 	// update point mesh data
 	m_pointPass->update(resourceUpdates);
 
@@ -753,6 +803,7 @@ void rhiRenderer::finish()
 
 		// render line meshes
 		m_linePass->draw(cb);
+		m_wideLinePass->draw(cb);
 
 		// render point meshes
 		m_pointPass->draw(cb);
@@ -762,6 +813,7 @@ void rhiRenderer::finish()
 
 		// render overlay line meshes
 		m_lineOverlayPass->draw(cb);
+		m_wideLineOverlayPass->draw(cb);
 
 		// render overlay point meshes
 		m_pointOverlayPass->draw(cb);

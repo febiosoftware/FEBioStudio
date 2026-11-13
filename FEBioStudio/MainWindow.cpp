@@ -2093,8 +2093,8 @@ void CMainWindow::readSettings()
 		vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
 
 		// display
-		vs.m_node_size = settings.value("nodeSize", vs.m_node_size).toInt();
-		vs.m_line_size = settings.value("lineWidth", vs.m_line_size).toInt();
+		vs.m_node_size = settings.value("nodeSize", vs.m_node_size).toFloat();
+		vs.m_line_size = settings.value("lineWidth", vs.m_line_size).toFloat();
 		vs.m_meshColor = GLColor(settings.value("meshColor", vs.m_meshColor.to_uint()).toUInt());
 		// alpha component used to not be stored so set it to default if zero
 		if (vs.m_meshColor.a == 0) vs.m_meshColor.a = 64;

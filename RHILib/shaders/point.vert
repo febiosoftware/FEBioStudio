@@ -27,6 +27,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     vec4 col;
     int useClipping;
     int useVertexColor;
+    float pointSize;
 } mesh;
 
 void main()
@@ -36,5 +37,5 @@ void main()
     v_pos = (mesh.mv*vec4(pos,1)).xyz;
     v_col = col;
     gl_Position = r;
-    gl_PointSize = glob.pointSize;
+    gl_PointSize = mesh.pointSize;
 }

@@ -108,6 +108,27 @@ public:
 	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D);
 };
 
+// Shader for rendering lines that are wider than one pixel. Each line segment
+// is expanded into a screen-aligned quad (two triangles) in the vertex shader.
+class WideLineShader : public rhi::Shader
+{
+public:
+	struct Vertex {
+		vec3f a; // segment start point
+		vec3f b; // segment end point
+		vec3f t; // texture coordinate (of this vertex' endpoint)
+		float c[4] = { 0.f }; // color (of this vertex' endpoint)
+		float e[2] = { 0.f }; // e[0] = endpoint (0 = a, 1 = b), e[1] = side (-1 or +1)
+	};
+
+public:
+	WideLineShader(QRhi* rhi);
+
+	QRhiVertexInputLayout meshLayout() override;
+
+	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D, const float* viewportSize);
+};
+
 class SolidShader : public rhi::Shader
 {
 public:

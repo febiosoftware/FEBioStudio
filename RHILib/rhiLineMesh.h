@@ -90,4 +90,72 @@ namespace rhi {
 		LineMesh(const LineMesh&) = delete;
 		void operator = (const LineMesh&) = delete;
 	};
+
+	// Mesh for rendering wide lines. Each edge is converted to two triangles
+	// (6 vertices). Every vertex stores both end points of the edge, so that
+	// the vertex shader can extrude the quad in screen space.
+	template <typename Vertex>
+	class WideLineMesh : public Mesh
+	{
+	public:
+		WideLineMesh(QRhi* rhi) : rhi::Mesh(rhi) {}
+
+		bool CreateFromGLMesh(const GLMesh* gmsh) override
+		{
+			submeshes.clear();
+
+			if (gmsh == nullptr) return false;
+
+			const int NE = gmsh->Edges();
+			const int NV = 6 * NE;
+			submeshes.emplace_back(new SubMesh(this, 0, NV));
+
+			std::vector<Vertex> vertexData;
+			vertexData.resize(NV);
+			Vertex* v = vertexData.data();
+
+			if (gmsh->EdgePartitions() == 0)
+			{
+				for (int i = 0; i < NE; ++i, v += 6) addEdge(gmsh->Edge(i), v);
+			}
+			else
+			{
+				unsigned int vertexCount = 0;
+				for (int n = 0; n < gmsh->EdgePartitions(); ++n)
+				{
+					const GLMesh::EDGE_PARTITION& edge = gmsh->EdgePartition(n);
+					for (int i = 0; i < edge.ne; ++i, v += 6) addEdge(gmsh->Edge(i + edge.n0), v);
+					submeshes.emplace_back(new SubMesh(this, vertexCount, (unsigned int)edge.ne * 6));
+					vertexCount += (unsigned int)edge.ne * 6;
+				}
+			}
+			create(NV, sizeof(Vertex), vertexData.data());
+			return true;
+		}
+
+	private:
+		static void addEdge(const GLMesh::EDGE& e, Vertex* v)
+		{
+			// (endpoint, side) for the two triangles of the quad
+			const float q[6][2] = {
+				{0.f, -1.f}, {1.f, -1.f}, {1.f, 1.f},
+				{0.f, -1.f}, {1.f,  1.f}, {0.f, 1.f}
+			};
+			for (int k = 0; k < 6; ++k)
+			{
+				int j = (q[k][0] == 0.f ? 0 : 1);
+				Vertex& vk = v[k];
+				vk.a = e.vr[0];
+				vk.b = e.vr[1];
+				vk.t = e.vt[j];
+				e.c[j].toFloat(vk.c);
+				vk.e[0] = q[k][0];
+				vk.e[1] = q[k][1];
+			}
+		}
+
+	private:
+		WideLineMesh(const WideLineMesh&) = delete;
+		void operator = (const WideLineMesh&) = delete;
+	};
 }
