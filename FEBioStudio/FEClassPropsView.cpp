@@ -1847,15 +1847,21 @@ void FEClassPropsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 			Param* p = item->parameter();
 			if (p && (p->GetParamType() == Param_BOOL))
 			{
-				QStyleOptionButton cbOpt;
-				cbOpt.rect = option.rect;
-				cbOpt.state = option.state;
-				bool b = p->GetBoolValue();
-				if (b) cbOpt.state |= QStyle::State_On;
-				else cbOpt.state |= QStyle::State_Off;
+				// Draw the checkbox as an item-view check indicator, the same way Qt draws
+				// checkable items. This passes the view widget on to the style, which the
+				// macOS style needs in order to render the native checkbox (drawing a bare
+				// CE_CheckBox without a widget left the checkbox invisible on macOS, so it
+				// only showed up when the row was selected and the QCheckBox editor appeared).
+				QStyleOptionViewItem opt(option);
+				initStyleOption(&opt, index);
+				opt.features |= QStyleOptionViewItem::HasCheckIndicator;
+				opt.checkState = (p->GetBoolValue() ? Qt::Checked : Qt::Unchecked);
+				opt.text.clear();
+				opt.icon = QIcon();
 
-				QApplication::style()->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
-				QApplication::style()->drawControl(QStyle::CE_CheckBox, &cbOpt, painter);
+				const QWidget* widget = option.widget;
+				QStyle* style = (widget ? widget->style() : QApplication::style());
+				style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, widget);
 				return;
 			}
 		}
