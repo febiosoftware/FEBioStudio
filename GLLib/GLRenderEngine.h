@@ -117,6 +117,13 @@ public:
 	virtual float pointSize() { return 0.f; }
 	virtual float lineWidth() { return 0.f; }
 
+	// Wide lines and large points are biased toward the camera so that they are not
+	// partially hidden by the surface they lie on. This should be turned off for lines
+	// that are not drawn on a surface but may intersect it (e.g. the background grid),
+	// since there the bias makes them bleed through nearby geometry.
+	virtual void setDepthBiasEnabled(bool b) {}
+	virtual bool depthBiasEnabled() { return true; }
+
 	virtual FrontFace frontFace() { return FrontFace::COUNTER_CLOCKWISE; }
 	virtual void setFrontFace(FrontFace f) {}
 

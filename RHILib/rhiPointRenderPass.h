@@ -37,7 +37,11 @@ public:
 
 	rhi::MeshShaderResource* createShaderResource() override;
 
+	// set the size of the viewport (in pixels). Needed to compute the depth bias of large points.
+	void setViewportSize(float w, float h) { m_vp[0] = w; m_vp[1] = h; }
+
 private:
 	std::unique_ptr<rhi::MeshShaderResource> m_sr;
 	QRhiBuffer* m_globalBuf = nullptr;
+	float m_vp[2] = { 1.f, 1.f };
 };

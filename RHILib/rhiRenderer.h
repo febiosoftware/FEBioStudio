@@ -124,6 +124,9 @@ public:
 	float pointSize() override { return m_pointSize; }
 	float lineWidth() override { return m_lineWidth; }
 
+	void setDepthBiasEnabled(bool b) override { m_depthBias = b; }
+	bool depthBiasEnabled() override { return m_depthBias; }
+
 	void setClearColor(const GLColor& c) override;
 
 	void setBackgroundGradient(const GLColor& c1, const GLColor& c2, GradientType grad) override;
@@ -242,5 +245,6 @@ private:
 	bool useEnvMap = false;
 	float m_pointSize = 1.f;
 	float m_lineWidth = 1.f;
+	bool m_depthBias = true;
 	FrontFace m_frontFace = FrontFace::COUNTER_CLOCKWISE;
 };

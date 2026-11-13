@@ -74,6 +74,11 @@ void GLGrid::Render(GLRenderEngine& re, const GLCamera& cam)
 {
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
 
+	// The grid is not drawn on a surface, but it can intersect the model. Don't bias
+	// wide grid lines toward the camera, or they bleed through nearby geometry.
+	bool depthBias = re.depthBiasEnabled();
+	re.setDepthBiasEnabled(false);
+
 	// store modelview matrix
 	re.pushTransform();
 
@@ -139,4 +144,6 @@ void GLGrid::Render(GLRenderEngine& re, const GLCamera& cam)
 
 	// restore modelview matrix
 	re.popTransform();
+
+	re.setDepthBiasEnabled(depthBias);
 }

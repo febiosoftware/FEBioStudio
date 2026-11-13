@@ -110,12 +110,13 @@ int FELSDYNAPlotImport::ReadData(void* pd, size_t nsize, size_t ncnt, bool bdump
 		Close();
 		m_ifile++;
 
-		char sznewfile[256] = {0};
-		string fileName = GetFileName();
-		sprintf(sznewfile, "%s%02d", fileName.c_str(), m_ifile);
+		// (use std::string so that long file paths do not overflow a buffer)
+		char sznum[16] = {0};
+		snprintf(sznum, sizeof(sznum), "%02d", m_ifile);
+		string newFile = GetFileName() + sznum;
 
 		// try to open it
-		m_fp = fopen(sznewfile, "rb");
+		m_fp = fopen(newFile.c_str(), "rb");
 		if (m_fp == 0) return -1;
 
 		// try to read the rest of the data

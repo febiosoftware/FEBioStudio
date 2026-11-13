@@ -24,9 +24,11 @@ layout(std140, binding = 0) uniform GlobalBlock {
 layout(std140, binding = 1) uniform MeshBlock {
     mat4 mv;
     vec4 col;
+    vec2 viewport;  // viewport size in pixels
     int useClipping;
     int useVertexColor;
     float pointSize;
+    int useDepthBias;
 } mesh;
 
 void main()

@@ -56,11 +56,12 @@ enum VTK_CELLTYPE {
     VTK_QUADRATIC_PYRAMID =      27
 };
 
-void Space2_(char* szname)
+// replace spaces with underscores
+std::string Space2_(const std::string& name)
 {
-	int n = (int)strlen(szname);
-	for (int i = 0; i<n; ++i)
-		if (szname[i] == ' ') szname[i] = '_';
+	std::string s(name);
+	for (char& c : s) if (c == ' ') c = '_';
+	return s;
 }
 
 
@@ -165,29 +166,28 @@ bool FEVTKExport::Save(FEPostModel& fem, const char* szfile)
 
 	if (m_bwriteAllStates)
 	{
-		char szroot[256] = { 0 }, szname[256] = { 0 }, szext[16] = { 0 };
-		const char* sz;
-		sz = strrchr(szfile, '.');
-		if (sz == 0) {
-			strcpy(szroot, szfile);
-			strcat(szroot,".");
-			strcpy(szext,".vtk");
+		// Split the file name into a root (including the '.') and an extension.
+		// std::string is used so that long file paths are not truncated.
+		// Only a '.' in the file name itself counts, not one in a directory name.
+		std::string sfile(szfile);
+		size_t slash = sfile.find_last_of("/\\");
+		size_t dot = sfile.rfind('.');
+		if ((dot != std::string::npos) && (slash != std::string::npos) && (dot < slash)) dot = std::string::npos;
+
+		std::string sroot, sext;
+		if (dot == std::string::npos)
+		{
+			sroot = sfile + ".";
+			sext = ".vtk";
 		}
-		else {
-			size_t l = sz - szfile + 1;
-			strncpy(szroot, szfile, l);
-			szroot[l] = 0;
-			strcpy(szext, sz);
+		else
+		{
+			sroot = sfile.substr(0, dot + 1);
+			sext = sfile.substr(dot);
 		}
 
 		// strip the path of the root
-		const char* szbase = strrchr(szroot, '/');
-		if (szbase == nullptr)
-		{
-			szbase = strrchr(szroot, '\\');
-			if (szbase == nullptr) szbase = szroot; else szbase++;
-		}
-		else szbase++;
+		std::string sbase = (slash == std::string::npos ? sroot : sroot.substr(slash + 1));
 
 		vector<pair<string, float> > series;
     
@@ -195,20 +195,21 @@ bool FEVTKExport::Save(FEPostModel& fem, const char* szfile)
 		int l0 = (int) log10((double)ns) + 1;
 		for (int is=0; is<ns; ++is) 
 		{
-			if (sprintf(szname, "%st%0*d%s", szroot, l0,is,szext) < 0) return false;
+			char sznum[32] = { 0 };
+			snprintf(sznum, sizeof(sznum), "t%0*d", l0, is);
 
 			FEState* ps = fem.GetState(is);
 
-			if (WriteState(szname, ps) == false) return false;
+			std::string sname = sroot + sznum + sext;
+			if (WriteState(sname.c_str(), ps) == false) return false;
 
-			if (sprintf(szname, "%st%0*d%s", szbase, l0, is, szext) < 0) return false;
-			series.push_back(pair<string, float>(szname, ps->m_time));
+			series.push_back(pair<string, float>(sbase + sznum + sext, ps->m_time));
 		}
 
 		if (m_bwriteSeriesFile)
 		{
-			sprintf(szname, "%svtk.series", szroot);
-			WriteVTKSeriesFile(szname, series);
+			std::string sseries = sroot + "vtk.series";
+			WriteVTKSeriesFile(sseries.c_str(), series);
 		}
 
 		return true;
@@ -363,9 +364,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 		if (data.DataClass() == NODE_DATA)
 		{
 			FEMeshData& meshData = ps->m_Data[n];
-			char szname[256];
-			strcpy(szname, data.GetName().c_str());
-			Space2_(szname);
+			std::string szname = Space2_(data.GetName());
 
 			// value array
 			vector<float> val;
@@ -374,19 +373,19 @@ void FEVTKExport::WritePointData(FEState* ps)
 				// write the value array
 				int ntype = meshData.GetType();
 				if (ntype == DATA_SCALAR) {
-					fprintf(m_fp, "%s %s %s\n", "SCALARS", szname, "float");
+					fprintf(m_fp, "%s %s %s\n", "SCALARS", szname.c_str(), "float");
 					fprintf(m_fp, "%s %s\n", "LOOKUP_TABLE", "default");
 					for (int i = 0; i<val.size(); ++i) 
 						if (tag[i] != 0)
 							fprintf(m_fp, "%g\n", val[i]);
 				}
 				else if (ntype == DATA_VEC3) {
-					fprintf(m_fp, "%s %s %s\n", "VECTORS", szname, "float");
+					fprintf(m_fp, "%s %s %s\n", "VECTORS", szname.c_str(), "float");
 					for (int i = 0, n = 0; i<val.size(); i += 3, ++n) 
 						if (tag[n] != 0) fprintf(m_fp, "%g %g %g\n", val[i], val[i + 1], val[i + 2]);
 				}
 				else if (ntype == DATA_MAT3S) {
-					fprintf(m_fp, "%s %s %s\n", "TENSORS", szname, "float");
+					fprintf(m_fp, "%s %s %s\n", "TENSORS", szname.c_str(), "float");
 					for (int i = 0, n = 0; i<val.size(); i += 6, n++)
 						if (tag[n] != 0)
 							fprintf(m_fp, "%g %g %g\n%g %g %g\n%g %g %g\n\n",
@@ -395,7 +394,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 								val[i + 5], val[i + 4], val[i + 2]);
 				}
 				else if (ntype == DATA_MAT3SD) {
-					fprintf(m_fp, "%s %s %s\n", "TENSORS", szname, "float");
+					fprintf(m_fp, "%s %s %s\n", "TENSORS", szname.c_str(), "float");
 					for (int i = 0, n = 0; i<val.size(); i += 3, ++n)
 						if (tag[n] != 0)
 							fprintf(m_fp, "%g %g %g\n%g %g %g\n%g %g %g\n\n",
@@ -404,15 +403,14 @@ void FEVTKExport::WritePointData(FEState* ps)
 								0.f, 0.f, val[i + 2]);
 				}
 				else if (ntype == DATA_ARRAY) {
-					fprintf(m_fp, "FIELD %s %d\n", szname, data.GetArraySize());
+					fprintf(m_fp, "FIELD %s %d\n", szname.c_str(), data.GetArraySize());
 					std::vector<string> arrayNames = data.GetArrayNames();
 					for (int j = 0; j < data.GetArraySize(); ++j)
 					{
 						string name = arrayNames[j];
-						strcpy(szname, name.c_str());
-						Space2_(szname);
+						szname = Space2_(name);
 						int nsize = (int)val.size();
-						fprintf(m_fp, "%s %d %d float\n", szname, 1, nsize);
+						fprintf(m_fp, "%s %d %d float\n", szname.c_str(), 1, nsize);
 						for (int i = 0; i < val.size(); ++i)
 							if (tag[i] != 0)
 							{
@@ -431,9 +429,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 			DATA_FORMAT dfmt = meshData.GetFormat();
 			if ((dfmt == DATA_NODE) || (dfmt == DATA_MULT)) {
 				ModelDataField& data = *(*pd);
-				char szname[256];
-				strcpy(szname, data.GetName().c_str());
-				Space2_(szname);
+				std::string szname = Space2_(data.GetName());
 
 				// value array
 				vector<float> val;
@@ -442,20 +438,20 @@ void FEVTKExport::WritePointData(FEState* ps)
 					// write the value array
 					int ntype = meshData.GetType();
 					if (ntype == DATA_SCALAR) {
-						fprintf(m_fp, "SCALARS %s float\n", szname);
+						fprintf(m_fp, "SCALARS %s float\n", szname.c_str());
 						fprintf(m_fp, "LOOKUP_TABLE default\n");
 						for (int i = 0; i<val.size(); ++i) 
 							if (tag[i] != 0)
 								fprintf(m_fp, "%g\n", val[i]);
 					}
 					else if (ntype == DATA_VEC3) {
-						fprintf(m_fp, "VECTORS %s float\n", szname);
+						fprintf(m_fp, "VECTORS %s float\n", szname.c_str());
 						for (int i = 0, n = 0; i<val.size(); i += 3, ++n)
 							if (tag[n] != 0)
 								fprintf(m_fp, "%g %g %g\n", val[i], val[i + 1], val[i + 2]);
 					}
 					else if (ntype == DATA_MAT3S) {
-						fprintf(m_fp, "TENSORS %s float\n", szname);
+						fprintf(m_fp, "TENSORS %s float\n", szname.c_str());
 						for (int i = 0, n = 0; i<val.size(); i += 6, ++n)
 							if (tag[n] != 0)
 								fprintf(m_fp, "%g %g %g\n%g %g %g\n%g %g %g\n\n",
@@ -464,7 +460,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 									val[i + 5], val[i + 4], val[i + 2]);
 					}
 					else if (ntype == DATA_MAT3SD) {
-						fprintf(m_fp, "TENSORS %s float\n", szname);
+						fprintf(m_fp, "TENSORS %s float\n", szname.c_str());
 						for (int i = 0, n = 0; i<val.size(); i += 3, ++n)
 							if (tag[n] != 0)
 								fprintf(m_fp, "%g %g %g\n%g %g %g\n%g %g %g\n\n",
@@ -510,9 +506,7 @@ void FEVTKExport::WriteCellData(FEState* ps)
             DATA_FORMAT dfmt = meshData.GetFormat();
             if (dfmt == DATA_ITEM) {
                 ModelDataField& data = *(*pd);
-                char szname[256];
-				strcpy(szname, data.GetName().c_str());
-                Space2_(szname);
+                std::string szname = Space2_(data.GetName());
                         
                 // value array
                 vector<float> val;
@@ -522,18 +516,18 @@ void FEVTKExport::WriteCellData(FEState* ps)
 					if (val.empty() == false) {
 						int ntype = meshData.GetType();
 						if (ntype == DATA_SCALAR) {
-							fprintf(m_fp, "%s %s %s\n" ,"SCALARS",szname,"float");
+							fprintf(m_fp, "%s %s %s\n" ,"SCALARS",szname.c_str(),"float");
 							fprintf(m_fp, "%s %s\n","LOOKUP_TABLE","default");
 							for (int i=0; i<val.size(); ++i) 
 								if (tag[i] != 0) fprintf(m_fp,"%g\n",val[i]);
 						}
 						else if (ntype == DATA_VEC3) {
-							fprintf(m_fp, "%s %s %s\n" ,"VECTORS",szname,"float");
+							fprintf(m_fp, "%s %s %s\n" ,"VECTORS",szname.c_str(),"float");
 							for (int i=0, n = 0; i<val.size(); i+=3, n++)
 								if (tag[n] != 0) fprintf(m_fp,"%g %g %g\n",val[i],val[i+1],val[i+2]);
 						}
 						else if (ntype == DATA_MAT3S) {
-							fprintf(m_fp, "%s %s %s\n" ,"TENSORS",szname,"float");
+							fprintf(m_fp, "%s %s %s\n" ,"TENSORS",szname.c_str(),"float");
 							for (int i=0, n = 0; i<val.size(); i+=6, n++)
 								if (tag[n] != 0)
 									fprintf(m_fp,"%g %g %g\n%g %g %g\n%g %g %g\n\n",
@@ -542,7 +536,7 @@ void FEVTKExport::WriteCellData(FEState* ps)
 											val[i+5],val[i+4],val[i+2]);
 						}
 						else if (ntype == DATA_MAT3SD) {
-							fprintf(m_fp, "%s %s %s\n" ,"TENSORS",szname,"float");
+							fprintf(m_fp, "%s %s %s\n" ,"TENSORS",szname.c_str(),"float");
 							for (int i=0, n = 0; i<val.size(); i+=3, ++n)
 								if (tag[n] != 0)
 									fprintf(m_fp,"%g %g %g\n%g %g %g\n%g %g %g\n\n",
@@ -552,14 +546,13 @@ void FEVTKExport::WriteCellData(FEState* ps)
 						}
 						else if (ntype == DATA_ARRAY)
 						{
-							fprintf(m_fp, "FIELD %s %d\n", szname, data.GetArraySize());
+							fprintf(m_fp, "FIELD %s %d\n", szname.c_str(), data.GetArraySize());
 							std::vector<string> arrayNames = data.GetArrayNames();
 							for (int j = 0; j < data.GetArraySize(); ++j)
 							{
 								string name = arrayNames[j];
-								strcpy(szname, name.c_str());
-								Space2_(szname);
-								fprintf(m_fp, "%s %d %d float\n", szname, 1, NE);
+								szname = Space2_(name);
+								fprintf(m_fp, "%s %d %d float\n", szname.c_str(), 1, NE);
 								for (int i = 0; i < NE; ++i)
 									if (tag[i] != 0) {
 										float f = val[j * NE + i];
@@ -569,14 +562,13 @@ void FEVTKExport::WriteCellData(FEState* ps)
 						}
 						else if (ntype == DATA_ARRAY_VEC3)
 						{
-							fprintf(m_fp, "FIELD %s %d\n", szname, data.GetArraySize());
+							fprintf(m_fp, "FIELD %s %d\n", szname.c_str(), data.GetArraySize());
 							std::vector<string> arrayNames = data.GetArrayNames();
 							for (int j = 0; j < data.GetArraySize(); ++j)
 							{
 								string name = arrayNames[j];
-								strcpy(szname, name.c_str());
-								Space2_(szname);
-								fprintf(m_fp, "%s %d %d float\n", szname, 3, NE);
+								szname = Space2_(name);
+								fprintf(m_fp, "%s %d %d float\n", szname.c_str(), 3, NE);
 								for (int i = 0; i < NE; ++i)
 									if (tag[i] != 0)
 									{
