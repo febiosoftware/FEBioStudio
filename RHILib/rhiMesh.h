@@ -139,6 +139,7 @@ namespace rhi {
 		bool invertFaces = false;
 		float pointSize = 1.f; // point size (in pixels) used by point render passes
 		float lineWidth = 1.f; // line width (in pixels) used by line render passes
+		bool depthBias = true; // bias wide lines and large points toward the camera
 	};
 
 } // rhi

@@ -488,7 +488,7 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 	if (lineMesh)
 	{
 		rhi::MeshRenderItem* item = pass->addRenderItem(lineMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
-		if (item) item->lineWidth = lineWidth;
+		if (item) { item->lineWidth = lineWidth; item->depthBias = m_depthBias; }
 
 		m_stats.lines += (lineMesh->vertexCount / (wide ? 6 : 2)); // vertices per edge
 	}
@@ -512,7 +512,7 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, int partition, bool cache
 	if (lineMesh)
 	{
 		rhi::MeshRenderItem* item = pass->addRenderItem(lineMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
-		if (item) item->lineWidth = lineWidth;
+		if (item) { item->lineWidth = lineWidth; item->depthBias = m_depthBias; }
 
 		m_stats.lines += (lineMesh->vertexCount / (wide ? 6 : 2)); // vertices per edge
 	}
@@ -530,7 +530,7 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 	if (pointMesh)
 	{
 		rhi::MeshRenderItem* item = pass->addRenderItem(pointMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
-		if (item) item->pointSize = pixelPointSize();
+		if (item) { item->pointSize = pixelPointSize(); item->depthBias = m_depthBias; }
 
 		m_stats.points += pointMesh->vertexCount;
 	}
@@ -665,6 +665,7 @@ void rhiRenderer::start()
 	// reset point size and line width to defaults
 	m_pointSize = 1.f;
 	m_lineWidth = 1.f;
+	m_depthBias = true;
 
 	// reset matrices
 	resetTransform();
@@ -756,9 +757,11 @@ void rhiRenderer::finish()
 	m_wideLineOverlayPass->update(resourceUpdates);
 
 	// update point mesh data
+	m_pointPass->setViewportSize(m_viewport[2], m_viewport[3]);
 	m_pointPass->update(resourceUpdates);
 
 	// update overlay point mesh data
+	m_pointOverlayPass->setViewportSize(m_viewport[2], m_viewport[3]);
 	m_pointOverlayPass->update(resourceUpdates);
 
 	// update fps indicator

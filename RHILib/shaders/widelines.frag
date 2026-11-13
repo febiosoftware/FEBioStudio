@@ -30,6 +30,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     int useClipping;
     int useVertexColor;
     int useTexture;
+    int useDepthBias;
 } mesh;
 
 layout(binding = 2) uniform sampler2D smp;

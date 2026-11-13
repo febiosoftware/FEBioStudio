@@ -37,7 +37,7 @@ void PointRenderPass::create(QRhiSwapChain* sc, QRhiBuffer* globalBuf)
 
 	PointShader pointShader(m_rhi);
 
-	m_sr.reset(pointShader.createShaderResource(m_rhi, m_globalBuf));
+	m_sr.reset(pointShader.createShaderResource(m_rhi, m_globalBuf, m_vp));
 
 	m_pl.reset(m_rhi->newGraphicsPipeline());
 	m_pl->setRenderPassDescriptor(rp);
@@ -70,5 +70,5 @@ rhi::Mesh* PointRenderPass::newMesh(const GLMesh* mesh)
 
 rhi::MeshShaderResource* PointRenderPass::createShaderResource()
 {
-	return PointShader::createShaderResource(m_rhi, m_globalBuf);
+	return PointShader::createShaderResource(m_rhi, m_globalBuf, m_vp);
 }

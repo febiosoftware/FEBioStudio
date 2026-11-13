@@ -40,7 +40,41 @@ layout(std140, binding = 1) uniform MeshBlock {
     int useClipping;
     int useVertexColor;
     int useTexture;
+    int useDepthBias;
 } mesh;
+
+// Wide lines are extruded sideways in screen space, but every pixel of the quad keeps
+// the depth of the line's center. Where the surface under the line is tilted relative
+// to the screen, one side of the quad then ends up behind the surface and gets hidden
+// (the line looks thinner or broken). To prevent this, each end point is moved toward
+// the camera along its line of sight by an eye-space distance equivalent to a few
+// half-widths. This does not change where the line appears on screen; it only biases
+// its depth. A factor of 3 covers surfaces tilted up to about 70 degrees.
+const float DEPTH_PULL = 3.0;
+
+vec4 pullTowardCamera(vec4 e, float pixels)
+{
+    vec4 c = glob.projectionMatrix * e;
+    float w = max(c.w, 1e-6);
+
+    // pixels per eye-space unit at this depth
+    float pxPerUnit = abs(glob.projectionMatrix[0][0]) * 0.5 * mesh.viewport.x / w;
+    float s = pixels / max(pxPerUnit, 1e-12);
+
+    bool isOrtho = (abs(glob.projectionMatrix[3][3]) > 0.5);
+    if (isOrtho)
+    {
+        // camera looks down the negative z-axis
+        e.z += s;
+    }
+    else
+    {
+        // move along the ray through the eye point (camera is at the origin)
+        float L = length(e.xyz);
+        if (L > 1e-12) e.xyz *= max(1.0 - s / L, 0.5);
+    }
+    return e;
+}
 
 void main()
 {
@@ -73,7 +107,12 @@ void main()
     // half the width as well (square caps) so that connected segments join without gaps.
     vec2 offset = nrm * (corner.y * hw) + dir * (isA ? -hw : hw);
 
-    vec4 c = (isA ? ca : cb);
+    // bias the depth of this end point toward the camera (see DEPTH_PULL above)
+    vec4 e = (isA ? ea : eb);
+    if (mesh.useDepthBias > 0) e = pullTowardCamera(e, DEPTH_PULL * hw);
+    vec4 c = glob.projectionMatrix * e;
+    c.z -= glob.zOffset;
+
     c.xy += offset * (2.0 / mesh.viewport) * c.w;
 
     v_pos = (isA ? ea.xyz : eb.xyz);
