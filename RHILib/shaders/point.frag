@@ -15,6 +15,7 @@ layout(std140, binding = 0) uniform GlobalBlock {
     vec4 diffuse;
     vec4 specColor;
     vec4 clipPlane;
+    vec2 viewport;  // viewport size in pixels
     int lightEnabled;
     float pointSize;
     float zOffset;
@@ -24,7 +25,6 @@ layout(std140, binding = 0) uniform GlobalBlock {
 layout(std140, binding = 1) uniform MeshBlock {
     mat4 mv;
     vec4 col;
-    vec2 viewport;  // viewport size in pixels
     int useClipping;
     int useVertexColor;
     float pointSize;

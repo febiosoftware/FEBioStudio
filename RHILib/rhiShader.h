@@ -81,7 +81,7 @@ public:
 
 	QRhiVertexInputLayout meshLayout() override;
 
-	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, const float* viewportSize);
+	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf);
 };
 
 class LineShader : public rhi::Shader
@@ -126,7 +126,7 @@ public:
 
 	QRhiVertexInputLayout meshLayout() override;
 
-	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D, const float* viewportSize);
+	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D);
 };
 
 class SolidShader : public rhi::Shader
