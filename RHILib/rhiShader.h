@@ -67,12 +67,14 @@ public:
 	struct Vertex {
 		vec3f r; // coordinate
 		vec3f c; // color
+		vec2f corner;
 		void operator = (const GLMesh::NODE& nd) 
 		{ 
 			r = nd.r; 
 			float f[4] = { 0 };
 			nd.c.toFloat(f);
 			c = vec3f(f[0], f[1], f[2]);
+			corner = vec2f(0, 0); // Set by PointMesh when expanding the node.
 		}
 	};
 
@@ -83,6 +85,7 @@ public:
 
 	static rhi::MeshShaderResource* createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf);
 };
+
 
 class LineShader : public rhi::Shader
 {

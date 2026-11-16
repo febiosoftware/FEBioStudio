@@ -539,7 +539,7 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 		rhi::MeshRenderItem* item = pass->addRenderItem(pointMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
 		if (item) { item->pointSize = pixelPointSize(); item->depthBias = m_depthBias; }
 
-		m_stats.points += pointMesh->vertexCount;
+		m_stats.points += pointMesh->vertexCount / 6; // six vertices per point sprite
 	}
 }
 

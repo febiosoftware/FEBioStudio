@@ -94,11 +94,12 @@ QRhiVertexInputLayout PointShader::meshLayout()
 {
 	QRhiVertexInputLayout meshLayout;
 	meshLayout.setBindings({
-		{ 6 * sizeof(float) }
+		{ 8 * sizeof(float) }
 		});
 	meshLayout.setAttributes({
 		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
-		{ 0, 1, QRhiVertexInputAttribute::Float3, 3*sizeof(float)} // color
+		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // color
+		{ 0, 2, QRhiVertexInputAttribute::Float2, 6 * sizeof(float) } // corner
 		});
 	return meshLayout;
 }
@@ -187,7 +188,7 @@ class WideLineShaderResource : public rhi::MeshShaderResource
 public:
 	// NOTE: the order of the members is chosen to satisfy std140 alignment rules,
 	// since rhi::UniformBlock packs members tightly.
-	enum { MV, COL, VIEWPORT, LWIDTH, CLIP, VCOL, TEX, DBIAS };
+	enum { MV, COL, LWIDTH, CLIP, VCOL, TEX, DBIAS };
 
 public:
 	WideLineShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D) : rhi::MeshShaderResource(rhi)

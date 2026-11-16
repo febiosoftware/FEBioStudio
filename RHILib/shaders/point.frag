@@ -3,6 +3,7 @@
 // input
 layout(location = 0) in vec3 v_pos;
 layout(location = 1) in vec3 v_col;
+layout(location = 2) in vec2 v_corner;
 
 // output
 layout(location = 0) out vec4 fragColor;
@@ -44,5 +45,11 @@ void main()
     if (mesh.useVertexColor > 0)
         col = vec4(v_col, 1.f);
 
-    fragColor = col;
+    float d = length(v_corner) - 1.0;
+    float width = fwidth(d);
+    float alpha = 1.0 - smoothstep(-width, width, d);
+    if (alpha <= 0.0)
+        discard;
+
+    fragColor = vec4(col.rgb, col.a * alpha);
 }

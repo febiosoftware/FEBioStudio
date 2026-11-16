@@ -48,7 +48,7 @@ void PointRenderPass::create(QRhiSwapChain* sc, QRhiBuffer* globalBuf)
 	m_pl->setTargetBlends({ rhi::defaultBlendState() });
 
 	m_pl->setShaderStages(pointShader.begin(), pointShader.end());
-	m_pl->setTopology(QRhiGraphicsPipeline::Points);
+	m_pl->setTopology(QRhiGraphicsPipeline::Triangles);
 
 	m_pl->setVertexInputLayout(pointShader.meshLayout());
 	m_pl->setShaderResourceBindings(m_sr->get());
