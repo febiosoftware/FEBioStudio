@@ -38,6 +38,7 @@ void GlobalUniformBlock::create(QRhi* rhi)
 		{ rhi::UniformBlock::VEC4, "diffuse"},
 		{ rhi::UniformBlock::VEC4, "specColor"},
 		{ rhi::UniformBlock::VEC4, "clipPlane"},
+		{ rhi::UniformBlock::VEC2, "viewport"},
 		{ rhi::UniformBlock::INT , "lightEnabled"},
 		{ rhi::UniformBlock::FLOAT, "pointSize"},
 		{ rhi::UniformBlock::FLOAT, "zOffset"}
@@ -46,6 +47,7 @@ void GlobalUniformBlock::create(QRhi* rhi)
 	m_ub.setVec4(LIGHTSPEC, GLColor::White());
 	m_ub.setVec4(LIGHTDIFF, GLColor::White());
 	m_ub.setVec4(LIGHTAMB, GLColor(50, 50, 50));
+	m_ub.setVec2(VIEWPORT_SIZE, vec2f(1.f, 1.f));
 	m_ub.setInt(LIGHTON, 1);
 	m_ub.setFloat(POINTSIZE, 1.0f);
 	m_ub.setFloat(ZOFFSET, 0.0f);
@@ -95,6 +97,11 @@ void GlobalUniformBlock::setZOffset(float z)
 {
 	if (z < 0.0f) z = 0.0f;
 	m_ub.setFloat(ZOFFSET, z);
+}
+
+void GlobalUniformBlock::setViewportSize(int w, int h)
+{
+	m_ub.setVec2(VIEWPORT_SIZE, vec2f((float)w, (float)h));
 }
 
 void GlobalUniformBlock::update(QRhiResourceUpdateBatch* u)
@@ -532,7 +539,7 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 		rhi::MeshRenderItem* item = pass->addRenderItem(pointMesh, m_currentMat, m_clipEnabled, modelViewMatrix());
 		if (item) { item->pointSize = pixelPointSize(); item->depthBias = m_depthBias; }
 
-		m_stats.points += pointMesh->vertexCount;
+		m_stats.points += pointMesh->vertexCount / 6; // six vertices per point sprite
 	}
 }
 
@@ -731,6 +738,7 @@ void rhiRenderer::finish()
 	m_global.setClipPlane(clipPlane);
 	m_global.setProjectionMatrix(m_projMatrix);
 	m_global.setZOffset(dz);
+	m_global.setViewportSize(m_viewport[2], m_viewport[3]);
 	m_global.update(resourceUpdates);
 
 	// update textures
@@ -751,17 +759,13 @@ void rhiRenderer::finish()
 	m_lineOverlayPass->update(resourceUpdates);
 
 	// update wide line mesh data
-	m_wideLinePass->setViewportSize(m_viewport[2], m_viewport[3]);
 	m_wideLinePass->update(resourceUpdates);
-	m_wideLineOverlayPass->setViewportSize(m_viewport[2], m_viewport[3]);
 	m_wideLineOverlayPass->update(resourceUpdates);
 
 	// update point mesh data
-	m_pointPass->setViewportSize(m_viewport[2], m_viewport[3]);
 	m_pointPass->update(resourceUpdates);
 
 	// update overlay point mesh data
-	m_pointOverlayPass->setViewportSize(m_viewport[2], m_viewport[3]);
 	m_pointOverlayPass->update(resourceUpdates);
 
 	// update fps indicator

@@ -42,7 +42,7 @@ using dseconds = duration<double>;
 class GlobalUniformBlock
 {
 public:
-	enum { PROJMATRIX, LIGHTPOS, LIGHTAMB, LIGHTDIFF, LIGHTSPEC, CLIPPLANE, LIGHTON, POINTSIZE, ZOFFSET};
+	enum { PROJMATRIX, LIGHTPOS, LIGHTAMB, LIGHTDIFF, LIGHTSPEC, CLIPPLANE, VIEWPORT_SIZE, LIGHTON, POINTSIZE, ZOFFSET};
 
 public:
 	GlobalUniformBlock() {}
@@ -62,6 +62,7 @@ public:
 	void setLightEnabled(bool b);
 	void setPointSize(float s);
 	void setZOffset(float z);
+	void setViewportSize(int w, int h);
 
 private:
 	rhi::UniformBlock m_ub;

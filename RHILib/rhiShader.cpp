@@ -41,15 +41,14 @@ class PointShaderResource : public rhi::MeshShaderResource
 public:
 	// NOTE: the order of the members is chosen to satisfy std140 alignment rules,
 	// since rhi::UniformBlock packs members tightly.
-	enum { MV, COL, VIEWPORT, CLIP, VCOL, PSIZE, DBIAS };
+	enum { MV, COL, CLIP, VCOL, PSIZE, DBIAS };
 
 public:
-	PointShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, const float* viewportSize) : MeshShaderResource(rhi), m_vp(viewportSize)
+	PointShaderResource(QRhi* rhi, QRhiBuffer* globalBuf) : MeshShaderResource(rhi)
 	{
 		m_data.create({
 			{rhi::UniformBlock::MAT4, "mv"},
 			{rhi::UniformBlock::VEC4, "col"},
-			{rhi::UniformBlock::VEC2, "viewport"},
 			{rhi::UniformBlock::INT , "useClipping"},
 			{rhi::UniformBlock::INT , "useVertexColor"},
 			{rhi::UniformBlock::FLOAT, "pointSize"},
@@ -82,19 +81,8 @@ public:
 		m_data.setInt (CLIP, (m.doClipping? 1 : 0));
 		m_data.setInt (VCOL, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
 		m_data.setFloat(PSIZE, (m.pointSize < 1.f ? 1.f : m.pointSize));
-
-		vec2f vp(1.f, 1.f);
-		if (m_vp)
-		{
-			vp.x = (m_vp[0] > 0.f ? m_vp[0] : 1.f);
-			vp.y = (m_vp[1] > 0.f ? m_vp[1] : 1.f);
-		}
-		m_data.setVec2(VIEWPORT, vp);
 		m_data.setInt(DBIAS, (m.depthBias ? 1 : 0));
 	}
-
-private:
-	const float* m_vp = nullptr; // viewport size (owned by render pass)
 };
 
 PointShader::PointShader(QRhi* rhi) : rhi::Shader(rhi)
@@ -106,20 +94,20 @@ QRhiVertexInputLayout PointShader::meshLayout()
 {
 	QRhiVertexInputLayout meshLayout;
 	meshLayout.setBindings({
-		{ 6 * sizeof(float) }
+		{ 8 * sizeof(float) }
 		});
 	meshLayout.setAttributes({
 		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
-		{ 0, 1, QRhiVertexInputAttribute::Float3, 3*sizeof(float)} // color
+		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // color
+		{ 0, 2, QRhiVertexInputAttribute::Float2, 6 * sizeof(float) } // corner
 		});
 	return meshLayout;
 }
 
-rhi::MeshShaderResource* PointShader::createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, const float* viewportSize)
+rhi::MeshShaderResource* PointShader::createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf)
 {
-	return new PointShaderResource(rhi, globalBuf, viewportSize);
+	return new PointShaderResource(rhi, globalBuf);
 }
-
 
 class LineShaderResource : public rhi::MeshShaderResource
 {
@@ -200,15 +188,14 @@ class WideLineShaderResource : public rhi::MeshShaderResource
 public:
 	// NOTE: the order of the members is chosen to satisfy std140 alignment rules,
 	// since rhi::UniformBlock packs members tightly.
-	enum { MV, COL, VIEWPORT, LWIDTH, CLIP, VCOL, TEX, DBIAS };
+	enum { MV, COL, LWIDTH, CLIP, VCOL, TEX, DBIAS };
 
 public:
-	WideLineShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D, const float* viewportSize) : rhi::MeshShaderResource(rhi), m_vp(viewportSize)
+	WideLineShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D) : rhi::MeshShaderResource(rhi)
 	{
 		m_data.create({
 			{rhi::UniformBlock::MAT4 , "mv"},
 			{rhi::UniformBlock::VEC4 , "col"},
-			{rhi::UniformBlock::VEC2 , "viewport"},
 			{rhi::UniformBlock::FLOAT, "lineWidth"},
 			{rhi::UniformBlock::INT  , "useClipping" },
 			{rhi::UniformBlock::INT  , "useVertexColor" },
@@ -237,26 +224,14 @@ public:
 	{
 		float diffuse[4] = { 0.f };
 		m.mat.diffuse.toFloat(diffuse);
-
-		vec2f vp(1.f, 1.f);
-		if (m_vp)
-		{
-			vp.x = (m_vp[0] > 0.f ? m_vp[0] : 1.f);
-			vp.y = (m_vp[1] > 0.f ? m_vp[1] : 1.f);
-		}
-
 		m_data.setMat4 (MV, m.mvMatrix);
 		m_data.setVec4 (COL, diffuse);
-		m_data.setVec2 (VIEWPORT, vp);
 		m_data.setFloat(LWIDTH, (m.lineWidth < 1.f ? 1.f : m.lineWidth));
 		m_data.setInt  (CLIP, (m.doClipping ? 1 : 0));
 		m_data.setInt  (VCOL, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1 : 0));
 		m_data.setInt  (TEX , (m.mat.diffuseMap == GLMaterial::TEXTURE_1D ? 1 : 0));
 		m_data.setInt  (DBIAS, (m.depthBias ? 1 : 0));
 	}
-
-private:
-	const float* m_vp = nullptr; // viewport size (owned by render pass)
 };
 
 WideLineShader::WideLineShader(QRhi* rhi) : rhi::Shader(rhi)
@@ -280,9 +255,9 @@ QRhiVertexInputLayout WideLineShader::meshLayout()
 	return meshLayout;
 }
 
-rhi::MeshShaderResource* WideLineShader::createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D, const float* viewportSize)
+rhi::MeshShaderResource* WideLineShader::createShaderResource(QRhi* rhi, QRhiBuffer* globalBuf, rhi::Texture& tex1D)
 {
-	return new WideLineShaderResource(rhi, globalBuf, tex1D, viewportSize);
+	return new WideLineShaderResource(rhi, globalBuf, tex1D);
 }
 
 class ColorShaderResource : public rhi::MeshShaderResource

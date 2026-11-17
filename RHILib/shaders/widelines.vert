@@ -26,6 +26,7 @@ layout(std140, binding = 0) uniform GlobalBlock {
     vec4 diffuse;
     vec4 specColor;
     vec4 clipPlane;
+    vec2 viewport;  // viewport size in pixels
     int lightEnabled;
     float pointSize;
     float zOffset;
@@ -35,7 +36,6 @@ layout(std140, binding = 0) uniform GlobalBlock {
 layout(std140, binding = 1) uniform MeshBlock {
     mat4 mv;
     vec4 col;
-    vec2 viewport;  // viewport size in pixels
     float lineWidth; // line width in pixels
     int useClipping;
     int useVertexColor;
@@ -58,7 +58,7 @@ vec4 pullTowardCamera(vec4 e, float pixels)
     float w = max(c.w, 1e-6);
 
     // pixels per eye-space unit at this depth
-    float pxPerUnit = abs(glob.projectionMatrix[0][0]) * 0.5 * mesh.viewport.x / w;
+    float pxPerUnit = abs(glob.projectionMatrix[0][0]) * 0.5 * glob.viewport.x / w;
     float s = pixels / max(pxPerUnit, 1e-12);
 
     bool isOrtho = (abs(glob.projectionMatrix[3][3]) > 0.5);
@@ -91,8 +91,8 @@ void main()
     // screen coordinates (in pixels). Guard against points behind the camera.
     float wa = max(ca.w, 1e-6);
     float wb = max(cb.w, 1e-6);
-    vec2 sa = (ca.xy / wa) * 0.5 * mesh.viewport;
-    vec2 sb = (cb.xy / wb) * 0.5 * mesh.viewport;
+    vec2 sa = (ca.xy / wa) * 0.5 * glob.viewport;
+    vec2 sb = (cb.xy / wb) * 0.5 * glob.viewport;
 
     // direction and normal of the line in screen space
     vec2 d = sb - sa;
@@ -113,7 +113,7 @@ void main()
     vec4 c = glob.projectionMatrix * e;
     c.z -= glob.zOffset;
 
-    c.xy += offset * (2.0 / mesh.viewport) * c.w;
+    c.xy += offset * (2.0 / glob.viewport) * c.w;
 
     v_pos = (isA ? ea.xyz : eb.xyz);
     v_tex = texCoord;

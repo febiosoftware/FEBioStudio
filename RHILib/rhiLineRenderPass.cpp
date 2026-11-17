@@ -85,7 +85,7 @@ void WideLineRenderPass::create(QRhiSwapChain* sc, QRhiBuffer* globalBuf, rhi::T
 
 	WideLineShader lineShader(m_rhi);
 
-	m_sr.reset(lineShader.createShaderResource(m_rhi, m_globalBuf, *tex1D, m_vp));
+	m_sr.reset(lineShader.createShaderResource(m_rhi, m_globalBuf, *tex1D));
 
 	m_pl.reset(m_rhi->newGraphicsPipeline());
 	m_pl->setRenderPassDescriptor(rp);
@@ -119,5 +119,5 @@ rhi::Mesh* WideLineRenderPass::newMesh(const GLMesh* mesh)
 
 rhi::MeshShaderResource* WideLineRenderPass::createShaderResource()
 {
-	return WideLineShader::createShaderResource(m_rhi, m_globalBuf, *m_tex1D, m_vp);
+	return WideLineShader::createShaderResource(m_rhi, m_globalBuf, *m_tex1D);
 }

@@ -40,16 +40,31 @@ namespace rhi {
 			if (gmsh == nullptr) return false;
 
 			int NN = gmsh->Nodes();
-			std::vector<Vertex> vertexData;
-			vertexData.resize(NN);
+
+			// Each node is expanded into two screen-aligned triangles by the shader.
+			const vec2f corners[6] = {
+				vec2f(-1.f, -1.f),
+				vec2f( 1.f, -1.f),
+				vec2f(-1.f,  1.f),
+				vec2f(-1.f,  1.f),
+				vec2f( 1.f, -1.f),
+				vec2f( 1.f,  1.f)
+			};
+
+			const int NV = 6 * NN;
+			std::vector<Vertex> vertexData(NV);
 			Vertex* v = vertexData.data();
-			for (int i = 0; i < NN; ++i, v++) {
-				(*v) = gmsh->Node(i);
+			for (int i = 0; i < NN; ++i) {
+				const GLMesh::NODE& nd = gmsh->Node(i);
+				for (int j = 0; j < 6; ++j, ++v) {
+					(*v) = nd;
+					v->corner = corners[j];
+				}
 			}
 
 			// create the vertex buffer
-			create(NN, sizeof(Vertex), vertexData.data());
-			submeshes.emplace_back(std::make_unique<SubMesh>(this, 0, NN));
+			create(NV, sizeof(Vertex), vertexData.data());
+			submeshes.emplace_back(std::make_unique<SubMesh>(this, 0, NV));
 			return true;
 		}
 

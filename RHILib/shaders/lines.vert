@@ -18,6 +18,7 @@ layout(std140, binding = 0) uniform GlobalBlock {
     vec4 diffuse;
     vec4 specColor;
     vec4 clipPlane;
+    vec2 viewport;  // viewport size in pixels
     int lightEnabled;
     float pointSize;
     float zOffset;
