@@ -29,7 +29,9 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // This is a routine for creating a boundary layer on a selected
-// boundary surface of a hex8/penta6 mesh.
+// boundary surface of a hex8/penta6/tet4/pyra5 mesh, or of the corresponding
+// quadratic hex20/penta15/tet10/pyra13 mesh. For quadratic meshes, the new nodes
+// are placed on the curved geometry of the original elements.
 // The layer of hex/penta elements adjacent to the selected surface is
 // subdivided into a (optionally biased) mesh along the topological
 // normal (not the true normal) to the selected boundary.

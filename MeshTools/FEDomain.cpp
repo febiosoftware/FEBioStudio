@@ -26,6 +26,9 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEDomain.h"
+#include <map>
+#include <cmath>
+#include <algorithm>
 using namespace std;
 
 const int FEDQuad::m_edge[4][2] = {
@@ -76,6 +79,171 @@ const int FEDTet::m_edge[6][2] = {
 // local node numbering for faces
 const int FEDTet::m_face[4][3] = {
 	{ 0, 1, 3 }, { 1, 2, 3 }, { 0, 3, 2 }, { 0, 2, 1 }
+};
+
+// local node numbering for edges
+const int FEDPyramid::m_edge[8][2] = {
+    { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 },
+    { 0, 4 }, { 1, 4 }, { 2, 4 }, { 3, 4 }
+};
+
+// local node numbering for faces (the apex is repeated for triangular faces)
+const int FEDPyramid::m_face[5][4] = {
+    { 0, 1, 4, 4 }, { 1, 2, 4, 4 }, { 2, 3, 4, 4 }, { 3, 0, 4, 4 },
+    { 3, 2, 1, 0 }
+};
+
+//-------------------------------------------------------------------------------
+// Edge tables of the linear elements. The midside nodes of the quadratic elements
+// (TET10, PENTA15, HEX20, PYRA13) are numbered in the same order, following the corner nodes.
+static const int ELH8[12][2] = {{0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7}};
+static const int ELP6[9][2]  = {{0,1},{1,2},{2,0},{3,4},{4,5},{5,3},{0,3},{1,4},{2,5}};
+static const int ELP5[8][2]  = {{0,1},{1,2},{2,3},{3,0},{0,4},{1,4},{2,4},{3,4}};
+static const int ELT4[6][2]  = {{0,1},{1,2},{2,0},{0,3},{1,3},{2,3}};
+
+//-------------------------------------------------------------------------------
+// This class is used to evaluate the geometry of a quadratic element that is replaced
+// by a boundary layer mesh. New nodes are first created on the straight (linear) edges of
+// the element. This class finds their isoparametric coordinates in the linear element and
+// returns the displacement that moves them onto the curved geometry of the quadratic element.
+class FEDQuadraticParent
+{
+public:
+    FEDQuadraticParent(FSMesh& mesh, int iel)
+    {
+        FSElement& el = mesh.Element(iel);
+        int nt = el.Type();
+        int lt = FE_HEX8;
+        m_edge = ELH8; m_ne = 12;
+        switch (nt) {
+            case FE_HEX20  : lt = FE_HEX8  ; m_edge = ELH8; m_ne = 12; break;
+            case FE_PENTA15: lt = FE_PENTA6; m_edge = ELP6; m_ne =  9; break;
+            case FE_PYRA13 : lt = FE_PYRA5 ; m_edge = ELP5; m_ne =  8; break;
+            case FE_TET10  : lt = FE_TET4  ; m_edge = ELT4; m_ne =  6; break;
+            default: assert(false);
+        }
+        m_q.SetType((FSElementType) nt);
+        m_l.SetType((FSElementType) lt);
+        m_nn = m_q.Nodes();
+        m_nc = m_l.Nodes();
+        for (int i=0; i<m_nn; ++i) {
+            m_node[i] = el.m_node[i];
+            m_X[i] = mesh.Node(el.m_node[i]).r;
+        }
+    }
+    
+    // Find the node of the existing midside node of the edge between the corner nodes na and nb.
+    // Returns -1 if this is not an edge of the element.
+    int FindEdgeNode(int na, int nb) const
+    {
+        for (int k=0; k<m_ne; ++k) {
+            int a = m_node[m_edge[k][0]];
+            int b = m_node[m_edge[k][1]];
+            if (((a == na) && (b == nb)) || ((a == nb) && (b == na)))
+                return m_node[m_nc + k];
+        }
+        return -1;
+    }
+    
+    // Get the isoparametric coordinates of a vertex (cached).
+    // If ntag >= 0, the vertex is a corner node of the element, otherwise r is a point in the
+    // linear element.
+    bool Xi(int ivtx, int ntag, const vec3d& r, double xi[3])
+    {
+        std::map<int, std::vector<double> >::iterator it = m_xi.find(ivtx);
+        if (it != m_xi.end()) {
+            xi[0] = it->second[0]; xi[1] = it->second[1]; xi[2] = it->second[2];
+            return true;
+        }
+        
+        bool ok = false;
+        if (ntag >= 0) {
+            for (int i=0; i<m_nc; ++i) {
+                if (m_node[i] == ntag) {
+                    m_l.iso_coord(i, xi);
+                    ok = true;
+                    break;
+                }
+            }
+        }
+        if (!ok) ok = IsoCoord(r, xi);
+        if (ok) {
+            std::vector<double> q(xi, xi+3);
+            m_xi[ivtx] = q;
+        }
+        return ok;
+    }
+    
+    // Get the displacement from the linear to the quadratic geometry at isoparametric point xi
+    vec3d Displacement(const double xi[3])
+    {
+        double H[FSElement::MAX_NODES];
+        vec3d rq(0,0,0), rl(0,0,0);
+        m_q.shape(H, xi[0], xi[1], xi[2]);
+        for (int i=0; i<m_nn; ++i) rq += m_X[i]*H[i];
+        m_l.shape(H, xi[0], xi[1], xi[2]);
+        for (int i=0; i<m_nc; ++i) rl += m_X[i]*H[i];
+        return rq - rl;
+    }
+    
+protected:
+    // find the isoparametric coordinates of a point in the linear element (Newton)
+    bool IsoCoord(const vec3d& x, double xi[3])
+    {
+        double H[FSElement::MAX_NODES], Hr[FSElement::MAX_NODES], Hs[FSElement::MAX_NODES], Ht[FSElement::MAX_NODES];
+        
+        // initial guess is the center of the element
+        xi[0] = xi[1] = xi[2] = 0;
+        for (int i=0; i<m_nc; ++i) {
+            double q[3];
+            m_l.iso_coord(i, q);
+            xi[0] += q[0]/m_nc; xi[1] += q[1]/m_nc; xi[2] += q[2]/m_nc;
+        }
+        
+        // scale for the convergence check
+        double L = 0;
+        for (int i=1; i<m_nc; ++i) {
+            vec3d d = m_X[i] - m_X[0];
+            double l = sqrt(d*d);
+            if (l > L) L = l;
+        }
+        if (L == 0) return false;
+        
+        for (int iter=0; iter<50; ++iter) {
+            m_l.shape(H, xi[0], xi[1], xi[2]);
+            m_l.shape_deriv(Hr, Hs, Ht, xi[0], xi[1], xi[2]);
+            vec3d rx(0,0,0), a(0,0,0), b(0,0,0), c(0,0,0);
+            for (int i=0; i<m_nc; ++i) {
+                rx += m_X[i]*H[i];
+                a += m_X[i]*Hr[i];
+                b += m_X[i]*Hs[i];
+                c += m_X[i]*Ht[i];
+            }
+            vec3d f = x - rx;
+            
+            // solve a*d0 + b*d1 + c*d2 = f (Cramer's rule)
+            double det = a*(b^c);
+            if (fabs(det) < 1e-14*L*L*L) return false;
+            double d0 = f*(b^c)/det;
+            double d1 = a*(f^c)/det;
+            double d2 = a*(b^f)/det;
+            xi[0] += d0; xi[1] += d1; xi[2] += d2;
+            
+            if ((fabs(d0) < 1e-12) && (fabs(d1) < 1e-12) && (fabs(d2) < 1e-12)) return true;
+        }
+        return false;
+    }
+    
+protected:
+    FSElement   m_q;    // quadratic element type
+    FSElement   m_l;    // corresponding linear element type
+    int         m_nn;   // number of nodes of the quadratic element
+    int         m_nc;   // number of corner nodes
+    int         m_ne;   // number of edges
+    const int   (*m_edge)[2];   // edge table
+    int         m_node[FSElement::MAX_NODES];   // node numbers of the original element
+    vec3d       m_X[FSElement::MAX_NODES];      // nodal positions of the original element
+    std::map<int, std::vector<double> > m_xi;   // isoparametric coordinates of vertices
 };
 
 int mod(int a, int b)
@@ -214,7 +382,7 @@ int FSDomain::FindQuad(const FEDQuad& quad, bool& pos, int& ist)
 // Find a quad in the master QuadList from a FSFace
 int FSDomain::FindQuadFromFace(const FSFace& face)
 {
-    if (face.Nodes() != 4) return -1;
+    if (FaceCornerNodes(face) != 4) return -1;
     int v[4];
     for (int i=0; i<4; ++i) {
         v[i] = FindVertexByTagNumber(face.n[i]);
@@ -288,7 +456,7 @@ int FSDomain::FindTri(const FEDTri& tri, bool& pos, int& ist)
 // Find a tri in the master TriList from a FSFace
 int FSDomain::FindTriFromFace(const FSFace& face)
 {
-    if (face.Nodes() != 3) return -1;
+    if (FaceCornerNodes(face) != 3) return -1;
     int v[3];
     for (int i=0; i<3; ++i) {
         v[i] = FindVertexByTagNumber(face.n[i]);
@@ -324,6 +492,16 @@ int FSDomain::FindTet(int n)
 {
     for (int i=0; i<Tets(); ++i)
         if (Tet(i).m_ntag == n) return i;
+    
+    return -1;
+}
+
+//-------------------------------------------------------------------------------
+// Find a pyramid in the master PyramidList by its tag number
+int FSDomain::FindPyramid(int n)
+{
+    for (int i=0; i<Pyramids(); ++i)
+        if (Pyramid(i).m_ntag == n) return i;
     
     return -1;
 }
@@ -620,6 +798,48 @@ int FSDomain::AddTet(vector<int> vlist, int ntag, int gid)
 }
 
 //-------------------------------------------------------------------------------
+// Add a pyramid from a list of vertices in this domain
+int FSDomain::AddPyramid(vector<int> vlist, int ntag, int gid)
+{
+    // check vlist
+    if (vlist.size() < 5)
+        return -1;
+    
+    // create a pyramid
+    FEDPyramid pyr;
+    pyr.m_ntag = ntag;
+    pyr.m_gid = gid;
+    pyr.SetDomain(this);
+    
+    // store the supplied vertices into the pyramid vertex list
+    for (int i=0; i<5; ++i)
+        pyr.v[i] = vlist[i];
+    
+    // store the edges into the edge list
+    for (int i=0; i<8; ++i) {
+        bool ep;
+        FEDEdge edge(pyr.v[pyr.m_edge[i][0]],pyr.v[pyr.m_edge[i][1]]);
+        int en = FindEdge(edge, ep);
+        if (en == -1) {
+            pyr.e[i] = AddEdge(edge);
+            pyr.ep[i] = true;
+        }
+        else {
+            pyr.e[i] = en;
+            pyr.ep[i] = ep;
+        }
+    }
+    
+    // Note that no quad or tri faces are stored for the pyramid, since the meshes
+    // generated for pyramids never have nodes in the interior of a face.
+    
+    int ipyr = Pyramids();
+    PyramidList.push_back(pyr);
+    
+    return ipyr;
+}
+
+//-------------------------------------------------------------------------------
 // Split a box into two wedges
 // Use before setting mesh parameters and meshing
 void FSDomain::SplitBoxIntoWedges(int ibox, int iedge, int iopt, int iwdg[2])
@@ -724,10 +944,15 @@ bool FSDomain::AddElement(int iel)
     const FSElement& el = m_pmesh->Element(iel);
     int gid = el.m_gid;
     
-    vector<int> vlist(el.Nodes());
+    // only the corner nodes of the element are stored as vertices
+    // (the midside nodes of quadratic elements are generated when the domain is meshed)
+    int nc = ElementCornerNodes(el.Type());
+    if (nc == 0) return false;
+    
+    vector<int> vlist(nc);
     
     // store the element nodes into the vertex list
-    for (int i=0; i<el.Nodes(); ++i) {
+    for (int i=0; i<nc; ++i) {
         int n = el.m_node[i];
         int vn = FindVertexByTagNumber(n);
         if (vn == -1) {
@@ -738,7 +963,7 @@ bool FSDomain::AddElement(int iel)
             vlist[i] = vn;
     }
     
-    if (el.Type() == FE_HEX8) {
+    if (IsHexElement(el.Type())) {
         
         // check if this element has been added already
         if (FindBox(iel) != -1) return false;
@@ -747,7 +972,7 @@ bool FSDomain::AddElement(int iel)
         AddBox(vlist, iel, gid);
         return true;
     }
-    else if (el.Type() == FE_PENTA6) {
+    else if (IsPentaElement(el.Type())) {
         
         // check if this element has been added already
         if (FindWedge(iel) != -1) return false;
@@ -756,13 +981,22 @@ bool FSDomain::AddElement(int iel)
         AddWedge(vlist, iel, gid);
         return true;
     }
-    else if (el.Type() == FE_TET4) {
+    else if (IsTetElement(el.Type())) {
         
         // check if this element has been added already
         if (FindTet(iel) != -1) return false;
         
         // otherwise, add it as a tet to this domain
         AddTet(vlist, iel, gid);
+        return true;
+    }
+    else if (IsPyramidElement(el.Type())) {
+        
+        // check if this element has been added already
+        if (FindPyramid(iel) != -1) return false;
+        
+        // otherwise, add it as a pyramid to this domain
+        AddPyramid(vlist, iel, gid);
         return true;
     }
     
@@ -855,6 +1089,18 @@ bool FSDomain::MeshTets()
 }
 
 //-------------------------------------------------------------------------------
+bool FSDomain::MeshPyramids()
+{
+    for (int i=0; i<Pyramids(); ++i) {
+        FEDPyramid& pyr = Pyramid(i);
+        if (pyr.m_ntag != -1)
+            if (!pyr.CreateMesh(this))
+                return false;
+    }
+    return true;
+}
+
+//-------------------------------------------------------------------------------
 bool FSDomain::MeshDomain()
 {
     // mesh edges, quads and boxes
@@ -864,6 +1110,7 @@ bool FSDomain::MeshDomain()
     if (!MeshBoxes() ) return false;
     if (!MeshWedges()) return false;
     if (!MeshTets()  ) return false;
+    if (!MeshPyramids()) return false;
     
     // count all the newly created vertices
     int n0 = m_pmesh->Nodes();
@@ -871,8 +1118,119 @@ bool FSDomain::MeshDomain()
     for (int i=0; i<Vertices(); ++i)
         if (Vertex(i).m_ntag == -1) ++n1;
 
+    // collect all the elements that will be created, together with the element they replace
+    struct Child {
+        const vector<int>* v;   // vertex list (4, 5, 6 or 8 corner vertices)
+        int gid;                // partition ID
+        int parent;             // element that this element replaces
+    };
+    vector<Child> children;
+    for (int i=0; i<Boxes(); ++i) {
+        FEDBox& box = Box(i);
+        for (size_t j=0; j<box.elem.size(); ++j) { Child c = { &box.elem[j], box.m_gid, box.m_ntag }; children.push_back(c); }
+    }
+    for (int i=0; i<Wedges(); ++i) {
+        FEDWedge& wdg = Wedge(i);
+        for (size_t j=0; j<wdg.elem.size(); ++j) { Child c = { &wdg.elem[j], wdg.m_gid, wdg.m_ntag }; children.push_back(c); }
+    }
+    for (int i=0; i<Tets(); ++i) {
+        FEDTet& tet = Tet(i);
+        for (size_t j=0; j<tet.elem.size(); ++j) { Child c = { &tet.elem[j], tet.m_gid, tet.m_ntag }; children.push_back(c); }
+    }
+    for (int i=0; i<Pyramids(); ++i) {
+        FEDPyramid& pyr = Pyramid(i);
+        for (size_t j=0; j<pyr.elem.size(); ++j) { Child c = { &pyr.elem[j], pyr.m_gid, pyr.m_ntag }; children.push_back(c); }
+    }
+    
+    // check the element order. Linear and quadratic elements cannot be mixed.
+    int nquad = 0, nlin = 0;
+    for (size_t i=0; i<children.size(); ++i) {
+        const Child& c = children[i];
+        size_t nc = c.v->size();
+        if ((nc != 4) && (nc != 5) && (nc != 6) && (nc != 8)) return false;
+        if (c.parent < 0) return false;
+        if (IsQuadraticElement(m_pmesh->Element(c.parent).Type())) nquad++; else nlin++;
+    }
+    if ((nquad > 0) && (nlin > 0)) return false;
+    bool bquad = (nquad > 0);
+    
+    // quadratic elements: move the new vertices onto the curved geometry of the elements
+    // that they belong to, and find the new midside nodes.
+    // midmap maps a pair of vertices to the node of the midside node of that edge
+    // (>= 0: an existing node, < 0: the new node -(m+2)).
+    vector<vec3d> rlin(Vertices());
+    for (int i=0; i<Vertices(); ++i) rlin[i] = Vertex(i).r;
+    map<pair<int,int>, int> midmap;
+    vector<vec3d> midpos;
+    if (bquad) {
+        map<int, FEDQuadraticParent*> parents;
+        bool ok = true;
+        
+        // move the new corner vertices
+        vector<bool> moved(Vertices(), false);
+        for (size_t i=0; (i<children.size()) && ok; ++i) {
+            const Child& c = children[i];
+            FEDQuadraticParent*& pp = parents[c.parent];
+            if (pp == 0) pp = new FEDQuadraticParent(*m_pmesh, c.parent);
+            for (size_t k=0; k<c.v->size(); ++k) {
+                int iv = (*c.v)[k];
+                FEDVertex& vtx = Vertex(iv);
+                if ((vtx.m_ntag == -1) && !moved[iv]) {
+                    double xi[3];
+                    if (!pp->Xi(iv, vtx.m_ntag, rlin[iv], xi)) { ok = false; break; }
+                    vtx.r = rlin[iv] + pp->Displacement(xi);
+                    moved[iv] = true;
+                }
+            }
+        }
+        
+        // find the midside nodes of all edges of the new elements
+        for (size_t i=0; (i<children.size()) && ok; ++i) {
+            const Child& c = children[i];
+            FEDQuadraticParent* pp = parents[c.parent];
+            const vector<int>& cv = *c.v;
+            const int (*et)[2] = 0;
+            int ne = 0;
+            switch (cv.size()) {
+                case 8: et = ELH8; ne = 12; break;
+                case 6: et = ELP6; ne =  9; break;
+                case 5: et = ELP5; ne =  8; break;
+                case 4: et = ELT4; ne =  6; break;
+            }
+            for (int j=0; j<ne; ++j) {
+                int va = cv[et[j][0]];
+                int vb = cv[et[j][1]];
+                pair<int,int> key(min(va,vb), max(va,vb));
+                if (midmap.find(key) != midmap.end()) continue;
+                
+                // if both vertices are original nodes and they define an edge of the original
+                // element, then the existing midside node is used
+                int nm = -1;
+                int ta = Vertex(va).m_ntag, tb = Vertex(vb).m_ntag;
+                if ((ta >= 0) && (tb >= 0)) nm = pp->FindEdgeNode(ta, tb);
+                if (nm >= 0) {
+                    midmap[key] = nm;
+                }
+                else {
+                    double xa[3], xb[3], xm[3];
+                    if (!pp->Xi(va, ta, rlin[va], xa)) { ok = false; break; }
+                    if (!pp->Xi(vb, tb, rlin[vb], xb)) { ok = false; break; }
+                    for (int k=0; k<3; ++k) xm[k] = 0.5*(xa[k] + xb[k]);
+                    vec3d r = (rlin[va] + rlin[vb])*0.5 + pp->Displacement(xm);
+                    midmap[key] = -((int) midpos.size()) - 2;
+                    midpos.push_back(r);
+                }
+            }
+        }
+        
+        for (map<int, FEDQuadraticParent*>::iterator it = parents.begin(); it != parents.end(); ++it)
+            delete it->second;
+        if (!ok) return false;
+    }
+    int n2 = (int) midpos.size();
+
     // allocate room for new nodes
-    m_pmesh->Create(n0 + n1, 0);
+    m_pmesh->Create(n0 + n1 + n2, 0);
 
     // create new nodes
     n1 = 0;
@@ -887,75 +1245,41 @@ bool FSDomain::MeshDomain()
         }
     }
     
+    // create the new midside nodes
+    for (int i=0; i<n2; ++i) {
+        FSNode& node = m_pmesh->Node(n0 + n1 + i);
+        node.r = midpos[i];
+    }
+    
     // create new elements
     int ne0 = m_pmesh->Elements();
-    int ne1 = 0;
-    // count boxes
-    for (int i=0; i<Boxes(); ++i)
-        ne1 += Box(i).elem.size();
-    // count wedges
-    for (int i=0; i<Wedges(); ++i)
-        ne1 += Wedge(i).elem.size();
-    // count tets
-    for (int i=0; i<Tets(); ++i)
-        ne1 += Tet(i).elem.size();
-    m_pmesh->Create(0, ne0 + ne1);
-    ne1 = 0;
-    // create box elements
-    for (int i=0; i<Boxes(); ++i) {
-        FEDBox& box = Box(i);
-        for (int j=0; j<box.elem.size(); ++j) {
-            FSElement& el = m_pmesh->Element(ne0 + ne1);
-            el.SetType(FE_HEX8);
-            el.m_gid = box.m_gid; assert(el.m_gid >= 0);
-            for (int k=0; k<8; ++k)
-                el.m_node[k] = Vertex(box.elem[j][k]).m_ntag;
-            ++ne1;
+    m_pmesh->Create(0, ne0 + (int) children.size());
+    for (size_t i=0; i<children.size(); ++i) {
+        const Child& c = children[i];
+        const vector<int>& cv = *c.v;
+        FSElement& el = m_pmesh->Element(ne0 + (int) i);
+        el.m_gid = c.gid; assert(el.m_gid >= 0);
+        
+        const int (*et)[2] = 0;
+        int nc = (int) cv.size();
+        int ne = 0;
+        switch (nc) {
+            case 8: el.SetType(bquad ? FE_HEX20  : FE_HEX8  ); et = ELH8; ne = 12; break;
+            case 6: el.SetType(bquad ? FE_PENTA15: FE_PENTA6); et = ELP6; ne =  9; break;
+            case 5: el.SetType(bquad ? FE_PYRA13 : FE_PYRA5 ); et = ELP5; ne =  8; break;
+            case 4: el.SetType(bquad ? FE_TET10  : FE_TET4  ); et = ELT4; ne =  6; break;
         }
-    }
-    // create wedge elements
-    for (int i=0; i<Wedges(); ++i) {
-        FEDWedge& wdg = Wedge(i);
-        for (int j=0; j<wdg.elem.size(); ++j) {
-            FSElement& el = m_pmesh->Element(ne0 + ne1);
-            el.m_gid = wdg.m_gid; assert(el.m_gid >= 0);
-            if (wdg.elem[j].size() == 8) {
-                el.SetType(FE_HEX8);
-                for (int k=0; k<8; ++k)
-                    el.m_node[k] = Vertex(wdg.elem[j][k]).m_ntag;
-                ++ne1;
-            }
-            else if (wdg.elem[j].size() == 6) {
-                el.SetType(FE_PENTA6);
-                for (int k=0; k<6; ++k)
-                    el.m_node[k] = Vertex(wdg.elem[j][k]).m_ntag;
-                ++ne1;
-            }
-        }
-    }
-    // create tet elements
-    for (int i=0; i<Tets(); ++i) {
-        FEDTet& tet = Tet(i);
-        for (int j=0; j<tet.elem.size(); ++j) {
-            FSElement& el = m_pmesh->Element(ne0 + ne1);
-            el.m_gid = tet.m_gid; assert(el.m_gid >= 0);
-            if (tet.elem[j].size() == 4) {
-                el.SetType(FE_TET4);
-                for (int k=0; k<4; ++k)
-                    el.m_node[k] = Vertex(tet.elem[j][k]).m_ntag;
-                ++ne1;
-            }
-            else if (tet.elem[j].size() == 6) {
-                el.SetType(FE_PENTA6);
-                for (int k=0; k<6; ++k)
-                    el.m_node[k] = Vertex(tet.elem[j][k]).m_ntag;
-                ++ne1;
-            }
-            else if (tet.elem[j].size() == 8) {
-                el.SetType(FE_HEX8);
-                for (int k=0; k<8; ++k)
-                    el.m_node[k] = Vertex(tet.elem[j][k]).m_ntag;
-                ++ne1;
+        for (int k=0; k<nc; ++k)
+            el.m_node[k] = Vertex(cv[k]).m_ntag;
+        
+        // midside nodes
+        if (bquad) {
+            for (int j=0; j<ne; ++j) {
+                int va = cv[et[j][0]];
+                int vb = cv[et[j][1]];
+                pair<int,int> key(min(va,vb), max(va,vb));
+                int m = midmap[key];
+                el.m_node[nc + j] = (m >= 0) ? m : n0 + n1 + (-m - 2);
             }
         }
     }
@@ -1298,7 +1622,7 @@ int FEDBox::FindBoxFace(const FSFace& face)
 {
 	int v[4] = { 0 };
     // find the vertices from the node list
-    for (int i=0; i<face.Nodes(); ++i) {
+    for (int i=0; i<FaceCornerNodes(face); ++i) {
         v[i] = m_pDom->FindVertexByTagNumber(face.n[i]);
         if (v[i] == -1)
             return -1;
@@ -1683,13 +2007,13 @@ int FEDWedge::FindWedgeFace(const FSFace& face)
 {
 	int v[4] = { 0 };
     // find the vertices from the node list
-    for (int i=0; i<face.Nodes(); ++i) {
+    for (int i=0; i<FaceCornerNodes(face); ++i) {
         v[i] = m_pDom->FindVertexByTagNumber(face.n[i]);
         if (v[i] == -1)
             return -1;
     }
     
-    if (face.Nodes() == 4) {
+    if (FaceCornerNodes(face) == 4) {
         for (int i=0; i<3; ++i) {
             const FEDQuad& quad = m_pDom->Quad(f[i]);
             if ((v[0] == quad.v[0]) && (v[1] == quad.v[1]) &&
@@ -1726,7 +2050,7 @@ int FEDWedge::FindWedgeFace(const FSFace& face)
             }
         }
     }
-    else if (face.Nodes() == 3) {
+    else if (FaceCornerNodes(face) == 3) {
         for (int i=3; i<5; ++i) {
             const FEDTri& tri = m_pDom->Tri(f[i]);
             if ((v[0] == tri.v[0]) && (v[1] == tri.v[1]) &&
@@ -2301,10 +2625,10 @@ FEDTet::FEDTet()
 // Find a tet face by node numbers
 int FEDTet::FindTetFace(const FSFace& face)
 {
-    if (face.Nodes() != 3) return-1;
+    if (FaceCornerNodes(face) != 3) return-1;
 	int v[3] = { 0 };
     // find the vertices from the node list
-    for (int i=0; i<face.Nodes(); ++i) {
+    for (int i=0; i<FaceCornerNodes(face); ++i) {
         v[i] = m_pDom->FindVertexByTagNumber(face.n[i]);
         if (v[i] == -1)
             return -1;
@@ -2777,6 +3101,273 @@ bool FEDTet::CreateMesh(FSDomain* pdom)
             
         default:
             break;
+    }
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+// FEDPyramid
+/////////////////////////////////////////////////////////////////////////////////
+
+//-------------------------------------------------------------------------------
+FEDPyramid::FEDPyramid()
+{
+    m_ntag = -1;
+    m_type = -1;
+    m_fne = -1;
+    m_gid = -1;
+    for (int i=0; i<5; ++i) v[i] = -1;
+    for (int i=0; i<8; ++i) {
+        e[i] = -1;
+        ep[i] = true;
+    }
+    m_pDom = 0;
+}
+
+//-------------------------------------------------------------------------------
+// find a pyramid face by FSFace node numbers
+// returns 0-3 for the triangular faces and 4 for the quadrilateral base
+int FEDPyramid::FindPyramidFace(const FSFace& face)
+{
+    int nf = FaceCornerNodes(face);
+    if ((nf != 3) && (nf != 4)) return -1;
+    
+    // find the vertices from the node list
+    int fv[4] = { -1, -1, -1, -1 };
+    for (int i=0; i<nf; ++i) {
+        fv[i] = m_pDom->FindVertexByTagNumber(face.n[i]);
+        if (fv[i] == -1) return -1;
+    }
+    
+    // the face nodes must match the nodes of a pyramid face (in any order)
+    for (int i=0; i<5; ++i) {
+        int nn = (i < 4) ? 3 : 4;
+        if (nn != nf) continue;
+        bool match = true;
+        for (int j=0; j<nf; ++j) {
+            bool found = false;
+            for (int k=0; k<nn; ++k)
+                if (fv[j] == v[m_face[i][k]]) { found = true; break; }
+            if (!found) { match = false; break; }
+        }
+        if (match) return i;
+    }
+    return -1;
+}
+
+//-------------------------------------------------------------------------------
+// find a pyramid vertex by node number
+int FEDPyramid::FindPyramidVertex(int n0)
+{
+    int v0 = m_pDom->FindVertexByTagNumber(n0);
+    if (v0 == -1) return -1;
+    
+    for (int i=0; i<5; ++i)
+        if (v[i] == v0) return i;
+    
+    return -1;
+}
+
+//-------------------------------------------------------------------------------
+// Set the meshing parameters of local edge ie.
+// The layers are stacked along the edge in the direction of the edge definition
+// (dp = true) or opposite to it (dp = false). The bias is the growth ratio along
+// the stacking direction.
+bool FEDPyramid::SetEdge(int ie, bool dp, int nseg, double bias, bool dble)
+{
+    // the edge object may be oriented differently than the stacking direction
+    bool same = (ep[ie] == dp);
+    
+    FEDEdge edge(m_pDom->Edge(e[ie]));
+    edge.bias = same ? bias : 1./bias;
+    edge.nseg = nseg;
+    edge.dble = dble;
+    
+    // check if this edge was previously meshed
+    if (m_pDom->Edge(e[ie]).nseg == -1) {
+        m_pDom->Edge(e[ie]) = edge;
+    }
+    // if previously meshed, check consistency
+    else if ((m_pDom->Edge(e[ie]).nseg != edge.nseg) ||
+             (m_pDom->Edge(e[ie]).bias != edge.bias) ||
+             (m_pDom->Edge(e[ie]).dble != edge.dble)) {
+        return false;
+    }
+    
+    return true;
+}
+
+//-------------------------------------------------------------------------------
+// Get the list of vertices along local edge ie, in the stacking direction
+bool FEDPyramid::GetStack(FSDomain* pdom, int ie, bool dp, vector<int>& stack)
+{
+    const FEDEdge& edge = pdom->Edge(e[ie]);
+    int nseg = edge.nseg;
+    if ((nseg < 1) || ((int)edge.n.size() != nseg + 1)) return false;
+    
+    bool same = (ep[ie] == dp);
+    stack.resize(nseg+1);
+    for (int k=0; k<=nseg; ++k)
+        stack[k] = same ? edge.n[k] : edge.n[nseg - k];
+    return true;
+}
+
+//-------------------------------------------------------------------------------
+// The quad base is on the selected surface. All edges that connect the base
+// to the apex are meshed, the base edges are not.
+bool FEDPyramid::SetMeshFromBase(int nseg, double bias, bool dble)
+{
+    m_type = FROM_BASE;
+    m_fne = 4;
+    
+    for (int i=0; i<4; ++i)
+        if (!SetEdge(i, false, 1, 1.0, false)) return false;
+    
+    // stack from base (node i) to apex: the direction of the edge definition
+    for (int i=4; i<8; ++i)
+        if (!SetEdge(i, true, nseg, bias, dble)) return false;
+    
+    return true;
+}
+
+//-------------------------------------------------------------------------------
+// Triangular face iface = (iface, iface+1, apex) is on the selected surface.
+// The two base edges that leave this face are meshed. Layers are stacked along those
+// edges and each layer is a pyramid with the original apex.
+bool FEDPyramid::SetMeshFromTriFace(int iface, int nseg, double bias, bool dble)
+{
+    if ((iface < 0) || (iface > 3)) return false;
+    
+    m_type = FROM_TRI;
+    m_fne = iface;
+    
+    // base edge that connects node iface to node iface-1 (stacked opposite to its definition)
+    int ia = (iface + 3) % 4;
+    // base edge that connects node iface+1 to node iface+2 (stacked along its definition)
+    int ib = (iface + 1) % 4;
+    
+    for (int i=0; i<8; ++i) {
+        if (i == ia) {
+            if (!SetEdge(i, false, nseg, bias, dble)) return false;
+        }
+        else if (i == ib) {
+            if (!SetEdge(i, true, nseg, bias, dble)) return false;
+        }
+        else {
+            if (!SetEdge(i, true, 1, 1.0, false)) return false;
+        }
+    }
+    
+    return true;
+}
+
+//-------------------------------------------------------------------------------
+// The apex is on the selected surface. All edges that connect the apex to the base
+// are meshed, the base edges are not.
+bool FEDPyramid::SetMeshFromApex(int nseg, double bias, bool dble)
+{
+    m_type = FROM_APEX;
+    m_fne = 4;
+    
+    for (int i=0; i<4; ++i)
+        if (!SetEdge(i, true, 1, 1.0, false)) return false;
+    
+    // stack from apex to base: opposite to the direction of the edge definition
+    for (int i=4; i<8; ++i)
+        if (!SetEdge(i, false, nseg, bias, dble)) return false;
+    
+    return true;
+}
+
+//-------------------------------------------------------------------------------
+bool FEDPyramid::CreateMesh(FSDomain* pdom)
+{
+    switch (m_type) {
+        case FROM_BASE:
+        {
+            // stacks[i][k] is the vertex of the i-th apex edge at level k (level 0 = base)
+            vector<int> stack[4];
+            for (int i=0; i<4; ++i)
+                if (!GetStack(pdom, 4+i, true, stack[i])) return false;
+            int nseg = (int)stack[0].size() - 1;
+            for (int i=1; i<4; ++i)
+                if ((int)stack[i].size() != nseg + 1) return false;
+            
+            elem.resize(nseg);
+            // hexes
+            for (int k=0; k<nseg-1; ++k) {
+                elem[k].resize(8);
+                for (int i=0; i<4; ++i) {
+                    elem[k][i  ] = stack[i][k  ];
+                    elem[k][i+4] = stack[i][k+1];
+                }
+            }
+            // final pyramid
+            {
+                int k = nseg - 1;
+                elem[k].resize(5);
+                for (int i=0; i<4; ++i)
+                    elem[k][i] = stack[i][k];
+                elem[k][4] = v[4];
+            }
+        }
+        break;
+            
+        case FROM_TRI:
+        {
+            int ia = (m_fne + 3) % 4;
+            int ib = (m_fne + 1) % 4;
+            vector<int> sa, sb;
+            if (!GetStack(pdom, ia, false, sa)) return false;
+            if (!GetStack(pdom, ib, true , sb)) return false;
+            if (sa.size() != sb.size()) return false;
+            int nseg = (int)sa.size() - 1;
+            
+            // the base of the original pyramid is (A0, B0, Bn, An), so that is the
+            // vertex order of each layer's base (viewed from the apex)
+            elem.resize(nseg);
+            for (int k=0; k<nseg; ++k) {
+                elem[k].resize(5);
+                elem[k][0] = sa[k  ];
+                elem[k][1] = sb[k  ];
+                elem[k][2] = sb[k+1];
+                elem[k][3] = sa[k+1];
+                elem[k][4] = v[4];
+            }
+        }
+        break;
+            
+        case FROM_APEX:
+        {
+            // stack[i][k] is the vertex of the i-th apex edge at level k (level 0 = apex)
+            vector<int> stack[4];
+            for (int i=0; i<4; ++i)
+                if (!GetStack(pdom, 4+i, false, stack[i])) return false;
+            int nseg = (int)stack[0].size() - 1;
+            for (int i=1; i<4; ++i)
+                if ((int)stack[i].size() != nseg + 1) return false;
+            
+            elem.resize(nseg);
+            // first element is a pyramid whose base is at level 1
+            {
+                elem[0].resize(5);
+                for (int i=0; i<4; ++i)
+                    elem[0][i] = stack[i][1];
+                elem[0][4] = v[4];
+            }
+            // remaining elements are hexes (the level closest to the base comes first)
+            for (int k=1; k<nseg; ++k) {
+                elem[k].resize(8);
+                for (int i=0; i<4; ++i) {
+                    elem[k][i  ] = stack[i][k+1];
+                    elem[k][i+4] = stack[i][k  ];
+                }
+            }
+        }
+        break;
+            
+        default:
+            return false;
     }
     return true;
 }

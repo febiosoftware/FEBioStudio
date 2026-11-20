@@ -477,15 +477,15 @@ FSMesh* FELinearToQuadratic::Apply(FSMesh* pm)
                 e1.m_node[2] = e0.m_node[2];
                 e1.m_node[3] = e0.m_node[3];
                 e1.m_node[4] = e0.m_node[4];
-                e1.m_node[5] = e0.m_node[5];
                 
-                e1.m_node[ 6] = EE[i][ 0] + NN;
-                e1.m_node[ 7] = EE[i][ 1] + NN;
-                e1.m_node[ 8] = EE[i][ 2] + NN;
-                e1.m_node[ 9] = EE[i][ 3] + NN;
-                e1.m_node[10] = EE[i][ 4] + NN;
-                e1.m_node[11] = EE[i][ 5] + NN;
-                e1.m_node[12] = EE[i][ 6] + NN;
+                e1.m_node[ 5] = EE[i][ 0] + NN;
+                e1.m_node[ 6] = EE[i][ 1] + NN;
+                e1.m_node[ 7] = EE[i][ 2] + NN;
+                e1.m_node[ 8] = EE[i][ 3] + NN;
+                e1.m_node[ 9] = EE[i][ 4] + NN;
+                e1.m_node[10] = EE[i][ 5] + NN;
+                e1.m_node[11] = EE[i][ 6] + NN;
+                e1.m_node[12] = EE[i][ 7] + NN;
             }
                 break;
                 
