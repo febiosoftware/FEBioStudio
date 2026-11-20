@@ -59,6 +59,22 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 	if (nseg < 1) return false;
 	if (nseg == 1) return true;
 
+	// linear and quadratic elements cannot be mixed
+	{
+		int nlin = 0, nquad = 0;
+		for (int i = 0; i<pm->Elements(); ++i)
+		{
+			int ntype = pm->Element(i).Type();
+			if (ElementCornerNodes(ntype) == 0) continue;
+			if (IsQuadraticElement(ntype)) nquad++; else nlin++;
+		}
+		if ((nlin > 0) && (nquad > 0))
+		{
+			error("Meshes that mix linear and quadratic solid elements are not supported.");
+			return false;
+		}
+	}
+
 	// store list of selected faces in fdata
 	vector<int> fdata;
 	for (int i = 0; i<pm->Faces(); ++i)
@@ -95,7 +111,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 	for (int i = 0; i < ne1; ++i)
 	{
 		const FSFace& face = pm->Face(fdata[i]);
-		for (int j = 0; j < face.Nodes(); ++j)
+		for (int j = 0; j < FaceCornerNodes(face); ++j)
 			pm->Node(face.n[j]).m_ntag = 1;
 	}
 
@@ -107,8 +123,10 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 		const FSElement& el = pm->Element(i);
         if (pm->Element(i).m_ntag == -1) {
             vector<int> shared_nodes;
-            shared_nodes.reserve(el.Nodes());
-            for (int j = 0; j<el.Nodes(); ++j) {
+            // only the corner nodes are considered (also for quadratic elements)
+            int nc = ElementCornerNodes(el.Type());
+            shared_nodes.reserve(nc);
+            for (int j = 0; j<nc; ++j) {
                 if (pm->Node(el.m_node[j]).m_ntag == 1)
                     shared_nodes.push_back(el.m_node[j]);
             }
@@ -133,7 +151,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 			// set meshing parameters
 			const FSFace& face = pm->Face(fdata[it->second[0]]);
 			FSElement_& el = pm->Element(iel);
-			if (el.Type() == FE_HEX8) {
+			if (IsHexElement(el.Type())) {
 				// get the box from this domain
 				int ibox = dom.Boxes() - 1;
 				FEDBox& box = dom.Box(ibox);
@@ -145,7 +163,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 				// tag the original element for deletion
 				delem[iel] = true;
 			}
-			else if (el.Type() == FE_PENTA6) {
+			else if (IsPentaElement(el.Type())) {
 				// get the wedge from this domain
 				int iwdg = dom.Wedges() - 1;
 				FEDWedge& wdg = dom.Wedge(iwdg);
@@ -157,7 +175,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 				// tag the original element for deletion
 				delem[iel] = true;
 			}
-			else if (el.Type() == FE_TET4) {
+			else if (IsTetElement(el.Type())) {
 				// get the tet from this domain
 				int itet = dom.Tets() - 1;
 				FEDTet& tet = dom.Tet(itet);
@@ -169,6 +187,24 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 				// tag the original element for deletion
 				delem[iel] = true;
 			}
+			else if (IsPyramidElement(el.Type())) {
+				// get the pyramid from this domain
+				int ipyr = dom.Pyramids() - 1;
+				FEDPyramid& pyr = dom.Pyramid(ipyr);
+				// find the local face number in that element
+				// (0-3 = triangular faces, 4 = quadrilateral base)
+				int ifc = pyr.FindPyramidFace(face);
+				if (ifc == -1) return false;
+				bool ok = (ifc == 4) ? pyr.SetMeshFromBase(nseg, bias, false)
+				                     : pyr.SetMeshFromTriFace(ifc, nseg, bias, false);
+				if (!ok) {
+					error("Cannot create a consistent boundary layer for a pyramid element. "
+					      "Check the mesh around pyramid elements on the selected surface.");
+					return false;
+				}
+				// tag the original element for deletion
+				delem[iel] = true;
+			}
 		}
 		else if (it->second.size() == 2) {
 			// two faces connected to this element
@@ -176,14 +212,14 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 			const FSFace& face1 = pm->Face(fdata[it->second[1]]);
 			// check if they share common nodes
 			vector<int> cn;
-			for (int i = 0; i<face0.Nodes(); ++i)
-				for (int j = 0; j<face1.Nodes(); ++j)
+			for (int i = 0; i<FaceCornerNodes(face0); ++i)
+				for (int j = 0; j<FaceCornerNodes(face1); ++j)
 					if (face0.n[i] == face1.n[j]) cn.push_back(face0.n[i]);
 			// only allow two shared nodes
 			if (cn.size() != 2) return false;
 			int iel = (int)it->first;
 			FSElement_& el = pm->Element(iel);
-			if (el.Type() == FE_HEX8) {
+			if (IsHexElement(el.Type())) {
 				// we have an external corner
 				// add element to domain
 				dom.AddElement(iel);
@@ -212,10 +248,16 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 				// tag the original element for deletion
 				delem[iel] = true;
 			}
-			else if (el.Type() == FE_PENTA6) {
+			else if (IsPentaElement(el.Type())) {
 				return false;
 			}
-			else if (el.Type() == FE_TET4) {
+			else if (IsPyramidElement(el.Type())) {
+				// pyramids with two faces on the selected surface
+				// (an external corner) are not supported
+				error("Pyramid elements with two faces on the selected surface are not supported.");
+				return false;
+			}
+			else if (IsTetElement(el.Type())) {
 				// we have a tet with two faces on the selected surface
 				// let's find the other two faces of that tet
 				FSFace opface[2];
@@ -232,7 +274,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 					int jel = -1;
 					for (int k = 0; k<pm->Elements(); ++k) {
 						FSElement_& oel = pm->Element(k);
-						if ((k != iel) && (oel.Type() == FE_TET4))
+						if ((k != iel) && (IsTetElement(oel.Type())))
 							if (oel.FindFace(opface[i]) != -1) {
 								jel = k;
 								break;
@@ -267,7 +309,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 		// we have an internal corner
 		int iel = (int)ie->first;
 		FSElement_& el = pm->Element(iel);
-		if ((ie->second.size() == 2) && (el.Type() == FE_HEX8)) {
+		if ((ie->second.size() == 2) && (IsHexElement(el.Type()))) {
 			// add element to domain
 			dom.AddElement(iel);
 			// get the box we just added to this domain
@@ -293,7 +335,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 			// tag the original element for deletion
 			delem[iel] = true;
 		}
-		else if ((ie->second.size() == 2) && (el.Type() == FE_PENTA6)) {
+		else if ((ie->second.size() == 2) && (IsPentaElement(el.Type()))) {
 			// add element to domain
 			dom.AddElement(iel);
 			// get the wedge we just added to this domain
@@ -306,7 +348,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 			// tag the original element for deletion
 			delem[iel] = true;
 		}
-		else if ((ie->second.size() == 1) && (el.Type() == FE_PENTA6)) {
+		else if ((ie->second.size() == 1) && (IsPentaElement(el.Type()))) {
 			// add element to domain
 			dom.AddElement(iel);
 			// get the wedge we just added to this domain
@@ -329,7 +371,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 			delem[iel] = true;
 			return false;
 		}
-		else if ((ie->second.size() == 1) && (el.Type() == FE_TET4)) {
+		else if ((ie->second.size() == 1) && (IsTetElement(el.Type()))) {
 			// add element to domain
 			dom.AddElement(iel);
 			// get the tet we just added to this domain
@@ -342,7 +384,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 			// tag the original element for deletion
 			delem[iel] = true;
 		}
-		else if ((ie->second.size() == 2) && (el.Type() == FE_TET4)) {
+		else if ((ie->second.size() == 2) && (IsTetElement(el.Type()))) {
 			// add element to domain
 			dom.AddElement(iel);
 			// get the tet we just added to this domain
@@ -354,6 +396,30 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 				return false;
 			// tag the original element for deletion
 			delem[iel] = true;
+		}
+		else if (IsPyramidElement(el.Type())) {
+			// A pyramid that touches the selected surface only at its apex can be
+			// meshed (it is the equivalent of a tet touching the surface at a node).
+			// Pyramids that touch the surface at a base node or at an edge cannot be
+			// meshed conformally with the layers of the neighboring elements.
+			if ((ie->second.size() == 1) && (ie->second[0] == el.m_node[4])) {
+				// add element to domain
+				dom.AddElement(iel);
+				// get the pyramid we just added to this domain
+				int ipyr = dom.Pyramids() - 1;
+				FEDPyramid& pyr = dom.Pyramid(ipyr);
+				if (!pyr.SetMeshFromApex(nseg, bias, false)) {
+					error("Cannot create a consistent boundary layer for a pyramid element. "
+					      "Check the mesh around pyramid elements on the selected surface.");
+					return false;
+				}
+				// tag the original element for deletion
+				delem[iel] = true;
+			}
+			else {
+				error("Pyramid elements that touch the selected surface only at a base node or at an edge are not supported.");
+				return false;
+			}
 		}
 		else {
 			bool weird = true;

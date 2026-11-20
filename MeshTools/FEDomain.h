@@ -31,6 +31,46 @@ SOFTWARE.*/
 // This file contains helper classes for the FEBoundaryLayerMesher class
 class FSDomain;
 
+//-----------------------------------------------------------------------------
+// Helper functions for treating linear and quadratic solid elements the same way.
+// The boundary layer mesher works with the corner nodes of the elements. The
+// midside nodes of quadratic elements are generated when the domain is meshed.
+inline bool IsHexElement    (int ntype) { return (ntype == FE_HEX8  ) || (ntype == FE_HEX20  ); }
+inline bool IsPentaElement  (int ntype) { return (ntype == FE_PENTA6) || (ntype == FE_PENTA15); }
+inline bool IsTetElement    (int ntype) { return (ntype == FE_TET4  ) || (ntype == FE_TET10  ); }
+inline bool IsPyramidElement(int ntype) { return (ntype == FE_PYRA5 ) || (ntype == FE_PYRA13 ); }
+
+inline bool IsQuadraticElement(int ntype)
+{
+	return (ntype == FE_HEX20) || (ntype == FE_PENTA15) || (ntype == FE_TET10) || (ntype == FE_PYRA13);
+}
+
+// number of corner nodes of the supported solid elements (0 for all other element types)
+inline int ElementCornerNodes(int ntype)
+{
+	if (IsHexElement(ntype))     return 8;
+	if (IsPentaElement(ntype))   return 6;
+	if (IsTetElement(ntype))     return 4;
+	if (IsPyramidElement(ntype)) return 5;
+	return 0;
+}
+
+// number of corner nodes of a face (3 for triangles, 4 for quads)
+inline int FaceCornerNodes(const FSFace& face)
+{
+	switch (face.Type())
+	{
+	case FE_FACE_TRI3:
+	case FE_FACE_TRI6:
+	case FE_FACE_TRI7:
+	case FE_FACE_TRI10: return 3;
+	case FE_FACE_QUAD4:
+	case FE_FACE_QUAD8:
+	case FE_FACE_QUAD9: return 4;
+	}
+	return face.Nodes();
+}
+
 class FEDVertex
 {
 public:
@@ -309,6 +349,76 @@ protected:
     FSDomain*   m_pDom; // pointer to the domain this vertex belongs to
 };
 
+class FEDPyramid
+{
+public:
+    // mesh types
+    enum { FROM_BASE = 0, FROM_TRI = 1, FROM_APEX = 2 };
+
+    //! constructor
+    FEDPyramid();
+    
+    // find a pyramid face by FSFace node numbers (0-3 = tri faces, 4 = quad base)
+    int FindPyramidFace(const FSFace& face);
+    
+    // find a pyramid vertex by node number
+    int FindPyramidVertex(int n0);
+    
+    // create meshed vertices
+    bool CreateMesh(FSDomain* pdom);
+    
+public:
+    void SetDomain(FSDomain* pdom) { m_pDom = pdom; }
+    FSDomain* GetDomain() { return m_pDom; }
+    
+public:
+    // local node numbering for edges
+    // edges 0-3 are the base edges, edges 4-7 connect base nodes 0-3 to the apex (node 4)
+    static const int m_edge[8][2];
+    
+    // local node numbering for faces (triangular faces repeat the apex)
+    static const int m_face[5][4];
+    
+public:
+    int             m_ntag;     // tag number
+    int             m_type;     // mesh type (see enum above)
+    int             m_fne;      // face number for FROM_TRI
+    int             m_gid;
+    
+public:
+    int             v[5];       // list of vertices (0-3 = base, 4 = apex)
+    int             e[8];       // list of edges
+    bool            ep[8];      // edge sense (positive = true, negative = false)
+    
+    // mesh data
+    std::vector< std::vector<int> >   elem;   // elements (8 = hex8, 5 = pyra5)
+    
+public:
+    // set mesh parameters along the edges emanating out of the quadrilateral base
+    // (the base is on the selected surface). The result is nseg-1 hexes and one pyramid.
+    bool SetMeshFromBase(int nseg, double bias, bool dble);
+    
+    // set mesh parameters along the two base edges emanating out of
+    // triangular face iface (0-3). The result is nseg pyramids, all sharing the apex.
+    bool SetMeshFromTriFace(int iface, int nseg, double bias, bool dble);
+    
+    // set mesh parameters along the four edges emanating from the apex
+    // (the apex is on the selected surface). The result is one pyramid and nseg-1 hexes.
+    bool SetMeshFromApex(int nseg, double bias, bool dble);
+    
+protected:
+    // set the meshing parameters of local edge ie, where the layers are stacked
+    // in the direction of the edge definition (dp = true) or opposite to it (dp = false).
+    // bias is the growth ratio along the stacking direction.
+    bool SetEdge(int ie, bool dp, int nseg, double bias, bool dble);
+    
+    // get the stacked vertex list along local edge ie (in the stacking direction)
+    bool GetStack(FSDomain* pdom, int ie, bool dp, std::vector<int>& stack);
+    
+protected:
+    FSDomain*   m_pDom; // pointer to the domain this pyramid belongs to
+};
+
 class FSDomain
 {
 public:
@@ -323,6 +433,7 @@ public:
 	int Boxes() const { return (int)BoxList.size(); }
 	int Wedges() const { return (int)WedgeList.size(); }
 	int Tets() const { return (int)TetList.size(); }
+	int Pyramids() const { return (int)PyramidList.size(); }
 
 	FEDVertex& Vertex(int n) { return VertexList[n]; }
 	FEDEdge& Edge(int n) { return EdgeList[n]; }
@@ -331,6 +442,7 @@ public:
 	FEDBox& Box(int n) { return BoxList[n]; }
 	FEDWedge& Wedge(int n) { return WedgeList[n]; }
 	FEDTet& Tet(int n) { return TetList[n]; }
+	FEDPyramid& Pyramid(int n) { return PyramidList[n]; }
 
 public:
 	std::vector<FEDVertex>   VertexList;
@@ -340,6 +452,7 @@ public:
 	std::vector<FEDBox>      BoxList;
 	std::vector<FEDWedge>    WedgeList;
 	std::vector<FEDTet>      TetList;
+	std::vector<FEDPyramid>  PyramidList;
 	std::vector<int> m_NLT;
 
 public:
@@ -369,6 +482,9 @@ public:
 	// find tet by tag number
 	int FindTet(int n);
 
+	// find pyramid by tag number
+	int FindPyramid(int n);
+
 	// add a vertex to this domain
 	int AddVertex(int n, const vec3d& r);
 
@@ -389,6 +505,9 @@ public:
 
 	// add a tet from a list of vertices
 	int AddTet(std::vector<int> vlist, int ntag = -1, int gid = -1);
+
+	// add a pyramid from a list of vertices
+	int AddPyramid(std::vector<int> vlist, int ntag = -1, int gid = -1);
 
 	// split a box into two wedges
 	void SplitBoxIntoWedges(int ibox, int iedge, int iopt, int iwdg[2]);
@@ -420,6 +539,9 @@ public:
 
 	// mesh the tets
 	bool MeshTets();
+
+	// mesh the pyramids
+	bool MeshPyramids();
 
 	// mesh the domain
 	bool MeshDomain();
