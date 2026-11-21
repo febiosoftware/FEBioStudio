@@ -166,6 +166,25 @@ bool IArchive::Open(FILE* fp, unsigned int signature, const char* szfile)
 	int nret = OpenChunk();
 	if (nret != IO_OK) return false;
 
+	// The master chunk spans the rest of the file, so a file that is shorter
+	// than the master chunk's size was truncated (e.g. by an interrupted copy
+	// or sync). Reading it would leave parts of the model uninitialized.
+	CHUNK* pc = m_Chunk.top();
+	long curPos = ftell(m_fp);
+	if ((curPos >= 0) && (fseek(m_fp, 0, SEEK_END) == 0))
+	{
+		long fileSize = ftell(m_fp);
+		fseek(m_fp, curPos, SEEK_SET);
+		long expectedSize = pc->lpos + (long)pc->nsize;
+		if ((fileSize >= 0) && (fileSize < expectedSize))
+		{
+			log("The file is truncated: it is %ld bytes long, but its contents require %ld bytes. "
+				"The file was probably damaged by an incomplete save, copy, or sync.", fileSize, expectedSize);
+			Close();
+			return false;
+		}
+	}
+
 	return true;
 }
 

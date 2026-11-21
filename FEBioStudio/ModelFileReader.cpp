@@ -43,7 +43,12 @@ ModelFileReader::ModelFileReader(CModelDocument* doc)
 bool ModelFileReader::Open(const char* szfile)
 {
 	// try to open the archive
-	if (!PRVArchive::Load(szfile)) return false;
+	if (!PRVArchive::Load(szfile))
+	{
+		std::string log = GetArchive().GetLog();
+		if (log.empty() == false) errf(log.c_str());
+		return false;
+	}
 
 	// get the version info
 	IArchive& ar = GetArchive();
@@ -90,6 +95,8 @@ bool ModelFileReader::ReadFile(const char* szfile)
 		// try to open it
 		if (!PRVArchive::Load(szfile))
 		{
+			std::string log = ar.GetLog();
+			if (log.empty() == false) return errf(log.c_str());
 			return errf("Failed opening file");
 		}
 	}

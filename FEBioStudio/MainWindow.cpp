@@ -722,7 +722,10 @@ void CMainWindow::OpenDocument(const QString& fileName)
 	string sfile = filePath.toStdString();
 	if (reader->Open(sfile.c_str()) == false)
 	{
-		QMessageBox::critical(this, "FEBio Studio", QString("Failed to open file:\n%1").arg(filePath));
+		QString msg = QString("Failed to open file:\n%1").arg(filePath);
+		std::string err = reader->GetErrorString();
+		if (err.empty() == false) msg += QString("\n\n%1").arg(QString::fromStdString(err));
+		QMessageBox::critical(this, "FEBio Studio", msg);
 		delete reader;
 		delete doc;
 		return;
