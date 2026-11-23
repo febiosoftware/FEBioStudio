@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "ScalarFieldTool.h"
 #include "SurfaceMeshSizeTool.h"
 #include "ShellMeshFacesTool.h"
+#include "SweepShellTool.h"
 #include "EditDataFieldTool.h"
 #include "PlaneCutTool.h"
 #include "FiberGeneratorTool.h"
@@ -84,6 +85,7 @@ void CToolsPanel::initTools()
 	tools.push_back(new CExtrudeMapTool     (wnd));
 	tools.push_back(new CSurfaceMeshSizeTool(wnd));
 	tools.push_back(new CShellMeshFacesTool (wnd));
+	tools.push_back(new CSweepShellTool     (wnd));
 	tools.push_back(new CCurveToBeamTool    (wnd));
 	tools.push_back(new CAlignMeshMOITool   (wnd));
 	tools.push_back(new CFindIntersectionsTool(wnd));
