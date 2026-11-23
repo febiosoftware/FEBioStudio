@@ -124,6 +124,60 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// Refines meshes of linear solid elements of any combination of types, such as
+// hex-dominant meshes. Every element is split in eight: a hex8 into 8 hex8, a
+// penta6 into 8 penta6 and a tet4 into 8 tet4 (the octahedron in its middle is
+// split along its shortest diagonal), except that a pyra5 is split into 6 pyra5
+// and 4 tet4. Every edge gets a node at its midpoint and every quad face a node at
+// its center, so the refined mesh is conforming. The element, surface, edge and
+// node partitions of the mesh are preserved.
+// The surface can optionally be smoothed by a subdivision step that is Catmull-Clark
+// on regular quads and Loop on regular triangles (cf. the quad/triangle subdivision
+// of Stam and Loop, 2003). The edges between surfaces are kept as creases and the
+// corner nodes of the mesh stay in place. Nodes only move normal to the surface (or
+// to the crease), so flat surfaces and straight edges do not change. The new nodes
+// inside the mesh follow the surface, and nodes move less where their full move
+// would invert an element.
+// Children can be worse than their parent where the parent's Jacobian is negative or
+// small at a corner but fine at the integration points that FEBio checks (e.g. a
+// pyra5 whose apex is below the plane of its base at a corner). Elements that come
+// out worse than the worst element before the split (and below 0.2) are improved by
+// optimizing the nodes around them (with FEMeshUntangler, then moving the nodes of
+// the worst element without folding corners); nodes on a surface only slide where it
+// is flat, or along straight creases.
+class FEMixedSplitModifier : public FEModifier
+{
+public:
+	FEMixedSplitModifier();
+	FSMesh* Apply(FSMesh* pm) override;
+
+	void DoSurfaceSmoothing(bool b);
+
+	// improve the elements that come out worse than before the split (on by default)
+	void DoElementRepair(bool b) { m_repair = b; }
+
+	// true if the mesh has elements and all of them are hex8, penta6, pyra5 or tet4
+	static bool IsSupported(FSMesh& mesh);
+
+	// number of nodes that smoothing moved less (or not at all), so as not to invert elements
+	int LimitedNodes() const { return m_limitedNodes; }
+
+	// number of refined elements that were worse than the worst element before the split
+	// (and below 0.2), around which the nodes were optimized
+	int OptimizedElements() const { return m_optimized; }
+
+	// smallest scaled Jacobian of the elements at FEBio's integration points (1 = ideal element)
+	static double WorstElement(FSMesh& mesh);
+
+protected:
+	bool	m_smoothSurface;	// smooth surface
+	bool	m_repair;			// improve the elements that come out worse than before the split
+	int		m_limitedNodes;		// nodes that smoothing moved less, to keep the elements valid
+	int		m_optimized;		// elements around which the nodes were optimized
+	double	m_worstBefore;		// smallest scaled Jacobian before the split
+};
+
+//-----------------------------------------------------------------------------
 // Splits hexahedral elements only in-plane
 class FEHex2DSplitModifier : public FEModifier
 {

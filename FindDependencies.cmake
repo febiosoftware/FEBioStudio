@@ -481,6 +481,20 @@ if(NOT WIN32)
     find_package(OpenMP QUIET)
 endif()
 
+# Eigen (header-only; required for the hex-dominant remesher)
+find_path(EIGEN3_INC Eigen/Core
+    PATHS /usr/local/include /opt/homebrew/include /usr/include /opt/local/include
+    PATH_SUFFIXES "eigen3"
+    DOC "Eigen3 include directory (the folder that contains Eigen/Core)")
+
+if(EIGEN3_INC)
+	option(USE_HEXDOM "Required for hex-dominant remeshing" ON)
+    mark_as_advanced(EIGEN3_INC)
+else()
+	option(USE_HEXDOM "Required for hex-dominant remeshing" OFF)
+    mark_as_advanced(CLEAR EIGEN3_INC)
+endif()
+
 # SITK
 find_package(SimpleITK QUIET)
 

@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <FECore/units.h>
 #include <MeshLib/FSMeshBuilder.h>
 #include <MeshLib/MeshTools.h>
+#include <MeshLib/MeshMetrics.h>
 #include <MeshLib/Intersect.h>
 #include <GeomLib/GGroup.h>
 #include <MeshTools/LaplaceSolver.h>
@@ -1487,10 +1488,18 @@ RefineMesh::RefineMesh() : FEModifier("Refine")
 
 FSMesh* RefineMesh::Apply(FSMesh* pm)
 {
+	// clear a cancel request and errors of a previous run
+	resetProgress();
+	ClearErrors();
+
 	// get parameters
 	int niter = GetIntValue(0);
 	bool bsmooth = GetBoolValue(1);
-	if (niter < 1) return 0;
+	if (niter < 1)
+	{
+		error("The number of iterations must be at least 1.");
+		return 0;
+	}
 
 	bool bhex2d = GetBoolValue(2);
 
@@ -1541,10 +1550,40 @@ FSMesh* RefineMesh::Apply(FSMesh* pm)
 			mod = hexmod;
 		}
 	}
-	if (mod == 0) return 0;
+
+	// Other meshes of linear solid elements, such as hex-dominant meshes
+	// (hex8, penta6, pyra5 and tet4 elements in any combination)
+	FEMixedSplitModifier* mixmod = nullptr;
+	if ((mod == 0) && FEMixedSplitModifier::IsSupported(*pm))
+	{
+		if (bhex2d)
+		{
+			error("The hex 2d-split option requires a mesh of only hex8 elements.");
+			return 0;
+		}
+
+		int nsel = pm->CountSelectedElements();
+		if ((nsel > 0) && (nsel < pm->Elements()))
+		{
+			error("Selected elements can only be refined in meshes of only hex8 or only tet4 elements. Clear the selection to refine the whole mesh.");
+			return 0;
+		}
+
+		mixmod = new FEMixedSplitModifier;
+		mixmod->DoSurfaceSmoothing(bsmooth);
+		mod = mixmod;
+	}
+
+	if (mod == 0)
+	{
+		error("Refine Mesh supports meshes of hex8, penta6, pyra5 and tet4 elements (in any combination), and meshes of only quad4 or only tri3 elements.");
+		return 0;
+	}
 
 	// apply the refine modifier
 	FSMesh* pmold = pm;
+	int nlimited = 0;	// nodes that smoothing moved less, to keep the elements valid
+	int noptimized = 0;	// elements around which the nodes were optimized
 	setProgress(0.0);
 	for (int i=0; i<niter; ++i)
 	{
@@ -1558,11 +1597,58 @@ FSMesh* RefineMesh::Apply(FSMesh* pm)
 			if (!err.empty()) error(err.c_str());
 			break;
 		}
+		if (mixmod)
+		{
+			nlimited += mixmod->LimitedNodes();
+			noptimized += mixmod->OptimizedElements();
+		}
 
 		setProgress(100.0*(i + 1.0) / (double)niter);
+
+		// stop between iterations if the user canceled
+		if (IsCanceled() && (i + 1 < niter))
+		{
+			if (pmold != pm) delete pmold;
+			pmold = nullptr;
+			error("Canceled.");
+			break;
+		}
 	}
 
+	bool mixed = (mixmod != nullptr);
 	delete mod;
+
+	// report the refined mesh of mixed elements
+	if (mixed && pmold)
+	{
+		int ntype[4] = { 0 }, ninvalid = 0;
+		for (int i = 0; i < pmold->Elements(); ++i)
+		{
+			FSElement& el = pmold->Element(i);
+			switch (el.Type())
+			{
+			case FE_HEX8  : ntype[0]++; break;
+			case FE_PENTA6: ntype[1]++; break;
+			case FE_PYRA5 : ntype[2]++; break;
+			case FE_TET4  : ntype[3]++; break;
+			}
+			if (FEMeshMetrics::SolidJacobian(*pmold, el) <= 0) ninvalid++;
+		}
+		Log("Refined the mesh from %d to %d elements (%d hex8, %d penta6, %d pyra5 and %d tet4) and from %d to %d nodes.\n",
+			pm->Elements(), pmold->Elements(), ntype[0], ntype[1], ntype[2], ntype[3], pm->Nodes(), pmold->Nodes());
+		if (nlimited > 0)
+			Log("Smoothing moved %d %s less than the surface rule asks, so as not to invert elements.\n", nlimited, (nlimited == 1 ? "node" : "nodes"));
+		if (noptimized > 0)
+			Log("Optimized the nodes around %d %s that came out worse than the worst element before refinement.\n", noptimized, (noptimized == 1 ? "element" : "elements"));
+		Log("Smallest scaled Jacobian: %.3f (it was %.3f before refinement).\n", FEMixedSplitModifier::WorstElement(*pmold), FEMixedSplitModifier::WorstElement(*pm));
+		if (ninvalid > 0)
+		{
+			int ninvalid0 = 0;
+			for (int i = 0; i < pm->Elements(); ++i)
+				if (FEMeshMetrics::SolidJacobian(*pm, pm->Element(i)) <= 0) ninvalid0++;
+			Log("Warning: %d elements of the refined mesh have a non-positive Jacobian (the mesh had %d before it was refined).\n", ninvalid, ninvalid0);
+		}
+	}
 
 	return pmold;
 }

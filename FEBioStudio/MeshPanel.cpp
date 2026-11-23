@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/FEDiscardMesh.h>
 #include <MeshTools/FETetGenModifier.h>
 #include <MeshTools/FEMMGRemesh.h>
+#include <MeshTools/FEHexDominantRemesh.h>
 #include <MeshTools/FEWeldModifier.h>
 #include <MeshTools/FEAutoPartition.h>
 #include <MeshTools/FEBoundaryLayerMesher.h>
@@ -225,6 +226,18 @@ void ModifierThread::run()
 {
 	bool bsuccess = false;
 
+	// show the modifier's log messages in the log panel (AddLogEntry is thread-safe)
+	class ModifierLogger : public TaskLogger
+	{
+	public:
+		ModifierLogger(CMainWindow* wnd) : m_wnd(wnd) {}
+		void Log(const std::string& msg) override { if (m_wnd) m_wnd->AddLogEntry(QString::fromStdString(msg)); }
+	private:
+		CMainWindow* m_wnd;
+	};
+	ModifierLogger logger(m_doc ? m_doc->GetMainWindow() : nullptr);
+	if (m_mod) m_mod->SetTaskLogger(&logger);
+
 	// get the mesh
 	FSMesh* pm = m_po->GetFEMesh();
 	if (pm && m_mod)
@@ -246,6 +259,7 @@ void ModifierThread::run()
 		if ((m_newMesh == nullptr) && !m_mod->AllowNullMesh()) bsuccess = false;
 		else bsuccess = true;
 	}
+	if (m_mod) m_mod->SetTaskLogger(nullptr);
 	emit resultReady(bsuccess);
 }
 
@@ -266,7 +280,8 @@ const char* ModifierThread::currentTask()
 
 void ModifierThread::stop()
 {
-	
+	// modifiers that check IsCanceled() stop early; the dialog waits for the thread to finish
+	if (m_mod) m_mod->Terminate();
 }
 
 //=============================================================================
@@ -288,6 +303,9 @@ REGISTER_CLASS(FEInvertMesh           , CLASS_FEMODIFIER, "Invert"         , EDI
 REGISTER_CLASS(FEMirrorMesh           , CLASS_FEMODIFIER, "Mirror"         , EDIT_MESH);
 #ifdef HAS_MMG
 REGISTER_CLASS(MMGRemesh            , CLASS_FEMODIFIER, "MMG Remesh"     , EDIT_MESH | EDIT_SAFE);
+#endif
+#ifdef HAS_HEXDOM
+REGISTER_CLASS(HexDominantRemesh    , CLASS_FEMODIFIER, "Hex-dominant Remesh", EDIT_MESH | EDIT_SAFE);
 #endif
 REGISTER_CLASS(FEPartitionSelection   , CLASS_FEMODIFIER, "Partition"      , EDIT_ELEMENT | EDIT_FACE | EDIT_EDGE | EDIT_NODE);
 REGISTER_CLASS(FEProjectNodes         , CLASS_FEMODIFIER, "Project Nodes"  , EDIT_NODE);

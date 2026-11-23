@@ -309,6 +309,10 @@ if(USE_MMG)
 	include_directories(${MMG_INC})
 endif()
 
+if(USE_HEXDOM)
+	add_definitions(-DHAS_HEXDOM)
+endif()
+
 if(CAD_FEATURES)
 	add_definitions(-DHAS_NETGEN)
 	include_directories(${NETGEN_INC})
@@ -508,6 +512,16 @@ if(USE_MMG)
     endif()
 endif()
 
+# Hex-dominant remesher (vendored from github.com/gaoxifeng/robust_hex_dominant_meshing)
+if(USE_HEXDOM)
+    file(GLOB HDR_RHDM "MeshTools/rhdm/*.h")
+    file(GLOB SRC_RHDM "MeshTools/rhdm/*.cpp")
+    target_sources(MeshTools PRIVATE ${HDR_RHDM} ${SRC_RHDM})
+    target_include_directories(MeshTools PRIVATE ${EIGEN3_INC})
+    source_group("Source Files\\rhdm" FILES ${SRC_RHDM})
+    source_group("Header Files\\rhdm" FILES ${HDR_RHDM})
+endif()
+
 if(USE_TETGEN)
     target_compile_definitions(MeshTools PRIVATE TETLIBRARY)
     target_include_directories(MeshTools PRIVATE ${TETGEN_INC})
@@ -690,6 +704,7 @@ if(BUILD_TESTS)
         tests/fbs-test-suite.cpp
         tests/primitive_tests.cpp
         tests/multiblock_tests.cpp
+        tests/refine_tests.cpp
     )
 
     if(NOT WIN32 AND NOT APPLE)
@@ -718,6 +733,10 @@ if(BUILD_TESTS)
 
     if(USE_TETGEN)
         target_link_libraries(fbs-test-suite PRIVATE ${TETGEN_LIB})
+    endif()
+
+    if(USE_HEXDOM)
+        target_sources(fbs-test-suite PRIVATE tests/hexdom_tests.cpp)
     endif()
 
     if(CAD_FEATURES)

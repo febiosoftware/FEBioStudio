@@ -176,7 +176,7 @@ void CDlgStartThread::checkProgress()
 	{
 		if (ui->m_thread)
 		{
-			if (ui->m_breturn == false)
+			if ((ui->m_breturn == false) && (ui->m_cancelled == false))
 			{
 				QString err = ui->m_thread->GetErrorString();
 				if (err.isEmpty()) err = "An unknown error has occurred.";
