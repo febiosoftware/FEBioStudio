@@ -52,6 +52,55 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "IconProvider.h"
 #include "LaunchConfig.h"
+#include <QRegularExpression>
+#include <QScrollBar>
+#include <map>
+
+//-----------------------------------------------------------------------------
+// Helpers for preserving the expanded/collapsed state of the tree across a
+// rebuild (see CModelTree::Build). Each item is identified by a key built from
+// its path in the tree: the item type plus the address of the model object it
+// represents (the address is only used as an identifier, never dereferenced),
+// or, for items without an object (e.g. "Objects"), the item type plus its
+// label with the "(count)" suffix removed so that the key survives count changes.
+static QString ModelTreeItemKey(CModelTree* tree, QTreeWidgetItem* item, const QString& parentKey)
+{
+	int type = -1;
+	FSObject* po = nullptr;
+	bool ok = false;
+	int n = item->data(0, Qt::UserRole).toInt(&ok);
+	if (ok && (n >= 0) && (n < (int)tree->Items()))
+	{
+		type = tree->GetItem(n).type;
+		po = tree->GetItem(n).obj;
+	}
+
+	QString s;
+	if (po) s = QString("%1:%2").arg(type).arg((quintptr)po);
+	else
+	{
+		static const QRegularExpression countSuffix("\\s*\\(\\d+\\)$");
+		QString name = item->text(0);
+		name.remove(countSuffix);
+		s = QString("%1:%2").arg(type).arg(name);
+	}
+	return parentKey + "/" + s;
+}
+
+static void SaveExpandedState(CModelTree* tree, QTreeWidgetItem* item, const QString& parentKey, std::map<QString, bool>& state)
+{
+	QString key = ModelTreeItemKey(tree, item, parentKey);
+	if (item->childCount() > 0) state[key] = item->isExpanded();
+	for (int i = 0; i < item->childCount(); ++i) SaveExpandedState(tree, item->child(i), key, state);
+}
+
+static void RestoreExpandedState(CModelTree* tree, QTreeWidgetItem* item, const QString& parentKey, const std::map<QString, bool>& state)
+{
+	QString key = ModelTreeItemKey(tree, item, parentKey);
+	auto it = state.find(key);
+	if (it != state.end()) item->setExpanded(it->second);
+	for (int i = 0; i < item->childCount(); ++i) RestoreExpandedState(tree, item->child(i), key, state);
+}
 
 // list of warnings generated
 #define WARNING_NONE				0
@@ -861,6 +910,14 @@ void CModelTree::Select(const std::vector<FSObject*>& objList)
 
 void CModelTree::Build(CModelDocument* doc)
 {
+	// Remember which branches are expanded (and the scroll position), so that
+	// rebuilding the tree (e.g. after assigning a material) does not collapse
+	// the branches the user had opened.
+	std::map<QString, bool> expandedState;
+	for (int i = 0; i < topLevelItemCount(); ++i)
+		SaveExpandedState(this, topLevelItem(i), QString(), expandedState);
+	int scrollPos = verticalScrollBar()->value();
+
 	// clear the tree
 	clear();
 	ClearData();
@@ -1151,6 +1208,14 @@ void CModelTree::Build(CModelDocument* doc)
 
 			UpdateImages(t1, doc);
 		}
+	}
+
+	// restore the expanded state of the branches that existed before the rebuild
+	if (!expandedState.empty())
+	{
+		for (int i = 0; i < topLevelItemCount(); ++i)
+			RestoreExpandedState(this, topLevelItem(i), QString(), expandedState);
+		verticalScrollBar()->setValue(scrollPos);
 	}
 
 //	resizeColumnToContents(0);
