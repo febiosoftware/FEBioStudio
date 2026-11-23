@@ -39,6 +39,9 @@ SOFTWARE.*/
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
 #include <BRepBuilderAPI_Transform.hxx>
+#include <BRepBuilderAPI_Copy.hxx>
+#include <BRep_Builder.hxx>
+#include <TopoDS_Shell.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepPrimAPI_MakePrism.hxx>
 #include <BRepPrimAPI_MakeCylinder.hxx>
@@ -103,6 +106,40 @@ TopoDS_Shape& GOCCObject::GetShape()
 #else
 	TopoDS_Shape* dummy = nullptr;
 	return *dummy;
+#endif
+}
+
+GOCCObject* GOCCObject::CreateShellFromFaces(const std::vector<int>& faceIds)
+{
+#ifdef HAS_OCC
+	// the face map must use the same ordering as in BuildGObject
+	TopTools_IndexedMapOfShape faceMap;
+	TopExp::MapShapes(m_occ->m_shape, TopAbs_FACE, faceMap);
+
+	BRep_Builder builder;
+	TopoDS_Shell shell;
+	builder.MakeShell(shell);
+
+	std::vector<bool> used(faceMap.Extent(), false);
+	int nfaces = 0;
+	for (int id : faceIds)
+	{
+		if ((id < 0) || (id >= faceMap.Extent()) || used[id]) continue;
+		used[id] = true;
+		builder.Add(shell, faceMap(id + 1));
+		nfaces++;
+	}
+	if (nfaces == 0) return nullptr;
+
+	// make a deep copy so that the new object is independent of this one
+	BRepBuilderAPI_Copy copier(shell);
+	TopoDS_Shape newShape = copier.Shape();
+
+	GOCCObject* po = new GOCCObject;
+	po->SetShape(newShape);
+	return po;
+#else
+	return nullptr;
 #endif
 }
 

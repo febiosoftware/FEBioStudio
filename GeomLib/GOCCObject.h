@@ -50,6 +50,12 @@ public:
 	// return the OCC shape object
 	TopoDS_Shape& GetShape();
 
+	// Create a new OCC shell object from a subset of this object's faces.
+	// The faceIds are zero-based indices into this object's GFace list.
+	// The shape of the new object is an independent copy of the faces.
+	// Returns nullptr if no valid faces were passed (or OCC support is not available).
+	GOCCObject* CreateShellFromFaces(const std::vector<int>& faceIds);
+
 	FSMeshBase* GetEditableMesh() override;
 	FSLineMesh* GetEditableLineMesh() override;
 
