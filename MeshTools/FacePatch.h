@@ -53,7 +53,7 @@ bool ExtractMeshFacePatch(FSMeshBase* mesh, const std::vector<int>& faceIds, Fac
 // diagonal of the bounding box of a set of patches
 double PatchesDiagonal(const std::vector<FacePatch>& patches);
 
-// merge patches into a single triangulation (points are not merged between patches)
+// merge patches into a single triangulation (coincident points of neighbouring patches are welded)
 FacePatch MergePatches(const std::vector<FacePatch>& patches);
 
 // Returns true if the patch lies in a plane. If so, the plane's point and unit normal are returned.

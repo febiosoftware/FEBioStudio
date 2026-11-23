@@ -34,7 +34,9 @@ SOFTWARE.*/
 #include <MeshTools/NetGenOCCMesher.h>
 #include <MeshTools/NetGenFacetMesher.h>
 #include <MeshTools/FacePatch.h>
+#include <MeshTools/ShellExtruder.h>
 #include <MeshLib/FSMesh.h>
+#include <MeshLib/FSMeshBuilder.h>
 #include <MeshTools/FESelection.h>
 #include <QApplication>
 #include <QMessageBox>
@@ -44,10 +46,29 @@ CShellMeshFacesTool::CShellMeshFacesTool(CMainWindow* wnd) : CBasicTool(wnd, "Sh
 	m_elemSize = 0.0;
 	m_quad = true;
 	m_hideSource = true;
+	m_extrude = false;
+	m_dirMode = 0;
+	m_dir = vec3d(0, 0, 1);
+	m_flip = false;
+	m_distance = 1.0;
+	m_layers = 1;
+	m_bias = 1.0;
+	m_keepShell = false;
+	m_autoPartition = false;
+	m_creaseAngle = 30.0;
 	SetApplyButtonText("Mesh");
 	addDoubleProperty(&m_elemSize, "max element size (0 = use object's mesher)");
 	addBoolProperty(&m_quad, "quad dominant");
 	addBoolProperty(&m_hideSource, "hide original object");
+	addBoolProperty(&m_extrude, "extrude into solid (hex/penta)");
+	addEnumProperty(&m_dirMode, "extrude direction")->setEnumValues(QStringList() << "local normal" << "average normal" << "user-defined");
+	addVec3Property(&m_dir, "user direction (global)");
+	addDoubleProperty(&m_distance, "extrude distance (negative = opposite direction)");
+	addIntProperty(&m_layers, "extrude layers");
+	addDoubleProperty(&m_bias, "layer bias (1 = uniform)");
+	addBoolProperty(&m_keepShell, "keep shell object when extruding");
+	addBoolProperty(&m_autoPartition, "auto-partition surfaces");
+	addDoubleProperty(&m_creaseAngle, "crease angle (degrees)");
 	SetInfo("Select one or more faces of any object, then press Mesh. "
 		"A new shell object with a NetGen quad-dominant mesh of those faces is created. "
 		"Faces of CAD (STEP/BREP) objects are meshed exactly; for other objects, planar faces are rebuilt as CAD faces, "
@@ -207,11 +228,59 @@ bool CShellMeshFacesTool::OnApply()
 		return false;
 	}
 
-	int nelems = mesh->Elements();
+	if (m_autoPartition && ((m_creaseAngle <= 0.0) || (m_creaseAngle >= 180.0)))
+	{
+		if (shell) { delete shell; shell = nullptr; }
+		delete facetMesher;
+		delete facetMesh;
+		SetErrorString("The crease angle must be between 0 and 180 degrees.");
+		return false;
+	}
 
-	// the new object
+	// optional extrusion of the shell mesh into a solid mesh
+	FSMesh* solid = nullptr;
+	if (m_extrude)
+	{
+		ShellExtruder ext;
+		ext.m_mode = (m_dirMode == 1 ? ShellExtruder::AVERAGE_NORMAL : (m_dirMode == 2 ? ShellExtruder::USER_DIRECTION : ShellExtruder::LOCAL_NORMAL));
+		// the user direction is in global coordinates; the mesh is in the object's local coordinates
+		const Transform& T = po->GetTransform();
+		ext.m_direction = T.GlobalToLocal(m_dir) - T.GlobalToLocal(vec3d(0, 0, 0));
+		ext.m_flip = m_flip;
+		ext.m_distance = m_distance;
+		ext.m_layers = m_layers;
+		ext.m_bias = m_bias;
+		ext.m_autoPartition = m_autoPartition;
+		ext.m_creaseAngle = m_creaseAngle;
+
+		FSMesh* shellMesh = mesh;
+		solid = ext.Apply(*shellMesh);
+		if (solid == nullptr)
+		{
+			QString err = QString::fromStdString(ext.GetErrorString());
+			delete shell;
+			delete facetMesher;
+			delete facetMesh;
+			SetErrorString("Extrusion failed: " + err);
+			return false;
+		}
+	}
+
+	int nelems = (solid ? solid->Elements() : mesh->Elements());
+
+	// the new object(s)
 	GObject* newObj = shell;
-	if (newObj == nullptr) newObj = new GMeshObject(facetMesh);
+	if (newObj == nullptr)
+	{
+		// (CAD shells already have their faces from the CAD geometry)
+		if (m_autoPartition)
+		{
+			// same as the Auto Partition modifier in the Mesh panel
+			FSMeshBuilder meshBuilder(*facetMesh);
+			meshBuilder.AutoPartition(m_creaseAngle);
+		}
+		newObj = new GMeshObject(facetMesh);
+	}
 	delete facetMesher;
 
 	static int n = 1;
@@ -219,8 +288,27 @@ bool CShellMeshFacesTool::OnApply()
 	newObj->SetName(name.toStdString());
 	newObj->CopyTransform(po);
 
+	GObject* solidObj = nullptr;
+	if (solid)
+	{
+		QString sname = QString("%1_extrude%2").arg(QString::fromStdString(po->GetName())).arg(n - 1);
+		solidObj = new GMeshObject(solid);
+		solidObj->SetName(sname.toStdString());
+		solidObj->CopyTransform(po);
+		name = sname;
+	}
+
 	CCmdGroup* cmd = new CCmdGroup("Shell mesh faces");
-	cmd->AddCommand(new CCmdAddAndSelectObject(doc->GetGModel(), newObj));
+	if (solidObj)
+	{
+		if (m_keepShell)
+		{
+			cmd->AddCommand(new CCmdAddObject(doc->GetGModel(), newObj));
+		}
+		else delete newObj;
+		cmd->AddCommand(new CCmdAddAndSelectObject(doc->GetGModel(), solidObj));
+	}
+	else cmd->AddCommand(new CCmdAddAndSelectObject(doc->GetGModel(), newObj));
 	if (m_hideSource) cmd->AddCommand(new CCmdHideObject(po));
 	doc->DoCommand(cmd, name.toStdString());
 

@@ -188,11 +188,29 @@ double PatchesDiagonal(const std::vector<FacePatch>& patches)
 FacePatch MergePatches(const std::vector<FacePatch>& patches)
 {
 	FacePatch out;
+	double diag = PatchesDiagonal(patches);
+	double h = 1e-6 * diag;
+	if (h <= 0) h = 1e-12;
+
+	// weld coincident points (e.g. along the seams between neighbouring faces)
+	typedef std::tuple<long long, long long, long long> Key;
+	std::map<Key, int> uniq;
 	for (const FacePatch& P : patches)
 	{
-		int off = (int)out.pts.size();
-		out.pts.insert(out.pts.end(), P.pts.begin(), P.pts.end());
-		for (int t : P.tri) out.tri.push_back(t + off);
+		std::vector<int> remap(P.pts.size());
+		for (size_t i = 0; i < P.pts.size(); ++i)
+		{
+			const vec3d& r = P.pts[i];
+			Key k((long long)std::llround(r.x / h), (long long)std::llround(r.y / h), (long long)std::llround(r.z / h));
+			auto it = uniq.find(k);
+			if (it == uniq.end())
+			{
+				it = uniq.insert({ k, (int)out.pts.size() }).first;
+				out.pts.push_back(r);
+			}
+			remap[i] = it->second;
+		}
+		for (int t : P.tri) out.tri.push_back(remap[t]);
 	}
 	return out;
 }

@@ -41,4 +41,18 @@ private:
 	double	m_elemSize;		// max element size (<= 0 --> use the parent object's mesher setting)
 	bool	m_quad;			// quad dominant (otherwise pure triangles)
 	bool	m_hideSource;	// hide the original object after creating the shell
+
+	// optional extrusion (sweep) of the shell mesh into a solid mesh
+	bool	m_extrude;		// extrude the shell into a solid (hex/penta) object
+	int		m_dirMode;		// 0 = local normal, 1 = average normal, 2 = user-defined direction
+	vec3d	m_dir;			// user-defined direction (global coordinates)
+	bool	m_flip;			// reverse the extrusion direction
+	double	m_distance;		// extrusion distance
+	int		m_layers;		// number of layers
+	double	m_bias;			// layer thickness ratio
+	bool	m_keepShell;	// also keep the shell object when extruding
+
+	// surface partitioning of the new (non-CAD) object
+	bool	m_autoPartition;	// automatically partition the surface based on the crease angle
+	double	m_creaseAngle;		// crease angle in degrees
 };
