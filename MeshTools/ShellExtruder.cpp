@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "ShellExtruder.h"
 #include <MeshLib/FSMesh.h>
 #include <MeshLib/FSMeshBuilder.h>
+#include "ShellLayers.h"
 #include <vector>
 #include <cmath>
 
@@ -40,6 +41,7 @@ ShellExtruder::ShellExtruder()
 	m_bias = 1.0;
 	m_autoPartition = false;
 	m_creaseAngle = 30.0;
+	m_collapseTol = 0.0;
 }
 
 FSMesh* ShellExtruder::Apply(const FSMesh& shell)
@@ -52,50 +54,23 @@ FSMesh* ShellExtruder::Apply(const FSMesh& shell)
 	const double distance = fabs(m_distance);
 	if (m_bias <= 0.0) { m_err = "The mesh bias must be positive."; return nullptr; }
 
-	// collect the shell elements and the nodes they use
-	const int N0 = shell.Nodes();
-	std::vector<int> nodeMap(N0, -1);
-	std::vector<int> elems;
-	int nn = 0;
-	for (int i = 0; i < shell.Elements(); ++i)
-	{
-		const FSElement& el = shell.Element(i);
-		int ne = 0;
-		if (el.Type() == FE_TRI3) ne = 3;
-		else if (el.Type() == FE_QUAD4) ne = 4;
-		else { m_err = "Only linear triangle and quad shell elements can be extruded (second-order shell meshes are not supported)."; return nullptr; }
+	// analyze the shell mesh (TRI3/QUAD4 -> PENTA6/HEX8, TRI6/QUAD8 -> PENTA15/HEX20)
+	ShellSection sec;
+	if (!sec.Init(shell, m_err)) return nullptr;
+	const int nn = sec.nn;
+	const int ne = sec.Elements();
 
-		elems.push_back(i);
-		for (int k = 0; k < ne; ++k)
-			if (nodeMap[el.m_node[k]] == -1) nodeMap[el.m_node[k]] = nn++;
-	}
-	if (elems.empty()) { m_err = "The shell mesh has no elements."; return nullptr; }
-
-	std::vector<int> base(nn);
-	for (int i = 0; i < N0; ++i) if (nodeMap[i] >= 0) base[nodeMap[i]] = i;
+	std::vector<vec3d> r0(nn);
+	for (int i = 0; i < nn; ++i) r0[i] = shell.Node(sec.base[i]).r;
 
 	// area-weighted element and node normals
 	std::vector<vec3d> nodeNormal(nn, vec3d(0, 0, 0));
-	std::vector<vec3d> elemNormal(elems.size());
 	vec3d avg(0, 0, 0);
-	for (size_t e = 0; e < elems.size(); ++e)
+	for (int e = 0; e < ne; ++e)
 	{
-		const FSElement& el = shell.Element(elems[e]);
-		vec3d N;
-		if (el.Type() == FE_TRI3)
-		{
-			vec3d a = shell.Node(el.m_node[0]).r, b = shell.Node(el.m_node[1]).r, c = shell.Node(el.m_node[2]).r;
-			N = ((b - a) ^ (c - a)) * 0.5;
-		}
-		else
-		{
-			vec3d a = shell.Node(el.m_node[0]).r, b = shell.Node(el.m_node[1]).r, c = shell.Node(el.m_node[2]).r, d = shell.Node(el.m_node[3]).r;
-			N = ((c - a) ^ (d - b)) * 0.5;
-		}
-		elemNormal[e] = N;
+		vec3d N = sec.AreaNormal(e, r0);
 		avg += N;
-		int ne = (el.Type() == FE_TRI3 ? 3 : 4);
-		for (int k = 0; k < ne; ++k) nodeNormal[nodeMap[el.m_node[k]]] += N;
+		for (int k : sec.enodes[e]) nodeNormal[k] += N;
 	}
 
 	// the extrusion direction at each node
@@ -135,56 +110,30 @@ FSMesh* ShellExtruder::Apply(const FSMesh& shell)
 		}
 	}
 
-	// build the solid mesh
-	int nl = m_layers;
-	FSMesh* mesh = new FSMesh();
-	mesh->Create(nn * (nl + 1), (int)elems.size() * nl);
+	const int nl = m_layers;
+	std::vector<vec3d> layerPos((nl + 1) * nn);
 	for (int l = 0; l <= nl; ++l)
 		for (int i = 0; i < nn; ++i)
-			mesh->Node(l * nn + i).r = shell.Node(base[i]).r + dir[i] * offset[l];
+			layerPos[l * nn + i] = r0[i] + dir[i] * offset[l];
 
-	int ie = 0;
-	for (int l = 0; l < nl; ++l)
+	// nodes half way between the layers (quadratic elements only)
+	std::vector<vec3d> midPos;
+	if (sec.quadratic)
 	{
-		for (size_t e = 0; e < elems.size(); ++e)
-		{
-			const FSElement& sel = shell.Element(elems[e]);
-			FSElement& el = mesh->Element(ie++);
-			el.m_gid = 0;
-
-			int ne = (sel.Type() == FE_TRI3 ? 3 : 4);
-			int v[4];
-			for (int k = 0; k < ne; ++k) v[k] = nodeMap[sel.m_node[k]];
-
-			// the base face normal must point to the top face for a positive Jacobian
-			vec3d dm(0, 0, 0);
-			for (int k = 0; k < ne; ++k) dm += dir[v[k]];
-			if (elemNormal[e] * dm < 0)
+		midPos.resize(nl * sec.ncorner);
+		for (int l = 0; l < nl; ++l)
+			for (int c = 0; c < sec.ncorner; ++c)
 			{
-				if (ne == 3) std::swap(v[1], v[2]);
-				else std::swap(v[1], v[3]);
+				int i = sec.cornerNode[c];
+				midPos[l * sec.ncorner + c] = r0[i] + dir[i] * (0.5 * (offset[l] + offset[l + 1]));
 			}
-
-			int b = l * nn, t = (l + 1) * nn;
-			if (ne == 3)
-			{
-				el.SetType(FE_PENTA6);
-				for (int k = 0; k < 3; ++k) { el.m_node[k] = b + v[k]; el.m_node[k + 3] = t + v[k]; }
-			}
-			else
-			{
-				el.SetType(FE_HEX8);
-				for (int k = 0; k < 4; ++k) { el.m_node[k] = b + v[k]; el.m_node[k + 4] = t + v[k]; }
-			}
-		}
 	}
 
-	mesh->RebuildMesh();
-	if (m_autoPartition)
+	FSMesh* mesh = sec.BuildSolid(r0, nl, layerPos, midPos);
+	if (!FinishSolidMesh(*mesh, m_collapseTol, m_autoPartition, m_creaseAngle, m_err))
 	{
-		// same as the Auto Partition modifier in the Mesh panel
-		FSMeshBuilder meshBuilder(*mesh);
-		meshBuilder.AutoPartition(m_creaseAngle);
+		delete mesh;
+		return nullptr;
 	}
 	return mesh;
 }

@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <MeshTools/FEMMGRemesh.h>
 #include <MeshTools/FEWeldModifier.h>
 #include <MeshTools/FEAutoPartition.h>
+#include <MeshTools/FECollapseDegenerate.h>
 #include <MeshTools/FEBoundaryLayerMesher.h>
 #include <MeshTools/FEAxesCurvature.h>
 #include <MeshTools/FEExtrudeFaces.h>
@@ -276,6 +277,7 @@ REGISTER_CLASS(FEAddTriangle          , CLASS_FEMODIFIER, "Add Triangle"   , EDI
 REGISTER_CLASS(FEAlignNodes           , CLASS_FEMODIFIER, "Align"          , EDIT_NODE);
 REGISTER_CLASS(FEAutoPartition        , CLASS_FEMODIFIER, "Auto Partition" , EDIT_MESH);
 REGISTER_CLASS(FEBoundaryLayerMesher  , CLASS_FEMODIFIER, "Boundary Layer" , EDIT_FACE | EDIT_SAFE);
+REGISTER_CLASS(FECollapseDegenerateElements, CLASS_FEMODIFIER, "Collapse Degenerate Elements", EDIT_MESH);
 REGISTER_CLASS(FEConvertMesh		  , CLASS_FEMODIFIER, "Convert Mesh"   , EDIT_MESH | EDIT_SAFE);
 REGISTER_CLASS(FECreateShells         , CLASS_FEMODIFIER, "Create Shells from Faces"  , EDIT_FACE | EDIT_MESH);
 REGISTER_CLASS(FEDetachElements	      , CLASS_FEMODIFIER, "Detach Elements", EDIT_ELEMENT);

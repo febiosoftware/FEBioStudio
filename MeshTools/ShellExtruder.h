@@ -29,7 +29,7 @@ SOFTWARE.*/
 
 class FSMesh;
 
-// Extrudes (sweeps) a linear shell mesh (TRI3/QUAD4 elements) in a straight direction into a solid mesh
+// Extrudes (sweeps) a shell mesh (TRI3/QUAD4/TRI6/QUAD8 elements) in a straight direction into a solid mesh
 // of PENTA6/HEX8 elements. The shell mesh is not modified.
 class ShellExtruder
 {
@@ -51,6 +51,7 @@ public:
 	double			m_bias;			// ratio of successive layer thicknesses (1 = uniform)
 	bool			m_autoPartition;// partition the resulting surface into faces based on the crease angle
 	double			m_creaseAngle;	// crease (smoothing) angle in degrees
+	double			m_collapseTol;	// tolerance for eliminating degenerate elements (0 = automatic)
 
 	// Build the solid mesh. Returns nullptr on failure and sets the error message.
 	FSMesh* Apply(const FSMesh& shell);

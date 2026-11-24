@@ -60,6 +60,7 @@ public:
 	QCheckBox* rotate;
 	QCheckBox* autoPartition;
 	QDoubleSpinBox* crease;
+	QDoubleSpinBox* collapseTol;
 	QCheckBox* hideSection;
 	QPushButton* sweep;
 
@@ -87,6 +88,10 @@ public:
 		f->addRow("auto-partition surfaces", autoPartition);
 		crease = new QDoubleSpinBox; crease->setRange(0.1, 179.9); crease->setValue(30.0);
 		f->addRow("crease angle (degrees)", crease);
+		collapseTol = new QDoubleSpinBox; collapseTol->setDecimals(10); collapseTol->setRange(0.0, 1e12); collapseTol->setValue(0.0);
+		collapseTol->setSpecialValueText("auto");
+		collapseTol->setToolTip("Nodes of an element closer than this are merged, turning degenerate hexes (e.g. where the section touches an axis of rotation) into pentas. auto = 1e-3 x average element size.");
+		f->addRow("degeneracy tolerance", collapseTol);
 		hideSection = new QCheckBox; hideSection->setChecked(true);
 		f->addRow("hide section object", hideSection);
 		l->addLayout(f);
@@ -162,9 +167,9 @@ void CSweepShellTool::OnSetSection()
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
 		int t = pm->Element(i).Type();
-		if ((t != FE_TRI3) && (t != FE_QUAD4))
+		if ((t != FE_TRI3) && (t != FE_QUAD4) && (t != FE_TRI6) && (t != FE_QUAD8))
 		{
-			Error("The selected object is not a linear shell mesh (triangles/quads only).");
+			Error("The selected object is not a shell mesh of TRI3, QUAD4, TRI6 or QUAD8 elements.");
 			return;
 		}
 	}
@@ -302,6 +307,7 @@ void CSweepShellTool::OnSweep()
 	sw.m_rotate = ui->rotate->isChecked();
 	sw.m_autoPartition = ui->autoPartition->isChecked();
 	sw.m_creaseAngle = ui->crease->value();
+	sw.m_collapseTol = ui->collapseTol->value();
 
 	QApplication::setOverrideCursor(Qt::WaitCursor);
 	FSMesh* solid = sw.Apply(*shell, m_section->GetTransform());
@@ -321,6 +327,7 @@ void CSweepShellTool::OnSweep()
 	cmd->AddCommand(new CCmdAddAndSelectObject(doc->GetGModel(), po));
 	if (ui->hideSection->isChecked()) cmd->AddCommand(new CCmdHideObject(m_section));
 	doc->DoCommand(cmd, name.toStdString());
+	GetMainWindow()->UpdateModel(po);	// refresh the model tree (abstract tools don't do this automatically)
 
 	QMessageBox::information(GetMainWindow(), "Sweep Shell", QString("Created %1 (%2 elements)").arg(name).arg(solid->Elements()));
 }

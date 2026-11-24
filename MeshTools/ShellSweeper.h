@@ -37,7 +37,7 @@ struct PathSegment
 	vec3d a, b;
 };
 
-// Sweeps a linear shell mesh (TRI3/QUAD4) along a path into a solid mesh of PENTA6/HEX8 elements.
+// Sweeps a shell mesh (TRI3/QUAD4/TRI6/QUAD8) along a path into a solid mesh (PENTA6/HEX8/PENTA15/HEX20).
 // The solid mesh is created in global coordinates.
 class ShellSweeper
 {
@@ -49,6 +49,13 @@ public:
 	bool	m_rotate;					// rotate the section to follow the path tangent (parallel transport); otherwise only translate
 	bool	m_autoPartition;			// partition the resulting surface (as the Mesh panel's Auto Partition)
 	double	m_creaseAngle;				// crease angle (degrees)
+	std::vector<vec3d>	m_orient;			// optional: desired normal of the section plane at each path point (same size as m_path; empty = the
+										// section stays perpendicular to the path). The section is tilted by the smallest rotation taking the path tangent to this
+										// direction (interpolated between path points).
+	std::vector<double>	m_scale;			// optional: uniform scale of the section at each path point (same size as m_path; empty = no scaling)
+										// (the scale is relative to the first path point and is interpolated between path points)
+	double	m_collapseTol;				// nodes of an element closer than this are merged, which turns degenerate
+										// hexes (e.g. at an axis of rotation) into pentas/pyramids/tets (0 = automatic)
 
 	// Build the solid. T maps the shell mesh's local coordinates to global coordinates.
 	FSMesh* Apply(const FSMesh& shell, const Transform& T);

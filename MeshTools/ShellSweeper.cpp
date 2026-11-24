@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "ShellSweeper.h"
 #include <MeshLib/FSMesh.h>
 #include <MeshLib/FSMeshBuilder.h>
+#include "ShellLayers.h"
 #include <FECore/FETransform.h>
 #include <map>
 #include <set>
@@ -40,6 +41,7 @@ ShellSweeper::ShellSweeper()
 	m_rotate = true;
 	m_autoPartition = false;
 	m_creaseAngle = 30.0;
+	m_collapseTol = 0.0;
 }
 
 //-----------------------------------------------------------------------------
@@ -182,6 +184,8 @@ FSMesh* ShellSweeper::Apply(const FSMesh& shell, const Transform& T)
 {
 	m_err.clear();
 	if (m_path.size() < 2) { m_err = "No sweep path has been set."; return nullptr; }
+	if (!m_scale.empty() && (m_scale.size() != m_path.size())) { m_err = "The scale list does not match the path."; return nullptr; }
+	if (!m_orient.empty() && (m_orient.size() != m_path.size())) { m_err = "The orientation list does not match the path."; return nullptr; }
 
 	// chords of the original path
 	const int np = (int)m_path.size() - 1;		// number of original segments
@@ -216,135 +220,111 @@ FSMesh* ShellSweeper::Apply(const FSMesh& shell, const Transform& T)
 		if (tn.norm() > 1e-12) tv[np] = tn / tn.norm();
 	}
 
-	// the path points and tangents used for the layers
-	std::vector<vec3d> P, tang;
+	// analyze the section
+	ShellSection sec;
+	if (!sec.Init(shell, m_err)) return nullptr;
+	const int nn = sec.nn;
+	const int step = (sec.quadratic ? 2 : 1);	// quadratic elements need stations half way between the layers
+
+	// Stations along the path (positions and tangents). Hermite spline through the original points with the
+	// tangents above (interpolating linearly would cut the corners of a curved path).
+	std::vector<std::pair<int, double>> st;		// (segment, parameter)
 	if (m_layers <= 0)
 	{
-		P = m_path;
-		tang = tv;
+		for (int i = 0; i < np; ++i)
+		{
+			st.push_back({ i, 0.0 });
+			if (step == 2) st.push_back({ i, 0.5 });
+		}
+		st.push_back({ np - 1, 1.0 });
 	}
 	else
 	{
-		// Sample the path at equal arclength using a cubic Hermite spline through the original points with the
-		// tangents above. (Interpolating linearly would cut the corners of a curved path, and would lose the
-		// curvature near the ends if the path has fewer segments than layers.)
 		double total = 0;
 		for (int i = 0; i < np; ++i) total += clen[i];
+		const int nst = step * m_layers;
 		int seg = 0;
 		double s0 = 0;
-		for (int k = 0; k <= m_layers; ++k)
+		for (int k = 0; k <= nst; ++k)
 		{
-			double t = total * (double)k / (double)m_layers;
+			double t = total * (double)k / (double)nst;
 			while ((seg < np - 1) && (s0 + clen[seg] < t)) { s0 += clen[seg]; ++seg; }
 			double u = (t - s0) / clen[seg];
 			u = std::min(1.0, std::max(0.0, u));
-
-			double u2 = u * u, u3 = u2 * u;
-			double h00 = 2 * u3 - 3 * u2 + 1, h10 = u3 - 2 * u2 + u, h01 = -2 * u3 + 3 * u2, h11 = u3 - u2;
-			double d00 = 6 * u2 - 6 * u, d10 = 3 * u2 - 4 * u + 1, d01 = -6 * u2 + 6 * u, d11 = 3 * u2 - 2 * u;
-			vec3d m0 = tv[seg] * clen[seg], m1 = tv[seg + 1] * clen[seg];
-			vec3d pt = m_path[seg] * h00 + m0 * h10 + m_path[seg + 1] * h01 + m1 * h11;
-			vec3d dt = m_path[seg] * d00 + m0 * d10 + m_path[seg + 1] * d01 + m1 * d11;
-			if (k == 0) { pt = m_path[0]; dt = tv[0]; }
-			if (k == m_layers) { pt = m_path[np]; dt = tv[np]; }
-			if (dt.norm() < 1e-12) dt = chord[seg];
-			P.push_back(pt);
-			tang.push_back(dt / dt.norm());
+			st.push_back({ seg, u });
 		}
 	}
-	const int nl = (int)P.size() - 1;
-	if (nl < 1) { m_err = "The path is too short."; return nullptr; }
 
-	// collect the shell elements and nodes
-	const int N0 = shell.Nodes();
-	std::vector<int> nodeMap(N0, -1);
-	std::vector<int> elems;
-	int nn = 0;
-	for (int i = 0; i < shell.Elements(); ++i)
+	std::vector<vec3d> P, tang;
+	std::vector<double> sc;
+	std::vector<vec3d> orient;
+	for (size_t k = 0; k < st.size(); ++k)
 	{
-		const FSElement& el = shell.Element(i);
-		int ne = 0;
-		if (el.Type() == FE_TRI3) ne = 3;
-		else if (el.Type() == FE_QUAD4) ne = 4;
-		else { m_err = "The section must be a linear shell mesh of triangles and quads (second-order shells are not supported)."; return nullptr; }
-		elems.push_back(i);
-		for (int k = 0; k < ne; ++k)
-			if (nodeMap[el.m_node[k]] == -1) nodeMap[el.m_node[k]] = nn++;
+		int seg = st[k].first;
+		double u = st[k].second;
+		if (!m_orient.empty())
+		{
+			vec3d o = m_orient[seg] * (1.0 - u) + m_orient[seg + 1] * u;
+			double L = o.norm();
+			orient.push_back(L > 1e-12 ? o / L : m_orient[seg]);
+		}
+		sc.push_back(m_scale.empty() ? 1.0 : (m_scale[seg] * (1.0 - u) + m_scale[seg + 1] * u));
+		double u2 = u * u, u3 = u2 * u;
+		double h00 = 2 * u3 - 3 * u2 + 1, h10 = u3 - 2 * u2 + u, h01 = -2 * u3 + 3 * u2, h11 = u3 - u2;
+		double d00 = 6 * u2 - 6 * u, d10 = 3 * u2 - 4 * u + 1, d01 = -6 * u2 + 6 * u, d11 = 3 * u2 - 2 * u;
+		vec3d m0 = tv[seg] * clen[seg], m1 = tv[seg + 1] * clen[seg];
+		vec3d pt = m_path[seg] * h00 + m0 * h10 + m_path[seg + 1] * h01 + m1 * h11;
+		vec3d dt = m_path[seg] * d00 + m0 * d10 + m_path[seg + 1] * d01 + m1 * d11;
+		if (k == 0) { pt = m_path[0]; dt = tv[0]; }
+		if (k == st.size() - 1) { pt = m_path[np]; dt = tv[np]; }
+		if (dt.norm() < 1e-12) dt = chord[seg];
+		P.push_back(pt);
+		tang.push_back(dt / dt.norm());
 	}
-	if (elems.empty()) { m_err = "The section has no shell elements."; return nullptr; }
+	const int nst = (int)P.size() - 1;
+	const int nl = nst / step;
+	if (nl < 1) { m_err = "The path is too short."; return nullptr; }
 
 	// section node positions (global)
 	std::vector<vec3d> r0(nn);
-	for (int i = 0; i < N0; ++i) if (nodeMap[i] >= 0) r0[nodeMap[i]] = T.LocalToGlobal(shell.Node(i).r);
+	for (int i = 0; i < nn; ++i) r0[i] = T.LocalToGlobal(shell.Node(sec.base[i]).r);
 
-	// the section is attached to the first path point; each layer applies the accumulated transport rotation
-	std::vector<vec3d> pos((nl + 1) * nn);
+	// the section is attached to the first path point; each station applies the accumulated transport rotation
+	std::vector<vec3d> layerPos((nl + 1) * nn);
+	std::vector<vec3d> midPos(sec.quadratic ? nl * sec.ncorner : 0);
 	Mat3 R;
-	for (int l = 0; l <= nl; ++l)
+	// with prescribed orientations, the section's own normal at the start is orient[0]; first rotate it onto the path tangent
+	if (m_rotate && !orient.empty()) R = RotateTo(orient[0], tang[0]);
+	for (int k = 0; k <= nst; ++k)
 	{
-		if ((l > 0) && m_rotate) R = RotateTo(tang[l - 1], tang[l]) * R;
-		for (int i = 0; i < nn; ++i)
+		if ((k > 0) && m_rotate) R = RotateTo(tang[k - 1], tang[k]) * R;
+		Mat3 Rk = R;
+		if (m_rotate && !orient.empty()) Rk = RotateTo(tang[k], orient[k]) * R;
+		if (k % step == 0)
 		{
-			vec3d d = r0[i] - P[0];
-			pos[l * nn + i] = P[l] + (m_rotate ? (R * d) : d);
+			int l = k / step;
+			for (int i = 0; i < nn; ++i)
+			{
+				vec3d d = (r0[i] - P[0]) * sc[k];
+				layerPos[l * nn + i] = P[k] + (m_rotate ? (Rk * d) : d);
+			}
 		}
-	}
-
-	// orientation of each element: the base face normal must point towards the top face
-	std::vector<bool> flip(elems.size(), false);
-	for (size_t e = 0; e < elems.size(); ++e)
-	{
-		const FSElement& el = shell.Element(elems[e]);
-		int ne = (el.Type() == FE_TRI3 ? 3 : 4);
-		int v[4];
-		for (int k = 0; k < ne; ++k) v[k] = nodeMap[el.m_node[k]];
-		vec3d N;
-		if (ne == 3) N = (r0[v[1]] - r0[v[0]]) ^ (r0[v[2]] - r0[v[0]]);
-		else N = (r0[v[2]] - r0[v[0]]) ^ (r0[v[3]] - r0[v[1]]);
-		vec3d dm(0, 0, 0);
-		for (int k = 0; k < ne; ++k) dm += pos[nn + v[k]] - pos[v[k]];
-		if (N * dm < 0) flip[e] = true;
-	}
-
-	FSMesh* mesh = new FSMesh();
-	mesh->Create(nn * (nl + 1), (int)elems.size() * nl);
-	for (int i = 0; i < (int)pos.size(); ++i) mesh->Node(i).r = pos[i];
-
-	int ie = 0;
-	for (int l = 0; l < nl; ++l)
-	{
-		for (size_t e = 0; e < elems.size(); ++e)
+		else
 		{
-			const FSElement& sel = shell.Element(elems[e]);
-			FSElement& el = mesh->Element(ie++);
-			el.m_gid = 0;
-			int ne = (sel.Type() == FE_TRI3 ? 3 : 4);
-			int v[4];
-			for (int k = 0; k < ne; ++k) v[k] = nodeMap[sel.m_node[k]];
-			if (flip[e])
+			int l = k / step;
+			for (int c = 0; c < sec.ncorner; ++c)
 			{
-				if (ne == 3) std::swap(v[1], v[2]);
-				else std::swap(v[1], v[3]);
-			}
-			int b = l * nn, t = (l + 1) * nn;
-			if (ne == 3)
-			{
-				el.SetType(FE_PENTA6);
-				for (int k = 0; k < 3; ++k) { el.m_node[k] = b + v[k]; el.m_node[k + 3] = t + v[k]; }
-			}
-			else
-			{
-				el.SetType(FE_HEX8);
-				for (int k = 0; k < 4; ++k) { el.m_node[k] = b + v[k]; el.m_node[k + 4] = t + v[k]; }
+				vec3d d = (r0[sec.cornerNode[c]] - P[0]) * sc[k];
+				midPos[l * sec.ncorner + c] = P[k] + (m_rotate ? (Rk * d) : d);
 			}
 		}
 	}
 
-	mesh->RebuildMesh();
-	if (m_autoPartition)
+	FSMesh* mesh = sec.BuildSolid(r0, nl, layerPos, midPos);
+	if (!FinishSolidMesh(*mesh, m_collapseTol, m_autoPartition, m_creaseAngle, m_err))
 	{
-		FSMeshBuilder meshBuilder(*mesh);
-		meshBuilder.AutoPartition(m_creaseAngle);
+		delete mesh;
+		return nullptr;
 	}
 	return mesh;
 }

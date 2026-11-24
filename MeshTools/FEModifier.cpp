@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <MeshLib/FSFaceEdgeList.h>
 #include "FELinearToQuadratic.h"
 #include "FESplitModifier.h"
+#include "FEQuadraticRefine.h"
 #include <GeomLib/GObject.h>
 #include <stdarg.h>
 #include <FECore/units.h>
@@ -1496,7 +1497,12 @@ FSMesh* RefineMesh::Apply(FSMesh* pm)
 
 	// select a modifier
 	FEModifier* mod = 0;
-	if (pm->IsType(FE_QUAD4))
+	if (FEQuadraticRefineModifier::CanRefine(*pm))
+	{
+		// second-order QUAD8/TRI6/HEX20/PENTA15 meshes
+		mod = new FEQuadraticRefineModifier;
+	}
+	else if (pm->IsType(FE_QUAD4))
 	{
 		mod = new FEQuadSplitModifier;
 	}

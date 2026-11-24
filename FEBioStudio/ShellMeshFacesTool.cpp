@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <MeshTools/NetGenFacetMesher.h>
 #include <MeshTools/FacePatch.h>
 #include <MeshTools/ShellExtruder.h>
+#include <MeshTools/ShellLayers.h>
 #include <MeshLib/FSMesh.h>
 #include <MeshLib/FSMeshBuilder.h>
 #include <MeshTools/FESelection.h>
@@ -45,6 +46,7 @@ CShellMeshFacesTool::CShellMeshFacesTool(CMainWindow* wnd) : CBasicTool(wnd, "Sh
 {
 	m_elemSize = 0.0;
 	m_quad = true;
+	m_quadratic = false;
 	m_hideSource = true;
 	m_extrude = false;
 	m_dirMode = 0;
@@ -56,9 +58,11 @@ CShellMeshFacesTool::CShellMeshFacesTool(CMainWindow* wnd) : CBasicTool(wnd, "Sh
 	m_keepShell = false;
 	m_autoPartition = false;
 	m_creaseAngle = 30.0;
+	m_collapseTol = 0.0;
 	SetApplyButtonText("Mesh");
 	addDoubleProperty(&m_elemSize, "max element size (0 = use object's mesher)");
 	addBoolProperty(&m_quad, "quad dominant");
+	addBoolProperty(&m_quadratic, "quadratic elements (quad8/tri6; hex20/penta15 if extruded)");
 	addBoolProperty(&m_hideSource, "hide original object");
 	addBoolProperty(&m_extrude, "extrude into solid (hex/penta)");
 	addEnumProperty(&m_dirMode, "extrude direction")->setEnumValues(QStringList() << "local normal" << "average normal" << "user-defined");
@@ -69,6 +73,7 @@ CShellMeshFacesTool::CShellMeshFacesTool(CMainWindow* wnd) : CBasicTool(wnd, "Sh
 	addBoolProperty(&m_keepShell, "keep shell object when extruding");
 	addBoolProperty(&m_autoPartition, "auto-partition surfaces");
 	addDoubleProperty(&m_creaseAngle, "crease angle (degrees)");
+	addDoubleProperty(&m_collapseTol, "degeneracy tolerance (0 = auto)");
 	SetInfo("Select one or more faces of any object, then press Mesh. "
 		"A new shell object with a NetGen quad-dominant mesh of those faces is created. "
 		"Faces of CAD (STEP/BREP) objects are meshed exactly; for other objects, planar faces are rebuilt as CAD faces, "
@@ -200,6 +205,7 @@ bool CShellMeshFacesTool::OnApply()
 	}
 
 	mesher->SetBoolValue(NetGenMesher::QUADMESH, m_quad);
+	mesher->SetBoolValue(NetGenMesher::SECONDORDER, m_quadratic);
 	mesher->SetBoolValue(NetGenMesher::SURFREFINE, false);
 	if (m_elemSize > 0.0)
 	{
@@ -228,6 +234,13 @@ bool CShellMeshFacesTool::OnApply()
 		return false;
 	}
 
+	// the triangle-merging fallback only produces linear elements
+	if (m_quadratic && facetMesh)
+	{
+		FSMesh* q = ConvertShellToQuadratic(*facetMesh);
+		if (q) { delete facetMesh; facetMesh = q; mesh = q; }
+	}
+
 	if (m_autoPartition && ((m_creaseAngle <= 0.0) || (m_creaseAngle >= 180.0)))
 	{
 		if (shell) { delete shell; shell = nullptr; }
@@ -252,6 +265,7 @@ bool CShellMeshFacesTool::OnApply()
 		ext.m_bias = m_bias;
 		ext.m_autoPartition = m_autoPartition;
 		ext.m_creaseAngle = m_creaseAngle;
+		ext.m_collapseTol = m_collapseTol;
 
 		FSMesh* shellMesh = mesh;
 		solid = ext.Apply(*shellMesh);

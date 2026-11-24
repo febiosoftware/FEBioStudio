@@ -39,6 +39,7 @@ public:
 
 private:
 	double	m_elemSize;		// max element size (<= 0 --> use the parent object's mesher setting)
+	bool	m_quadratic;	// generate second-order elements (TRI6/QUAD8, and HEX20/PENTA15 when extruding)
 	bool	m_quad;			// quad dominant (otherwise pure triangles)
 	bool	m_hideSource;	// hide the original object after creating the shell
 
@@ -55,4 +56,5 @@ private:
 	// surface partitioning of the new (non-CAD) object
 	bool	m_autoPartition;	// automatically partition the surface based on the crease angle
 	double	m_creaseAngle;		// crease angle in degrees
+	double	m_collapseTol;		// tolerance for eliminating degenerate elements (0 = automatic)
 };
