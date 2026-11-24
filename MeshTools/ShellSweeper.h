@@ -52,6 +52,21 @@ public:
 	std::vector<vec3d>	m_orient;			// optional: desired normal of the section plane at each path point (same size as m_path; empty = the
 										// section stays perpendicular to the path). The section is tilted by the smallest rotation taking the path tangent to this
 										// direction (interpolated between path points).
+	std::vector<double>	m_covariance;		// optional: area-normalized covariance matrix (xx,xy,xz,yy,yz,zz; global) of the target shape at each path
+										// point (6 values per path point). When set, the section is deformed (within its plane) so that its covariance
+										// matches, which scales it and turns e.g. a circle into an ellipse. Overrides m_scale.
+	vec3d	m_startNormal;				// normal of the section plane (used with m_covariance; zero = use the path tangent)
+	double	m_startCov[6];				// covariance of the section itself (used with m_covariance)
+	// optional outline matching (arbitrary section shapes): the outlines (line segments, global coordinates; every edge of the section
+	// is fine since only the outermost crossing along each ray from the centroid is used) of the start section (first entry) and of the
+	// target sections, with the path index of each (m_outlineIndex[0] = 0, the last must be the last path point). Requires m_layers = 0
+	// and m_covariance (which is used if the outlines can't be matched). Each node keeps its relative radius and polar angle between
+	// the centroid and the outline; the in-plane rotation of each target is chosen so that the outline radial profiles agree best.
+	typedef std::vector<std::pair<vec3d, vec3d>> Outline;
+	std::vector<Outline>	m_outlines;
+	std::vector<int>		m_outlineIndex;
+	bool	m_alignTwist = false;		// outline matching: also rotate the targets in-plane (limited to 15 degrees per section) to best align the outlines
+	bool	m_outlineUsed = false;	// (output) true if outline matching was applied
 	std::vector<double>	m_scale;			// optional: uniform scale of the section at each path point (same size as m_path; empty = no scaling)
 										// (the scale is relative to the first path point and is interpolated between path points)
 	double	m_collapseTol;				// nodes of an element closer than this are merged, which turns degenerate

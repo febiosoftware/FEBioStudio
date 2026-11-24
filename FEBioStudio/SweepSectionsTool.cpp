@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <GLLib/GLMesh.h>
 #include <MeshTools/FESelection.h>
 #include <MeshTools/ShellSweeper.h>
+#include <MeshTools/VesselSections.h>
 #include <FECore/FETransform.h>
 #include <QPushButton>
 #include <QLabel>
@@ -65,7 +66,8 @@ public:
 	QSpinBox* layers;
 	QComboBox* tangentMode;
 	QCheckBox* matchOrientation;
-	QCheckBox* scale;
+	QComboBox* shapeMode;
+	QCheckBox* alignTwist;
 	QCheckBox* autoPartition;
 	QDoubleSpinBox* crease;
 	QDoubleSpinBox* collapseTol;
@@ -104,9 +106,19 @@ public:
 		matchOrientation->setToolTip("Only for the 'smooth curve' path: tilt the swept section so that it lies exactly in the plane of each "
 			"target section (the layers are then not necessarily perpendicular to the path). If this folds elements, switch it off.");
 		f->addRow("match target planes (smooth path)", matchOrientation);
-		scale = new QCheckBox; scale->setChecked(true);
-		scale->setToolTip("Scale the swept section so its size matches each target section (sqrt of area ratio).");
-		f->addRow("scale to match targets", scale);
+		shapeMode = new QComboBox;
+		shapeMode->addItems(QStringList() << "none" << "scale (area)" << "linear stretch (ellipses)" << "outline (arbitrary shapes)");
+		shapeMode->setCurrentIndex(3);
+		shapeMode->setToolTip("How the swept section adapts to the target sections. outline: the section's boundary is mapped onto the "
+			"outline of each target (each node keeps its relative radius and angle about the centroid), and the in-plane rotation is chosen so "
+			"the outlines agree best. Requires roughly star-shaped sections (any ray from the centroid should leave the section once) and needs "
+			"'match target planes' with the smooth path. Otherwise the linear stretch is used. linear stretch: size and elongation only "
+			"(circle -> ellipse). scale: uniform scaling by the area ratio.");
+		f->addRow("match target size/shape", shapeMode);
+		alignTwist = new QCheckBox; alignTwist->setChecked(false);
+		alignTwist->setToolTip("Outline matching: also rotate each section within its plane (at most 15 degrees per section) so that the outlines "
+			"line up best. Off = minimal twist along the path.");
+		f->addRow("align twist to outlines", alignTwist);
 		autoPartition = new QCheckBox; autoPartition->setChecked(false);
 		f->addRow("auto-partition surfaces", autoPartition);
 		crease = new QDoubleSpinBox; crease->setRange(0.1, 179.9); crease->setValue(30.0);
@@ -184,6 +196,42 @@ void CSweepSectionsTool::UpdateLabels()
 }
 
 namespace {
+	// accumulate the integral of x*x^T over the triangle (a,b,c) of area w
+	void AddM2(double* m2, const vec3d& a, const vec3d& b, const vec3d& c, double w)
+	{
+		vec3d m = (a + b + c) * (1.0 / 3.0);
+		double A[3] = { a.x, a.y, a.z }, B[3] = { b.x, b.y, b.z }, C[3] = { c.x, c.y, c.z }, M[3] = { m.x, m.y, m.z };
+		static const int ii[6] = { 0,0,0,1,1,2 }, jj[6] = { 0,1,2,1,2,2 };
+		for (int k = 0; k < 6; ++k)
+		{
+			int i = ii[k], j = jj[k];
+			m2[k] += w / 12.0 * (A[i] * A[j] + B[i] * B[j] + C[i] * C[j] + 9.0 * M[i] * M[j]);
+		}
+	}
+
+	// add the edges of a face/element polygon (corner nodes n[0..nc), mid-edge nodes n[nc..2nc) if present)
+	void AddEdges(CSweepSectionsTool::Section& s, FSMesh* pm, const Transform& T, const int* n, int nc, int nn)
+	{
+		for (int k = 0; k < nc; ++k)
+		{
+			vec3d a = T.LocalToGlobal(pm->Node(n[k]).r), b = T.LocalToGlobal(pm->Node(n[(k + 1) % nc]).r);
+			if (nn >= 2 * nc)
+			{
+				vec3d m = T.LocalToGlobal(pm->Node(n[nc + k]).r);
+				s.edges.push_back({ a, m });
+				s.edges.push_back({ m, b });
+			}
+			else s.edges.push_back({ a, b });
+		}
+	}
+
+	void FinishCov(CSweepSectionsTool::Section& s)
+	{
+		double c[3] = { s.c.x, s.c.y, s.c.z };
+		static const int ii[6] = { 0,0,0,1,1,2 }, jj[6] = { 0,1,2,1,2,2 };
+		for (int k = 0; k < 6; ++k) s.cov[k] = s.m2[k] / s.area - c[ii[k]] * c[jj[k]];
+	}
+
 	int FaceCorners(const FSFace& f)
 	{
 		switch (f.Type()) {
@@ -269,20 +317,22 @@ bool CSweepSectionsTool::GetSections(std::vector<Section>& sections, bool forSta
 					"Select a surface (or faces) of a solid mesh instead.";
 				return false;
 			}
+			AddEdges(s, pm, T, el.m_node, nc, el.Nodes());
 			vec3d a = T.LocalToGlobal(pm->Node(el.m_node[0]).r), b = T.LocalToGlobal(pm->Node(el.m_node[1]).r), c = T.LocalToGlobal(pm->Node(el.m_node[2]).r);
 			vec3d an = ((b - a) ^ (c - a)) * 0.5;
 			double w = an.norm();
-			s.n += an; s.area += w; csum += (a + b + c) * (w / 3.0);
+			s.n += an; s.area += w; csum += (a + b + c) * (w / 3.0); AddM2(s.m2, a, b, c, w);
 			if (nc == 4)
 			{
 				vec3d d = T.LocalToGlobal(pm->Node(el.m_node[3]).r);
 				vec3d bn = ((c - a) ^ (d - a)) * 0.5;
 				double w2 = bn.norm();
-				s.n += bn; s.area += w2; csum += (a + c + d) * (w2 / 3.0);
+				s.n += bn; s.area += w2; csum += (a + c + d) * (w2 / 3.0); AddM2(s.m2, a, c, d, w2);
 			}
 		}
 		if (s.area <= 0.0) { err = "The selected object has zero area."; return false; }
 		s.c = csum / s.area;
+		FinishCov(s);
 		sections.push_back(s);
 		return true;
 	}
@@ -335,9 +385,10 @@ bool CSweepSectionsTool::GetSections(std::vector<Section>& sections, bool forSta
 				if (jt == pointSurf.end()) pointSurf[key] = si;
 				else { int a = root(si), b = root(jt->second); if (a != b) parent[a] = b; }
 			}
+			secs[si].edges.push_back({ p[0], p[1] }); secs[si].edges.push_back({ p[1], p[2] }); secs[si].edges.push_back({ p[2], p[0] });
 			vec3d an = ((p[1] - p[0]) ^ (p[2] - p[0])) * 0.5;
 			double w = an.norm();
-			secs[si].n += an; secs[si].area += w; csum[si] += (p[0] + p[1] + p[2]) * (w / 3.0);
+			secs[si].n += an; secs[si].area += w; csum[si] += (p[0] + p[1] + p[2]) * (w / 3.0); AddM2(secs[si].m2, p[0], p[1], p[2], w);
 		}
 
 		// merge the touching surfaces
@@ -357,12 +408,13 @@ bool CSweepSectionsTool::GetSections(std::vector<Section>& sections, bool forSta
 				mc.push_back(vec3d(0, 0, 0));
 			}
 			Section& m = merged[it->second];
-			m.n += secs[i].n; m.area += secs[i].area; mc[it->second] += csum[i];
+			m.n += secs[i].n; m.area += secs[i].area; mc[it->second] += csum[i]; for (int k = 0; k < 6; ++k) m.m2[k] += secs[i].m2[k]; m.edges.insert(m.edges.end(), secs[i].edges.begin(), secs[i].edges.end());
 		}
 		for (size_t i = 0; i < merged.size(); ++i)
 		{
 			if (merged[i].area <= 0.0) { err = "A selected surface has no area."; return false; }
 			merged[i].c = mc[i] / merged[i].area;
+			FinishCov(merged[i]);
 			sections.push_back(merged[i]);
 		}
 	}
@@ -412,27 +464,88 @@ bool CSweepSectionsTool::GetSections(std::vector<Section>& sections, bool forSta
 			s.faces.push_back(ids[i]);
 
 			const FSFace& f = pm->Face(ids[i]);
+			AddEdges(s, pm, T, f.n, FaceCorners(f), f.Nodes());
 			vec3d a = T.LocalToGlobal(pm->Node(f.n[0]).r), b = T.LocalToGlobal(pm->Node(f.n[1]).r), c = T.LocalToGlobal(pm->Node(f.n[2]).r);
 			vec3d an = ((b - a) ^ (c - a)) * 0.5;
 			double w = an.norm();
-			s.n += an; s.area += w; csum[it->second] += (a + b + c) * (w / 3.0);
+			s.n += an; s.area += w; csum[it->second] += (a + b + c) * (w / 3.0); AddM2(s.m2, a, b, c, w);
 			if (FaceCorners(f) == 4)
 			{
 				vec3d d = T.LocalToGlobal(pm->Node(f.n[3]).r);
 				vec3d bn = ((c - a) ^ (d - a)) * 0.5;
 				double w2 = bn.norm();
-				s.n += bn; s.area += w2; csum[it->second] += (a + c + d) * (w2 / 3.0);
+				s.n += bn; s.area += w2; csum[it->second] += (a + c + d) * (w2 / 3.0); AddM2(s.m2, a, c, d, w2);
 			}
 		}
 		for (size_t i = 0; i < secs.size(); ++i)
 		{
 			if (secs[i].area <= 0.0) { err = "A selected section has zero area."; return false; }
 			secs[i].c = csum[i] / secs[i].area;
+			FinishCov(secs[i]);
 			sections.push_back(secs[i]);
 		}
 	}
 	if (sections.empty()) { err = "Could not get any faces from the selection."; return false; }
 	return true;
+}
+
+
+bool CSweepSectionsTool::SectionFromShellObject(GObject* po, Section& sec, QString& err)
+{
+	FSMesh* pm = (po ? po->GetFEMesh() : nullptr);
+	if ((pm == nullptr) || (pm->Elements() == 0)) { err = "The object has no shell mesh."; return false; }
+	const Transform& T = po->GetTransform();
+	sec = Section();
+	sec.po = po;
+	sec.wholeObject = true;
+	vec3d csum(0, 0, 0);
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		const FSElement& el = pm->Element(i);
+		int nc = 0;
+		switch (el.Type()) {
+		case FE_TRI3: case FE_TRI6: nc = 3; break;
+		case FE_QUAD4: case FE_QUAD8: nc = 4; break;
+		default: err = "The object is not a shell mesh of TRI3, QUAD4, TRI6 or QUAD8 elements."; return false;
+		}
+		AddEdges(sec, pm, T, el.m_node, nc, el.Nodes());
+		vec3d a = T.LocalToGlobal(pm->Node(el.m_node[0]).r), b = T.LocalToGlobal(pm->Node(el.m_node[1]).r), c = T.LocalToGlobal(pm->Node(el.m_node[2]).r);
+		vec3d an = ((b - a) ^ (c - a)) * 0.5;
+		double w = an.norm();
+		sec.n += an; sec.area += w; csum += (a + b + c) * (w / 3.0); AddM2(sec.m2, a, b, c, w);
+		if (nc == 4)
+		{
+			vec3d d = T.LocalToGlobal(pm->Node(el.m_node[3]).r);
+			vec3d bn = ((c - a) ^ (d - a)) * 0.5;
+			double w2 = bn.norm();
+			sec.n += bn; sec.area += w2; csum += (a + c + d) * (w2 / 3.0); AddM2(sec.m2, a, c, d, w2);
+		}
+	}
+	if (sec.area <= 0.0) { err = "The object has zero area."; return false; }
+	sec.c = csum / sec.area;
+	FinishCov(sec);
+	return true;
+}
+
+
+void CSweepSectionsTool::SectionFromPolygon(const std::vector<vec3d>& poly, const vec3d& normal, Section& sec)
+{
+	sec = Section();
+	sec.po = nullptr;
+	sec.geometric = true;
+	std::vector<int> tri;
+	VesselSections::TriangulatePolygon(poly, tri);
+	vec3d csum(0, 0, 0);
+	for (size_t i = 0; i < tri.size() / 3; ++i)
+	{
+		const vec3d& a = poly[tri[3 * i]]; const vec3d& b = poly[tri[3 * i + 1]]; const vec3d& c = poly[tri[3 * i + 2]];
+		double w = (((b - a) ^ (c - a)) * 0.5).norm();
+		sec.area += w; csum += (a + b + c) * (w / 3.0); AddM2(sec.m2, a, b, c, w);
+	}
+	int n = (int)poly.size();
+	for (int i = 0; i < n; ++i) sec.edges.push_back({ poly[i], poly[(i + 1) % n] });
+	if (sec.area > 0) { sec.c = csum / sec.area; FinishCov(sec); }
+	sec.n = normal * sec.area;
 }
 
 void CSweepSectionsTool::OnSetStart()
@@ -491,15 +604,35 @@ void CSweepSectionsTool::OnSweep()
 	if (!m_haveStart) { Error("Set the start section first."); return; }
 	if (m_targets.empty()) { Error("Set the target sections first."); return; }
 
-	GObject* po = m_start.po;
+	SweepOptions opt;
+	opt.layers = ui->layers->value();
+	opt.tangentMode = ui->tangentMode->currentIndex();
+	opt.matchOrientation = ui->matchOrientation->isChecked();
+	opt.shapeMode = ui->shapeMode->currentIndex();
+	opt.alignTwist = ui->alignTwist->isChecked();
+	opt.autoPartition = ui->autoPartition->isChecked();
+	opt.crease = ui->crease->value();
+	opt.collapseTol = ui->collapseTol->value();
+	opt.originalAction = ui->original->currentIndex();
+	opt.targetAction = ui->targetObjs->currentIndex();
+	RunSweep(m_start, m_targets, opt);
+	UpdateLabels();
+}
+
+bool CSweepSectionsTool::RunSweep(const Section& startSec, const std::vector<Section>& targets, const SweepOptions& opt)
+{
+	CModelDocument* doc = GetMainWindow()->GetModelDocument();
+	if ((doc == nullptr) || !doc->IsValid()) return false;
+
+	GObject* po = startSec.po;
 	FSMesh* pm = po->GetFEMesh();
-	if (pm == nullptr) { Error("The start object has no mesh."); return; }
+	if (pm == nullptr) { Error("The start object has no mesh."); return false; }
 	const Transform& T = po->GetTransform();
 
 	// build the shell mesh of the start section (from mesh faces, or the whole object if it is a shell mesh)
 	struct Cell { int type; int nn; int n[8]; };
 	std::vector<Cell> cells;
-	if (m_start.wholeObject)
+	if (startSec.wholeObject)
 	{
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
@@ -508,7 +641,7 @@ void CSweepSectionsTool::OnSweep()
 			if ((c.type != FE_TRI3) && (c.type != FE_QUAD4) && (c.type != FE_TRI6) && (c.type != FE_QUAD8))
 			{
 				Error("The start object is not a shell mesh of TRI3, QUAD4, TRI6 or QUAD8 elements.");
-				return;
+				return false;
 			}
 			for (int k = 0; k < c.nn; ++k) c.n[k] = el.m_node[k];
 			cells.push_back(c);
@@ -516,9 +649,9 @@ void CSweepSectionsTool::OnSweep()
 	}
 	else
 	{
-		for (int fi : m_start.faces)
+		for (int fi : startSec.faces)
 		{
-			if ((fi < 0) || (fi >= pm->Faces())) { Error("The start section is no longer valid. Set it again."); return; }
+			if ((fi < 0) || (fi >= pm->Faces())) { Error("The start section is no longer valid. Set it again."); return false; }
 			const FSFace& f = pm->Face(fi);
 			Cell c; c.nn = f.Nodes();
 			switch (f.Type()) {
@@ -528,13 +661,13 @@ void CSweepSectionsTool::OnSweep()
 			case FE_FACE_QUAD8: c.type = FE_QUAD8; break;
 			default:
 				Error("The start section must consist of TRI3, QUAD4, TRI6 or QUAD8 faces.");
-				return;
+				return false;
 			}
 			for (int k = 0; k < c.nn; ++k) c.n[k] = f.n[k];
 			cells.push_back(c);
 		}
 	}
-	if (cells.empty()) { Error("The start section is empty."); return; }
+	if (cells.empty()) { Error("The start section is empty."); return false; }
 
 	std::map<int, int> nodeMap;
 	std::vector<int> nodeList;
@@ -554,12 +687,12 @@ void CSweepSectionsTool::OnSweep()
 
 	// order the target sections: repeatedly go to the nearest remaining one (ignoring sections coinciding with the start)
 	std::vector<Section> remaining;
-	double L0 = sqrt(m_start.area);
-	for (const Section& s : m_targets)
-		if ((s.c - m_start.c).norm() > 1e-6 * std::max(L0, 1e-12)) remaining.push_back(s);
-	if (remaining.empty()) { Error("The target sections coincide with the start section."); return; }
+	double L0 = sqrt(startSec.area);
+	for (const Section& s : targets)
+		if ((s.c - startSec.c).norm() > 1e-6 * std::max(L0, 1e-12)) remaining.push_back(s);
+	if (remaining.empty()) { Error("The target sections coincide with the start section."); return false; }
 	std::vector<Section> st;
-	st.push_back(m_start);
+	st.push_back(startSec);
 	while (!remaining.empty())
 	{
 		int best = 0;
@@ -579,7 +712,7 @@ void CSweepSectionsTool::OnSweep()
 	for (int i = 0; i <= ns; ++i)
 	{
 		vec3d t = st[i].n;
-		if (t.norm() < 1e-12 * st[i].area) { Error("Could not determine the normal of one of the sections (it is closed or too wrinkled)."); return; }
+		if (t.norm() < 1e-12 * st[i].area) { Error("Could not determine the normal of one of the sections (it is closed or too wrinkled)."); return false; }
 		t /= t.norm();
 		if (i == 0)
 		{
@@ -600,7 +733,7 @@ void CSweepSectionsTool::OnSweep()
 		tg[i] = t;
 	}
 
-	if (ui->tangentMode->currentIndex() == 1)
+	if (opt.tangentMode == 1)
 	{
 		// smooth curve through the centroids: tangent along the central difference; at the ends mirror the neighbouring tangent
 		// about the end chord (which gives a circular arc for a circular path)
@@ -627,10 +760,11 @@ void CSweepSectionsTool::OnSweep()
 
 	// build the path: layers between each pair of sections; circular arc when the end tangents are mirror images
 	// across the bisector of the chord, a cubic Hermite curve otherwise
-	const int nl = ui->layers->value();
+	const int nl = opt.layers;
 	std::vector<vec3d> path;
 	std::vector<double> scale;
 	std::vector<vec3d> orient;
+	std::vector<double> covs;		// target covariance at each path point (6 per point)
 
 	// desired plane normal of the section at each target: the target normal with the sign that agrees with the path tangent
 	std::vector<vec3d> pn(ns + 1);
@@ -641,10 +775,11 @@ void CSweepSectionsTool::OnSweep()
 		if (t * tg[i] < 0) t = -t;
 		pn[i] = t;
 	}
-	const bool doOrient = (ui->tangentMode->currentIndex() == 1) && ui->matchOrientation->isChecked();
+	const bool doOrient = (opt.tangentMode == 1) && opt.matchOrientation;
 	path.push_back(st[0].c);
 	scale.push_back(1.0);
 	orient.push_back(pn[0]);
+	for (int k = 0; k < 6; ++k) covs.push_back(st[0].cov[k]);
 	for (int i = 0; i < ns; ++i)
 	{
 		vec3d p0 = st[i].c, p1 = st[i + 1].c;
@@ -652,8 +787,8 @@ void CSweepSectionsTool::OnSweep()
 		vec3d d = p1 - p0;
 		double c = d.norm();
 		vec3d dh = d / c;
-		double s0 = ui->scale->isChecked() ? sqrt(st[i].area / m_start.area) : 1.0;
-		double s1 = ui->scale->isChecked() ? sqrt(st[i + 1].area / m_start.area) : 1.0;
+		double s0 = (opt.shapeMode >= 1) ? sqrt(st[i].area / startSec.area) : 1.0;
+		double s1 = (opt.shapeMode >= 1) ? sqrt(st[i + 1].area / startSec.area) : 1.0;
 
 		double cosA0 = std::max(-1.0, std::min(1.0, t0 * dh));
 		double a0 = acos(cosA0);
@@ -687,6 +822,7 @@ void CSweepSectionsTool::OnSweep()
 			path.push_back(p);
 			scale.push_back(s0 * (1.0 - u) + s1 * u);
 			orient.push_back(pn[i] * (1.0 - u) + pn[i + 1] * u);
+			for (int k = 0; k < 6; ++k) covs.push_back(st[i].cov[k] * (1.0 - u) + st[i + 1].cov[k] * u);
 		}
 	}
 
@@ -694,11 +830,29 @@ void CSweepSectionsTool::OnSweep()
 	sw.m_path = path;
 	sw.m_scale = scale;
 	if (doOrient) sw.m_orient = orient;
+	const int shapeMode = opt.shapeMode;
+	if (shapeMode >= 2)
+	{
+		// match the size and shape (e.g. circle -> ellipse) of the targets
+		sw.m_covariance = covs;
+		sw.m_startNormal = pn[0];
+		for (int k = 0; k < 6; ++k) sw.m_startCov[k] = startSec.cov[k];
+	}
+	if (shapeMode == 3)
+	{
+		sw.m_alignTwist = opt.alignTwist;
+		// outline matching (the start section's outline first, then each target in path order)
+		for (int i = 0; i <= ns; ++i)
+		{
+			sw.m_outlines.push_back(st[i].edges);
+			sw.m_outlineIndex.push_back(i * nl);
+		}
+	}
 	sw.m_layers = 0;		// one layer per path segment
 	sw.m_rotate = true;
-	sw.m_autoPartition = ui->autoPartition->isChecked();
-	sw.m_creaseAngle = ui->crease->value();
-	sw.m_collapseTol = ui->collapseTol->value();
+	sw.m_autoPartition = opt.autoPartition;
+	sw.m_creaseAngle = opt.crease;
+	sw.m_collapseTol = opt.collapseTol;
 
 	QApplication::setOverrideCursor(Qt::WaitCursor);
 	FSMesh* solid = sw.Apply(shell, T);
@@ -706,7 +860,7 @@ void CSweepSectionsTool::OnSweep()
 	if (solid == nullptr)
 	{
 		Error("Sweep failed: " + QString::fromStdString(sw.GetErrorString()));
-		return;
+		return false;
 	}
 
 	// count elements with a non-positive Jacobian at one of their corners
@@ -748,16 +902,16 @@ void CSweepSectionsTool::OnSweep()
 
 	CCmdGroup* cmd = new CCmdGroup("Sweep sections");
 	cmd->AddCommand(new CCmdAddAndSelectObject(doc->GetGModel(), pnew));
-	int action = ui->original->currentIndex();
+	int action = opt.originalAction;
 	if (action == 1) cmd->AddCommand(new CCmdHideObject(po));
 	else if (action == 2) cmd->AddCommand(new CCmdDeleteGObject(doc->GetGModel(), po));
 
 	// the objects holding the target sections (each once, and not the start object)
-	int tact = ui->targetObjs->currentIndex();
+	int tact = opt.targetAction;
 	if (tact != 0)
 	{
 		std::vector<GObject*> tobjs;
-		for (const Section& sec : m_targets)
+		for (const Section& sec : targets)
 			if ((sec.po != po) && std::find(tobjs.begin(), tobjs.end(), sec.po) == tobjs.end()) tobjs.push_back(sec.po);
 		for (GObject* t : tobjs)
 		{
@@ -767,12 +921,16 @@ void CSweepSectionsTool::OnSweep()
 	}
 	doc->DoCommand(cmd, name.toStdString());
 	GetMainWindow()->UpdateModel(pnew);
-	UpdateLabels();	// refresh the model tree (abstract tools don't do this automatically)
 
 	QString msg = QString("Created %1 (%2 elements)").arg(name).arg(solid->Elements());
+	if ((shapeMode == 3) && !sw.m_outlineUsed)
+		msg += "\n\nNote: the outlines could not be matched (the sections' outlines were not found or the section is not star-shaped about its centroid), "
+			"so the linear stretch (size and elongation) was used instead.";
 	if (ninverted > 0)
 		msg += QString("\n\nWARNING: %1 elements have a non-positive Jacobian. The path probably bends more sharply than the section is wide "
 			"(the inside of the bend folds over), or the section normals point the wrong way. Try more spacing between sections, "
 			"fewer/gentler turns, intermediate sections, or the \"smooth curve through centroids\" path option.").arg(ninverted);
 	QMessageBox::information(GetMainWindow(), "Sweep Sections", msg);
+
+	return true;
 }

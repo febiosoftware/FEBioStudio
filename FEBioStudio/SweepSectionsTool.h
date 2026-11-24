@@ -64,7 +64,35 @@ public:
 		vec3d		c;				// centroid (global)
 		vec3d		n;				// area-weighted normal (global)
 		double		area = 0.0;
+		std::vector<std::pair<vec3d, vec3d>>	edges;	// all face edges (global); used to find the outline of the section
+		double		m2[6] = { 0,0,0,0,0,0 };	// integral of x*x^T over the section (xx,xy,xz,yy,yz,zz), about the origin
+		double		cov[6] = { 0,0,0,0,0,0 };	// area-normalized covariance about the centroid (same ordering)
 	};
+
+public:
+	struct SweepOptions
+	{
+		int layers = 10;				// layers between sections
+		int tangentMode = 1;			// 0 = section normals, 1 = smooth curve through the centroids
+		bool matchOrientation = true;	// (smooth path) tilt the section into the plane of each target
+		int shapeMode = 3;				// 0 none, 1 scale, 2 linear stretch, 3 outline
+		bool alignTwist = false;		// outline: rotate sections in-plane (max 15 degrees per section) to align outlines
+		bool autoPartition = false;
+		double crease = 30.0;
+		double collapseTol = 0.0;
+		int originalAction = 2;			// object of the start section: 0 keep, 1 hide, 2 delete
+		int targetAction = 1;			// objects of the target sections: 0 keep, 1 hide, 2 delete
+	};
+
+	// Sweep the start section through the target sections and add the result to the model. Returns false on failure
+	// (an error message has been shown).
+	bool RunSweep(const Section& startSec, const std::vector<Section>& targets, const SweepOptions& opt);
+
+	// Build a section from all the elements of a shell object (global coordinates).
+	static bool SectionFromShellObject(GObject* po, Section& sec, QString& err);
+
+	// Build a section from a planar polygon (global coordinates); 'normal' (unit) gives the orientation of the section normal.
+	static void SectionFromPolygon(const std::vector<vec3d>& poly, const vec3d& normal, Section& sec);
 
 private:
 	bool GetSections(std::vector<Section>& sections, bool forStart, QString& err);

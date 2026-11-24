@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <set>
 #include <tuple>
 #include <cmath>
+#include <cstdlib>
 #include <algorithm>
 
 ShellSweeper::ShellSweeper()
@@ -42,6 +43,8 @@ ShellSweeper::ShellSweeper()
 	m_autoPartition = false;
 	m_creaseAngle = 30.0;
 	m_collapseTol = 0.0;
+	m_startNormal = vec3d(0, 0, 0);
+	for (int i = 0; i < 6; ++i) m_startCov[i] = 0.0;
 }
 
 //-----------------------------------------------------------------------------
@@ -185,6 +188,7 @@ FSMesh* ShellSweeper::Apply(const FSMesh& shell, const Transform& T)
 	m_err.clear();
 	if (m_path.size() < 2) { m_err = "No sweep path has been set."; return nullptr; }
 	if (!m_scale.empty() && (m_scale.size() != m_path.size())) { m_err = "The scale list does not match the path."; return nullptr; }
+	if (!m_covariance.empty() && (m_covariance.size() != 6 * m_path.size())) { m_err = "The covariance list does not match the path."; return nullptr; }
 	if (!m_orient.empty() && (m_orient.size() != m_path.size())) { m_err = "The orientation list does not match the path."; return nullptr; }
 
 	// chords of the original path
@@ -258,10 +262,13 @@ FSMesh* ShellSweeper::Apply(const FSMesh& shell, const Transform& T)
 	std::vector<vec3d> P, tang;
 	std::vector<double> sc;
 	std::vector<vec3d> orient;
+	std::vector<double> covk;
 	for (size_t k = 0; k < st.size(); ++k)
 	{
 		int seg = st[k].first;
 		double u = st[k].second;
+		if (!m_covariance.empty())
+			for (int j = 0; j < 6; ++j) covk.push_back(m_covariance[6 * seg + j] * (1.0 - u) + m_covariance[6 * (seg + 1) + j] * u);
 		if (!m_orient.empty())
 		{
 			vec3d o = m_orient[seg] * (1.0 - u) + m_orient[seg + 1] * u;
@@ -292,31 +299,252 @@ FSMesh* ShellSweeper::Apply(const FSMesh& shell, const Transform& T)
 	// the section is attached to the first path point; each station applies the accumulated transport rotation
 	std::vector<vec3d> layerPos((nl + 1) * nn);
 	std::vector<vec3d> midPos(sec.quadratic ? nl * sec.ncorner : 0);
-	Mat3 R;
-	// with prescribed orientations, the section's own normal at the start is orient[0]; first rotate it onto the path tangent
-	if (m_rotate && !orient.empty()) R = RotateTo(orient[0], tang[0]);
+	// in-plane deformation (size and shape matching) --------------------------------------------------------
+	vec3d e1, e2;
+	{
+		vec3d n0 = (m_startNormal.norm() > 0.5 ? m_startNormal : (orient.empty() ? tang[0] : orient[0]));
+		vec3d a = (fabs(n0.x) < 0.9) ? vec3d(1, 0, 0) : vec3d(0, 1, 0);
+		e1 = n0 ^ a; e1 /= e1.norm();
+		e2 = n0 ^ e1; e2 /= e2.norm();
+	}
+	auto quad = [](const double* C, const vec3d& u, const vec3d& v) {
+		// u^T C v for the symmetric matrix C = (xx,xy,xz,yy,yz,zz)
+		return u.x * (C[0] * v.x + C[1] * v.y + C[2] * v.z) + u.y * (C[1] * v.x + C[3] * v.y + C[4] * v.z) + u.z * (C[2] * v.x + C[4] * v.y + C[5] * v.z);
+	};
+	// square root of a symmetric positive definite 2x2 matrix [a b; b c]
+	auto sqrt2 = [](double a, double b, double c, double out[4]) {
+		double det = a * c - b * b;
+		if (det <= 0) return false;
+		double s = sqrt(det), t = sqrt(a + c + 2 * s);
+		out[0] = (a + s) / t; out[1] = b / t; out[2] = b / t; out[3] = (c + s) / t;
+		return true;
+	};
+	bool deform = !m_covariance.empty();
+	double IS[4] = { 1, 0, 0, 1 };		// inverse square root of the section's own 2x2 covariance
+	if (deform)
+	{
+		double S[4];
+		if (sqrt2(quad(m_startCov, e1, e1), quad(m_startCov, e1, e2), quad(m_startCov, e2, e2), S))
+		{
+			double det = S[0] * S[3] - S[1] * S[2];
+			IS[0] = S[3] / det; IS[1] = -S[1] / det; IS[2] = -S[2] / det; IS[3] = S[0] / det;
+		}
+		else deform = false;
+	}
+
+	// rotations of all stations
+	std::vector<Mat3> Rks(nst + 1);
+	{
+		Mat3 R;
+		// with prescribed orientations, the section's own normal at the start is orient[0]; first rotate it onto the path tangent
+		if (m_rotate && !orient.empty()) R = RotateTo(orient[0], tang[0]);
+		for (int k = 0; k <= nst; ++k)
+		{
+			if ((k > 0) && m_rotate) R = RotateTo(tang[k - 1], tang[k]) * R;
+			Rks[k] = R;
+			if (m_rotate && !orient.empty()) Rks[k] = RotateTo(tang[k], orient[k]) * R;
+		}
+	}
+
+	// outline matching -----------------------------------------------------------------------------------------
+	const int M = 720;
+	const double PI2 = 6.283185307179586;
+	bool outlineMode = false;
+	std::vector<std::vector<double>> prof;		// radial profile of each outline, in the frame of its station
+	std::vector<double> alpha;					// in-plane rotation of each target
+	std::vector<int> stT(nst + 1, 0);			// station --> interval of targets
+	std::vector<double> stU(nst + 1, 0.0), stAlpha(nst + 1, 0.0), stFbar(nst + 1, 1.0);
+
+	auto evalProfile = [&](const std::vector<double>& R, double ang) {
+		double t = ang / PI2;
+		t -= floor(t);
+		double x = t * M;
+		int i = (int)x;
+		double w = x - i;
+		if (i >= M) { i = 0; w = 0; }
+		return R[i] * (1.0 - w) + R[(i + 1) % M] * w;
+	};
+
+	if (!m_outlines.empty() && (m_layers <= 0) && m_rotate && !m_covariance.empty() && (m_outlines.size() == m_outlineIndex.size()) && (m_outlines.size() >= 2)
+		&& (m_outlineIndex[0] == 0) && (m_outlineIndex.back() * step == nst))
+	{
+		const int nt = (int)m_outlines.size();
+		bool ok = true;
+		prof.assign(nt, std::vector<double>(M, 0.0));
+		for (int t = 0; t < nt && ok; ++t)
+		{
+			if (t > 0 && m_outlineIndex[t] <= m_outlineIndex[t - 1]) { ok = false; break; }
+			int k = m_outlineIndex[t] * step;
+			vec3d b1 = Rks[k] * e1, b2 = Rks[k] * e2;
+			std::vector<double>& R = prof[t];
+
+			// project the outline into the plane of the section
+			struct S2 { double ax, ay, ex, ey; };
+			std::vector<S2> segs;
+			for (const auto& sg : m_outlines[t])
+			{
+				vec3d a = sg.first - P[k], b = sg.second - P[k];
+				S2 q = { a * b1, a * b2, (b - a) * b1, (b - a) * b2 };
+				segs.push_back(q);
+			}
+			int nmiss = 0;
+			for (int j = 0; j < M; ++j)
+			{
+				double dx = cos(PI2 * j / M), dy = sin(PI2 * j / M);
+				double best = 0;
+				for (const S2& q : segs)
+				{
+					double den = dx * q.ey - dy * q.ex;
+					if (fabs(den) < 1e-14) continue;
+					double tt = (q.ax * q.ey - q.ay * q.ex) / den;
+					double uu = (q.ax * dy - q.ay * dx) / den;
+					if ((tt > 1e-12) && (uu >= -1e-9) && (uu <= 1.0 + 1e-9) && (tt > best)) best = tt;
+				}
+				R[j] = best;
+				if (best <= 0) nmiss++;
+			}
+			if (nmiss == M) { ok = false; break; }
+			if (nmiss > 0)
+			{
+				// fill gaps by interpolating between the neighbouring hits
+				for (int j = 0; j < M; ++j)
+				{
+					if (R[j] > 0) continue;
+					int jl = j, jr = j, dl = 0, dr = 0;
+					while (R[(jl + M) % M] <= 0) { jl--; dl++; }
+					while (R[jr % M] <= 0) { jr++; dr++; }
+					double vl = R[(jl + M) % M], vr = R[jr % M];
+					R[j] = (vl * dr + vr * dl) / (double)(dl + dr);
+				}
+			}
+		}
+
+		if (ok)
+		{
+			// Optional in-plane rotation of the targets so that the radial outline profiles agree. Each target is aligned with the
+			// previous one, within a small range, and only if the shapes are clearly non-circular and the rotation clearly helps;
+			// otherwise the sections keep the (minimal-twist) transported orientation.
+			alpha.assign(nt, 0.0);
+			if (m_alignTwist)
+			{
+				auto stats = [&](const std::vector<double>& R, double& mean, double& cv) {
+					mean = 0; for (double v : R) mean += v; mean /= M;
+					double var = 0; for (double v : R) var += (v - mean) * (v - mean);
+					cv = sqrt(var / M) / mean;
+				};
+				const int maxShift = M * 15 / 360;
+				std::vector<int> shiftS(nt, 0);
+				auto wrap = [&](int x) { return ((x % M) + M) % M; };
+				for (int t = 1; t < nt; ++t)
+				{
+					double mp, cp, mt, ct;
+					stats(prof[t - 1], mp, cp);
+					stats(prof[t], mt, ct);
+					int base = shiftS[t - 1], bestShift = 0;
+					if (std::min(cp, ct) > 0.05)
+					{
+						std::vector<double> err(2 * maxShift + 1);
+						for (int d = -maxShift; d <= maxShift; ++d)
+						{
+							double e = 0;
+							for (int j = 0; j < M; ++j)
+							{
+								double v = prof[t][wrap(j + base + d)] / mt - prof[t - 1][wrap(j + base)] / mp;
+								e += v * v;
+							}
+							err[d + maxShift] = e;
+						}
+						double emin = *std::min_element(err.begin(), err.end());
+						int bd = 0, bestAbs = M;
+						for (int d = -maxShift; d <= maxShift; ++d)
+							if ((err[d + maxShift] <= emin * (1.0 + 1e-6) + 1e-12) && (abs(d) < bestAbs)) { bestAbs = abs(d); bd = d; }
+						if (emin < 0.8 * err[maxShift]) bestShift = bd;
+					}
+					shiftS[t] = base + bestShift;
+					alpha[t] = PI2 * shiftS[t] / (double)M;
+				}
+			}
+
+			// station data
+			for (int t = 0; t + 1 < nt; ++t)
+			{
+				int k0 = m_outlineIndex[t] * step, k1 = m_outlineIndex[t + 1] * step;
+				for (int k = k0; k <= k1; ++k)
+				{
+					stT[k] = t;
+					double u = (double)(k - k0) / (double)(k1 - k0);
+					stU[k] = u;
+					stAlpha[k] = alpha[t] * (1.0 - u) + alpha[t + 1] * u;
+					double fb = 0;
+					for (int j = 0; j < M; ++j)
+					{
+						double phi = PI2 * j / M;
+						double Rk = (1.0 - u) * evalProfile(prof[t], phi + alpha[t]) + u * evalProfile(prof[t + 1], phi + alpha[t + 1]);
+						fb += Rk / prof[0][j];
+					}
+					stFbar[k] = fb / M;
+				}
+			}
+			outlineMode = true;
+		}
+	}
+
+	m_outlineUsed = outlineMode;
+
+	// position of the section point r (global) at path station k with rotation Rk
+	auto place = [&](const vec3d& r, int k, const Mat3& Rk) {
+		vec3d d = r - P[0];
+		if (outlineMode)
+		{
+			double x = d * e1, y = d * e2;
+			vec3d dperp = d - e1 * x - e2 * y;
+			double rr = sqrt(x * x + y * y);
+			double a = 0, b = 0;
+			if (rr > 1e-14)
+			{
+				double phi = atan2(y, x);
+				int t = stT[k];
+				double u = stU[k];
+				double Rs = evalProfile(prof[0], phi);
+				double rho = std::min(rr / Rs, 1.0);
+				double Rt = (1.0 - u) * evalProfile(prof[t], phi + alpha[t]) + u * evalProfile(prof[t + 1], phi + alpha[t + 1]);
+				double f = Rt / Rs;
+				double sfac = stFbar[k] + (f - stFbar[k]) * rho * rho;
+				a = rr * sfac * cos(phi + stAlpha[k]);
+				b = rr * sfac * sin(phi + stAlpha[k]);
+			}
+			d = e1 * a + e2 * b + dperp;
+		}
+		else if (deform)
+		{
+			vec3d b1 = m_rotate ? (Rk * e1) : e1, b2 = m_rotate ? (Rk * e2) : e2;
+			const double* C = &covk[6 * k];
+			double T[4];
+			if (sqrt2(quad(C, b1, b1), quad(C, b1, b2), quad(C, b2, b2), T))
+			{
+				// S2 = T * IS
+				double S2[4] = { T[0] * IS[0] + T[1] * IS[2], T[0] * IS[1] + T[1] * IS[3], T[2] * IS[0] + T[3] * IS[2], T[2] * IS[1] + T[3] * IS[3] };
+				double x = d * e1, y = d * e2;
+				vec3d dperp = d - e1 * x - e2 * y;
+				d = e1 * (S2[0] * x + S2[1] * y) + e2 * (S2[2] * x + S2[3] * y) + dperp;
+			}
+		}
+		else d = d * sc[k];
+		return P[k] + (m_rotate ? (Rk * d) : d);
+	};
+
 	for (int k = 0; k <= nst; ++k)
 	{
-		if ((k > 0) && m_rotate) R = RotateTo(tang[k - 1], tang[k]) * R;
-		Mat3 Rk = R;
-		if (m_rotate && !orient.empty()) Rk = RotateTo(tang[k], orient[k]) * R;
+		const Mat3& Rk = Rks[k];
 		if (k % step == 0)
 		{
 			int l = k / step;
-			for (int i = 0; i < nn; ++i)
-			{
-				vec3d d = (r0[i] - P[0]) * sc[k];
-				layerPos[l * nn + i] = P[k] + (m_rotate ? (Rk * d) : d);
-			}
+			for (int i = 0; i < nn; ++i) layerPos[l * nn + i] = place(r0[i], k, Rk);
 		}
 		else
 		{
 			int l = k / step;
-			for (int c = 0; c < sec.ncorner; ++c)
-			{
-				vec3d d = (r0[sec.cornerNode[c]] - P[0]) * sc[k];
-				midPos[l * sec.ncorner + c] = P[k] + (m_rotate ? (Rk * d) : d);
-			}
+			for (int c = 0; c < sec.ncorner; ++c) midPos[l * sec.ncorner + c] = place(r0[sec.cornerNode[c]], k, Rk);
 		}
 	}
 
