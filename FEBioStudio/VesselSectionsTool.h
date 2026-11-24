@@ -40,6 +40,10 @@ public:
 
 private:
 	int		m_intervals;		// number of intervals along the centerline (sections = intervals + 1)
+	bool	m_smoothCaps;		// smooth the outline of the cap(s) the sweeps start from
+	double	m_dElemSize;		// bifurcation: element size of the branches' outlet meshes (0 = match the trunk at the junction)
+	int		m_dIntervals;		// bifurcation: intervals in each daughter branch
+	bool	m_branchFromTrunk;	// bifurcation: start the branches from the trunk's end faces
 	double	m_adapt;			// spacing adaptivity (0 = uniform)
 	double	m_elemSize;			// element size of the start section's mesh (0 = auto)
 	bool	m_quadratic;		// second-order elements

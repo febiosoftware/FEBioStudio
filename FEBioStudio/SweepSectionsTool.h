@@ -76,17 +76,25 @@ public:
 		int tangentMode = 1;			// 0 = section normals, 1 = smooth curve through the centroids
 		bool matchOrientation = true;	// (smooth path) tilt the section into the plane of each target
 		int shapeMode = 3;				// 0 none, 1 scale, 2 linear stretch, 3 outline
+		bool smoothStart = false;		// outline: smooth the start section's outline (jagged STL cap rims)
 		bool alignTwist = false;		// outline: rotate sections in-plane (max 15 degrees per section) to align outlines
 		bool autoPartition = false;
 		double crease = 30.0;
 		double collapseTol = 0.0;
 		int originalAction = 2;			// object of the start section: 0 keep, 1 hide, 2 delete
 		int targetAction = 1;			// objects of the target sections: 0 keep, 1 hide, 2 delete
+		bool quiet = false;				// do not show the message box; the message is returned in 'message'
+		std::string name;				// name of the new object (default: derived from the start object)
+		GObject** result = nullptr;		// if set, receives the new object
+		QString* message = nullptr;		// if set (and quiet), receives the message
 	};
 
 	// Sweep the start section through the target sections and add the result to the model. Returns false on failure
 	// (an error message has been shown).
 	bool RunSweep(const Section& startSec, const std::vector<Section>& targets, const SweepOptions& opt);
+
+	// Build a section from a set of faces of an object's mesh (global coordinates).
+	static bool SectionFromFaces(GObject* po, const std::vector<int>& faceIds, Section& sec, QString& err);
 
 	// Build a section from all the elements of a shell object (global coordinates).
 	static bool SectionFromShellObject(GObject* po, Section& sec, QString& err);

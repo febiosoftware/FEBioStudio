@@ -352,6 +352,8 @@ FSMesh* ShellSweeper::Apply(const FSMesh& shell, const Transform& T)
 	bool outlineMode = false;
 	std::vector<std::vector<double>> prof;		// radial profile of each outline, in the frame of its station
 	std::vector<double> alpha;					// in-plane rotation of each target
+	std::vector<double> prof0orig;				// (smooth start) the original profile of the start outline
+	bool smoothOn = false;
 	std::vector<int> stT(nst + 1, 0);			// station --> interval of targets
 	std::vector<double> stU(nst + 1, 0.0), stAlpha(nst + 1, 0.0), stFbar(nst + 1, 1.0);
 
@@ -363,6 +365,83 @@ FSMesh* ShellSweeper::Apply(const FSMesh& shell, const Transform& T)
 		double w = x - i;
 		if (i >= M) { i = 0; w = 0; }
 		return R[i] * (1.0 - w) + R[(i + 1) % M] * w;
+	};
+
+	// corner anchoring: sharp corners of the target outlines (e.g. a half-lumen section) are passed through explicitly. A boundary node of
+	// the start section is assigned to each corner (nuAnc); the polar angles of the nodes are warped (piecewise linearly) so that these nodes
+	// end up exactly at the corners of every station (stKap), and the radial profiles are registered the same way.
+	std::vector<double> nuAnc;							// start-section angle of the anchor nodes
+	std::vector<std::vector<double>> Aang;				// corner angles of each target (in the frame of the start section, i.e. without alpha)
+	std::vector<std::vector<double>> stKap(nst + 1);	// anchor angles at each station
+	auto wrap2 = [&](double a) { a = fmod(a, PI2); if (a < 0) a += PI2; return a; };
+	auto wrapPM = [&](double a) { a = wrap2(a); if (a > 0.5 * PI2) a -= PI2; return a; };
+	auto warp = [&](const std::vector<double>& src, const std::vector<double>& dst, double x) {
+		int N = (int)src.size();
+		for (int i = 0; i < N; ++i)
+		{
+			int j = (i + 1) % N;
+			double d = wrap2(x - src[i]);
+			double L = wrap2(src[j] - src[i]); if (N == 1 || L < 1e-12) L = PI2;
+			if (d < L)
+			{
+				double Lm = wrap2(dst[j] - dst[i]); if (N == 1 || Lm < 1e-12) Lm = PI2;
+				return dst[i] + d / L * Lm;
+			}
+		}
+		return x;
+	};
+	auto findCorners = [&](const std::vector<double>& R) {
+		std::vector<double> px(M), py(M), tn(M), sm(M), out;
+		for (int j = 0; j < M; ++j) { px[j] = R[j] * cos(PI2 * j / M); py[j] = R[j] * sin(PI2 * j / M); }
+		for (int j = 0; j < M; ++j)
+		{
+			int a = (j + M - 1) % M, b = (j + 1) % M;
+			double d0x = px[j] - px[a], d0y = py[j] - py[a], d1x = px[b] - px[j], d1y = py[b] - py[j];
+			tn[j] = fabs(atan2(d0x * d1y - d0y * d1x, d0x * d1x + d0y * d1y));
+		}
+		for (int j = 0; j < M; ++j) sm[j] = tn[(j + M - 1) % M] + tn[j] + tn[(j + 1) % M];
+		const double thr = 45.0 * PI2 / 360.0;
+		for (int j = 0; j < M; ++j)
+		{
+			if (sm[j] < thr) continue;
+			bool mx = true;
+			for (int d = 1; d <= 4 && mx; ++d)
+			{
+				if (sm[(j + M - d) % M] > sm[j]) mx = false;
+				if (sm[(j + d) % M] >= sm[j]) mx = false;
+			}
+			if (mx) out.push_back(PI2 * j / M);
+		}
+		return out;
+	};
+	std::vector<double> tS;								// path arclength at each target
+	// radius of the outline at angle th (frame of the start section) at station k. The profiles of the targets are interpolated with a
+	// cubic Hermite spline in the path parameter (finite-difference slopes, limited so that there is no overshoot), so that the surface
+	// does not get a crease at every section.
+	auto profAt = [&](int k, double th) {
+		const int nt2 = (int)prof.size();
+		int t = stT[k]; double u = stU[k];
+		auto val = [&](int q) {
+			q = std::min(std::max(q, 0), nt2 - 1);
+			double g = th;
+			if (!nuAnc.empty()) g = warp(stKap[k], Aang[q], th);
+			return evalProfile(prof[q], g + alpha[q]);
+		};
+		double v0 = val(t), v1 = val(t + 1);
+		double h = tS[t + 1] - tS[t];
+		double m0 = v1 - v0, m1 = v1 - v0;
+		if ((t > 0) && (tS[t + 1] > tS[t - 1]))
+		{
+			double vm = val(t - 1);
+			m0 = ((v0 - vm) * (v1 - v0) > 0) ? h * (v1 - vm) / (tS[t + 1] - tS[t - 1]) : 0.0;
+		}
+		if ((t + 2 < nt2) && (tS[t + 2] > tS[t]))
+		{
+			double vp = val(t + 2);
+			m1 = ((v1 - v0) * (vp - v1) > 0) ? h * (vp - v0) / (tS[t + 2] - tS[t]) : 0.0;
+		}
+		double u2 = u * u, u3 = u2 * u;
+		return (2 * u3 - 3 * u2 + 1) * v0 + (u3 - 2 * u2 + u) * m0 + (-2 * u3 + 3 * u2) * v1 + (u3 - u2) * m1;
 	};
 
 	if (!m_outlines.empty() && (m_layers <= 0) && m_rotate && !m_covariance.empty() && (m_outlines.size() == m_outlineIndex.size()) && (m_outlines.size() >= 2)
@@ -419,6 +498,23 @@ FSMesh* ShellSweeper::Apply(const FSMesh& shell, const Transform& T)
 			}
 		}
 
+		if (ok && m_smoothStart)
+		{
+			prof0orig = prof[0];
+			std::vector<double> S(M, 0.0);
+			for (int h = 0; h <= 4; ++h)
+			{
+				double a = 0, b = 0;
+				for (int j = 0; j < M; ++j) { double th = PI2 * j / M; a += prof0orig[j] * cos(h * th); b += prof0orig[j] * sin(h * th); }
+				double f = (h == 0 ? 1.0 : 2.0) / M;
+				a *= f; b *= f;
+				for (int j = 0; j < M; ++j) { double th = PI2 * j / M; S[j] += a * cos(h * th) + b * sin(h * th); }
+			}
+			bool pos = true;
+			for (int j = 0; j < M; ++j) if (S[j] <= 0.2 * prof0orig[j]) pos = false;
+			if (pos) { prof[0] = S; smoothOn = true; }
+		}
+
 		if (ok)
 		{
 			// Optional in-plane rotation of the targets so that the radial outline profiles agree. Each target is aligned with the
@@ -465,6 +561,115 @@ FSMesh* ShellSweeper::Apply(const FSMesh& shell, const Transform& T)
 				}
 			}
 
+			// corner anchoring
+			{
+				std::vector<std::vector<double>> cor(nt);
+				int hist[16] = { 0 };
+				for (int t = 0; t < nt; ++t)
+				{
+					if (t > 0) cor[t] = findCorners(prof[t]);
+					for (double& c : cor[t]) c = wrap2(c - alpha[t]);
+					std::sort(cor[t].begin(), cor[t].end());
+					if (cor[t].size() >= 2 && cor[t].size() < 16) hist[cor[t].size()]++;
+				}
+				int N = 0, nbest = 0;
+				for (int c = 2; c < 16; ++c) if (hist[c] > nbest) { nbest = hist[c]; N = c; }
+				if (N >= 2 && N <= 8)
+				{
+					Aang.assign(nt, std::vector<double>());
+					int pc = -1, first = -1;
+					for (int t = 0; t < nt; ++t)
+					{
+						if ((int)cor[t].size() != N) continue;
+						if (pc < 0) { Aang[t] = cor[t]; first = t; }
+						else
+						{
+							int bs = 0; double be = 1e30;
+							for (int sft = 0; sft < N; ++sft)
+							{
+								double e = 0;
+								for (int i = 0; i < N; ++i) { double d = wrapPM(cor[t][(i + sft) % N] - Aang[pc][i]); e += d * d; }
+								if (e < be) { be = e; bs = sft; }
+							}
+							Aang[t].resize(N);
+							for (int i = 0; i < N; ++i) Aang[t][i] = cor[t][(i + bs) % N];
+						}
+						pc = t;
+					}
+					// anchor nodes on the boundary of the start section
+					std::map<std::pair<int, int>, int> ecount;
+					for (int e = 0; e < sec.Elements(); ++e)
+					{
+						int nc = sec.ecorners[e];
+						for (int c = 0; c < nc; ++c)
+						{
+							int a = sec.enodes[e][c], b = sec.enodes[e][(c + 1) % nc];
+							ecount[{ std::min(a, b), std::max(a, b) }]++;
+						}
+					}
+					std::vector<char> bnd(nn, 0);
+					for (auto& ec : ecount) if (ec.second == 1) { bnd[ec.first.first] = 1; bnd[ec.first.second] = 1; }
+					int last = -1;
+					for (int t = 0; t < nt; ++t) if (!Aang[t].empty()) last = t;
+					// Targets whose corners are still far from those of the finished shape (a section that the divider has only just started to
+					// cut) are not anchored: squeezing all the nodes of the later chord onto their tiny chord would collapse the elements into a fan.
+					for (int t = 0; t < nt && last >= 0; ++t)
+					{
+						if (Aang[t].empty() || t == last) continue;
+						double dmax = 0;
+						for (int i = 0; i < N; ++i) dmax = std::max(dmax, fabs(wrapPM(Aang[t][i] - Aang[last][i])));
+						if (dmax > 30.0 * PI2 / 360.0) Aang[t].clear();
+					}
+					first = -1;
+					for (int t = 0; t < nt; ++t) if (!Aang[t].empty()) { first = t; break; }
+					std::vector<double> nu(N);
+					std::vector<int> nuNode(N, -1);
+					bool good = (first >= 0) && (last >= 0);
+					for (int i = 0; i < N && good; ++i)
+					{
+						double bd = 1e30;
+						for (int q = 0; q < nn; ++q)
+						{
+							if (!bnd[q] || (sec.cornerIndex[q] < 0)) continue;
+							vec3d d = r0[q] - P[0];
+							double ph = atan2(d * e2, d * e1);
+							double da = fabs(wrapPM(ph - Aang[last][i]));
+							if (da < bd) { bd = da; nu[i] = wrap2(ph); nuNode[i] = q; }
+						}
+						if (nuNode[i] < 0) good = false;
+					}
+					if (good)
+					{
+						double sum = 0;
+						for (int i = 0; i < N; ++i)
+						{
+							if (nuNode[i] == nuNode[(i + 1) % N]) good = false;
+							sum += wrap2(nu[(i + 1) % N] - nu[i]);
+						}
+						if (fabs(sum - PI2) > 1e-6 && !(N == 1)) good = false;
+					}
+					if (good)
+					{
+						// the anchors are the corners of the last cornered target; targets before the first cornered one start at the anchor nodes
+						// (no corner yet), and uncornered targets in between hold the previous corners
+						nuAnc = nu;
+						for (int t = 0; t < nt; ++t)
+						{
+							if (!Aang[t].empty()) continue;
+							if (t < first) Aang[t] = nu; else Aang[t] = Aang[t - 1];
+						}
+					}
+				}
+			}
+
+			// arclength of the targets along the path
+			{
+				std::vector<double> cum(nst + 1, 0.0);
+				for (int k = 1; k <= nst; ++k) cum[k] = cum[k - 1] + (P[k] - P[k - 1]).norm();
+				tS.assign(nt, 0.0);
+				for (int t = 0; t < nt; ++t) tS[t] = cum[m_outlineIndex[t] * step];
+			}
+
 			// station data
 			for (int t = 0; t + 1 < nt; ++t)
 			{
@@ -475,12 +680,17 @@ FSMesh* ShellSweeper::Apply(const FSMesh& shell, const Transform& T)
 					double u = (double)(k - k0) / (double)(k1 - k0);
 					stU[k] = u;
 					stAlpha[k] = alpha[t] * (1.0 - u) + alpha[t + 1] * u;
+					if (!nuAnc.empty())
+					{
+						stKap[k].resize(nuAnc.size());
+						for (size_t i = 0; i < nuAnc.size(); ++i) stKap[k][i] = Aang[t][i] + u * wrapPM(Aang[t + 1][i] - Aang[t][i]);
+					}
 					double fb = 0;
 					for (int j = 0; j < M; ++j)
 					{
 						double phi = PI2 * j / M;
-						double Rk = (1.0 - u) * evalProfile(prof[t], phi + alpha[t]) + u * evalProfile(prof[t + 1], phi + alpha[t + 1]);
-						fb += Rk / prof[0][j];
+						double th = nuAnc.empty() ? phi : warp(nuAnc, stKap[k], phi);
+						fb += profAt(k, th) / prof[0][j];
 					}
 					stFbar[k] = fb / M;
 				}
@@ -490,6 +700,23 @@ FSMesh* ShellSweeper::Apply(const FSMesh& shell, const Transform& T)
 	}
 
 	m_outlineUsed = outlineMode;
+
+	// In outline mode the sections end up exactly in the planes of the targets: a slightly non-planar start section (a dished or tilted
+	// cap) would otherwise carry its out-of-plane offsets along the whole sweep and leave gaps/overlaps where the solid meets another one.
+	bool flatten = false;
+	if (outlineMode)
+	{
+		double maxPerp = 0, maxR = 0;
+		for (int i = 0; i < nn; ++i)
+		{
+			vec3d d = r0[i] - P[0];
+			double x = d * e1, y = d * e2;
+			vec3d dp = d - e1 * x - e2 * y;
+			maxPerp = std::max(maxPerp, dp.norm());
+			maxR = std::max(maxR, sqrt(x * x + y * y));
+		}
+		flatten = (maxPerp < 0.1 * maxR);
+	}
 
 	// position of the section point r (global) at path station k with rotation Rk
 	auto place = [&](const vec3d& r, int k, const Mat3& Rk) {
@@ -506,14 +733,24 @@ FSMesh* ShellSweeper::Apply(const FSMesh& shell, const Transform& T)
 				int t = stT[k];
 				double u = stU[k];
 				double Rs = evalProfile(prof[0], phi);
+				if (smoothOn)
+				{
+					// move the start section onto its smooth outline (boundary nodes fully, interior nodes in proportion to rho^2)
+					double Ro = evalProfile(prof0orig, phi);
+					double c = Rs / Ro;
+					double rho0 = std::min(rr / Ro, 1.0);
+					rr *= 1.0 + (c - 1.0) * rho0 * rho0;
+				}
 				double rho = std::min(rr / Rs, 1.0);
-				double Rt = (1.0 - u) * evalProfile(prof[t], phi + alpha[t]) + u * evalProfile(prof[t + 1], phi + alpha[t + 1]);
+				double th = phi;
+				if (!nuAnc.empty()) th = phi + rho * rho * wrapPM(warp(nuAnc, stKap[k], phi) - phi);
+				double Rt = profAt(k, th);
 				double f = Rt / Rs;
 				double sfac = stFbar[k] + (f - stFbar[k]) * rho * rho;
-				a = rr * sfac * cos(phi + stAlpha[k]);
-				b = rr * sfac * sin(phi + stAlpha[k]);
+				a = rr * sfac * cos(th + stAlpha[k]);
+				b = rr * sfac * sin(th + stAlpha[k]);
 			}
-			d = e1 * a + e2 * b + dperp;
+			d = e1 * a + e2 * b + (flatten ? vec3d(0, 0, 0) : dperp);
 		}
 		else if (deform)
 		{

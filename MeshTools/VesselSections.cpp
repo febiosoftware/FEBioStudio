@@ -133,10 +133,10 @@ bool VesselSections::TriangulatePolygon(const std::vector<vec3d>& poly, std::vec
 }
 
 //-----------------------------------------------------------------------------
-bool VesselSections::RemoveCaps(const std::vector<vec3d>& pts, std::vector<int>& tri, const std::vector<int>& startTris, vec3d& startCentroid, std::vector<int>& startCapTris, std::string& err)
+bool VesselSections::RemoveCaps(const std::vector<vec3d>& pts, std::vector<int>& tri, const std::vector<int>& startTris, vec3d& startCentroid, std::vector<int>& startCapTris, std::string& err, std::vector<std::vector<int>>* allCapTris, std::vector<vec3d>* allCapCentroids)
 {
 	const int NT = (int)tri.size() / 3;
-	if ((NT == 0) || startTris.empty()) { err = "No start cap faces."; return false; }
+	if ((NT == 0) || startTris.empty()) { err = "No cap faces."; return false; }
 	vec3d lo = pts[0], hi = pts[0];
 	for (const vec3d& r : pts)
 	{
@@ -176,7 +176,6 @@ bool VesselSections::RemoveCaps(const std::vector<vec3d>& pts, std::vector<int>&
 	for (auto& e : edgeTris)
 		for (int a : e.second) for (int b : e.second) if (a != b) nb[a].push_back(b);
 
-	const double cosTol = cos(5.0 * 3.141592653589793 / 180.0);
 	auto grow = [&](std::vector<int>& patch, std::vector<char>& used, const vec3d& n0, const vec3d& p0) {
 		std::vector<int> stack(patch.begin(), patch.end());
 		while (!stack.empty())
@@ -185,8 +184,8 @@ bool VesselSections::RemoveCaps(const std::vector<vec3d>& pts, std::vector<int>&
 			for (int q : nb[t])
 			{
 				if (used[q]) continue;
-				// a thin sliver triangle has an unreliable normal; otherwise the normal must agree with the plane's
-				if ((nrm[q] * n0 < cosTol) && (area[q] > 0.02 * area[t])) continue;
+				// the vertices must lie on the plane within a small tolerance (the cap of an STL is only approximately flat, and may
+				// have small steps); the wall of the vessel rises steeply off the plane and is not accepted
 				bool flat = true;
 				for (int k = 0; k < 3; ++k) if (fabs((pts[tri[3 * q + k]] - p0) * n0) > 3e-3 * diag) flat = false;
 				if (!flat) continue;
@@ -195,49 +194,109 @@ bool VesselSections::RemoveCaps(const std::vector<vec3d>& pts, std::vector<int>&
 		}
 	};
 
+	// the selected triangles, grouped into connected pieces (one piece per cap)
+	std::vector<char> sel(NT, 0);
+	for (int t : startTris) if ((t >= 0) && (t < NT)) sel[t] = 1;
+	std::vector<char> seen(NT, 0);
+	std::vector<std::vector<int>> pieces;
+	for (int t0 = 0; t0 < NT; ++t0)
+	{
+		if (!sel[t0] || seen[t0]) continue;
+		std::vector<int> piece(1, t0), stack(1, t0);
+		seen[t0] = 1;
+		while (!stack.empty())
+		{
+			int t = stack.back(); stack.pop_back();
+			for (int q : nb[t]) if (sel[q] && !seen[q]) { seen[q] = 1; piece.push_back(q); stack.push_back(q); }
+		}
+		pieces.push_back(piece);
+	}
+
 	std::vector<char> used(NT, 0);
-	std::vector<int> start;
-	vec3d sn(0, 0, 0), sc(0, 0, 0);
-	double sa = 0;
-	for (int t : startTris)
+	std::vector<std::vector<int>> caps;
+	std::vector<double> capArea;
+	std::vector<vec3d> capCentroid;
+	for (const std::vector<int>& piece : pieces)
 	{
-		if ((t < 0) || (t >= NT) || used[t]) continue;
-		used[t] = 1; start.push_back(t);
-		sn += nrm[t] * area[t]; sa += area[t];
-		sc += (pts[tri[3 * t]] + pts[tri[3 * t + 1]] + pts[tri[3 * t + 2]]) * (area[t] / 3.0);
-	}
-	if (sa <= 0) { err = "The selected start faces have no area."; return false; }
-	double sl = sn.norm();
-	if (sl < 0.9 * sa) { err = "The selected start faces are not planar. Select only the faces of the flat end cap of the vessel."; return false; }
-	sn = sn / sl; sc = sc / sa;
-	startCentroid = sc;
-	grow(start, used, sn, sc);
-
-	// the end cap: the largest other planar patch
-	std::vector<int> bestPatch;
-	double bestArea = 0;
-	std::vector<int> order(NT);
-	for (int t = 0; t < NT; ++t) order[t] = t;
-	std::sort(order.begin(), order.end(), [&](int a, int b) { return area[a] > area[b]; });
-	for (int oi = 0; oi < NT; ++oi)
-	{
-		int t = order[oi];
-		if (used[t] || (area[t] <= 0)) continue;
-		std::vector<int> patch(1, t);
-		used[t] = 1;
-		vec3d p0 = (pts[tri[3 * t]] + pts[tri[3 * t + 1]] + pts[tri[3 * t + 2]]) * (1.0 / 3.0);
-		grow(patch, used, nrm[t], p0);
+		std::vector<int> cap;
+		vec3d sn(0, 0, 0), sc(0, 0, 0);
+		double sa = 0;
+		for (int t : piece)
+		{
+			if (used[t]) continue;
+			used[t] = 1; cap.push_back(t);
+			sn += nrm[t] * area[t]; sa += area[t];
+			sc += (pts[tri[3 * t]] + pts[tri[3 * t + 1]] + pts[tri[3 * t + 2]]) * (area[t] / 3.0);
+		}
+		if (sa <= 0) continue;
+		double sl = sn.norm();
+		if (sl < 0.9 * sa) { err = "The selected faces of a cap are not planar. Select only the faces of the flat end caps of the vessel."; return false; }
+		sn = sn / sl; sc = sc / sa;
+		if (pieces.size() == 1) grow(cap, used, sn, sc);	// one selected cap: complete it; several: the selection is used as it is
 		double A = 0;
-		for (int q : patch) A += area[q];
-		if (A > bestArea) { bestArea = A; bestPatch = patch; }
+		vec3d cc(0, 0, 0);
+		for (int t : cap) { A += area[t]; cc += (pts[tri[3 * t]] + pts[tri[3 * t + 1]] + pts[tri[3 * t + 2]]) * (area[t] / 3.0); }
+		caps.push_back(cap); capArea.push_back(A); capCentroid.push_back(cc / A);
 	}
-	if ((bestPatch.size() < 4)) { err = "Could not find the flat end cap at the other end of the vessel."; return false; }
+	if (caps.empty()) { err = "The selected faces have no area."; return false; }
 
-	startCapTris.clear();
-	for (int q : start) { startCapTris.push_back(tri[3 * q]); startCapTris.push_back(tri[3 * q + 1]); startCapTris.push_back(tri[3 * q + 2]); }
+	if (caps.size() == 1)
+	{
+		// one cap selected: the end cap is the largest other planar patch
+		std::vector<int> bestPatch;
+		double bestArea = 0;
+		std::vector<int> order(NT);
+		for (int t = 0; t < NT; ++t) order[t] = t;
+		std::sort(order.begin(), order.end(), [&](int a, int b) { return area[a] > area[b]; });
+		for (int oi = 0; oi < NT; ++oi)
+		{
+			int t = order[oi];
+			if (used[t] || (area[t] <= 0)) continue;
+			std::vector<int> patch(1, t);
+			used[t] = 1;
+			vec3d p0 = (pts[tri[3 * t]] + pts[tri[3 * t + 1]] + pts[tri[3 * t + 2]]) * (1.0 / 3.0);
+			grow(patch, used, nrm[t], p0);
+			double A = 0;
+			for (int q : patch) A += area[q];
+			if (A > bestArea) { bestArea = A; bestPatch = patch; }
+		}
+		if (bestPatch.size() < 4) { err = "Could not find the flat end cap at the other end of the vessel."; return false; }
+		caps.push_back(bestPatch);
+		capArea.push_back(bestArea);
+		{
+			vec3d cc(0, 0, 0);
+			double A = 0;
+			for (int q : bestPatch) { cc += (pts[tri[3 * q]] + pts[tri[3 * q + 1]] + pts[tri[3 * q + 2]]) * (area[q] / 3.0); A += area[q]; }
+			capCentroid.push_back(A > 0 ? cc / A : cc);
+		}
+		// the start is the selected cap (index 0)
+		startCentroid = capCentroid[0];
+		startCapTris.clear();
+		for (int q : caps[0]) { startCapTris.push_back(tri[3 * q]); startCapTris.push_back(tri[3 * q + 1]); startCapTris.push_back(tri[3 * q + 2]); }
+	}
+	else
+	{
+		// several caps selected (a bifurcation): the largest one is the inlet
+		int inlet = 0;
+		for (size_t i = 1; i < caps.size(); ++i) if (capArea[i] > capArea[inlet]) inlet = (int)i;
+		startCentroid = capCentroid[inlet];
+		startCapTris.clear();
+		for (int q : caps[inlet]) { startCapTris.push_back(tri[3 * q]); startCapTris.push_back(tri[3 * q + 1]); startCapTris.push_back(tri[3 * q + 2]); }
+	}
+
+	if (allCapTris)
+	{
+		allCapTris->clear();
+		for (const auto& cap : caps)
+		{
+			std::vector<int> v;
+			for (int q : cap) { v.push_back(tri[3 * q]); v.push_back(tri[3 * q + 1]); v.push_back(tri[3 * q + 2]); }
+			allCapTris->push_back(v);
+		}
+	}
+	if (allCapCentroids) *allCapCentroids = capCentroid;
 	std::vector<char> remove(NT, 0);
-	for (int q : start) remove[q] = 1;
-	for (int q : bestPatch) remove[q] = 1;
+	for (const auto& cap : caps) for (int q : cap) remove[q] = 1;
 	std::vector<int> out;
 	for (int t = 0; t < NT; ++t)
 		if (!remove[t]) { out.push_back(tri[3 * t]); out.push_back(tri[3 * t + 1]); out.push_back(tri[3 * t + 2]); }
@@ -314,9 +373,22 @@ bool VesselSections::Init(const std::vector<vec3d>& pts, const std::vector<int>&
 		}
 		loops.push_back(loop);
 	}
+	m_branched = false;
+	if (loops.size() == 3)
+	{
+		m_bl.assign(3, Poly());
+		for (int i = 0; i < 3; ++i)
+		{
+			PolygonInfo(loops[i], m_bl[i]);
+			if (m_bl[i].area <= 0) { err = "An open end of the vessel has zero area."; return false; }
+		}
+		m_branched = true;
+		return true;
+	}
 	if (loops.size() != 2)
 	{
-		err = "The surface has " + std::to_string(loops.size()) + " open boundary loops; exactly two (the two ends of the vessel) are needed. Branching vessels are not supported.";
+		err = "The surface has " + std::to_string(loops.size()) + " open boundary loops; two (the ends of a vessel) or three (a bifurcation) are needed.";
+		for (auto& L : loops) { Poly pi; PolygonInfo(L, pi); err += "\n  loop: " + std::to_string(L.size()) + " points, area " + std::to_string(pi.area) + ", centroid (" + std::to_string(pi.c.x) + ", " + std::to_string(pi.c.y) + ", " + std::to_string(pi.c.z) + ")"; }
 		return false;
 	}
 	for (int i = 0; i < 2; ++i) PolygonInfo(loops[i], m_end[i]);
@@ -412,6 +484,75 @@ bool VesselSections::PickLoop(const std::vector<std::vector<vec3d>>& loops, cons
 }
 
 //-----------------------------------------------------------------------------
+namespace {
+	// keep the part of the planar polygon with n.(x-p) >= 0 (Sutherland-Hodgman)
+	std::vector<vec3d> ClipPolygon(const std::vector<vec3d>& L, const vec3d& p, const vec3d& n)
+	{
+		std::vector<vec3d> out;
+		int m = (int)L.size();
+		for (int i = 0; i < m; ++i)
+		{
+			const vec3d& a = L[i];
+			const vec3d& b = L[(i + 1) % m];
+			double da = (a - p) * n, db = (b - p) * n;
+			if (da >= 0) out.push_back(a);
+			if ((da >= 0) != (db >= 0))
+			{
+				double w = da / (da - db);
+				out.push_back(a + (b - a) * w);
+			}
+		}
+		return out;
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool VesselSections::CutSection(const vec3d& p, const vec3d& n, Poly& out, bool allowClip) const
+{
+	std::vector<std::vector<vec3d>> loops;
+	Slice(p, n, loops);
+	std::vector<vec3d> loop;
+	if (!PickLoop(loops, p, n, p, loop)) return false;
+	if (m_clip && allowClip)
+	{
+		loop = ClipPolygon(loop, m_clipP, m_clipN);
+		if (loop.size() < 3) return false;
+	}
+	PolygonInfo(loop, out);
+	return out.area > 0;
+}
+
+//-----------------------------------------------------------------------------
+bool VesselSections::InsideNormal(const Poly& e, const vec3d& toward, vec3d& nIn) const
+{
+	double req = sqrt(e.area / 3.141592653589793);
+	vec3d n = e.n;
+	int found = 0;
+	for (int sgn = 1; sgn >= -1; sgn -= 2)
+	{
+		vec3d o = e.c + n * (sgn * 0.1 * req);
+		std::vector<std::vector<vec3d>> loops;
+		Slice(o, n, loops);
+		Basis B = MakeBasis(n);
+		bool inside = false;
+		for (const auto& L : loops)
+		{
+			std::vector<double> xs(L.size()), ys(L.size());
+			for (size_t k = 0; k < L.size(); ++k) { xs[k] = (L[k] - o) * B.e1; ys[k] = (L[k] - o) * B.e2; }
+			if (InsidePolygon2D(xs, ys, 0.0, 0.0)) { inside = true; break; }
+		}
+		if (inside)
+		{
+			if (found == 0) nIn = n * (double)sgn;
+			found++;
+		}
+	}
+	if (found == 0) return false;
+	if (found == 2) nIn = (n * toward > 0 ? n : -n);
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 bool VesselSections::TraceCenterline(std::string& err)
 {
 	// Which side of each end loop is the inside of the vessel?
@@ -445,6 +586,12 @@ bool VesselSections::TraceCenterline(std::string& err)
 		if (found == 2) m_nIn[e] = (n * other > 0 ? n : -n);
 	}
 
+	return MarchCenterline(err);
+}
+
+//-----------------------------------------------------------------------------
+bool VesselSections::MarchCenterline(std::string& err)
+{
 	const vec3d nBout = -m_nIn[1];
 	auto signedDistB = [&](const vec3d& x) { return (x - m_end[1].c) * nBout; };
 
@@ -453,6 +600,10 @@ bool VesselSections::TraceCenterline(std::string& err)
 	double req = sqrt(m_end[0].area / 3.141592653589793);
 	m_center.clear();
 	m_center.push_back(c);
+	m_clipS = 1e300;
+	bool clipOn = m_clip;
+	size_t clipOffIndex = 0;
+	double clipOffR = 0;
 	const double hmin = 1e-3 * m_diag;
 	for (int iter = 0; iter < 50000; ++iter)
 	{
@@ -460,12 +611,8 @@ bool VesselSections::TraceCenterline(std::string& err)
 		vec3d cp = c + t * h;
 		if (signedDistB(cp) >= 0) break;
 
-		std::vector<std::vector<vec3d>> loops;
-		Slice(cp, t, loops);
-		std::vector<vec3d> loop;
-		if (!PickLoop(loops, cp, t, cp, loop)) { err = "Lost the vessel while tracing the centerline (no cross-section found)."; return false; }
 		Poly info;
-		PolygonInfo(loop, info);
+		if (!CutSection(cp, t, info, clipOn)) { err = "Lost the vessel while tracing the centerline (no cross-section found)."; return false; }
 		vec3d cn = info.c;
 		double step = (cn - c).norm();
 		if (step < 1e-9 * m_diag) { err = "The centerline tracing stalled."; return false; }
@@ -475,6 +622,9 @@ bool VesselSections::TraceCenterline(std::string& err)
 		c = cn;
 		req = sqrt(info.area / 3.141592653589793);
 		m_center.push_back(c);
+		// the clip plane (divider of a bifurcation) is only meant for the part of the branch that shares its lumen with the other branch; once
+		// the lumen has left the plane for good, a branch that curves back across it must not be cut
+		if (clipOn && ((c - m_clipP) * m_clipN > 1.5 * req)) { clipOn = false; clipOffIndex = m_center.size() - 1; clipOffR = req; }
 		if (iter == 49999) { err = "The centerline tracing did not reach the other end."; return false; }
 	}
 	// finish at the center of the other end (drop the last point if it is very close)
@@ -490,6 +640,7 @@ bool VesselSections::TraceCenterline(std::string& err)
 		m_center = q;
 	}
 	PrepareCurve();
+	if (m_clip && !clipOn) m_clipS = m_s[std::min(clipOffIndex, m_s.size() - 1)] + clipOffR;
 	return true;
 }
 
@@ -555,11 +706,8 @@ void VesselSections::BuildNormalField()
 		else if (i == nf) A = m_end[1].area;
 		else
 		{
-			std::vector<std::vector<vec3d>> loops;
-			std::vector<vec3d> loop;
-			Slice(p, T[i], loops);
 			Poly info;
-			if (PickLoop(loops, p, T[i], p, loop)) { PolygonInfo(loop, info); A = info.area; }
+			if (CutSection(p, T[i], info, ds * i <= m_clipS)) A = info.area;
 			else A = (i > 0 ? 3.141592653589793 * rl[i - 1] * rl[i - 1] : m_end[0].area);
 		}
 		rl[i] = sqrt(std::max(A, 1e-30) / 3.141592653589793);
@@ -578,6 +726,25 @@ void VesselSections::BuildNormalField()
 	{
 		for (int i = 1; i < nf; ++i) N[i] = toward(N[i], N[i - 1], RATE * ds / rl[i]);
 		for (int i = nf - 1; i > 0; --i) N[i] = toward(N[i], N[i + 1], RATE * ds / rl[i]);
+	}
+	// At the ends the planes must agree with the end sections (e.g. a cap that is slightly tilted with respect to the vessel). Let the
+	// plane normal change smoothly from the end normal to the interior one over a few radii, instead of within a fraction of a radius.
+	for (int e = 0; e < 2; ++e)
+	{
+		const int ie = (e == 0 ? 0 : nf);
+		const int dir = (e == 0 ? 1 : -1);
+		int iL = (int)ceil(3.0 * rl[ie] / ds);
+		iL = std::min(iL, nf / 4);
+		if (iL < 2) continue;
+		vec3d Ne = N[ie], Nr = N[ie + dir * iL];
+		for (int q = 0; q <= iL; ++q)
+		{
+			double x = (double)q / (double)iL;
+			double w = x * x * (3.0 - 2.0 * x);
+			vec3d v = Ne * (1.0 - w) + Nr * w;
+			double l = v.norm();
+			if (l > 1e-12) N[ie + dir * q] = v / l;
+		}
 	}
 	m_nf = N;
 }
@@ -614,11 +781,7 @@ bool VesselSections::BuildSections(int N, double adaptivity, std::vector<Poly>& 
 		vec3d p, t;
 		CurveAt(s, p, t);
 		t = PlaneNormal(s);
-		std::vector<std::vector<vec3d>> loops;
-		Slice(p, t, loops);
-		std::vector<vec3d> loop;
-		if (!PickLoop(loops, p, t, p, loop)) return false;
-		PolygonInfo(loop, out);
+		if (!CutSection(p, t, out, s <= m_clipS)) return false;
 		if (out.n * t < 0)
 		{
 			std::reverse(out.pts.begin(), out.pts.end());
@@ -627,11 +790,21 @@ bool VesselSections::BuildSections(int N, double adaptivity, std::vector<Poly>& 
 		return true;
 	};
 
+	// spacing grading: x in [0,1] -> fraction of the length (m_grade > 0: denser sections at the start, coarser at the end)
+	// (the spacing is reduced by the factor 1 - m_grade at the start and grows linearly back to the nominal one over the first 35% of the length)
+	const double gx0 = 0.35;
+	auto gfun = [&](double x) {
+		if (x <= gx0) return (1.0 - m_grade) * x + m_grade * x * x / (2.0 * gx0);
+		return (1.0 - m_grade) * gx0 + m_grade * gx0 / 2.0 + (x - gx0);
+	};
+	const double gnorm = gfun(1.0);
+	auto grade = [&](double x) { return gfun(x) / gnorm; };
+
 	// importance function for the spacing
 	std::vector<double> sp;		// section positions along the centerline
 	if (adaptivity <= 0.0 || N == 1)
 	{
-		for (int j = 0; j <= N; ++j) sp.push_back(Ltot * j / (double)N);
+		for (int j = 0; j <= N; ++j) sp.push_back(Ltot * grade(j / (double)N));
 	}
 	else
 	{
@@ -671,13 +844,48 @@ bool VesselSections::BuildSections(int N, double adaptivity, std::vector<Poly>& 
 		}
 		for (int j = 0; j <= N; ++j)
 		{
-			double target = M[nf] * j / (double)N;
+			double target = M[nf] * grade(j / (double)N);
 			int i = (int)(std::upper_bound(M.begin(), M.end(), target) - M.begin()) - 1;
 			i = std::min(std::max(i, 0), nf - 1);
 			double w = (M[i + 1] > M[i] ? (target - M[i]) / (M[i + 1] - M[i]) : 0.0);
 			sp.push_back(sf[i] + w * ds);
 		}
 		sp.front() = 0.0; sp.back() = Ltot;
+	}
+
+	// Rim sections: a cap often has a lip, i.e. the radius of the vessel changes by several percent within a fraction of a radius of the
+	// end (the rim of the cap is smaller than the vessel just inside). Sections that are further apart than that smear the step over the
+	// first layer of elements, so add a section where the radius has settled.
+	if (sp.size() >= 3)
+	{
+		const double kPi2 = 3.141592653589793;
+		for (int e = 0; e < 2; ++e)
+		{
+			const double rEnd = sqrt(std::max(m_end[e].area, 1e-30) / kPi2);
+			auto radiusAt = [&](double d, double& r) {
+				Poly info;
+				if (!cut(e == 0 ? d : Ltot - d, info)) return false;
+				r = sqrt(info.area / kPi2);
+				return true;
+			};
+			double dfound = -1;
+			const double dd = 0.03 * rEnd;
+			double rprev = rEnd, rr = 0;
+			bool jump = false;
+			for (double d = 0.06 * rEnd; d < 0.8 * rEnd; d += dd)
+			{
+				if (!radiusAt(d, rr)) break;
+				if (fabs(rr - rEnd) > 0.06 * rEnd) jump = true;
+				if (jump && (fabs(rr - rprev) < 0.12 * dd)) { dfound = d; break; }
+				rprev = rr;
+			}
+			if (dfound < 0) continue;
+			double sNew = (e == 0 ? dfound : Ltot - dfound);
+			bool close = false;
+			for (double q : sp) if (fabs(q - sNew) < 0.5 * dfound) close = true;
+			if (!close) sp.push_back(sNew);
+		}
+		std::sort(sp.begin(), sp.end());
 	}
 
 	// cut the sections
@@ -700,6 +908,194 @@ bool VesselSections::BuildSections(int N, double adaptivity, std::vector<Poly>& 
 			return false;
 		}
 		sections.push_back(P);
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool VesselSections::BuildBifurcation(int nTrunk, int nDaughter, double adaptivity, Bifurcation& out, std::string& err)
+{
+	const double kPi = 3.141592653589793;
+	if (!m_branched) { err = "The surface does not have three open ends."; return false; }
+	if ((nTrunk < 1) || (nDaughter < 1)) { err = "At least one interval is needed in each branch."; return false; }
+
+	// the inlet: the loop nearest the start point (or the largest one)
+	int inlet = 0;
+	for (int i = 1; i < 3; ++i)
+	{
+		if (m_hasHint) { if ((m_bl[i].c - m_hint).norm() < (m_bl[inlet].c - m_hint).norm()) inlet = i; }
+		else if (m_bl[i].area > m_bl[inlet].area) inlet = i;
+	}
+	int o0 = (inlet + 1) % 3, o1 = (inlet + 2) % 3;
+	Poly in = m_bl[inlet];
+	Poly outl[2] = { m_bl[o0], m_bl[o1] };
+	vec3d towardOut = (outl[0].c + outl[1].c) * 0.5;
+
+	vec3d nIn0;
+	if (!InsideNormal(in, towardOut - in.c, nIn0)) { err = "Could not determine the inside of the vessel at the inlet."; return false; }
+
+	// ---- the trunk: march from the inlet until the cross-section starts to split into the two daughters
+	m_clip = false;
+	std::vector<vec3d> cl;
+	std::vector<double> areaHist;
+	vec3d c = in.c, t = nIn0;
+	double req = sqrt(in.area / kPi);
+	const double hmin = 1e-3 * m_diag;
+	cl.push_back(c);
+	areaHist.push_back(in.area);
+	Poly Floop;
+	vec3d Ft = t;
+	bool haveF = false;
+	for (int iter = 0; iter < 20000; ++iter)
+	{
+		double h = std::max(0.5 * req, hmin);
+		vec3d cp = c + t * h;
+		std::vector<std::vector<vec3d>> loops;
+		Slice(cp, t, loops);
+		Poly info;
+		if (loops.empty()) break;
+		bool split = false;
+		{
+			// loops of significant size
+			int big = 0;
+			for (const auto& L : loops) { Poly pi; PolygonInfo(L, pi); if (pi.area > 0.1 * areaHist.back()) big++; }
+			if (big >= 2) split = true;
+		}
+		std::vector<vec3d> loop;
+		if (!split)
+		{
+			if (!PickLoop(loops, cp, t, cp, loop)) break;
+			PolygonInfo(loop, info);
+			double aref = 0;
+			int na = 0;
+			for (int k = (int)areaHist.size() - 1; (k >= 0) && (na < 6); --k, ++na) aref += areaHist[k];
+			aref /= na;
+			if ((cl.size() >= 3) && (info.area > 1.3 * aref)) split = true;
+		}
+		if (split) { haveF = (cl.size() >= 2); break; }
+		vec3d cn = info.c;
+		double step = (cn - c).norm();
+		if (step < 1e-9 * m_diag) break;
+		vec3d tn = (cn - c) / step;
+		t = t * 0.5 + tn * 0.5;
+		t /= t.norm();
+		c = cn;
+		req = sqrt(info.area / kPi);
+		cl.push_back(c);
+		areaHist.push_back(info.area);
+		Floop = info;
+		Ft = t;
+		haveF = true;
+	}
+	if (!haveF || Floop.pts.empty()) { err = "Could not trace the trunk of the bifurcation."; return false; }
+	if (cl.size() < 3) { err = "The trunk of the bifurcation is too short."; return false; }
+	// the trunk ends on the plane through the last centerline point (the cross-section Floop was cut there with the tangent Ft)
+	{
+		Poly chk;
+		if (!CutSection(cl.back(), Ft, chk)) { err = "Could not cut the trunk end section."; return false; }
+		Floop = chk;
+	}
+	if (Floop.n * Ft < 0) { std::reverse(Floop.pts.begin(), Floop.pts.end()); Floop.n = -Floop.n; }
+	cl.back() = Floop.c;
+	out.fp = cl.back();
+	out.ft = Ft;
+
+	// ---- the divider plane: at the narrowest gap between the two lobes where the cross-section has just split
+	{
+		bool found = false;
+		std::vector<vec3d> loopA, loopB;
+		vec3d cp = cl.back();
+		double Af = Floop.area;
+		double step = std::max(0.25 * req, hmin);
+		for (int iter = 0; iter < 4000 && !found; ++iter)
+		{
+			cp = cp + Ft * step;
+			std::vector<std::vector<vec3d>> loops;
+			Slice(cp, Ft, loops);
+			std::vector<int> big;
+			for (size_t i = 0; i < loops.size(); ++i) { Poly pi; PolygonInfo(loops[i], pi); if (pi.area > 0.02 * Af) big.push_back((int)i); }
+			if (big.size() >= 2)
+			{
+				const std::vector<vec3d>& A = loops[big[0]];
+				const std::vector<vec3d>& B = loops[big[1]];
+				double dmin = 1e300;
+				vec3d pa, pb;
+				for (const vec3d& a : A) for (const vec3d& b : B) { double d = (a - b).norm(); if (d < dmin) { dmin = d; pa = a; pb = b; } }
+				vec3d n = pb - pa;
+				n = n - Ft * (n * Ft);
+				if (n.norm() < 1e-12) continue;
+				out.dn = n / n.norm();
+				out.dp = (pa + pb) * 0.5;
+				loopA = A; loopB = B;
+				found = true;
+			}
+			if ((cp - out.fp).norm() > 3.0 * m_diag) break;
+		}
+		if (!found) { err = "Could not find where the vessel divides into two branches."; return false; }
+
+		// Tilt the divider (about the carina point) so that it passes through the centre of the trunk end section: its two halves are
+		// then of similar size, and have blunt corners, instead of one half being a thin circular segment. Only if both lobes stay on
+		// their own side of the tilted plane.
+		vec3d e = out.ft ^ out.dn;
+		vec3d v = out.dp - out.fp;
+		vec3d n2 = e ^ v;
+		if (n2.norm() > 1e-9 * m_diag)
+		{
+			n2 = n2 / n2.norm();
+			if (n2 * out.dn < 0) n2 = -n2;
+			const double tol = 1e-6 * m_diag;
+			bool ok = true;
+			for (const vec3d& a : loopA) if ((a - out.dp) * n2 > tol) ok = false;
+			for (const vec3d& b : loopB) if ((b - out.dp) * n2 < -tol) ok = false;
+			if (ok) out.dn = n2;
+		}
+	}
+	// which outlet is on which side
+	double s0 = (outl[0].c - out.dp) * out.dn, s1 = (outl[1].c - out.dp) * out.dn;
+	if (s0 * s1 >= 0) { err = "The two outlets are on the same side of the divider plane."; return false; }
+	if (s0 < 0) { std::swap(outl[0], outl[1]); }
+	// outl[0] is now on the positive side of the divider
+
+	// ---- the trunk tube
+	{
+		VesselSections tr;
+		tr.m_pts = m_pts; tr.m_tri = m_tri; tr.m_diag = m_diag;
+		tr.m_end[0] = in; tr.m_end[1] = Floop;
+		tr.m_nIn[0] = nIn0; tr.m_nIn[1] = -Ft;
+		tr.m_center = cl;
+		for (int pass = 0; pass < 3; ++pass)
+		{
+			std::vector<vec3d> q = tr.m_center;
+			for (size_t i = 1; i + 1 < tr.m_center.size(); ++i) q[i] = tr.m_center[i - 1] * 0.25 + tr.m_center[i] * 0.5 + tr.m_center[i + 1] * 0.25;
+			tr.m_center = q;
+		}
+		tr.PrepareCurve();
+		if (!tr.BuildSections(nTrunk, adaptivity, out.trunk, err)) return false;
+	}
+
+	// ---- the daughters: half-lumen sections
+	for (int j = 0; j < 2; ++j)
+	{
+		VesselSections d;
+		d.m_pts = m_pts; d.m_tri = m_tri; d.m_diag = m_diag;
+		d.m_clip = true;
+		d.m_grade = 0.5;		// denser sections at the junction, where the chord of the half sections develops
+		d.m_clipP = out.dp;
+		d.m_clipN = (j == 0 ? out.dn : -out.dn);
+		std::vector<vec3d> half = ClipPolygon(Floop.pts, d.m_clipP, d.m_clipN);
+		if (half.size() < 3) { err = "The divider plane does not cut the end of the trunk."; return false; }
+		Poly Fh;
+		PolygonInfo(half, Fh);
+		if (Fh.n * Ft < 0) { std::reverse(Fh.pts.begin(), Fh.pts.end()); Fh.n = -Fh.n; }
+		d.m_end[0] = Fh;
+		d.m_end[1] = outl[j];
+		d.m_nIn[0] = Ft;
+		vec3d nIn1;
+		if (!d.InsideNormal(outl[j], Fh.c - outl[j].c, nIn1)) { err = "Could not determine the inside of the vessel at an outlet."; return false; }
+		d.m_nIn[1] = nIn1;
+		if (!d.MarchCenterline(err)) return false;
+		// (at least some adaptivity in the branches, which puts sections where the radius changes quickly, e.g. at a tapering outlet)
+		if (!d.BuildSections(nDaughter, std::max(adaptivity, 1.0), out.daughter[j], err)) return false;
 	}
 	return true;
 }

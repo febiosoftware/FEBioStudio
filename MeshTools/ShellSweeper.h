@@ -66,6 +66,7 @@ public:
 	std::vector<Outline>	m_outlines;
 	std::vector<int>		m_outlineIndex;
 	bool	m_alignTwist = false;		// outline matching: also rotate the targets in-plane (limited to 15 degrees per section) to best align the outlines
+	bool	m_smoothStart = false;	// outline matching: replace the start section's outline by a smooth one (harmonics up to 4), e.g. the jagged rim of an STL cap
 	bool	m_outlineUsed = false;	// (output) true if outline matching was applied
 	std::vector<double>	m_scale;			// optional: uniform scale of the section at each path point (same size as m_path; empty = no scaling)
 										// (the scale is relative to the first path point and is interpolated between path points)

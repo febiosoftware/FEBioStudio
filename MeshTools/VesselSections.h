@@ -47,7 +47,8 @@ public:
 
 	// For a closed vessel surface that includes its end caps: remove the start cap (the planar patch containing the triangles
 	// startTris, indices into tri/3) and the end cap (the largest other planar patch) from tri, so that Init can be used.
-	static bool RemoveCaps(const std::vector<vec3d>& pts, std::vector<int>& tri, const std::vector<int>& startTris, vec3d& startCentroid, std::vector<int>& startCapTris, std::string& err);
+	static bool RemoveCaps(const std::vector<vec3d>& pts, std::vector<int>& tri, const std::vector<int>& startTris, vec3d& startCentroid, std::vector<int>& startCapTris, std::string& err, std::vector<std::vector<int>>* allCapTris = nullptr, std::vector<vec3d>* allCapCentroids = nullptr);
+	// (allCapTris/allCapCentroids, if given, receive the vertex indices (3 per triangle, into pts) and the centroid of every cap that was removed)
 
 	// the end of the vessel nearest to this point becomes the first section (default: arbitrary)
 	void SetStartPoint(const vec3d& r) { m_hint = r; m_hasHint = true; }
@@ -62,6 +63,22 @@ public:
 
 	const std::vector<vec3d>& Centerline() const { return m_center; }
 
+	// ---- bifurcations (a closed surface whose three caps were removed: one inlet and two outlets) ----
+	struct Bifurcation
+	{
+		std::vector<Poly>	trunk;			// sections from the inlet loop to the trunk end plane F (the last one is the full loop at F)
+		std::vector<Poly>	daughter[2];	// half-lumen sections from the half of F (first) to the outlet loop (last)
+		vec3d	fp, ft;						// the trunk end plane F: a point and the unit normal (along the direction of flow)
+		vec3d	dp, dn;						// the divider plane: a point and a unit normal; daughter 0 is on the positive side
+	};
+
+	// true if Init found three open loops
+	bool Branched() const { return m_branched; }
+
+	// Create the sections of the trunk (nTrunk intervals) and of both daughters (nDaughter intervals each). The inlet is the open
+	// loop nearest the point given to SetStartPoint (or the largest loop).
+	bool BuildBifurcation(int nTrunk, int nDaughter, double adaptivity, Bifurcation& out, std::string& err);
+
 public:
 	// area, centroid and normal of a planar polygon
 	static void PolygonInfo(const std::vector<vec3d>& p, Poly& out);
@@ -74,6 +91,15 @@ private:
 
 	// intersect the surface with the plane through o with normal n; returns the closed loops
 	void Slice(const vec3d& o, const vec3d& n, std::vector<std::vector<vec3d>>& loops) const;
+
+	// the cross-section by the plane through p with normal n: the loop around p (clipped by the clip plane, if set)
+	bool CutSection(const vec3d& p, const vec3d& n, Poly& out, bool allowClip = true) const;
+
+	// the unit normal of an open end loop that points into the vessel
+	bool InsideNormal(const Poly& e, const vec3d& toward, vec3d& nIn) const;
+
+	// trace the centerline between m_end[0] and m_end[1] (m_nIn must be set)
+	bool MarchCenterline(std::string& err);
 
 	// the loop around the point q (or the nearest one); returns false if there are no loops
 	bool PickLoop(const std::vector<std::vector<vec3d>>& loops, const vec3d& o, const vec3d& n, const vec3d& q, std::vector<vec3d>& loop) const;
@@ -90,6 +116,12 @@ private:
 	Poly	m_end[2];			// the open end loops
 	vec3d	m_nIn[2];			// unit normals of the end loops pointing into the vessel
 	double	m_diag = 1.0;
+	bool	m_branched = false;
+	std::vector<Poly>	m_bl;		// the open loops of a branched surface
+	bool	m_clip = false;			// keep only the part of the cross-sections on the positive side of the clip plane
+	vec3d	m_clipP, m_clipN;
+	double	m_clipS = 1e300;			// the clip plane only applies up to this arclength (where the lumen has left the plane for good)
+	double	m_grade = 0.0;			// section spacing grading (0 = none; >0 = denser sections at the start of the centerline)
 	bool	m_hasHint = false;
 	vec3d	m_hint;
 

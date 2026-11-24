@@ -490,6 +490,38 @@ bool CSweepSectionsTool::GetSections(std::vector<Section>& sections, bool forSta
 }
 
 
+bool CSweepSectionsTool::SectionFromFaces(GObject* po, const std::vector<int>& faceIds, Section& sec, QString& err)
+{
+	FSMesh* pm = (po ? po->GetFEMesh() : nullptr);
+	if ((pm == nullptr) || faceIds.empty()) { err = "No faces."; return false; }
+	const Transform& T = po->GetTransform();
+	sec = Section();
+	sec.po = po;
+	vec3d csum(0, 0, 0);
+	for (int id : faceIds)
+	{
+		if ((id < 0) || (id >= pm->Faces())) continue;
+		const FSFace& f = pm->Face(id);
+		sec.faces.push_back(id);
+		AddEdges(sec, pm, T, f.n, FaceCorners(f), f.Nodes());
+		vec3d a = T.LocalToGlobal(pm->Node(f.n[0]).r), b = T.LocalToGlobal(pm->Node(f.n[1]).r), c = T.LocalToGlobal(pm->Node(f.n[2]).r);
+		vec3d an = ((b - a) ^ (c - a)) * 0.5;
+		double w = an.norm();
+		sec.n += an; sec.area += w; csum += (a + b + c) * (w / 3.0); AddM2(sec.m2, a, b, c, w);
+		if (FaceCorners(f) == 4)
+		{
+			vec3d d = T.LocalToGlobal(pm->Node(f.n[3]).r);
+			vec3d bn = ((c - a) ^ (d - a)) * 0.5;
+			double w2 = bn.norm();
+			sec.n += bn; sec.area += w2; csum += (a + c + d) * (w2 / 3.0); AddM2(sec.m2, a, c, d, w2);
+		}
+	}
+	if (sec.area <= 0.0) { err = "The faces have zero area."; return false; }
+	sec.c = csum / sec.area;
+	FinishCov(sec);
+	return true;
+}
+
 bool CSweepSectionsTool::SectionFromShellObject(GObject* po, Section& sec, QString& err)
 {
 	FSMesh* pm = (po ? po->GetFEMesh() : nullptr);
@@ -841,6 +873,7 @@ bool CSweepSectionsTool::RunSweep(const Section& startSec, const std::vector<Sec
 	if (shapeMode == 3)
 	{
 		sw.m_alignTwist = opt.alignTwist;
+		sw.m_smoothStart = opt.smoothStart;
 		// outline matching (the start section's outline first, then each target in path order)
 		for (int i = 0; i <= ns; ++i)
 		{
@@ -898,7 +931,9 @@ bool CSweepSectionsTool::RunSweep(const Section& startSec, const std::vector<Sec
 	static int n = 1;
 	QString name = QString("%1_sections%2").arg(QString::fromStdString(po->GetName())).arg(n++);
 	GMeshObject* pnew = new GMeshObject(solid);
+	if (!opt.name.empty()) name = QString::fromStdString(opt.name);
 	pnew->SetName(name.toStdString());
+	if (opt.result) *opt.result = pnew;
 
 	CCmdGroup* cmd = new CCmdGroup("Sweep sections");
 	cmd->AddCommand(new CCmdAddAndSelectObject(doc->GetGModel(), pnew));
@@ -930,7 +965,8 @@ bool CSweepSectionsTool::RunSweep(const Section& startSec, const std::vector<Sec
 		msg += QString("\n\nWARNING: %1 elements have a non-positive Jacobian. The path probably bends more sharply than the section is wide "
 			"(the inside of the bend folds over), or the section normals point the wrong way. Try more spacing between sections, "
 			"fewer/gentler turns, intermediate sections, or the \"smooth curve through centroids\" path option.").arg(ninverted);
-	QMessageBox::information(GetMainWindow(), "Sweep Sections", msg);
+	if (opt.quiet) { if (opt.message) *opt.message = msg; }
+	else QMessageBox::information(GetMainWindow(), "Sweep Sections", msg);
 
 	return true;
 }
